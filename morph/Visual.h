@@ -1,9 +1,8 @@
 /*!
  * \file
  *
- * Awesome graphics code for high performance graphing and visualisation. Uses modern
- * OpenGL and the library GLFW for window management (or can be owned by a widget such
- * as a QOpenGLWidget).
+ * Awesome graphics code for high performance graphing and visualisation. Uses modern OpenGL and the
+ * library GLFW for window management (or can be owned by a widget such as a QOpenGLWidget).
  *
  * Created by Seb James on 2019/05/01
  *
@@ -21,8 +20,8 @@
 // Normally, a morph::Visual is the *owner* of a GLFW window in which it does its rendering.
 //
 // "OWNED_MODE" means that the morph::Visual is itself owned by a windowing system of some sort. At
-// present, that can only be a QOpenGLWidget, but it could in principle be any other window drawing
-// system that's able to provide an OpenGL context for morph::Visual to render into.
+// present, that can be a QOpenGLWidget or a wxWidget. It could in principle be any other window
+// drawing system that's able to provide an OpenGL context for morph::Visual to render into.
 //
 // Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
 // morph::Visual is the owner of a Window provided by GLFW.
@@ -87,7 +86,7 @@ namespace morph {
 #ifndef OWNED_MODE
     // The default is to use a GLFW window which is owned by morph::Visual.
     using win_t = GLFWwindow;
-    // else: The window is a widget within a wider Qt system. We are owned by the
+    // else: The window is a widget within a wider Qt or wx system. We are owned by the
     // widget. win_t should be defined (with a using win_t = something line) externally.
 #endif
 
@@ -114,15 +113,14 @@ namespace morph {
 
     public:
         /*!
-         * Default constructor is used when incorporating Visual inside a QWidget.  We
-         * have to wait on calling init functions until an OpenGL environment is
-         * guaranteed to exist.
+         * Default constructor is used when incorporating Visual inside a QWidget.  We have to wait
+         * on calling init functions until an OpenGL environment is guaranteed to exist.
          */
         Visual() { }
 
         /*!
-         * Construct a new visualiser. The rule is 1 window to one Visual object. So,
-         * this creates a new window and a new OpenGL context.
+         * Construct a new visualiser. The rule is 1 window to one Visual object. So, this creates a
+         * new window and a new OpenGL context.
          */
         Visual (int width, int height, const std::string& _title)
             : window_w(width)
@@ -134,9 +132,8 @@ namespace morph {
         }
 
         /*!
-         * Construct with specified coordinate arrows offset (caOffset) lengths
-         * (caLength), thickness scaling factor (caThickness) and coordinate arrow 'm'
-         * size, caEm.
+         * Construct with specified coordinate arrows offset (caOffset) lengths (caLength),
+         * thickness scaling factor (caThickness) and coordinate arrow 'm' size, caEm.
          */
         Visual (int width, int height, const std::string& _title,
                 const morph::vec<float, 2> caOffset, const morph::vec<float, 3> caLength,
@@ -182,18 +179,16 @@ namespace morph {
             this->init_gl();
         }
 
-        // Do one-time init of the Visual's resources. This gets/creates the
-        // VisualResources, registers this visual with resources, calls init_window for
-        // any glfw stuff that needs to happen, and lastly initializes the freetype
-        // code.
+        // Do one-time init of the Visual's resources. This gets/creates the VisualResources,
+        // registers this visual with resources, calls init_window for any glfw stuff that needs to
+        // happen, and lastly initializes the freetype code.
         void init_resources()
         {
             // VisualResources provides font management and GLFW management. Ensure it exists in memory.
             morph::VisualResources<glver>::i().create();
 
-            // Set up the window that will present the OpenGL graphics. No-op in
-            // Qt-managed Visual, but this has to happen BEFORE the call to
-            // VisualResources::freetype_init()
+            // Set up the window that will present the OpenGL graphics. No-op in Qt-managed Visual,
+            // but this has to happen BEFORE the call to VisualResources::freetype_init()
             this->init_window();
 
             // Now make sure that Freetype is set up
@@ -232,8 +227,8 @@ namespace morph {
         }
 
 #ifndef OWNED_MODE
-        //! Make this Visual the current one, so that when creating/adding a visual
-        //! model, the vao ids relate to the correct OpenGL context.
+        //! Make this Visual the current one, so that when creating/adding a visual model, the vao
+        //! ids relate to the correct OpenGL context.
         void setContext() { glfwMakeContextCurrent (this->window); }
 
         //! Release the OpenGL context
@@ -241,8 +236,7 @@ namespace morph {
 #endif
 
         /*!
-         * Set up the passed-in VisualModel with functions that need access to Visual
-         * attributes.
+         * Set up the passed-in VisualModel with functions that need access to Visual attributes.
          */
         template <typename T>
         void bindmodel (std::unique_ptr<T>& model)
@@ -254,8 +248,8 @@ namespace morph {
         }
 
         /*!
-         * Add a VisualModel to the scene as a unique_ptr. The Visual object takes
-         * ownership of the unique_ptr. The index into Visual::vm is returned.
+         * Add a VisualModel to the scene as a unique_ptr. The Visual object takes ownership of the
+         * unique_ptr. The index into Visual::vm is returned.
          */
         template <typename T>
         unsigned int addVisualModelId (std::unique_ptr<T>& model)
@@ -266,8 +260,8 @@ namespace morph {
             return rtn;
         }
         /*!
-         * Add a VisualModel to the scene as a unique_ptr. The Visual object takes
-         * ownership of the unique_ptr. A non-owning pointer to the model is returned.
+         * Add a VisualModel to the scene as a unique_ptr. The Visual object takes ownership of the
+         * unique_ptr. A non-owning pointer to the model is returned.
          */
         template <typename T>
         T* addVisualModel (std::unique_ptr<T>& model)
@@ -303,8 +297,8 @@ namespace morph {
             if (found_model == true) { this->vm.erase (this->vm.begin() + modelId); }
         }
 
-        //! Add a text label to the scene at a given location. Return the width and
-        //! height of the text in a TextGeometry object.
+        //! Add a text label to the scene at a given location. Return the width and height of the
+        //! text in a TextGeometry object.
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
@@ -335,9 +329,9 @@ namespace morph {
 
 #ifndef OWNED_MODE
         /*!
-         * Keep on rendering until readToFinish is set true. Used to keep a window open,
-         * and responsive, while displaying the result of a simulation. FIXME: This
-         * won't work for two or more windows because it will block.
+         * Keep on rendering until readToFinish is set true. Used to keep a window open, and
+         * responsive, while displaying the result of a simulation. FIXME: This won't work for two
+         * or more windows because it will block.
          */
         void keepOpen()
         {
@@ -538,9 +532,9 @@ namespace morph {
             return v0;
         }
 
-        //! The OpenGL shader programs have an integer ID and are stored in a simple
-        //! struct. There's one for graphical objects and a text shader program, which
-        //! uses textures to draw text on quads.
+        //! The OpenGL shader programs have an integer ID and are stored in a simple struct. There's
+        //! one for graphical objects and a text shader program, which uses textures to draw text on
+        //! quads.
         morph::visgl::visual_shaderprogs shaders;
         //! Which shader is active for graphics shading?
         morph::visgl::graphics_shader_type active_gprog = morph::visgl::graphics_shader_type::none;
@@ -551,7 +545,8 @@ namespace morph {
 
         //! Stores the info required to load the cylindrical projection shader
         std::vector<morph::gl::ShaderInfo> cyl_shader_progs;
-        //! Passed to the cyl_shader_progs as a uniform to define the location of the cylindrical projection camera
+        //! Passed to the cyl_shader_progs as a uniform to define the location of the cylindrical
+        //! projection camera
         morph::vec<float, 4> cyl_cam_pos = { 0.0f, 0.0f, 0.0f, 1.0f };
         //! Default cylindrical camera position
         morph::vec<float, 4> cyl_cam_pos_default = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -580,9 +575,8 @@ namespace morph {
             // Find out the location of the bottom left of the screen and make the coord
             // arrows stay put there.
 
-            // Add the depth at which the object lies.  Use forward projection to determine
-            // the correct z coordinate for the inverse projection. This assumes only one
-            // object.
+            // Add the depth at which the object lies.  Use forward projection to determine the
+            // correct z coordinate for the inverse projection. This assumes only one object.
             morph::vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
             morph::vec<float, 4> pp = this->projection * point;
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
@@ -592,7 +586,8 @@ namespace morph {
             // Inverse project
             morph::vec<float, 3> v0;
             v0.set_from ((this->invproj * p0));
-            // Translate the scene for the CoordArrows such that they sit in a single position on the screen
+            // Translate the scene for the CoordArrows such that they sit in a single position on
+            // the screen
             this->coordArrows->setSceneTranslation (v0);
             // Apply rotation to the coordArrows model
             this->coordArrows->setViewRotation (this->rotation);
@@ -626,8 +621,8 @@ namespace morph {
         bool preventWindowCloseWithButton = false;
 
         /*
-         * User-settable projection values for the near clipping distance, the far
-         * clipping distance and the field of view of the camera.
+         * User-settable projection values for the near clipping distance, the far clipping distance
+         * and the field of view of the camera.
          */
 
         float zNear = 0.001f;
@@ -821,7 +816,8 @@ namespace morph {
                 fout << "    { ";
                 fout << "\"bufferView\" : " << vmi*4 << ", ";
                 fout << "\"byteOffset\" : 0, ";
-                fout << "\"componentType\" : 5125, "; // 5123 unsigned short, 5121 unsigned byte, 5125 unsigned int, 5126 float
+                // 5123 unsigned short, 5121 unsigned byte, 5125 unsigned int, 5126 float:
+                fout << "\"componentType\" : 5125, ";
                 fout << "\"type\" : \"SCALAR\", ";
                 fout << "\"count\" : " << this->vm[vmi]->indices_size();
                 fout << "},\n";
@@ -882,7 +878,7 @@ namespace morph {
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
                 // Window or OpenGL context creation failed
-                throw std::runtime_error("GLFW window creation failed!"); // Because Raspberry Pi doesn't suport OpenGL 4.1 (Needs 3.1 ES)
+                throw std::runtime_error("GLFW window creation failed!");
             }
             // now associate "this" object with mWindow object
             glfwSetWindowUserPointer (this->window, this);
@@ -899,9 +895,9 @@ namespace morph {
 #endif
         }
 
-        // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any
-        // external state from json, and set up the coordinate arrows and any
-        // VisualTextModels that will be required to render the Visual.
+        // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any external
+        // state from json, and set up the coordinate arrows and any VisualTextModels that will be
+        // required to render the Visual.
         void init_gl()
         {
 #ifdef USE_GLEW
@@ -1366,13 +1362,10 @@ namespace morph {
                 morph::vec<float, 2> p1_coord = this->cursorpos;
                 p1_coord -= this->window_w * 0.5f;
                 p1_coord /= this->window_w * 0.5f;
+                // Note: don't update this->mousePressPosition until user releases button.
 
-                // DON'T update mousePressPosition until user releases button.
-                // this->mousePressPosition = this->cursorpos;
-
-                // Add the depth at which the object lies.  Use forward projection to determine
-                // the correct z coordinate for the inverse projection. This assumes only one
-                // object.
+                // Add the depth at which the object lies.  Use forward projection to determine the
+                // correct z coordinate for the inverse projection. This assumes only one object.
                 morph::vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
                 morph::vec<float, 4> pp = this->projection * point;
                 float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
@@ -1381,13 +1374,13 @@ namespace morph {
                 morph::vec<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
                 morph::vec<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
 
-                // Apply the inverse projection to get two points in the world frame of
-                // reference for the mouse movement
+                // Apply the inverse projection to get two points in the world frame of reference
+                // for the mouse movement
                 morph::vec<float, 4> v0 = this->invproj * p0;
                 morph::vec<float, 4> v1 = this->invproj * p1;
 
-                // This computes the difference betwen v0 and v1, the 2 mouse positions in the
-                // world space. Note the swap between x and y
+                // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
+                // space. Note the swap between x and y
                 if (this->rotateModMode) {
                     // Sort of "rotate the page" mode.
                     mouseMoveWorld[2] = -((v1[1]/v1[3]) - (v0[1]/v0[3])) + ((v1[0]/v1[3]) - (v0[0]/v0[3]));
@@ -1396,15 +1389,15 @@ namespace morph {
                     mouseMoveWorld[0] = -((v1[1]/v1[3]) - (v0[1]/v0[3]));
                 }
 
-                // Rotation axis is perpendicular to the mouse position difference vector
-                // BUT we have to project into the model frame to determine how to rotate the model!
+                // Rotation axis is perpendicular to the mouse position difference vector BUT we
+                // have to project into the model frame to determine how to rotate the model!
                 float rotamount = mouseMoveWorld.length() * 40.0f;
                 // Calculate new rotation axis as weighted sum
                 this->rotationAxis = (mouseMoveWorld * rotamount);
                 this->rotationAxis.renormalize();
 
-                // Now inverse apply the rotation of the scene to the rotation axis
-                // (vec<float,3>), so that we rotate the model the right way.
+                // Now inverse apply the rotation of the scene to the rotation axis (vec<float,3>),
+                // so that we rotate the model the right way.
                 morph::vec<float, 4> tmp_4D = this->invscene * this->rotationAxis;
                 this->rotationAxis.set_from (tmp_4D); // Set rotationAxis from 4D result
 
@@ -1427,9 +1420,8 @@ namespace morph {
 
                 this->mousePressPosition = this->cursorpos;
 
-                // Add the depth at which the object lies.  Use forward projection to determine
-                // the correct z coordinate for the inverse projection. This assumes only one
-                // object.
+                // Add the depth at which the object lies.  Use forward projection to determine the
+                // correct z coordinate for the inverse projection. This assumes only one object.
                 morph::vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
                 morph::vec<float, 4> pp = this->projection * point;
                 float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
@@ -1476,7 +1468,6 @@ namespace morph {
             }
 
             if (button == morph::mousebutton::left) { // Primary button means rotate
-                // if mods:
                 this->rotateModMode = (mods & keymod::control) ? true : false;
                 this->rotateMode = (action == keyaction::press);
                 this->translateMode = false;
@@ -1513,7 +1504,7 @@ namespace morph {
 
             if (this->sceneLocked) { return false; }
 
-            // xoffset does what mouse drag left/right in rotateModMode does. This is to do a left-right scene trans:
+            // xoffset does what mouse drag left/right in rotateModMode does (L/R scene trans)
             this->scenetrans[0] -= xoffset * this->scenetrans_stepsize;
             this->cyl_cam_pos[0] += xoffset * this->scenetrans_stepsize;
 
@@ -1541,8 +1532,8 @@ namespace morph {
         std::function<void()> external_quit_callback;
 
     protected:
-        //! This internal quit function sets a 'readyToFinish' flag that your code can respond
-        //! to, and calls an external callback function that you may have set up.
+        //! This internal quit function sets a 'readyToFinish' flag that your code can respond to,
+        //! and calls an external callback function that you may have set up.
         void signal_to_quit()
         {
             std::cout << "User requested exit.\n";
