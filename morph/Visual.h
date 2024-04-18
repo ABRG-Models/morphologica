@@ -54,7 +54,6 @@
 #include <morph/Quaternion.h>
 #include <morph/TransformMatrix.h>
 #include <morph/vec.h>
-#include <morph/ColourMap.h>
 #include <morph/tools.h>
 
 #include <string>
@@ -140,7 +139,8 @@ namespace morph {
          * size, caEm.
          */
         Visual (int width, int height, const std::string& _title,
-                const vec<float, 2> caOffset, const vec<float> caLength, const float caThickness, const float caEm)
+                const morph::vec<float, 2> caOffset, const morph::vec<float> caLength,
+                const float caThickness, const float caEm)
             : window_w(width)
             , window_h(height)
             , title(_title)
@@ -260,7 +260,7 @@ namespace morph {
         template <typename T>
         unsigned int addVisualModelId (std::unique_ptr<T>& model)
         {
-            std::unique_ptr<VisualModel<glver>> vmp = std::move(model);
+            std::unique_ptr<morph::VisualModel<glver>> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             unsigned int rtn = (this->vm.size()-1);
             return rtn;
@@ -272,7 +272,7 @@ namespace morph {
         template <typename T>
         T* addVisualModel (std::unique_ptr<T>& model)
         {
-            std::unique_ptr<VisualModel<glver>> vmp = std::move(model);
+            std::unique_ptr<morph::VisualModel<glver>> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             return static_cast<T*>(this->vm.back().get());
         }
@@ -284,13 +284,13 @@ namespace morph {
          *
          * \return VisualModel pointer
          */
-        VisualModel<glver>* getVisualModel (unsigned int modelId) { return (this->vm[modelId].get()); }
+        morph::VisualModel<glver>* getVisualModel (unsigned int modelId) { return (this->vm[modelId].get()); }
 
         //! Remove the VisualModel with ID \a modelId from the scene.
         void removeVisualModel (unsigned int modelId) { this->vm.erase (this->vm.begin() + modelId); }
 
         //! Remove the VisualModel whose pointer matches the VisualModel* modelPtr
-        void removeVisualModel (VisualModel<glver>* modelPtr)
+        void removeVisualModel (morph::VisualModel<glver>* modelPtr)
         {
             unsigned int modelId = 0;
             bool found_model = false;
@@ -423,7 +423,7 @@ namespace morph {
             }
 
             // Calculate model view transformation - transforming from "model space" to "worldspace".
-            TransformMatrix<float> sceneview;
+            morph::TransformMatrix<float> sceneview;
             if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
                 // This line translates from model space to world space. Avoid in cyl?
                 sceneview.translate (this->scenetrans); // send backwards into distance
@@ -477,7 +477,7 @@ namespace morph {
                 this->coordArrows->render();
             }
 
-            TransformMatrix<float> scenetransonly;
+            morph::TransformMatrix<float> scenetransonly;
             scenetransonly.translate (this->scenetrans);
 
             auto vmi = this->vm.begin();
@@ -494,7 +494,7 @@ namespace morph {
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            vec<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
+            morph::vec<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
             if (this->showTitle == true) {
                 // Render the title text
                 this->textModel->setSceneTranslation (v0);
@@ -522,18 +522,18 @@ namespace morph {
         }
 
         //! Compute a translation vector for text position, using Visual::text_z.
-        vec<float, 3> textPosition (vec<float, 2> p0_coord)
+        morph::vec<float, 3> textPosition (morph::vec<float, 2> p0_coord)
         {
             // For the depth at which a text object lies, use this->text_z.  Use forward
             // projection to determine the correct z coordinate for the inverse
             // projection.
-            vec<float, 4> point =  { 0.0f, 0.0f, this->text_z, 1.0f };
-            vec<float, 4> pp = this->projection * point;
+            morph::vec<float, 4> point =  { 0.0f, 0.0f, this->text_z, 1.0f };
+            morph::vec<float, 4> pp = this->projection * point;
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
             // Construct the point for the location of the text
-            vec<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0f };
+            morph::vec<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0f };
             // Inverse project the point
-            vec<float, 3> v0;
+            morph::vec<float, 3> v0;
             v0.set_from (this->invproj * p0);
             return v0;
         }
@@ -566,11 +566,11 @@ namespace morph {
         static GLuint get_tprog (morph::Visual<glver>* _v) { return _v->shaders.tprog; };
 
         //! The colour of ambient and diffuse light sources
-        vec<float> light_colour = { 1.0f, 1.0f, 1.0f };
+        morph::vec<float> light_colour = { 1.0f, 1.0f, 1.0f };
         //! Strength of the ambient light
         float ambient_intensity = 1.0f;
         //! Position of a diffuse light source
-        vec<float> diffuse_position = { 5.0f, 5.0f, 15.0f };
+        morph::vec<float> diffuse_position = { 5.0f, 5.0f, 15.0f };
         //! Strength of the diffuse light source
         float diffuse_intensity = 0.0f;
 
@@ -583,14 +583,14 @@ namespace morph {
             // Add the depth at which the object lies.  Use forward projection to determine
             // the correct z coordinate for the inverse projection. This assumes only one
             // object.
-            vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
-            vec<float, 4> pp = this->projection * point;
+            morph::vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
+            morph::vec<float, 4> pp = this->projection * point;
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
             // Construct the point for the location of the coord arrows
-            vec<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0 };
+            morph::vec<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0 };
             // Inverse project
-            vec<float, 3> v0;
+            morph::vec<float, 3> v0;
             v0.set_from ((this->invproj * p0));
             // Translate the scene for the CoordArrows such that they sit in a single position on the screen
             this->coordArrows->setSceneTranslation (v0);
@@ -872,7 +872,7 @@ namespace morph {
     protected:
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
-        std::vector<std::unique_ptr<VisualModel<glver>>> vm;
+        std::vector<std::unique_ptr<morph::VisualModel<glver>>> vm;
 
     private:
 
@@ -975,7 +975,7 @@ namespace morph {
             }
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
-            this->coordArrows = std::make_unique<CoordArrows<glver>>();
+            this->coordArrows = std::make_unique<morph::CoordArrows<glver>>();
             // For CoordArrows, because we don't add via Visual::addVisualModel(), we
             // have to set the get_shaderprogs function here:
             this->bindmodel (this->coordArrows);
@@ -984,10 +984,10 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
-            this->textModel = std::make_unique<VisualTextModel<glver>> (this, this->shaders.tprog,
-                                                                        morph::VisualFont::DVSans,
-                                                                        0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
-                                                                        this->title);
+            this->textModel = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog,
+                                                                               morph::VisualFont::DVSans,
+                                                                               0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
+                                                                               this->title);
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -1010,12 +1010,12 @@ namespace morph {
 
     protected:
         //! A little model of the coordinate axes.
-        std::unique_ptr<CoordArrows<glver>> coordArrows;
+        std::unique_ptr<morph::CoordArrows<glver>> coordArrows;
 
         //! Position coordinate arrows on screen. Configurable at morph::Visual construction.
-        vec<float, 2> coordArrowsOffset = { -0.8f, -0.8f };
+        morph::vec<float, 2> coordArrowsOffset = { -0.8f, -0.8f };
         //! Length of coordinate arrows. Configurable at morph::Visual construction.
-        vec<float> coordArrowsLength = { 0.1f, 0.1f, 0.1f };
+        morph::vec<float> coordArrowsLength = { 0.1f, 0.1f, 0.1f };
         //! A factor used to slim (<1) or thicken (>1) the thickness of the axes of the CoordArrows.
         float coordArrowsThickness = 1.0f;
         //! Text size for x,y,z.
@@ -1023,7 +1023,7 @@ namespace morph {
 
     private:
         //! A VisualTextModel for a title text.
-        std::unique_ptr<VisualTextModel<glver>> textModel = nullptr;
+        std::unique_ptr<morph::VisualTextModel<glver>> textModel = nullptr;
         //! Text models for labels
         std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
 
@@ -1032,13 +1032,13 @@ namespace morph {
          */
 
         //! Current cursor position
-        vec<float,2> cursorpos = { 0.0f, 0.0f };
+        morph::vec<float,2> cursorpos = { 0.0f, 0.0f };
 
         //! Holds the translation coordinates for the current location of the entire scene
-        vec<float> scenetrans = {0.0f, 0.0f, Z_DEFAULT};
+        morph::vec<float> scenetrans = {0.0f, 0.0f, Z_DEFAULT};
 
         //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
-        vec<float> scenetrans_default = { 0.0f, 0.0f, Z_DEFAULT };
+        morph::vec<float> scenetrans_default = { 0.0f, 0.0f, Z_DEFAULT };
 
         //! The world depth at which text objects should be rendered
         float text_z = -1.0f;
@@ -1053,26 +1053,26 @@ namespace morph {
         bool translateMode = false;
 
         //! Screen coordinates of the position of the last mouse press
-        vec<float,2> mousePressPosition = { 0.0f, 0.0f };
+        morph::vec<float,2> mousePressPosition = { 0.0f, 0.0f };
 
         //! The current rotation axis. World frame?
-        vec<float> rotationAxis = { 0.0f, 0.0f, 0.0f };
+        morph::vec<float> rotationAxis = { 0.0f, 0.0f, 0.0f };
 
         //! A rotation quaternion. You could have guessed that, right?
-        Quaternion<float> rotation;
+        morph::Quaternion<float> rotation;
 
         //! The projection matrix is a member of this class
-        TransformMatrix<float> projection;
+        morph::TransformMatrix<float> projection;
 
         //! The inverse of the projection
-        TransformMatrix<float> invproj;
+        morph::TransformMatrix<float> invproj;
 
         //! A scene transformation
-        TransformMatrix<float> scene;
+        morph::TransformMatrix<float> scene;
         //! Scene transformation inverse
-        TransformMatrix<float> invscene;
+        morph::TransformMatrix<float> invscene;
 
-        Quaternion<float> savedRotation;
+        morph::Quaternion<float> savedRotation;
 
 #ifndef OWNED_MODE
         /*
@@ -1304,7 +1304,7 @@ namespace morph {
                 this->scenetrans = this->scenetrans_default;
                 this->cyl_cam_pos = this->cyl_cam_pos_default;
                 // Reset rotation
-                Quaternion<float> rt;
+                morph::Quaternion<float> rt;
                 this->rotation = rt;
 
                 needs_render = true;
@@ -1353,17 +1353,17 @@ namespace morph {
             this->cursorpos[0] = static_cast<float>(x);
             this->cursorpos[1] = static_cast<float>(y);
 
-            vec<float> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
+            morph::vec<float> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
 
             bool needs_render = false;
 
             // This is "rotate the scene" model. Will need "rotate one visual" mode.
             if (this->rotateMode) {
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
-                vec<float, 2> p0_coord = this->mousePressPosition;
+                morph::vec<float, 2> p0_coord = this->mousePressPosition;
                 p0_coord -= this->window_w * 0.5f;
                 p0_coord /= this->window_w * 0.5f;
-                vec<float, 2> p1_coord = this->cursorpos;
+                morph::vec<float, 2> p1_coord = this->cursorpos;
                 p1_coord -= this->window_w * 0.5f;
                 p1_coord /= this->window_w * 0.5f;
 
@@ -1373,18 +1373,18 @@ namespace morph {
                 // Add the depth at which the object lies.  Use forward projection to determine
                 // the correct z coordinate for the inverse projection. This assumes only one
                 // object.
-                vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
-                vec<float, 4> pp = this->projection * point;
+                morph::vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
+                morph::vec<float, 4> pp = this->projection * point;
                 float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
                 // Construct two points for the start and end of the mouse movement
-                vec<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
-                vec<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
+                morph::vec<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
+                morph::vec<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
 
                 // Apply the inverse projection to get two points in the world frame of
                 // reference for the mouse movement
-                vec<float, 4> v0 = this->invproj * p0;
-                vec<float, 4> v1 = this->invproj * p1;
+                morph::vec<float, 4> v0 = this->invproj * p0;
+                morph::vec<float, 4> v1 = this->invproj * p1;
 
                 // This computes the difference betwen v0 and v1, the 2 mouse positions in the
                 // world space. Note the swap between x and y
@@ -1405,12 +1405,12 @@ namespace morph {
 
                 // Now inverse apply the rotation of the scene to the rotation axis
                 // (vec<float,3>), so that we rotate the model the right way.
-                vec<float, 4> tmp_4D = this->invscene * this->rotationAxis;
+                morph::vec<float, 4> tmp_4D = this->invscene * this->rotationAxis;
                 this->rotationAxis.set_from (tmp_4D); // Set rotationAxis from 4D result
 
                 // Update rotation from the saved position.
                 this->rotation = this->savedRotation;
-                Quaternion<float> rotationQuaternion;
+                morph::Quaternion<float> rotationQuaternion;
                 rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
                 this->rotation.premultiply (rotationQuaternion); // combines rotations
                 needs_render = true;
@@ -1418,10 +1418,10 @@ namespace morph {
             } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
 
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
-                vec<float, 2> p0_coord = this->mousePressPosition;
+                morph::vec<float, 2> p0_coord = this->mousePressPosition;
                 p0_coord -= this->window_w * 0.5f;
                 p0_coord /= this->window_w * 0.5f;
-                vec<float, 2> p1_coord = this->cursorpos;
+                morph::vec<float, 2> p1_coord = this->cursorpos;
                 p1_coord -= this->window_w * 0.5f;
                 p1_coord /= this->window_w * 0.5f;
 
@@ -1430,16 +1430,16 @@ namespace morph {
                 // Add the depth at which the object lies.  Use forward projection to determine
                 // the correct z coordinate for the inverse projection. This assumes only one
                 // object.
-                vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
-                vec<float, 4> pp = this->projection * point;
+                morph::vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
+                morph::vec<float, 4> pp = this->projection * point;
                 float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
                 // Construct two points for the start and end of the mouse movement
-                vec<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
-                vec<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
+                morph::vec<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
+                morph::vec<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
                 // Apply the inverse projection to get two points in the world frame of reference:
-                vec<float, 4> v0 = this->invproj * p0;
-                vec<float, 4> v1 = this->invproj * p1;
+                morph::vec<float, 4> v0 = this->invproj * p0;
+                morph::vec<float, 4> v1 = this->invproj * p1;
                 // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
                 mouseMoveWorld[0] = (v1[0]/v1[3]) - (v0[0]/v0[3]);
                 mouseMoveWorld[1] = (v1[1]/v1[3]) - (v0[1]/v0[3]);

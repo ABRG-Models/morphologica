@@ -1,5 +1,6 @@
 #include <morph/Visual.h>
 #include <morph/RhomboVisual.h>
+#include <morph/ColourMap.h>
 #include <morph/vec.h>
 
 int main()
