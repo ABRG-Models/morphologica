@@ -210,7 +210,7 @@ namespace morph {
     "uniform mat4 p_matrix;\n"
     "uniform float alpha;\n"
     "uniform float cyl_radius = 0.005;\n"
-    "uniform float cyl_height = 0.02;\n"
+    "uniform float cyl_height = 0.01;\n"
     "uniform vec4 cyl_cam_pos = vec4(0);\n"
     "layout(location = 0) in vec4 position;\n"
     "layout(location = 1) in vec4 normalin;\n"
