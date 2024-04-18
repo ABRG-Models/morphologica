@@ -878,8 +878,9 @@ namespace morph {
             fout << "  \"materials\" : [ { \"doubleSided\" : true } ],\n";
 
             fout << "  \"asset\" : {\n"
-                 << "    \"generator\" : \"https://github.com/ABRG-Models/morphologica: morph::Visual::savegltf()\",\n"
-                 << "    \"version\" : \"" << morph::version_string() << "\"\n"
+                 << "    \"generator\" : \"https://github.com/ABRG-Models/morphologica: morph::Visual::savegltf() (ver "
+                 << morph::version_string() << ")\",\n"
+                 << "    \"version\" : \"2.0\"\n" // This version is the *glTF* version.
                  << "  }\n";
             fout << "}\n";
             fout.close();
