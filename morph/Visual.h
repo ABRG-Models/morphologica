@@ -748,19 +748,138 @@ namespace morph {
             diffuse_intensity = effects_on ? 0.6f : 0.0f;
         }
 
-        //! Save all the VisualModels in this Visual out to a GLTF format file
-        void savegltf (const std::string& gltf_file)
+        // Compound ray gltf needs a background-shader to be specified
+        void compoundRayBackground (std::ofstream& fout) const
         {
-            std::ofstream fout;
-            fout.open (gltf_file, std::ios::out|std::ios::trunc);
-            if (!fout.is_open()) { throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing"); }
-            fout << "{\n  \"scenes\" : [ { \"nodes\" : [ ";
+            fout << "\"extras\" : { \"background-shader\": \"simple_sky\" }, ";
+        }
+
+        void compoundRayCameras (std::ofstream& fout) const
+        {
+            fout << "  \"cameras\" : [\n"
+                 << "    {\n"
+                 << "      \"extras\" : {\n"
+                 << "        \"panoramic\" : \"true\"\n"
+                 << "      },\n"
+                 << "      \"name\" : \"regular-panoramic\",\n"
+                 << "      \"perspective\" : {\n"
+                 << "        \"aspectRatio\" : 1.7777777777777777,\n"
+                 << "        \"yfov\" : 0.39959652046304894,\n"
+                 << "        \"zfar\" : 1000,\n"
+                 << "        \"znear\" : 0.10000000149011612\n"
+                 << "      },\n"
+                 << "      \"type\" : \"perspective\"\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"extras\" : {\n"
+                 << "        \"compound-eye\" : \"true\",\n"
+                 << "        \"compound-projection\" : \"spherical_orientationwise\",\n"
+                 << "        \"compound-structure\" : \"eyes/1000-horizontallyAcute-variableDegree.eye\"\n"
+                 << "      },\n"
+                 << "      \"name\" : \"insect-eye-spherical-projector\",\n"
+                 << "      \"perspective\" : {\n"
+                 << "        \"aspectRatio\" : 1.7777777777777777,\n"
+                 << "        \"yfov\" : 0.39959652046304894,\n"
+                 << "        \"zfar\" : 1000,\n"
+                 << "        \"znear\" : 0.10000000149011612\n"
+                 << "      },\n"
+                 << "      \"type\" : \"perspective\"\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"extras\" : {\n"
+                 << "        \"compound-eye\" : \"true\",\n"
+                 << "        \"compound-structure\" : \"1000-horizontallyAcute-variableDegree.eye\",\n"
+                 << "        \"compound-projection\" : \"spherical_orientationwise_ids\"\n"
+                 << "      },\n"
+                 << "      \"name\" : \"insect-eye-spherical-projector-ids\",\n"
+                 << "      \"perspective\" : {\n"
+                 << "        \"aspectRatio\" : 1.7777777777777777,\n"
+                 << "        \"yfov\" : 0.39959652046304894,\n"
+                 << "        \"zfar\" : 1000,\n"
+                 << "        \"znear\" : 0.10000000149011612\n"
+                 << "      },\n"
+                 << "      \"type\" : \"perspective\"\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"extras\" : {\n"
+                 << "        \"compound-eye\" : \"true\",\n"
+                 << "        \"compound-projection\" : \"single_dimension_fast\",\n"
+                 << "        \"compound-structure\" : \"1000-horizontallyAcute-variableDegree.eye\"\n"
+                 << "      },\n"
+                 << "      \"name\" : \"insect-eye-fast-vector\",\n"
+                 << "      \"perspective\" : {\n"
+                 << "        \"aspectRatio\" : 1.7777777777777777,\n"
+                 << "        \"yfov\" : 0.39959652046304894,\n"
+                 << "        \"zfar\" : 1000,\n"
+                 << "        \"znear\" : 0.10000000149011612\n"
+                 << "      },\n"
+                 << "      \"type\" : \"perspective\"\n"
+                 << "    }\n"
+                 << "  ],\n";
+        }
+
+        // Hardcoded camera nodes for compound ray gltf
+        void compoundRayCameraNodes (std::ofstream& fout) const
+        {
+            fout << "    {\n"
+                 << "      \"camera\" : 0,\n"
+                 << "      \"name\" : \"regular-panoramic_Orientation\",\n"
+                 << "      \"rotation\" : [ -0.7071067690849304, 0, 0, 0.7071067690849304 ]\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"children\" : [ 0 ],\n"
+                 << "      \"name\" : \"regular-panoramic\",\n"
+                 << "      \"rotation\" : [ 0.7071068286895752, 0, 0, 0.7071068286895752 ]\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"camera\" : 1,\n"
+                 << "      \"name\" : \"insect-eye-spherical-projector_Orientation\",\n"
+                 << "      \"rotation\" : [ -0.7071067690849304, 0, 0, 0.7071067690849304 ]\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"children\" : [ 2 ],\n"
+                 << "      \"name\" : \"insect-eye-spherical-projector\",\n"
+                 << "      \"rotation\" : [ 0.7071068286895752, 0, 0, 0.7071068286895752 ]\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"camera\" : 2,\n"
+                 << "      \"name\" : \"insect-eye-spherical-projector-ids_Orientation\",\n"
+                 << "      \"rotation\" : [ -0.7071067690849304, 0, 0, 0.7071067690849304 ]\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"children\" : [ 4 ],\n"
+                 << "      \"name\" : \"insect-eye-spherical-projector-ids\",\n"
+                 << "      \"rotation\" : [ 0.7071068286895752, 0, 0, 0.7071068286895752 ]\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"camera\" : 3,\n"
+                 << "      \"name\" : \"insect-eye-fast-vector_Orientation\",\n"
+                 << "      \"rotation\" : [ -0.7071067690849304, 0, 0, 0.7071067690849304 ]\n"
+                 << "    },\n"
+                 << "    {\n"
+                 << "      \"children\" : [ 6 ],\n"
+                 << "      \"name\" : \"insect-eye-fast-vector\",\n"
+                 << "      \"rotation\" : [ 0.7071068286895752, 0, 0, 0.7071068286895752 ]\n"
+                 << "    },\n";
+        }
+
+        //! Output a scenes section of glTF
+        virtual void gltf_scenes (std::ofstream& fout) const
+        {
+            fout << "{\n  \"scenes\" : [ { ";
+            compoundRayBackground (fout); // hack
+            fout << "\"nodes\" : [ ";
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 fout << vmi << (vmi < this->vm.size()-1 ? ", " : "");
             }
             fout << " ] } ],\n";
+        }
 
+        //! Output a nodes section of glTF
+        virtual void gltf_nodes (std::ofstream& fout) const
+        {
             fout << "  \"nodes\" : [\n";
+            compoundRayCameraNodes (fout); // hack
             // for loop over VisualModels "mesh" : 0, etc
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 fout << "    { \"mesh\" : " << vmi
@@ -768,7 +887,18 @@ namespace morph {
                      << (vmi < this->vm.size()-1 ? " },\n" : " }\n");
             }
             fout << "  ],\n";
+        }
 
+        //! Output a cameras section of glTF
+        virtual void gltf_cameras (std::ofstream& fout) const
+        {
+            compoundRayCameras (fout);
+        }
+
+        //! Output a meshes section of glTF
+        virtual void gltf_meshes (std::ofstream& fout) const
+        {
+            // glTF meshes
             fout << "  \"meshes\" : [\n";
             // for each VisualModel:
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
@@ -778,7 +908,12 @@ namespace morph {
                      << (vmi < this->vm.size()-1 ? ",\n" : "\n");
             }
             fout << "  ],\n";
+        }
 
+        // Output the buffers, bufferviews and accessors sections of glTF
+        virtual void gltf_buffers (std::ofstream& fout) const
+        {
+            // glTF buffers
             fout << "  \"buffers\" : [\n";
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 // indices
@@ -797,6 +932,7 @@ namespace morph {
             }
             fout << "  ],\n";
 
+            // glTF bufferViews
             fout << "  \"bufferViews\" : [\n";
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 // indices
@@ -831,6 +967,7 @@ namespace morph {
             }
             fout << "  ],\n";
 
+            // glTF accessors
             fout << "  \"accessors\" : [\n";
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 this->vm[vmi]->computeVertexMaxMins();
@@ -873,16 +1010,42 @@ namespace morph {
                 fout << (vmi < this->vm.size()-1 ? ",\n" : "\n");
             }
             fout << "  ],\n";
+        }
 
+        //! Output a materials section of glTF
+        virtual void gltf_materials (std::ofstream& fout) const
+        {
             // Default material is single sided, so make it double sided
             fout << "  \"materials\" : [ { \"doubleSided\" : true } ],\n";
+        }
 
+        //! Output the asset section of glTF
+        virtual void gltf_asset (std::ofstream& fout) const
+        {
             fout << "  \"asset\" : {\n"
-                 << "    \"generator\" : \"https://github.com/ABRG-Models/morphologica: morph::Visual::savegltf() (ver "
-                 << morph::version_string() << ")\",\n"
+                 << "    \"generator\" : \"https://github.com/ABRG-Models/morphologica [version "
+                 << morph::version_string() << "]: morph::Visual::savegltf()\",\n"
                  << "    \"version\" : \"2.0\"\n" // This version is the *glTF* version.
                  << "  }\n";
             fout << "}\n";
+        }
+
+        //! Save all the VisualModels in this Visual out to a GLTF format file
+        virtual void savegltf (const std::string& gltf_file)
+        {
+            std::ofstream fout;
+            fout.open (gltf_file, std::ios::out|std::ios::trunc);
+            if (!fout.is_open()) { throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing"); }
+
+            // Output the various sections of the gltf file
+            this->gltf_scenes (fout);
+            this->gltf_nodes (fout);
+            this->gltf_cameras (fout);
+            this->gltf_meshes (fout);
+            this->gltf_buffers (fout);
+            this->gltf_materials (fout);
+            this->gltf_asset (fout);
+
             fout.close();
         }
 
