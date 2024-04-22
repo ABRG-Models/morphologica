@@ -748,13 +748,16 @@ namespace morph {
             diffuse_intensity = effects_on ? 0.6f : 0.0f;
         }
 
-        // Compound ray gltf needs a background-shader to be specified
-        void compoundRayBackground (std::ofstream& fout) const
+    protected:
+        //! Compound-ray gltf needs a background-shader to be specified. This is added to the
+        //! "scenes" section
+        virtual void compoundRayBackground (std::ofstream& fout) const
         {
             fout << "\"extras\" : { \"background-shader\": \"simple_sky\" }, ";
         }
 
-        void compoundRayCameras (std::ofstream& fout) const
+        //! This outputs an example of a compound-ray compatible cameras section
+        virtual void compoundRayCameras (std::ofstream& fout) const
         {
             fout << "  \"cameras\" : [\n"
                  << "    {\n"
@@ -818,8 +821,9 @@ namespace morph {
                  << "  ],\n";
         }
 
-        // Hardcoded camera nodes for compound ray gltf
-        void compoundRayCameraNodes (std::ofstream& fout) const
+        //! Hardcoded camera nodes for compound-ray compatible gltf. This goes in the gltf "nodes"
+        //! section.
+        virtual void compoundRayCameraNodes (std::ofstream& fout) const
         {
             fout << "    {\n"
                  << "      \"camera\" : 0,\n"
@@ -867,7 +871,7 @@ namespace morph {
         virtual void gltf_scenes (std::ofstream& fout) const
         {
             fout << "{\n  \"scenes\" : [ { ";
-            compoundRayBackground (fout); // hack
+            if (this->enable_compound_ray_gltf == true) { compoundRayBackground (fout); }
             fout << "\"nodes\" : [ ";
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 fout << vmi << (vmi < this->vm.size()-1 ? ", " : "");
@@ -879,7 +883,7 @@ namespace morph {
         virtual void gltf_nodes (std::ofstream& fout) const
         {
             fout << "  \"nodes\" : [\n";
-            compoundRayCameraNodes (fout); // hack
+            if (this->enable_compound_ray_gltf == true) { compoundRayCameraNodes (fout); }
             // for loop over VisualModels "mesh" : 0, etc
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 fout << "    { \"mesh\" : " << vmi
@@ -892,7 +896,7 @@ namespace morph {
         //! Output a cameras section of glTF
         virtual void gltf_cameras (std::ofstream& fout) const
         {
-            compoundRayCameras (fout);
+            if (this->enable_compound_ray_gltf == true) { compoundRayCameras (fout); }
         }
 
         //! Output a meshes section of glTF
@@ -1029,6 +1033,12 @@ namespace morph {
                  << "  }\n";
             fout << "}\n";
         }
+
+    public:
+
+        //! If set true, then output additional glTF to make files compatible with
+        //! https://github.com/BrainsOnBoard/compound-ray
+        bool enable_compound_ray_gltf = false;
 
         //! Save all the VisualModels in this Visual out to a GLTF format file
         virtual void savegltf (const std::string& gltf_file)
@@ -1340,6 +1350,7 @@ namespace morph {
                 std::cout << "Ctrl-c: Toggle coordinate arrows\n";
                 std::cout << "Ctrl-s: Take a snapshot\n";
                 std::cout << "Ctrl-m: Save 3D models in .gltf format (open in e.g. blender)\n";
+                std::cout << "Shift-m: Toggle gltf format's BrainsOnBoard/compound-ray compatibility\n";
                 std::cout << "Ctrl-a: Reset default view\n";
                 std::cout << "Ctrl-o: Reduce field of view\n";
                 std::cout << "Ctrl-p: Increase field of view\n";
@@ -1379,6 +1390,13 @@ namespace morph {
                 morph::Tools::conditionAsFilename (gltffile);
                 this->savegltf (gltffile);
                 std::cout << "Saved 3D file '" << gltffile << "'\n";
+            }
+
+            if (_key == key::m && (mods & keymod::shift) && action == keyaction::press) {
+                this->enable_compound_ray_gltf = this->enable_compound_ray_gltf ? false : true;
+                std::cout << "glTF output (Ctrl-M) will "
+                          << (this->enable_compound_ray_gltf == true ? "" : "NOT ")
+                          << "be compound-ray compatible\n";
             }
 
             if (_key == key::z && (mods & keymod::control) && action == keyaction::press) {
