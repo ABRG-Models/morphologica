@@ -8,6 +8,7 @@
 #include <ostream>
 #include <array>
 #include <cuchar>
+#include <memory>
 
 /*!
  * \file Random.h
@@ -516,8 +517,6 @@ namespace morph {
         RandString(const unsigned int l) : length(l) { this->setupRNG(); }
         //! Construct with given length \a l and character group \a _cg.
         RandString(const unsigned int l, const CharGroup& _cg) : length(l), cg(_cg) { this->setupRNG(); }
-        //! Deconstructor cleans up memory
-        ~RandString() { if (this->rng != nullptr) { delete this->rng; } }
 
         //! Get a random string of RandString::length characters chosen from the given
         //! CharGroup RandString::cg
@@ -623,11 +622,7 @@ namespace morph {
         void setupRNG()
         {
             // Set rng to generate random numbers in correct range
-            if (this->rng != nullptr) {
-                delete this->rng;
-                this->rng = nullptr;
-            }
-            this->rng = new RandUniform<unsigned short>(0, this->numChars()-1);
+            this->rng = std::make_unique<RandUniform<unsigned short>>(0, this->numChars()-1);
         }
 
         //! Return the number of characters total in each CharGroup
@@ -652,7 +647,7 @@ namespace morph {
         }
 
         //! The number generator
-        RandUniform<unsigned short>* rng = nullptr;
+        std::unique_ptr<RandUniform<unsigned short>> rng;
 
         //! The number of characters to generate
         unsigned int length;
