@@ -14,6 +14,7 @@
 #include <iostream>
 #include <cstring>
 #include <string>
+#include <memory>
 
 namespace morph {
 
@@ -47,7 +48,7 @@ namespace morph {
         const bool debug_shaders = false;
 
         //! Read a shader from a file.
-        const GLchar* ReadShader (const std::string& filename)
+        std::unique_ptr<GLchar[]> ReadShader (const std::string& filename)
         {
             FILE* infile = fopen (filename.c_str(), "rb");
 
@@ -60,15 +61,14 @@ namespace morph {
             int len = ftell (infile);
             fseek (infile, 0, SEEK_SET);
 
-            GLchar* source = new GLchar[len+1];
+            std::unique_ptr<GLchar[]> source = std::make_unique<GLchar[]>(len+1);
 
-            int itemsread = static_cast<int>(fread (source, 1, len, infile));
+            int itemsread = static_cast<int>(fread (source.get(), 1, len, infile));
             if (itemsread != len) { std::cerr << "Wrong number of items read!\n"; }
             fclose (infile);
-
             source[len] = 0;
 
-            return const_cast<const GLchar*>(source);
+            return source;
         }
 
         /*!
@@ -76,13 +76,13 @@ namespace morph {
          * file: allocates some memory, copies the text into the new memory and then
          * returns a GLchar* pointer to the memory.
          */
-        const GLchar* ReadDefaultShader (const std::string& shadercontent)
+        std::unique_ptr<GLchar[]> ReadDefaultShader (const std::string& shadercontent)
         {
             int len = shadercontent.size();
-            GLchar* source = new GLchar[len+1];
-            memcpy (static_cast<void*>(source), static_cast<const void*>(shadercontent.c_str()), len);
+            std::unique_ptr<GLchar[]> source = std::make_unique<GLchar[]>(len+1);
+            memcpy (static_cast<void*>(source.get()), static_cast<const void*>(shadercontent.c_str()), len);
             source[len] = 0;
-            return const_cast<const GLchar*>(source);
+            return source;
         }
 
         std::string shader_type_str (GLuint shader_type)
@@ -122,21 +122,21 @@ namespace morph {
                 entry.shader = shader;
                 // Test entry.filename. If this GLSL file can be read, then do so, otherwise,
                 // compile the default version specified in the ShaderInfo
-                const GLchar* source;
+                std::unique_ptr<GLchar[]> source;
                 if constexpr (debug_shaders == true) {
                     std::cout << "Check file exists for " << entry.filename << std::endl;
                 }
                 if (morph::Tools::fileExists (entry.filename)) {
                     std::cout << "Using " << morph::gl::shader_type_str(entry.type)
                               << " shader from the file " << entry.filename << std::endl;
-                    source = morph::gl::ReadShader (entry.filename);
+                    source = std::move (morph::gl::ReadShader (entry.filename));
                 } else {
                     if constexpr (debug_shaders == true) {
                         std::cout << "Using compiled-in " << morph::gl::shader_type_str(entry.type) << " shader\n";
                     }
-                    source = morph::gl::ReadDefaultShader (entry.compiledIn);
+                    source = std::move (morph::gl::ReadDefaultShader (entry.compiledIn));
                 }
-                if (source == NULL) {
+                if (source == nullptr) {
                     for (auto entry : shader_info) {
                         glDeleteShader (entry.shader);
                         entry.shader = 0;
@@ -146,11 +146,12 @@ namespace morph {
                 } else {
                     if constexpr (debug_shaders == true) {
                         std::cout << "Compiling this shader: \n" << "-----\n";
-                        std::cout << source << "-----\n";
+                        std::cout << source.get() << "-----\n";
                     }
                 }
-                GLint slen = (GLint)strlen (source);
-                glShaderSource (shader, 1, &source, &slen);
+                GLint slen = (GLint)strlen (source.get());
+                const GLchar* sptr = source.get();
+                glShaderSource (shader, 1, &sptr, &slen);
 
                 glCompileShader (shader);
 
@@ -161,14 +162,12 @@ namespace morph {
                     glGetShaderInfoLog(shader, 512, NULL, infoLog);
                     std::cerr << "\nShader compilation failed!";
                     std::cerr << "\n--------------------------\n\n";
-                    std::cerr << source;
+                    std::cerr << source.get();
                     std::cerr << "\n\n--------------------------\n";
                     std::cerr << infoLog << std::endl;
                     std::cerr << "Exiting.\n";
-                    delete [] source;
                     exit (2);
                 }
-                delete [] source;
 
                 // Test glGetError:
                 GLenum shaderError = glGetError();
@@ -194,10 +193,11 @@ namespace morph {
             if (!linked) {
                 GLsizei len;
                 glGetProgramiv (program, GL_INFO_LOG_LENGTH, &len);
-                GLchar* log = new GLchar[len+1];
-                glGetProgramInfoLog (program, len, &len, log);
-                std::cerr << "Shader linking failed: " << log << std::endl << "Exiting.\n";
-                delete [] log;
+                {
+                    std::unique_ptr<GLchar[]> log = std::make_unique<GLchar[]>(len+1);
+                    glGetProgramInfoLog (program, len, &len, log.get());
+                    std::cerr << "Shader linking failed: " << log.get() << std::endl << "Exiting.\n";
+                }
                 glDeleteProgram (program);
                 exit (5);
             } // else successfully linked
