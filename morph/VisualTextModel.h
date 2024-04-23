@@ -31,6 +31,7 @@
 #include <array>
 #include <map>
 #include <limits>
+#include <memory>
 
 namespace morph {
 
@@ -196,8 +197,7 @@ namespace morph {
         virtual ~VisualTextModel()
         {
             if (this->vbos != nullptr) {
-                glDeleteBuffers (numVBO, this->vbos);
-                delete[] this->vbos;
+                glDeleteBuffers (numVBO, this->vbos.get());
                 glDeleteVertexArrays (1, &this->vao);
             }
         }
@@ -541,11 +541,11 @@ namespace morph {
 
             if (this->vbos == nullptr) {
                 // Create the vertex buffer objects
-                this->vbos = new GLuint[numVBO];
+                this->vbos = std::make_unique<GLuint[]>(numVBO);
 #ifdef __MACS_HAD_OPENGL_450__
-                glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
+                glCreateBuffers (numVBO, this->vbos.get()); // OpenGL 4.5 only
 #else
-                glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
+                glGenBuffers (numVBO, this->vbos.get()); // OpenGL 4.4- safe
 #endif
                 morph::gl::Util::checkError (__FILE__, __LINE__);
             }
@@ -641,7 +641,7 @@ namespace morph {
         //! Single vbo to use as in example
         GLuint vbo;
         //! Vertex Buffer Objects stored in an array
-        GLuint* vbos = nullptr;
+        std::unique_ptr<GLuint[]> vbos;
         //! CPU-side data for indices
         std::vector<GLuint> indices;
         //! CPU-side data for quad vertex positions

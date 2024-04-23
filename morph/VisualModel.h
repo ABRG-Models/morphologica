@@ -99,8 +99,7 @@ namespace morph {
         virtual ~VisualModel()
         {
             if (this->vbos != nullptr) {
-                glDeleteBuffers (numVBO, this->vbos);
-                delete[] this->vbos;
+                glDeleteBuffers (numVBO, this->vbos.get());
                 glDeleteVertexArrays (1, &this->vao);
             }
         }
@@ -121,8 +120,8 @@ namespace morph {
 
             // Create the vertex buffer objects (once only)
             if (this->vbos == nullptr) {
-                this->vbos = new GLuint[numVBO];
-                glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
+                this->vbos = std::make_unique<GLuint[]>(numVBO);
+                glGenBuffers (numVBO, this->vbos.get()); // OpenGL 4.4- safe
             }
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
@@ -697,7 +696,7 @@ namespace morph {
         GLuint vao;
 
         //! Vertex Buffer Objects stored in an array
-        GLuint* vbos = nullptr;
+        std::unique_ptr<GLuint[]> vbos;
 
         //! CPU-side data for indices
         std::vector<GLuint> indices;
