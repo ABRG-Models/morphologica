@@ -1045,7 +1045,9 @@ namespace morph {
         {
             std::ofstream fout;
             fout.open (gltf_file, std::ios::out|std::ios::trunc);
-            if (!fout.is_open()) { throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing"); }
+            if (!fout.is_open()) {
+                throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing");
+            }
 
             // Output the various sections of the gltf file
             this->gltf_scenes (fout);
