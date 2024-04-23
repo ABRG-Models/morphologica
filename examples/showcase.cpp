@@ -14,6 +14,9 @@
 #include <morph/Grid.h>
 #include <morph/GridVisual.h>
 
+#include <morph/TriaxesVisual.h>
+#include <morph/ScatterVisual.h>
+
 // A simple Izhikevich neuron model class used below
 struct izhi
 {
@@ -201,6 +204,32 @@ int main()
     /*
      * ScatterVisual (with axes)
      */
+    // First the Triaxes:
+    auto scat_offs = morph::vec<float>({-4,-1.0,0});
+    auto tav = std::make_unique<morph::TriaxesVisual<float>>(scat_offs);
+    v.bindmodel (tav);
+    tav->axisstyle = morph::axisstyle::L;
+    // Specify axes min and max with a min and max vector
+    //                                         x      y       z
+    tav->input_min = morph::vec<float, 3>({ -1.0f,  0.0f,   0.0f });
+    tav->input_max = morph::vec<float, 3>({  1.0f, 10.0f, 100.0f });
+    // Set the axis labels
+    tav->xlabel = "x";
+    tav->ylabel = "y";
+    tav->zlabel = "z";
+    tav->finalize();
+    v.addVisualModel (tav);
+    // Second the scatter vis:
+    auto sv = std::make_unique<morph::ScatterVisual<float>> (scat_offs);
+    v.bindmodel (sv);
+    morph::vvec<morph::vec<float, 3>> points(20*20);
+    morph::vvec<float> data(20*20);
+    sv->setDataCoords (&points);
+    sv->setScalarData (&data);
+    sv->radiusFixed = 0.03f;
+    sv->cm.setType (morph::ColourMapType::Plasma);
+    sv->finalize(); // no data yet
+    auto svp = v.addVisualModel (sv); // We will use the pointer, svp to update the graph
 
     /*
      * GraphVisual including plotting quivers
@@ -208,7 +237,7 @@ int main()
     constexpr unsigned int N = 1000;
     constexpr bool twodee = true;
 
-    // Perform simulation
+    // Perform an Izhikevich neuron model simulation
     morph::vvec<float> _u(N, 0.0f);
     morph::vvec<float> _v(N, 0.0f);
     izhi iz;
@@ -242,11 +271,7 @@ int main()
     morph::vec<float, 2> gridzero = { vmin, umin };
     morph::Grid<unsigned int, float> grid (qN, qN, gridspacing, gridzero);
 
-    /*
-     * Visualize results
-     */
-
-    // Time
+    // Visualize results
     morph::vvec<float> t(N, 0.0f);
     t.linspace (0.0f, N/100.0f, N);
 
@@ -322,9 +347,31 @@ int main()
     v.addVisualModel (gp);
 
     /*
-     * Render the scene on the screen until user quits with 'Ctrl-q'
+     * We have a loop to update dynamic elements. Within this loop, we regularly call
+     * v.render().
      */
-    v.keepOpen();
+    unsigned int q = 0;
+    while (!v.readyToFinish) {
+        size_t k = 0;
+        for (int i = -10; i < 10; ++i) {
+            for (int j = -10; j < 10; ++j) {
+                float x = 0.1f*i + 0.1f;
+                float y = 0.1f*j;
+                // z is some function of x, y
+                float z = std::sin(q*morph::mathconst<float>::pi/100.0f) * x * std::exp(-(x*x) - (y*y));
+                points[k] = {x, y, z};
+                data[k] = z;
+                k++;
+            }
+        }
+        q++;
+
+        // Re-init the dynamic scatter visual
+        svp->reinit();
+
+        v.wait (0.008);
+        v.render();
+    }
 
     return 0;
 }
