@@ -18,6 +18,7 @@
 #include <tuple>
 #include <set>
 #include <stdexcept>
+#include <memory>
 #include <morph/gl/version.h>
 #include <morph/gl/util.h>
 #include <morph/VisualFace.h>
@@ -41,8 +42,7 @@ namespace morph {
         {
             // Normally, when each morph::Visual goes out of scope, the faces associated with that
             // Visual get cleaned up (in VisualResources::freetype_deinit). So at this point, faces
-            // should be empty, and the following loop and clear() should do nothing.
-            for (auto& f : this->faces) { delete f.second; }
+            // should be empty, and the following clear() should do nothing.
             this->faces.clear();
 
             // As with the case for faces, when each morph::Visual goes out of scope, the FreeType
@@ -96,7 +96,7 @@ namespace morph {
         //! and fontpixels (the texture resolution)
         std::map<std::tuple<morph::VisualFont, unsigned int,
                             morph::Visual<glver>*>,
-                 morph::gl::VisualFace*> faces;
+                 std::unique_ptr<morph::gl::VisualFace>> faces;
 
         //! An error callback function for the GLFW windowing library
         static void errorCallback (int error, const char* description)
@@ -170,10 +170,10 @@ namespace morph {
             morph::gl::VisualFace* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);
             try {
-                rtn = this->faces.at (key);
+                rtn = this->faces.at(key).get();
             } catch (const std::out_of_range& e) {
-                this->faces[key] = new morph::gl::VisualFace (font, fontpixels, this->freetypes.at(_vis));
-                rtn = this->faces.at (key);
+                this->faces[key] = std::make_unique<morph::gl::VisualFace> (font, fontpixels, this->freetypes.at(_vis));
+                rtn = this->faces.at(key).get();
             }
             return rtn;
         }
@@ -185,7 +185,6 @@ namespace morph {
             while (f != this->faces.end()) {
                 // f->first is a key. If its third, Visual<>* element == _vis, then delete and erase
                 if (std::get<morph::Visual<glver>*>(f->first) == _vis) {
-                    delete f->second;
                     f = this->faces.erase (f);
                 } else { f++; }
             }
