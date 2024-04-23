@@ -43,7 +43,6 @@ namespace morph {
 
             // From quads, build dataCoords:
             this->dataCoords_mem = std::make_unique<std::vector<vec<float>>>(this->quads->size());
-            //this->dataCoords = new std::vector<vec<float>>(this->quads->size());
             this->dataCoords = this->dataCoords_mem.get();
 
             unsigned int qi = 0;
