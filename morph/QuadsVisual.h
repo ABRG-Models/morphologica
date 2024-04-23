@@ -12,6 +12,7 @@
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
 #include <morph/vec.h>
+#include <memory>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -41,7 +42,10 @@ namespace morph {
             this->quads = _quads;
 
             // From quads, build dataCoords:
-            this->dataCoords = new std::vector<vec<float>>(this->quads->size());
+            this->dataCoords_mem = std::make_unique<std::vector<vec<float>>>(this->quads->size());
+            //this->dataCoords = new std::vector<vec<float>>(this->quads->size());
+            this->dataCoords = this->dataCoords_mem.get();
+
             unsigned int qi = 0;
             for (auto q : (*this->quads)) {
                 // q is an array<Flt, 12>. These lines compute the centroid:
@@ -70,7 +74,7 @@ namespace morph {
             QuadsVisual(_quads, offset_vec, _data, _scale, _cmt, _hue);
         }
 
-        ~QuadsVisual() { delete this->dataCoords; }
+        ~QuadsVisual() {}
 
         //! Initialize the vertices that will represent the Quads.
         void initializeVertices()
@@ -182,6 +186,9 @@ namespace morph {
         //! Should additional quads for the 'back' be created, with an opposite normal?
         //! Probably not. Probably I now need to read up about face culling.
         bool computeBackQuads = false;
+
+        //! We own the memory that will be displayed as dataCoords.
+        std::unique_ptr<std::vector<vec<float>>> dataCoords_mem;
     };
 
 } // namespace morph
