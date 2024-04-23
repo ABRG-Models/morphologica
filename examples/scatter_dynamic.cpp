@@ -15,10 +15,9 @@
 int main()
 {
     int rtn = -1;
-    morph::Visual v(848, 480, "Moving ScatterVisual", {0,0}, {1,1,1}, 1.0f, 0.05f);
+    morph::Visual v(848, 480, "Moving ScatterVisual");
     v.zNear = 0.001;
     v.showCoordArrows = true;
-    v.coordArrowsInScene = true;
     // Set a blueish background:
     v.bgcolour = {0.6f, 0.6f, 0.8f, 0.5f};
     v.lightingEffects();
@@ -67,7 +66,7 @@ int main()
         // model using the now changed content of 'points' and 'data'
         svp->reinit();
 
-        v.waitevents (0.016);
+        v.wait (0.008);
         v.render();
     }
 
