@@ -6,6 +6,7 @@
 #define HEXGRID_COMPILE_LOAD_AND_SAVE 1
 #include <morph/HexGrid.h>
 #include <morph/HdfData.h>
+#include <memory>
 #include <sstream>
 #include <vector>
 #include <array>
@@ -150,7 +151,7 @@ namespace morph {
         /*!
          * The HexGrid "background" for the Reaction Diffusion system.
          */
-        HexGrid* hg;
+        std::unique_ptr<HexGrid> hg;
 
         /*!
          * The logpath for this model. Used when saving data out.
@@ -187,9 +188,9 @@ namespace morph {
         }
 
         /*!
-         * Destructor required to free up HexGrid memory
+         * Destructor has nothing to do
          */
-        ~RD_Base() { delete (this->hg); }
+        ~RD_Base() {}
 
         /*!
          * Utility functions to resize/zero vector-vectors that hold N
@@ -373,7 +374,7 @@ namespace morph {
         {
             // Create a HexGrid. 3 is the 'x span' which determines how
             // many hexes are initially created. 0 is the z co-ordinate for the HexGrid.
-            this->hg = new HexGrid (this->hextohex_d, this->hexspan, 0);
+            this->hg = std::make_unique<HexGrid>(this->hextohex_d, this->hexspan, 0);
             DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
 
             // Either set a boundary using the svgpath, or set it as an ellipse
