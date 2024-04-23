@@ -73,10 +73,12 @@ int main()
     // Statistical variability seems to allow quite a few unexpected results. Pass the
     // test as long as we have less than 10% fails in both types of test
     if (sig_diff_fails < 10 && not_sig_diff_fails < 10) {
-        std::cout << "Test passed.\n";
+        std::cout << "Test passed (tests both < 10)";
     } else {
-        std::cout << "Test FAILED.\n";
+        std::cout << "Test FAILED (tests >= 10)";
     }
+    std::cout << " with sig_diff_fails = " << sig_diff_fails
+              << " and not_sig_diff_fails = " << not_sig_diff_fails << std::endl;
 
     return rtn;
 }
