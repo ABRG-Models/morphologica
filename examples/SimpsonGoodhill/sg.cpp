@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <memory>
 
 #include <morph/vec.h>
 #include <morph/CartGrid.h>
@@ -29,7 +30,6 @@ struct SimpsonGoodhill
         this->conf = cfg;
         this->init();
     }
-    ~SimpsonGoodhill() { delete this->retina; }
 
     void run()
     {
@@ -94,7 +94,7 @@ struct SimpsonGoodhill
         T gr_denom = rgcside-1;
         T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
-        this->retina = new morph::CartGrid(gr, gr, 0.0f, 0.0f, 0.95f, 0.95f);
+        this->retina = std::make_unique<morph::CartGrid>(gr, gr, 0.0f, 0.0f, 0.95f, 0.95f);
         this->retina->setBoundaryOnOuterEdge();
         std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num() * bpa);
@@ -166,13 +166,14 @@ struct SimpsonGoodhill
 
         // Show a vis of the retina, to compare positions/colours
         offset[0] += 1.3f;
-        auto cgv = std::make_unique<morph::CartGridVisual<float>>(retina, offset);
+        auto cgv = std::make_unique<morph::CartGridVisual<float>>(this->retina.get(), offset);
         v->bindmodel (cgv);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
         std::vector<morph::vec<float, 3>> points = this->retina->getCoordinates3();
         cgv->setVectorData (&points);
         cgv->cm.setType (morph::ColourMapType::Duochrome);
         cgv->cm.setHueRG();
+        cgv->zScale.setParams (0.0f, 0.0f); // make retina visual flat
         cgv->addLabel ("Retina", {0.0f, 1.1f, 0.0f});
         cgv->finalize();
         v->addVisualModel (cgv);
@@ -193,7 +194,7 @@ struct SimpsonGoodhill
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
-    morph::CartGrid* retina;
+    std::unique_ptr<morph::CartGrid> retina;
     // Parameters vecto (See Table 2 in the paper)
     morph::vec<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // The centre coordinate
@@ -226,6 +227,9 @@ int main (int argc, char **argv)
     if (!conf.ready) {
         std::cerr << "Failed to read config " << paramsfile << ". Exiting.\n";
         return 1;
+    }
+    if (conf.getBool ("movie", false) == true) {
+        std::filesystem::create_directories ("./frames");
     }
     SimpsonGoodhill<float> model (&conf);
     model.run();
