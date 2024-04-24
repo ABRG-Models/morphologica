@@ -18,12 +18,13 @@
 #endif
 #include <iostream>
 #include <string>
+#include <memory>
 
 // Choose double or float for the precision used in the Anneal algorithm
 typedef double F;
 
 // A global hexgrid for the locations of the objective function
-morph::HexGrid* hg = nullptr;
+std::unique_ptr<morph::HexGrid> hg;
 // And a vvec to be the data
 morph::vvec<F> obj_f;
 
@@ -96,7 +97,7 @@ int main (int argc, char** argv)
     v.lightingEffects (true);
 
     morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
-    auto hgv = std::make_unique<morph::HexGridVisual<F>>(hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<F>>(hg.get(), offset);
     v.bindmodel (hgv);
     hgv->setScalarData (&obj_f);
 #ifdef USE_BOHACHEVSKY_FUNCTION
@@ -237,14 +238,13 @@ int main (int argc, char** argv)
               << anneal.f_x_best << "," << obj_f.min() << "\n";
 #endif
 
-    if (hg != nullptr) { delete hg; }
     return 0;
 }
 
 // This sets up a noisy 2D objective function with multiple peaks
 void setup_objective()
 {
-    hg = new morph::HexGrid(0.01, 1.5, 0);
+    hg = std::make_unique<morph::HexGrid>(0.01, 1.5, 0);
     hg->setCircularBoundary(1);
     obj_f.resize (hg->num());
 
@@ -324,7 +324,7 @@ void setup_objective()
 // during the anneal, we'll use the actual function values
 void setup_objective_boha()
 {
-    hg = new morph::HexGrid(0.01, 2.5, 0);
+    hg = std::make_unique<morph::HexGrid>(0.01, 2.5, 0);
     hg->setCircularBoundary(1.2f);
     obj_f.resize (hg->num());
     F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=morph::mathconst<F>::three_pi, gamma=morph::mathconst<F>::four_pi;
