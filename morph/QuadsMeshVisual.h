@@ -12,6 +12,7 @@
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
 #include <morph/vec.h>
+#include <memory>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -45,8 +46,9 @@ namespace morph {
             this->quads = _quads;
 
             // From quads, build dataCoords:
-            this->dataCoords = new std::vector<vec<float>>;
-            this->dataCoords->resize (this->quads->size());
+            this->dataCoords_mem = std::make_unique<std::vector<vec<float>>>(this->quads->size());
+            this->dataCoords = this->dataCoords_mem.get();
+
             unsigned int qi = 0;
             for (auto q : (*this->quads)) {
                 // q is an array<Flt, 12>. These lines compute the centroid:
@@ -76,7 +78,7 @@ namespace morph {
             QuadsMeshVisual<Flt>(_quads, offset_vec, _data, _scale, _cmt, _hue);
         }
 
-        ~QuadsMeshVisual() { delete this->dataCoords; }
+        ~QuadsMeshVisual() {}
 
         //! Initialize the vertices that will represent the Quads.
         void initializeVertices()
@@ -96,8 +98,12 @@ namespace morph {
             // Index buffer index
             GLuint ib = 0;
 
-            std::set<vec<float, 6>> lastQuadLines;
-            std::cout << "nquads: " << nquads << std::endl;
+            // I'm examining a set of vecs, which means I have to specify the compare
+            // operation. See:
+            // https://abrg-models.github.io/morphologica/ref/coremaths/vec/#comparison-operators
+            auto _cmp = [](morph::vec<float,6> a, morph::vec<float,6> b){return a.lexical_lessthan(b);};
+            std::set<vec<float, 6>,  decltype(_cmp)> lastQuadLines(_cmp);
+
             for (unsigned int qi = 0; qi < nquads; ++qi) {
                 // Extract coordinates from this->quads
                 vec<float> q0 = {(*this->quads)[qi][0], (*this->quads)[qi][1], (*this->quads)[qi][2]};
@@ -167,6 +173,9 @@ namespace morph {
         //! the coordinates of the locations of the data are the centroids of each
         //! quad.
         const std::vector<std::array<Flt,12>>* quads;
+
+        //! We own the memory that will be displayed as dataCoords.
+        std::unique_ptr<std::vector<vec<float>>> dataCoords_mem;
 
         //! Tube radius
         float radius = 0.05f;
