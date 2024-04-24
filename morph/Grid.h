@@ -11,6 +11,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <string>
 #include <sstream>
 #include <limits>
 #include <type_traits>
@@ -118,6 +119,39 @@ namespace morph {
         morph::vec<C, 2> get_offset() const { return this->offset; }
         GridDomainWrap get_wrap() const { return this->wrap; }
         GridOrder get_order() const { return this->order; }
+
+        //! Output the grid as a string, showing indices
+        std::string str() const
+        {
+            std::stringstream ss;
+            if (order == morph::GridOrder::bottomleft_to_topright) {
+                ss << "bottom left to top right grid order:\n";
+                for (I r = this->h; r > 0; r--) {
+                    I _r = r-1;
+                    for (I c = I{0}; c < this->w; ++c) {
+                        I i = _r * this->w + c;
+                        ss << i << this->coord(i) << (this->has_nn(i) ? this->index_nn(i) : -1) << "\t";
+                    }
+                    ss << "\n";
+                }
+            } else if (order == morph::GridOrder::topleft_to_bottomright) {
+                ss << "top left to bottom right grid order:\n";
+                for (I r = 0; r < this->h; r++) {
+                    for (I c = I{0}; c < this->w; ++c) {
+                        I i = r * this->w + c;
+                        ss << i << this->coord(i) << (this->has_nn(i) ? this->index_nn(i) : -1) << "\t";
+                    }
+                    ss << "\n";
+                }
+
+            } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
+
+            } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+
+            }
+
+            return ss.str();
+        }
 
         //! The number of elements in the grid. Public, but don't change it manually.
         I n = w * h;
@@ -273,31 +307,55 @@ namespace morph {
         //! to the north, return std::numeric_limits<I>::max()
         I index_nn (const I index) const
         {
+            // This is getting out of hand...
+            std::cout << "Called for index " << index << std::endl;
             I c = this->col (index);
-            if (c == (h - I{1}) && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
+            if (c == (h - I{1})
+                && (order == morph::GridOrder::bottomleft_to_topright || order == morph::GridOrder::bottomleft_to_topright_colmaj)
+                && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
+                std::cout << "00\n";
                 return std::numeric_limits<I>::max();
-            } else if (c == (h - I{1}) && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
+            } else if (c == (h - I{1})
+                       && (order == morph::GridOrder::bottomleft_to_topright || order == morph::GridOrder::bottomleft_to_topright_colmaj)
+                       && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
                 if (order == morph::GridOrder::bottomleft_to_topright) {
-                    return index  - (w * (h - I{1}));
-                } else if (order == morph::GridOrder::topleft_to_bottomright) {
-                    return index + (w * (h - I{1}));
+                    return index - (w * (h - I{1}));
                 } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
                     return index + (I{1} - h);
+                } else {
+                    std::cout << "0\n";
+                    return std::numeric_limits<I>::max();
+                }
+            } else if (c == 0
+                       && (order == morph::GridOrder::topleft_to_bottomright || order == morph::GridOrder::topleft_to_bottomright_colmaj)
+                       && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
+                std::cout << "000\n";
+                return std::numeric_limits<I>::max();
+            } else if (c == 0
+                       && (order == morph::GridOrder::topleft_to_bottomright || order == morph::GridOrder::topleft_to_bottomright_colmaj)
+                       && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
+                if (order == morph::GridOrder::topleft_to_bottomright) {
+                    std::cout << "1\n";
+                    return index + (w * (h - I{1}));
                 } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                    std::cout << "2\n";
                     return index + (h - I{1});
                 } else {
+                    std::cout << "2.5\n";
                     return std::numeric_limits<I>::max();
                 }
             } else {
                 if (order == morph::GridOrder::bottomleft_to_topright) {
                     return index + w;
                 } else if (order == morph::GridOrder::topleft_to_bottomright) {
-                    return index - w;
+                    std::cout << "3\n";
+                    return index >= w ? (index - w) : std::numeric_limits<I>::max();
                 } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
                     return index + I{1};
                 } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
-                    return index - I{1};
+                    return index > I{0} ? (index - I{1}) : std::numeric_limits<I>::max();
                 } else {
+                    std::cout << "4\n";
                     return std::numeric_limits<I>::max();
                 }
             }
