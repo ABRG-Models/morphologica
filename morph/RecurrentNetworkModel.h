@@ -67,7 +67,7 @@ namespace morph {
 
                 // set elliptical domain boundary and allocate memory
 
-                this->hg = new morph::HexGrid (this->hextohex_d, this->hexspan, 0);
+                this->hg = std::make_unique<HexGrid>(this->hextohex_d, this->hexspan, 0);
                 DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
                 this->hg->setEllipticalBoundary (ellipseA, ellipseB);
                 // Compute the distances from the boundary
@@ -622,7 +622,7 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                auto hgv1 = std::make_unique<HexGridVisual<float>> (domain.hg, offset);
+                auto hgv1 = std::make_unique<HexGridVisual<float>> (domain.hg.get(), offset);
                 v.bindmodel (hgv1);
                 hgv1->setScalarData (&fFlt);
                 hgv1->zScale = zscale;
@@ -666,7 +666,7 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                auto hgv1 = std::make_unique<HexGridVisual<float>> (domain.hg, offset);
+                auto hgv1 = std::make_unique<HexGridVisual<float>> (domain.hg.get(), offset);
                 v.bindmodel (hgv1);
                 hgv1->setScalarData (&fFlt);
                 hgv1->zScale = zscale;
