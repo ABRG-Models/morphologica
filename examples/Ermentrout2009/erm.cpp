@@ -160,7 +160,7 @@ int main (int argc, char **argv)
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
     spatOff[0] -= 0.6 * (RD.hg->width());
-    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
     v.bindmodel (hgv1);
     hgv1->setSizeScale (myscale, myscale);
     hgv1->setScalarData (&RD.n[0]);
@@ -177,7 +177,7 @@ int main (int argc, char **argv)
 
     // Set up a 3D map of the surface RD.c[0]
     spatOff[0] *= -1;
-    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
     v.bindmodel (hgv2);
     hgv2->setSizeScale (myscale, myscale);
     hgv2->setScalarData (&RD.c[0]);

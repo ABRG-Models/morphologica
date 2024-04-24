@@ -273,7 +273,7 @@ int main (int argc, char **argv)
     spatOff = { xzero, 0.0, 0.0 };
 
     // Create a new HexGridVisual then set its parameters (zScale, colourScale, etc.)
-    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
     v1.bindmodel (hgv1);
     hgv1->setScalarData (&RD.A);
     hgv1->zScale.setParams (0.2f, 0.0f);
@@ -287,7 +287,7 @@ int main (int argc, char **argv)
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
     v1.bindmodel (hgv2);
     hgv2->setScalarData (&RD.B);
     hgv2->zScale.setParams (0.2f, 0.0f);
