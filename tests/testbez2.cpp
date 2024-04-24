@@ -1,6 +1,7 @@
 #include "morph/HexGrid.h"
 #include "morph/BezCurve.h"
 #include "morph/vec.h"
+#include <memory>
 #include <iostream>
 #include <fstream>
 #include <math.h>
@@ -32,7 +33,7 @@ int main()
     bound.addCurve(c3);
     bound.addCurve(c4);
 
-    HexGrid* Hgrid = new HexGrid(0.02f, 4.0f, 0.0f);
+    std::unique_ptr<HexGrid> Hgrid = std::make_unique<HexGrid>(0.02f, 4.0f, 0.0f);
     cout << "setBoundary..." << endl;
     Hgrid->setBoundary (bound);
     cout << "Number of hexes is: " << Hgrid->num() << endl;
@@ -41,8 +42,6 @@ int main()
         // Success
         rtn = 0;
     }
-
-    delete Hgrid;
 
     return rtn;
 }
