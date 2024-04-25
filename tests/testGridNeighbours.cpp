@@ -11,46 +11,361 @@ int main()
 
     morph::GridDomainWrap wrap = morph::GridDomainWrap::None;
 
-    morph::Grid<int, float> g_bltr(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright);
-    morph::Grid<int, float> g_tlbr(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright);
-    //morph::Grid<int, float> g_bltrc(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright_colmaj);
-    //morph::Grid<int, float> g_tlbrc(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright_colmaj);
-/*
-    // Test neighbour north/south in g_bltr
-    if (g_bltr.index_nn(0) != 4) { --rtn; }
-    if (g_bltr.index_nn(1) != 5) { --rtn; }
-    if (g_bltr.index_nn(2) != 6) { --rtn; }
-    if (g_bltr.index_nn(3) != 7) { --rtn; }
-    if (g_bltr.index_nn(4) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_bltr.index_nn(5) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_bltr.index_nn(6) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_bltr.index_nn(7) != std::numeric_limits<int>::max()) { --rtn; }
-    //
-    if (g_bltr.index_ns(0) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_bltr.index_ns(1) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_bltr.index_ns(2) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_bltr.index_ns(3) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_bltr.index_ns(4) != 0) { --rtn; }
-    if (g_bltr.index_ns(5) != 1) { --rtn; }
-    if (g_bltr.index_ns(6) != 2) { --rtn; }
-    if (g_bltr.index_ns(7) != 3) { --rtn; }
+    {
+        //
+        // morph::GridDomainWrap::None tests
+        //
 
+        morph::Grid<int, float> g_bltr(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright);
+        morph::Grid<int, float> g_tlbr(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright);
+        morph::Grid<int, float> g_bltrc(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright_colmaj);
+        morph::Grid<int, float> g_tlbrc(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright_colmaj);
 
-    if (g_tlbr.index_nn(0) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_tlbr.index_nn(1) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_tlbr.index_nn(2) != std::numeric_limits<int>::max()) { --rtn; }
-    if (g_tlbr.index_nn(3) != std::numeric_limits<int>::max()) { --rtn; }
-*/
-    if (g_tlbr.index_nn(4) != 0) { --rtn; } // debug just this one
-    //if (g_tlbr.index_nn(5) != 1) { --rtn; }
-    //if (g_tlbr.index_nn(6) != 2) { --rtn; }
-    //if (g_tlbr.index_nn(7) != 3) { --rtn; }
+        // Neighbour NORTH tests
+        // Test in g_bltr
+        if (g_bltr.index_nn(0) != 4) { --rtn; std::cout << "nn bltr 0 fails\n"; }
+        if (g_bltr.index_nn(1) != 5) { --rtn; std::cout << "nn bltr 1 fails\n"; }
+        if (g_bltr.index_nn(2) != 6) { --rtn; std::cout << "nn bltr 2 fails\n"; }
+        if (g_bltr.index_nn(3) != 7) { --rtn; std::cout << "nn bltr 3 fails\n"; }
+        if (g_bltr.index_nn(4) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltr 4 fails\n"; }
+        if (g_bltr.index_nn(5) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltr 5 fails\n"; }
+        if (g_bltr.index_nn(6) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltr 6 fails\n"; }
+        if (g_bltr.index_nn(7) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltr 7 fails\n"; }
+        // Test in g_tlbr
+        if (g_tlbr.index_nn(0) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbr 0 fails\n"; }
+        if (g_tlbr.index_nn(1) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbr 1 fails\n"; }
+        if (g_tlbr.index_nn(2) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbr 2 fails\n"; }
+        if (g_tlbr.index_nn(3) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbr 3 fails\n"; }
+        if (g_tlbr.index_nn(4) != 0) { --rtn; std::cout << "nn tlbr 4 fails\n"; }
+        if (g_tlbr.index_nn(5) != 1) { --rtn; std::cout << "nn tlbr 5 fails\n"; }
+        if (g_tlbr.index_nn(6) != 2) { --rtn; std::cout << "nn tlbr 6 fails\n"; }
+        if (g_tlbr.index_nn(7) != 3) { --rtn; std::cout << "nn tlbr 7 fails\n"; }
+        // Test in g_bltrc
+        if (g_bltrc.index_nn(0) != 1) { --rtn; std::cout << "nn bltrc 0 fails\n"; }
+        if (g_bltrc.index_nn(1) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltrc 1 fails\n"; }
+        if (g_bltrc.index_nn(2) != 3) { --rtn; std::cout << "nn bltrc 2 fails\n"; }
+        if (g_bltrc.index_nn(3) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltrc 3 fails\n"; }
+        if (g_bltrc.index_nn(4) != 5) { --rtn; std::cout << "nn bltrc 4 fails\n"; }
+        if (g_bltrc.index_nn(5) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltrc 5 fails\n"; }
+        if (g_bltrc.index_nn(6) != 7) { --rtn; std::cout << "nn bltrc 6 fails\n"; }
+        if (g_bltrc.index_nn(7) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltrc 7 fails\n"; }
+        // Test in g_tlbrc
+        if (g_tlbrc.index_nn(0) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbrc 0 fails\n"; }
+        if (g_tlbrc.index_nn(1) != 0) { --rtn; std::cout << "nn tlbrc 1 fails\n"; }
+        if (g_tlbrc.index_nn(2) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbrc 2 fails\n"; }
+        if (g_tlbrc.index_nn(3) != 2) { --rtn; std::cout << "nn tlbrc 3 fails\n"; }
+        if (g_tlbrc.index_nn(4) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbrc 4 fails\n"; }
+        if (g_tlbrc.index_nn(5) != 4) { --rtn; std::cout << "nn tlbrc 5 fails\n"; }
+        if (g_tlbrc.index_nn(6) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbrc 6 fails\n"; }
+        if (g_tlbrc.index_nn(7) != 6) { --rtn; std::cout << "nn tlbrc 7 fails\n"; }
 
-//    std::cout << g_bltr.str() << std::endl;
-//    std::cout << std::endl;
-//   std::cout << g_tlbr.str() << std::endl;
+        // Neighbour SOUTH tests
+        // Test in g_bltr
+        if (g_bltr.index_ns(0) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltr 0 fails\n"; }
+        if (g_bltr.index_ns(1) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltr 1 fails\n"; }
+        if (g_bltr.index_ns(2) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltr 2 fails\n"; }
+        if (g_bltr.index_ns(3) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltr 3 fails\n"; }
+        if (g_bltr.index_ns(4) != 0) { --rtn; std::cout << "ns bltr 4 fails\n"; }
+        if (g_bltr.index_ns(5) != 1) { --rtn; std::cout << "ns bltr 5 fails\n"; }
+        if (g_bltr.index_ns(6) != 2) { --rtn; std::cout << "ns bltr 6 fails\n"; }
+        if (g_bltr.index_ns(7) != 3) { --rtn; std::cout << "ns bltr 7 fails\n"; }
+        // Test in g_tlbr
+        if (g_tlbr.index_ns(0) != 4) { --rtn; std::cout << "ns tlbr 0 fails\n"; }
+        if (g_tlbr.index_ns(1) != 5) { --rtn; std::cout << "ns tlbr 1 fails\n"; }
+        if (g_tlbr.index_ns(2) != 6) { --rtn; std::cout << "ns tlbr 2 fails\n"; }
+        if (g_tlbr.index_ns(3) != 7) { --rtn; std::cout << "ns tlbr 3 fails\n"; }
+        if (g_tlbr.index_ns(4) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbr 4 fails\n"; }
+        if (g_tlbr.index_ns(5) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbr 5 fails\n"; }
+        if (g_tlbr.index_ns(6) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbr 6 fails\n"; }
+        if (g_tlbr.index_ns(7) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbr 7 fails\n"; }
+        // Test in g_bltrc
+        if (g_bltrc.index_ns(0) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltrc 0 fails\n"; }
+        if (g_bltrc.index_ns(1) != 0) { --rtn; std::cout << "ns bltrc 1 fails\n"; }
+        if (g_bltrc.index_ns(2) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltrc 2 fails\n"; }
+        if (g_bltrc.index_ns(3) != 2) { --rtn; std::cout << "ns bltrc 3 fails\n"; }
+        if (g_bltrc.index_ns(4) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltrc 4 fails\n"; }
+        if (g_bltrc.index_ns(5) != 4) { --rtn; std::cout << "ns bltrc 5 fails\n"; }
+        if (g_bltrc.index_ns(6) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltrc 6 fails\n"; }
+        if (g_bltrc.index_ns(7) != 6) { --rtn; std::cout << "ns bltrc 7 fails\n"; }
+        // Test in g_tlbrc
+        if (g_tlbrc.index_ns(0) != 1) { --rtn; std::cout << "ns tlbrc 0 fails\n"; }
+        if (g_tlbrc.index_ns(1) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbrc 1 fails\n"; }
+        if (g_tlbrc.index_ns(2) != 3) { --rtn; std::cout << "ns tlbrc 2 fails\n"; }
+        if (g_tlbrc.index_ns(3) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbrc 3 fails\n"; }
+        if (g_tlbrc.index_ns(4) != 5) { --rtn; std::cout << "ns tlbrc 4 fails\n"; }
+        if (g_tlbrc.index_ns(5) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbrc 5 fails\n"; }
+        if (g_tlbrc.index_ns(6) != 7) { --rtn; std::cout << "ns tlbrc 6 fails\n"; }
+        if (g_tlbrc.index_ns(7) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbrc 7 fails\n"; }
+    }
 
+    {
+        //
+        // morph::GridDomainWrap::Horizontal tests
+        //
+        wrap = morph::GridDomainWrap::Horizontal;
 
-    std::cout << "Return: " << rtn << std::endl;
+        morph::Grid<int, float> g_bltr(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright);
+        morph::Grid<int, float> g_tlbr(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright);
+        morph::Grid<int, float> g_bltrc(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright_colmaj);
+        morph::Grid<int, float> g_tlbrc(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright_colmaj);
+
+        // Neighbour NORTH tests
+        // Test in g_bltr
+        if (g_bltr.index_nn(0) != 4) { --rtn; std::cout << "nn bltr 0 fails\n"; }
+        if (g_bltr.index_nn(1) != 5) { --rtn; std::cout << "nn bltr 1 fails\n"; }
+        if (g_bltr.index_nn(2) != 6) { --rtn; std::cout << "nn bltr 2 fails\n"; }
+        if (g_bltr.index_nn(3) != 7) { --rtn; std::cout << "nn bltr 3 fails\n"; }
+        if (g_bltr.index_nn(4) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltr 4 fails\n"; }
+        if (g_bltr.index_nn(5) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltr 5 fails\n"; }
+        if (g_bltr.index_nn(6) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltr 6 fails\n"; }
+        if (g_bltr.index_nn(7) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltr 7 fails\n"; }
+        // Test in g_tlbr
+        if (g_tlbr.index_nn(0) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbr 0 fails\n"; }
+        if (g_tlbr.index_nn(1) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbr 1 fails\n"; }
+        if (g_tlbr.index_nn(2) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbr 2 fails\n"; }
+        if (g_tlbr.index_nn(3) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbr 3 fails\n"; }
+        if (g_tlbr.index_nn(4) != 0) { --rtn; std::cout << "nn tlbr 4 fails\n"; }
+        if (g_tlbr.index_nn(5) != 1) { --rtn; std::cout << "nn tlbr 5 fails\n"; }
+        if (g_tlbr.index_nn(6) != 2) { --rtn; std::cout << "nn tlbr 6 fails\n"; }
+        if (g_tlbr.index_nn(7) != 3) { --rtn; std::cout << "nn tlbr 7 fails\n"; }
+        // Test in g_bltrc
+        if (g_bltrc.index_nn(0) != 1) { --rtn; std::cout << "nn bltrc 0 fails\n"; }
+        if (g_bltrc.index_nn(1) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltrc 1 fails\n"; }
+        if (g_bltrc.index_nn(2) != 3) { --rtn; std::cout << "nn bltrc 2 fails\n"; }
+        if (g_bltrc.index_nn(3) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltrc 3 fails\n"; }
+        if (g_bltrc.index_nn(4) != 5) { --rtn; std::cout << "nn bltrc 4 fails\n"; }
+        if (g_bltrc.index_nn(5) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltrc 5 fails\n"; }
+        if (g_bltrc.index_nn(6) != 7) { --rtn; std::cout << "nn bltrc 6 fails\n"; }
+        if (g_bltrc.index_nn(7) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn bltrc 7 fails\n"; }
+        // Test in g_tlbrc
+        if (g_tlbrc.index_nn(0) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbrc 0 fails\n"; }
+        if (g_tlbrc.index_nn(1) != 0) { --rtn; std::cout << "nn tlbrc 1 fails\n"; }
+        if (g_tlbrc.index_nn(2) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbrc 2 fails\n"; }
+        if (g_tlbrc.index_nn(3) != 2) { --rtn; std::cout << "nn tlbrc 3 fails\n"; }
+        if (g_tlbrc.index_nn(4) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbrc 4 fails\n"; }
+        if (g_tlbrc.index_nn(5) != 4) { --rtn; std::cout << "nn tlbrc 5 fails\n"; }
+        if (g_tlbrc.index_nn(6) != std::numeric_limits<int>::max()) { --rtn; std::cout << "nn tlbrc 6 fails\n"; }
+        if (g_tlbrc.index_nn(7) != 6) { --rtn; std::cout << "nn tlbrc 7 fails\n"; }
+
+        // Neighbour SOUTH tests
+        // Test in g_bltr
+        if (g_bltr.index_ns(0) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltr 0 fails\n"; }
+        if (g_bltr.index_ns(1) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltr 1 fails\n"; }
+        if (g_bltr.index_ns(2) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltr 2 fails\n"; }
+        if (g_bltr.index_ns(3) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltr 3 fails\n"; }
+        if (g_bltr.index_ns(4) != 0) { --rtn; std::cout << "ns bltr 4 fails\n"; }
+        if (g_bltr.index_ns(5) != 1) { --rtn; std::cout << "ns bltr 5 fails\n"; }
+        if (g_bltr.index_ns(6) != 2) { --rtn; std::cout << "ns bltr 6 fails\n"; }
+        if (g_bltr.index_ns(7) != 3) { --rtn; std::cout << "ns bltr 7 fails\n"; }
+        // Test in g_tlbr
+        if (g_tlbr.index_ns(0) != 4) { --rtn; std::cout << "ns tlbr 0 fails\n"; }
+        if (g_tlbr.index_ns(1) != 5) { --rtn; std::cout << "ns tlbr 1 fails\n"; }
+        if (g_tlbr.index_ns(2) != 6) { --rtn; std::cout << "ns tlbr 2 fails\n"; }
+        if (g_tlbr.index_ns(3) != 7) { --rtn; std::cout << "ns tlbr 3 fails\n"; }
+        if (g_tlbr.index_ns(4) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbr 4 fails\n"; }
+        if (g_tlbr.index_ns(5) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbr 5 fails\n"; }
+        if (g_tlbr.index_ns(6) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbr 6 fails\n"; }
+        if (g_tlbr.index_ns(7) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbr 7 fails\n"; }
+        // Test in g_bltrc
+        if (g_bltrc.index_ns(0) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltrc 0 fails\n"; }
+        if (g_bltrc.index_ns(1) != 0) { --rtn; std::cout << "ns bltrc 1 fails\n"; }
+        if (g_bltrc.index_ns(2) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltrc 2 fails\n"; }
+        if (g_bltrc.index_ns(3) != 2) { --rtn; std::cout << "ns bltrc 3 fails\n"; }
+        if (g_bltrc.index_ns(4) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltrc 4 fails\n"; }
+        if (g_bltrc.index_ns(5) != 4) { --rtn; std::cout << "ns bltrc 5 fails\n"; }
+        if (g_bltrc.index_ns(6) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns bltrc 6 fails\n"; }
+        if (g_bltrc.index_ns(7) != 6) { --rtn; std::cout << "ns bltrc 7 fails\n"; }
+        // Test in g_tlbrc
+        if (g_tlbrc.index_ns(0) != 1) { --rtn; std::cout << "ns tlbrc 0 fails\n"; }
+        if (g_tlbrc.index_ns(1) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbrc 1 fails\n"; }
+        if (g_tlbrc.index_ns(2) != 3) { --rtn; std::cout << "ns tlbrc 2 fails\n"; }
+        if (g_tlbrc.index_ns(3) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbrc 3 fails\n"; }
+        if (g_tlbrc.index_ns(4) != 5) { --rtn; std::cout << "ns tlbrc 4 fails\n"; }
+        if (g_tlbrc.index_ns(5) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbrc 5 fails\n"; }
+        if (g_tlbrc.index_ns(6) != 7) { --rtn; std::cout << "ns tlbrc 6 fails\n"; }
+        if (g_tlbrc.index_ns(7) != std::numeric_limits<int>::max()) { --rtn; std::cout << "ns tlbrc 7 fails\n"; }
+    }
+
+    {
+        //
+        // morph::GridDomainWrap::Vertical tests
+        //
+        wrap = morph::GridDomainWrap::Vertical;
+
+        morph::Grid<int, float> g_bltr(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright);
+        morph::Grid<int, float> g_tlbr(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright);
+        morph::Grid<int, float> g_bltrc(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright_colmaj);
+        morph::Grid<int, float> g_tlbrc(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright_colmaj);
+
+        // Neighbour NORTH tests
+        // Test in g_bltr
+        if (g_bltr.index_nn(0) != 4) { --rtn; std::cout << "nn bltr 0 fails\n"; }
+        if (g_bltr.index_nn(1) != 5) { --rtn; std::cout << "nn bltr 1 fails\n"; }
+        if (g_bltr.index_nn(2) != 6) { --rtn; std::cout << "nn bltr 2 fails\n"; }
+        if (g_bltr.index_nn(3) != 7) { --rtn; std::cout << "nn bltr 3 fails\n"; }
+        if (g_bltr.index_nn(4) != 0) { --rtn; std::cout << "nn bltr 4 fails\n"; }
+        if (g_bltr.index_nn(5) != 1) { --rtn; std::cout << "nn bltr 5 fails\n"; }
+        if (g_bltr.index_nn(6) != 2) { --rtn; std::cout << "nn bltr 6 fails\n"; }
+        if (g_bltr.index_nn(7) != 3) { --rtn; std::cout << "nn bltr 7 fails\n"; }
+        // Test in g_tlbr
+        if (g_tlbr.index_nn(0) != 4) { --rtn; std::cout << "nn tlbr 0 fails\n"; }
+        if (g_tlbr.index_nn(1) != 5) { --rtn; std::cout << "nn tlbr 1 fails\n"; }
+        if (g_tlbr.index_nn(2) != 6) { --rtn; std::cout << "nn tlbr 2 fails\n"; }
+        if (g_tlbr.index_nn(3) != 7) { --rtn; std::cout << "nn tlbr 3 fails\n"; }
+        if (g_tlbr.index_nn(4) != 0) { --rtn; std::cout << "nn tlbr 4 fails\n"; }
+        if (g_tlbr.index_nn(5) != 1) { --rtn; std::cout << "nn tlbr 5 fails\n"; }
+        if (g_tlbr.index_nn(6) != 2) { --rtn; std::cout << "nn tlbr 6 fails\n"; }
+        if (g_tlbr.index_nn(7) != 3) { --rtn; std::cout << "nn tlbr 7 fails\n"; }
+        // Test in g_bltrc
+        if (g_bltrc.index_nn(0) != 1) { --rtn; std::cout << "nn bltrc 0 fails\n"; }
+        if (g_bltrc.index_nn(1) != 0) { --rtn; std::cout << "nn bltrc 1 fails\n"; }
+        if (g_bltrc.index_nn(2) != 3) { --rtn; std::cout << "nn bltrc 2 fails\n"; }
+        if (g_bltrc.index_nn(3) != 2) { --rtn; std::cout << "nn bltrc 3 fails\n"; }
+        if (g_bltrc.index_nn(4) != 5) { --rtn; std::cout << "nn bltrc 4 fails\n"; }
+        if (g_bltrc.index_nn(5) != 4) { --rtn; std::cout << "nn bltrc 5 fails\n"; }
+        if (g_bltrc.index_nn(6) != 7) { --rtn; std::cout << "nn bltrc 6 fails\n"; }
+        if (g_bltrc.index_nn(7) != 6) { --rtn; std::cout << "nn bltrc 7 fails\n"; }
+        // Test in g_tlbrc
+        if (g_tlbrc.index_nn(0) != 1) { --rtn; std::cout << "nn tlbrc 0 fails\n"; }
+        if (g_tlbrc.index_nn(1) != 0) { --rtn; std::cout << "nn tlbrc 1 fails\n"; }
+        if (g_tlbrc.index_nn(2) != 3) { --rtn; std::cout << "nn tlbrc 2 fails\n"; }
+        if (g_tlbrc.index_nn(3) != 2) { --rtn; std::cout << "nn tlbrc 3 fails\n"; }
+        if (g_tlbrc.index_nn(4) != 5) { --rtn; std::cout << "nn tlbrc 4 fails\n"; }
+        if (g_tlbrc.index_nn(5) != 4) { --rtn; std::cout << "nn tlbrc 5 fails\n"; }
+        if (g_tlbrc.index_nn(6) != 7) { --rtn; std::cout << "nn tlbrc 6 fails\n"; }
+        if (g_tlbrc.index_nn(7) != 6) { --rtn; std::cout << "nn tlbrc 7 fails\n"; }
+
+        // Neighbour SOUTH tests
+        // Test in g_bltr
+        if (g_bltr.index_ns(0) != 4) { --rtn; std::cout << "ns bltr 0 fails\n"; }
+        if (g_bltr.index_ns(1) != 5) { --rtn; std::cout << "ns bltr 1 fails\n"; }
+        if (g_bltr.index_ns(2) != 6) { --rtn; std::cout << "ns bltr 2 fails\n"; }
+        if (g_bltr.index_ns(3) != 7) { --rtn; std::cout << "ns bltr 3 fails\n"; }
+        if (g_bltr.index_ns(4) != 0) { --rtn; std::cout << "ns bltr 4 fails\n"; }
+        if (g_bltr.index_ns(5) != 1) { --rtn; std::cout << "ns bltr 5 fails\n"; }
+        if (g_bltr.index_ns(6) != 2) { --rtn; std::cout << "ns bltr 6 fails\n"; }
+        if (g_bltr.index_ns(7) != 3) { --rtn; std::cout << "ns bltr 7 fails\n"; }
+        // Test in g_tlbr
+        if (g_tlbr.index_ns(0) != 4) { --rtn; std::cout << "ns tlbr 0 fails\n"; }
+        if (g_tlbr.index_ns(1) != 5) { --rtn; std::cout << "ns tlbr 1 fails\n"; }
+        if (g_tlbr.index_ns(2) != 6) { --rtn; std::cout << "ns tlbr 2 fails\n"; }
+        if (g_tlbr.index_ns(3) != 7) { --rtn; std::cout << "ns tlbr 3 fails\n"; }
+        if (g_tlbr.index_ns(4) != 0) { --rtn; std::cout << "ns tlbr 4 fails\n"; }
+        if (g_tlbr.index_ns(5) != 1) { --rtn; std::cout << "ns tlbr 5 fails\n"; }
+        if (g_tlbr.index_ns(6) != 2) { --rtn; std::cout << "ns tlbr 6 fails\n"; }
+        if (g_tlbr.index_ns(7) != 3) { --rtn; std::cout << "ns tlbr 7 fails\n"; }
+        // Test in g_bltrc
+        if (g_bltrc.index_ns(0) != 1) { --rtn; std::cout << "ns bltrc 0 fails\n"; }
+        if (g_bltrc.index_ns(1) != 0) { --rtn; std::cout << "ns bltrc 1 fails\n"; }
+        if (g_bltrc.index_ns(2) != 3) { --rtn; std::cout << "ns bltrc 2 fails\n"; }
+        if (g_bltrc.index_ns(3) != 2) { --rtn; std::cout << "ns bltrc 3 fails\n"; }
+        if (g_bltrc.index_ns(4) != 5) { --rtn; std::cout << "ns bltrc 4 fails\n"; }
+        if (g_bltrc.index_ns(5) != 4) { --rtn; std::cout << "ns bltrc 5 fails\n"; }
+        if (g_bltrc.index_ns(6) != 7) { --rtn; std::cout << "ns bltrc 6 fails\n"; }
+        if (g_bltrc.index_ns(7) != 6) { --rtn; std::cout << "ns bltrc 7 fails\n"; }
+        // Test in g_tlbrc
+        if (g_tlbrc.index_ns(0) != 1) { --rtn; std::cout << "ns tlbrc 0 fails\n"; }
+        if (g_tlbrc.index_ns(1) != 0) { --rtn; std::cout << "ns tlbrc 1 fails\n"; }
+        if (g_tlbrc.index_ns(2) != 3) { --rtn; std::cout << "ns tlbrc 2 fails\n"; }
+        if (g_tlbrc.index_ns(3) != 2) { --rtn; std::cout << "ns tlbrc 3 fails\n"; }
+        if (g_tlbrc.index_ns(4) != 5) { --rtn; std::cout << "ns tlbrc 4 fails\n"; }
+        if (g_tlbrc.index_ns(5) != 4) { --rtn; std::cout << "ns tlbrc 5 fails\n"; }
+        if (g_tlbrc.index_ns(6) != 7) { --rtn; std::cout << "ns tlbrc 6 fails\n"; }
+        if (g_tlbrc.index_ns(7) != 6) { --rtn; std::cout << "ns tlbrc 7 fails\n"; }
+    }
+
+    {
+        //
+        // morph::GridDomainWrap::Both tests
+        //
+        wrap = morph::GridDomainWrap::Both;
+
+        morph::Grid<int, float> g_bltr(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright);
+        morph::Grid<int, float> g_tlbr(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright);
+        morph::Grid<int, float> g_bltrc(4, 2, dx, offset, wrap, morph::GridOrder::bottomleft_to_topright_colmaj);
+        morph::Grid<int, float> g_tlbrc(4, 2, dx, offset, wrap, morph::GridOrder::topleft_to_bottomright_colmaj);
+
+        // Neighbour NORTH tests
+        // Test in g_bltr
+        if (g_bltr.index_nn(0) != 4) { --rtn; std::cout << "nn bltr 0 fails\n"; }
+        if (g_bltr.index_nn(1) != 5) { --rtn; std::cout << "nn bltr 1 fails\n"; }
+        if (g_bltr.index_nn(2) != 6) { --rtn; std::cout << "nn bltr 2 fails\n"; }
+        if (g_bltr.index_nn(3) != 7) { --rtn; std::cout << "nn bltr 3 fails\n"; }
+        if (g_bltr.index_nn(4) != 0) { --rtn; std::cout << "nn bltr 4 fails\n"; }
+        if (g_bltr.index_nn(5) != 1) { --rtn; std::cout << "nn bltr 5 fails\n"; }
+        if (g_bltr.index_nn(6) != 2) { --rtn; std::cout << "nn bltr 6 fails\n"; }
+        if (g_bltr.index_nn(7) != 3) { --rtn; std::cout << "nn bltr 7 fails\n"; }
+        // Test in g_tlbr
+        if (g_tlbr.index_nn(0) != 4) { --rtn; std::cout << "nn tlbr 0 fails\n"; }
+        if (g_tlbr.index_nn(1) != 5) { --rtn; std::cout << "nn tlbr 1 fails\n"; }
+        if (g_tlbr.index_nn(2) != 6) { --rtn; std::cout << "nn tlbr 2 fails\n"; }
+        if (g_tlbr.index_nn(3) != 7) { --rtn; std::cout << "nn tlbr 3 fails\n"; }
+        if (g_tlbr.index_nn(4) != 0) { --rtn; std::cout << "nn tlbr 4 fails\n"; }
+        if (g_tlbr.index_nn(5) != 1) { --rtn; std::cout << "nn tlbr 5 fails\n"; }
+        if (g_tlbr.index_nn(6) != 2) { --rtn; std::cout << "nn tlbr 6 fails\n"; }
+        if (g_tlbr.index_nn(7) != 3) { --rtn; std::cout << "nn tlbr 7 fails\n"; }
+        // Test in g_bltrc
+        if (g_bltrc.index_nn(0) != 1) { --rtn; std::cout << "nn bltrc 0 fails\n"; }
+        if (g_bltrc.index_nn(1) != 0) { --rtn; std::cout << "nn bltrc 1 fails\n"; }
+        if (g_bltrc.index_nn(2) != 3) { --rtn; std::cout << "nn bltrc 2 fails\n"; }
+        if (g_bltrc.index_nn(3) != 2) { --rtn; std::cout << "nn bltrc 3 fails\n"; }
+        if (g_bltrc.index_nn(4) != 5) { --rtn; std::cout << "nn bltrc 4 fails\n"; }
+        if (g_bltrc.index_nn(5) != 4) { --rtn; std::cout << "nn bltrc 5 fails\n"; }
+        if (g_bltrc.index_nn(6) != 7) { --rtn; std::cout << "nn bltrc 6 fails\n"; }
+        if (g_bltrc.index_nn(7) != 6) { --rtn; std::cout << "nn bltrc 7 fails\n"; }
+        // Test in g_tlbrc
+        if (g_tlbrc.index_nn(0) != 1) { --rtn; std::cout << "nn tlbrc 0 fails\n"; }
+        if (g_tlbrc.index_nn(1) != 0) { --rtn; std::cout << "nn tlbrc 1 fails\n"; }
+        if (g_tlbrc.index_nn(2) != 3) { --rtn; std::cout << "nn tlbrc 2 fails\n"; }
+        if (g_tlbrc.index_nn(3) != 2) { --rtn; std::cout << "nn tlbrc 3 fails\n"; }
+        if (g_tlbrc.index_nn(4) != 5) { --rtn; std::cout << "nn tlbrc 4 fails\n"; }
+        if (g_tlbrc.index_nn(5) != 4) { --rtn; std::cout << "nn tlbrc 5 fails\n"; }
+        if (g_tlbrc.index_nn(6) != 7) { --rtn; std::cout << "nn tlbrc 6 fails\n"; }
+        if (g_tlbrc.index_nn(7) != 6) { --rtn; std::cout << "nn tlbrc 7 fails\n"; }
+
+        // Neighbour SOUTH tests
+        // Test in g_bltr
+        if (g_bltr.index_ns(0) != 4) { --rtn; std::cout << "ns bltr 0 fails\n"; }
+        if (g_bltr.index_ns(1) != 5) { --rtn; std::cout << "ns bltr 1 fails\n"; }
+        if (g_bltr.index_ns(2) != 6) { --rtn; std::cout << "ns bltr 2 fails\n"; }
+        if (g_bltr.index_ns(3) != 7) { --rtn; std::cout << "ns bltr 3 fails\n"; }
+        if (g_bltr.index_ns(4) != 0) { --rtn; std::cout << "ns bltr 4 fails\n"; }
+        if (g_bltr.index_ns(5) != 1) { --rtn; std::cout << "ns bltr 5 fails\n"; }
+        if (g_bltr.index_ns(6) != 2) { --rtn; std::cout << "ns bltr 6 fails\n"; }
+        if (g_bltr.index_ns(7) != 3) { --rtn; std::cout << "ns bltr 7 fails\n"; }
+        // Test in g_tlbr
+        if (g_tlbr.index_ns(0) != 4) { --rtn; std::cout << "ns tlbr 0 fails\n"; }
+        if (g_tlbr.index_ns(1) != 5) { --rtn; std::cout << "ns tlbr 1 fails\n"; }
+        if (g_tlbr.index_ns(2) != 6) { --rtn; std::cout << "ns tlbr 2 fails\n"; }
+        if (g_tlbr.index_ns(3) != 7) { --rtn; std::cout << "ns tlbr 3 fails\n"; }
+        if (g_tlbr.index_ns(4) != 0) { --rtn; std::cout << "ns tlbr 4 fails\n"; }
+        if (g_tlbr.index_ns(5) != 1) { --rtn; std::cout << "ns tlbr 5 fails\n"; }
+        if (g_tlbr.index_ns(6) != 2) { --rtn; std::cout << "ns tlbr 6 fails\n"; }
+        if (g_tlbr.index_ns(7) != 3) { --rtn; std::cout << "ns tlbr 7 fails\n"; }
+        // Test in g_bltrc
+        if (g_bltrc.index_ns(0) != 1) { --rtn; std::cout << "ns bltrc 0 fails\n"; }
+        if (g_bltrc.index_ns(1) != 0) { --rtn; std::cout << "ns bltrc 1 fails\n"; }
+        if (g_bltrc.index_ns(2) != 3) { --rtn; std::cout << "ns bltrc 2 fails\n"; }
+        if (g_bltrc.index_ns(3) != 2) { --rtn; std::cout << "ns bltrc 3 fails\n"; }
+        if (g_bltrc.index_ns(4) != 5) { --rtn; std::cout << "ns bltrc 4 fails\n"; }
+        if (g_bltrc.index_ns(5) != 4) { --rtn; std::cout << "ns bltrc 5 fails\n"; }
+        if (g_bltrc.index_ns(6) != 7) { --rtn; std::cout << "ns bltrc 6 fails\n"; }
+        if (g_bltrc.index_ns(7) != 6) { --rtn; std::cout << "ns bltrc 7 fails\n"; }
+        // Test in g_tlbrc
+        if (g_tlbrc.index_ns(0) != 1) { --rtn; std::cout << "ns tlbrc 0 fails\n"; }
+        if (g_tlbrc.index_ns(1) != 0) { --rtn; std::cout << "ns tlbrc 1 fails\n"; }
+        if (g_tlbrc.index_ns(2) != 3) { --rtn; std::cout << "ns tlbrc 2 fails\n"; }
+        if (g_tlbrc.index_ns(3) != 2) { --rtn; std::cout << "ns tlbrc 3 fails\n"; }
+        if (g_tlbrc.index_ns(4) != 5) { --rtn; std::cout << "ns tlbrc 4 fails\n"; }
+        if (g_tlbrc.index_ns(5) != 4) { --rtn; std::cout << "ns tlbrc 5 fails\n"; }
+        if (g_tlbrc.index_ns(6) != 7) { --rtn; std::cout << "ns tlbrc 6 fails\n"; }
+        if (g_tlbrc.index_ns(7) != 6) { --rtn; std::cout << "ns tlbrc 7 fails\n"; }
+    }
+
+    if (rtn == 0) {
+        std::cout << "All tests PASSED\n";
+    } else {
+        std::cout << "Some tests failed\n";
+    }
     return rtn;
 }
