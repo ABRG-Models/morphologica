@@ -126,10 +126,10 @@ namespace morph {
             std::stringstream ss;
             if (order == morph::GridOrder::bottomleft_to_topright) {
                 ss << "bottom left to top right grid order:\n";
-                for (I r = this->h; r > 0; r--) {
-                    I _r = r-1;
+                for (I _r = this->h; _r > 0; _r--) {
+                    I r = _r-1;
                     for (I c = I{0}; c < this->w; ++c) {
-                        I i = _r * this->w + c;
+                        I i = r * this->w + c;
                         ss << i << this->coord(i) << (this->has_nn(i) ? this->index_nn(i) : -1) << "\t";
                     }
                     ss << "\n";
@@ -145,8 +145,10 @@ namespace morph {
                 }
 
             } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
+                ss << "bottom left to top right (column major) grid order:\n";
 
             } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                ss << "top left to bottom right (column major) grid order:\n";
 
             }
 
@@ -259,10 +261,10 @@ namespace morph {
         //! to the east, return std::numeric_limits<I>::max()
         I index_ne (const I index) const
         {
-            I r = this->row (index);
-            if (r == (w - I{1}) && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical)) {
+            I c = this->col (index);
+            if (c == (w - I{1}) && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical)) {
                 return std::numeric_limits<I>::max();
-            } else if (r == (w - I{1}) && (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both)) {
+            } else if (c == (w - I{1}) && (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both)) {
                 return index - (this->rowmaj ? (w - I{1}) : (h * (w-I{1})));
             } else {
                 return index + (this->rowmaj ? I{1} : h);
@@ -283,10 +285,10 @@ namespace morph {
         //! to the west, return std::numeric_limits<I>::max()
         I index_nw (const I index) const
         {
-            I r = this->row (index);
-            if (r == 0 && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical)) {
+            I c = this->col (index);
+            if (c == 0 && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical)) {
                 return std::numeric_limits<I>::max();
-            } else if (r == 0 && (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both)) {
+            } else if (c == 0 && (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both)) {
                 return index + (this->rowmaj ? (w - I{1}) : (h * (w-I{1})));
             } else {
                 return index - (this->rowmaj ? I{1} : h);
