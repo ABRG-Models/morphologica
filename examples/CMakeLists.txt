@@ -147,6 +147,8 @@ if(ARMADILLO_FOUND)
     target_link_libraries(grid_image GLEW::GLEW)
   endif()
 
+  add_executable(grid_layout grid_layout.cpp)
+
   add_executable(hsvwheel hsvwheel.cpp)
   target_link_libraries(hsvwheel OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)

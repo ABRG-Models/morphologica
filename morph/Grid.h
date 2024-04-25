@@ -120,7 +120,7 @@ namespace morph {
         GridDomainWrap get_wrap() const { return this->wrap; }
         GridOrder get_order() const { return this->order; }
 
-        //! Output the grid as a string, showing indices
+        //! Output the grid as a string, showing the indices and coordinates. Useful for debugging.
         std::string str() const
         {
             std::stringstream ss;
@@ -130,7 +130,7 @@ namespace morph {
                     I r = _r-1;
                     for (I c = I{0}; c < this->w; ++c) {
                         I i = r * this->w + c;
-                        ss << i << this->coord(i) << (this->has_nn(i) ? this->index_nn(i) : -1) << "\t";
+                        ss << i << this->coord(i) << "\t";
                     }
                     ss << "\n";
                 }
@@ -139,17 +139,31 @@ namespace morph {
                 for (I r = 0; r < this->h; r++) {
                     for (I c = I{0}; c < this->w; ++c) {
                         I i = r * this->w + c;
-                        ss << i << this->coord(i) << (this->has_nn(i) ? this->index_nn(i) : -1) << "\t";
+                        ss << i << this->coord(i) << "\t";
                     }
                     ss << "\n";
                 }
 
             } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
                 ss << "bottom left to top right (column major) grid order:\n";
+                for (I _r = this->h; _r > 0; _r--) {
+                    I r = _r-1;
+                    for (I c = I{0}; c < this->w; ++c) {
+                        I i = r + c * h;
+                        ss << i << this->coord(i) << "\t";
+                    }
+                    ss << "\n";
+                }
 
             } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
                 ss << "top left to bottom right (column major) grid order:\n";
-
+                for (I r = 0; r < this->h; r++) {
+                    for (I c = I{0}; c < this->w; ++c) {
+                        I i = r + c * h;
+                        ss << i << this->coord(i) << "\t";
+                    }
+                    ss << "\n";
+                }
             }
 
             return ss.str();
