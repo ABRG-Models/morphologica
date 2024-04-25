@@ -468,6 +468,10 @@ if(CXX_20_AVAILABLE)
 
   add_executable(profileGrid profileGrid.cpp)
   set_property(TARGET profileGrid PROPERTY CXX_STANDARD 20)
+
+  add_executable(testGridctRowCol testGridctRowCol.cpp)
+  set_property(TARGET testGridctRowCol PROPERTY CXX_STANDARD 20)
+  add_test(testGridctRowCol testGridctRowCol)
 endif()
 
 add_executable(testGrid testGrid.cpp)

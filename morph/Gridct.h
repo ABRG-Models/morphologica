@@ -356,10 +356,10 @@ namespace morph {
         constexpr morph::vec<C, 2> centre() const { return morph::vec<C, 2>({ xmax() - xmin(), ymax() - ymin() }) * 0.5f; }
 
         //! Return the row for the index
-        constexpr I row (const I index) const { return index < n ? index % w : std::numeric_limits<I>::max(); }
+        constexpr I row (const I index) const { return index < n ? index / w : std::numeric_limits<I>::max(); }
 
         //! Return the col for the index
-        constexpr I col (const I index) const { return index < n ? index / w : std::numeric_limits<I>::max(); }
+        constexpr I col (const I index) const { return index < n ? index % w : std::numeric_limits<I>::max(); }
 
         //! Two vector structures that contains the coords for this grid. Populated only if template arg
         //! memory_coords is true.
