@@ -472,6 +472,10 @@ if(CXX_20_AVAILABLE)
   add_executable(testGridctRowCol testGridctRowCol.cpp)
   set_property(TARGET testGridctRowCol PROPERTY CXX_STANDARD 20)
   add_test(testGridctRowCol testGridctRowCol)
+
+  add_executable(testGridctNeighbours testGridctNeighbours.cpp)
+  set_property(TARGET testGridctNeighbours PROPERTY CXX_STANDARD 20)
+  add_test(testGridctNeighbours testGridctNeighbours)
 endif()
 
 add_executable(testGrid testGrid.cpp)
