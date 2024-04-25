@@ -473,5 +473,11 @@ endif()
 add_executable(testGrid testGrid.cpp)
 add_test(testGrid testGrid)
 
+add_executable(testGridRowCol testGridRowCol.cpp)
+add_test(testGridRowCol testGridRowCol)
+
+add_executable(testGridNeighbours testGridNeighbours.cpp)
+add_test(testGridNeighbours testGridNeighbours)
+
 add_executable(testGrid_getabscissae testGrid_getabscissae.cpp)
 add_test(testGrid_getabscissae testGrid_getabscissae)
