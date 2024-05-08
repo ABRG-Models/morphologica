@@ -54,8 +54,10 @@ namespace morph {
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
 
 #ifndef OWNED_MODE
+# ifdef VISUAL_MANAGES_GLFW
             // Shut down GLFW
             glfwTerminate();
+# endif
 #endif
         }
 
@@ -97,11 +99,10 @@ namespace morph {
         void init()
         {
 #ifndef OWNED_MODE
-            // Can we check the GL version to make sure it's going to work? GL may have been
-            // externally included.
-
+# ifdef VISUAL_MANAGES_GLFW
             // The initial init only does glfw. Have to wait until later for Freetype init
             this->glfw_init();
+# endif
 #endif
         }
 
