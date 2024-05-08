@@ -29,17 +29,6 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-/*
- * This declaration of glfwGetMonitorContentScale prevents:
- *
-/home/seb/models/compound-ray/morphologica/morph/VisualResources.h: In member function 'void morph::VisualResources<glver>::glfw_init()':
-/home/seb/models/compound-ray/morphologica/morph/VisualResources.h:79:13: error: there are no arguments to 'glfwGetMonitorContentScale' that depend on a template parameter, so a declaration of 'glfwGetMonitorContentScale' must be available [-fpermissive]
-   79 |             glfwGetMonitorContentScale(primary, &xscale, &yscale);
-*/
-#ifndef OWNED_MODE
-void glfwGetMonitorContentScale(GLFWmonitor*, float*, float*);
-#endif
-
 namespace morph {
 
     // Pointers to morph::Visual are used to index font faces
@@ -86,9 +75,11 @@ namespace morph {
             if (primary == nullptr) {
                 throw std::runtime_error ("Primary was null");
             }
+#if 0
+            // This is available in glfw 3.3+ only and not actually made use of.
             float xscale, yscale;
-            glfwGetMonitorContentScale(primary, &xscale, &yscale);
-
+            glfwGetMonitorContentScale (primary, &xscale, &yscale);
+#endif
             if constexpr (morph::gl::version::gles (glver) == true) {
                 glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
                 glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
