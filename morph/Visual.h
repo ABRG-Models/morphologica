@@ -25,12 +25,21 @@
 //
 // Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
 // morph::Visual is the owner of a Window provided by GLFW.
-#ifndef VISUAL_EXTERNAL_GL_AND_GLFW
+
+#ifdef _glfw3_h_ // glfw3 has already been externally included
+# ifdef OWNED_MODE
+#  error "glfw3 has been #included but OWNED_MODE is defined"
+# endif
+#else // glfw3 not yet included
 # ifndef OWNED_MODE
 #  define GLFW_INCLUDE_NONE // Here, we explicitly include GL3/gl3.h and GL/glext.h, leaving none of this to GLFW
 #  include <GLFW/glfw3.h>
 # endif
+#endif // _glfw3_h_
 
+#if defined __gl3_h_ || defined __gl_h_
+// GL headers appear to have been externally included.
+#else
 // Include the correct GL headers before VisualCommon.h (VisualModel.h will bring these in, too)
 # ifndef USE_GLEW
 #  ifdef __OSX__
@@ -40,7 +49,7 @@
 #   include <GL/glext.h>
 #  endif
 # endif
-#endif // VISUAL_EXTERNAL_GL_AND_GLFW
+#endif // GL headers
 
 #include <morph/gl/version.h>
 #include <morph/VisualModel.h>
