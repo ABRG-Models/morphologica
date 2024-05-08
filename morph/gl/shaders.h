@@ -92,7 +92,7 @@ namespace morph {
                 type = "vertex";
             } else if (shader_type == GL_FRAGMENT_SHADER) {
                 type = "fragment";
-#ifndef __OSX__
+#ifdef GL_COMPUTE_SHADER
             } else if (shader_type == GL_COMPUTE_SHADER) {
                 type = "compute";
 #endif
@@ -107,6 +107,7 @@ namespace morph {
 
             GLuint program = glCreateProgram();
 
+#ifdef GL_SHADER_COMPILER
             GLboolean shaderCompilerPresent = GL_FALSE;
             glGetBooleanv (GL_SHADER_COMPILER, &shaderCompilerPresent);
             if (shaderCompilerPresent == GL_FALSE) {
@@ -116,7 +117,7 @@ namespace morph {
                     std::cout << "Shader compiler present\n";
                 }
             }
-
+#endif
             for (auto entry : shader_info) {
                 GLuint shader = glCreateShader (entry.type);
                 entry.shader = shader;
