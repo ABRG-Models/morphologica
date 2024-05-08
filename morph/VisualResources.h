@@ -10,7 +10,7 @@
 
 #pragma once
 
-#ifndef VISUAL_NO_GL_INCLUDE // but this is glfw!
+#ifndef VISUAL_EXTERNAL_GL_AND_GLFW
 # ifndef OWNED_MODE
 #  define GLFW_INCLUDE_NONE
 #  include <GLFW/glfw3.h>

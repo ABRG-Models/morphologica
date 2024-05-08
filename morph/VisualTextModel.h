@@ -10,7 +10,7 @@
 
 #pragma once
 
-#ifndef VISUAL_NO_GL_INCLUDE
+#ifndef VISUAL_EXTERNAL_GL_AND_GLFW
 # ifndef USE_GLEW
 #  ifdef __OSX__
 #   include <OpenGL/gl3.h>
