@@ -36,7 +36,9 @@
 /home/seb/models/compound-ray/morphologica/morph/VisualResources.h:79:13: error: there are no arguments to 'glfwGetMonitorContentScale' that depend on a template parameter, so a declaration of 'glfwGetMonitorContentScale' must be available [-fpermissive]
    79 |             glfwGetMonitorContentScale(primary, &xscale, &yscale);
 */
+#ifndef OWNED_MODE
 void glfwGetMonitorContentScale(GLFWmonitor*, float*, float*);
+#endif
 
 namespace morph {
 
