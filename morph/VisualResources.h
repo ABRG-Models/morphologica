@@ -10,10 +10,13 @@
 
 #pragma once
 
-#ifndef OWNED_MODE
-# define GLFW_INCLUDE_NONE
-# include <GLFW/glfw3.h>
+#ifndef VISUAL_NO_GL_INCLUDE // but this is glfw!
+# ifndef OWNED_MODE
+#  define GLFW_INCLUDE_NONE
+#  include <GLFW/glfw3.h>
+# endif
 #endif
+
 #include <iostream>
 #include <tuple>
 #include <set>
@@ -25,6 +28,15 @@
 // FreeType for text rendering
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+/*
+ * This declaration of glfwGetMonitorContentScale prevents:
+ *
+/home/seb/models/compound-ray/morphologica/morph/VisualResources.h: In member function 'void morph::VisualResources<glver>::glfw_init()':
+/home/seb/models/compound-ray/morphologica/morph/VisualResources.h:79:13: error: there are no arguments to 'glfwGetMonitorContentScale' that depend on a template parameter, so a declaration of 'glfwGetMonitorContentScale' must be available [-fpermissive]
+   79 |             glfwGetMonitorContentScale(primary, &xscale, &yscale);
+*/
+void glfwGetMonitorContentScale(GLFWmonitor*, float*, float*);
 
 namespace morph {
 
@@ -59,6 +71,9 @@ namespace morph {
 #ifndef OWNED_MODE
         void glfw_init()
         {
+            // Can I test if init already happened? This is once per program, so if an external
+            // program already set glfw up then we're scuppered.
+
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
             // Set up error callback
@@ -66,6 +81,9 @@ namespace morph {
 
             // See https://www.glfw.org/docs/latest/monitor_guide.html
             GLFWmonitor* primary = glfwGetPrimaryMonitor();
+            if (primary == nullptr) {
+                throw std::runtime_error ("Primary was null");
+            }
             float xscale, yscale;
             glfwGetMonitorContentScale(primary, &xscale, &yscale);
 
@@ -86,6 +104,9 @@ namespace morph {
         void init()
         {
 #ifndef OWNED_MODE
+            // Can we check the GL version to make sure it's going to work? GL may have been
+            // externally included.
+
             // The initial init only does glfw. Have to wait until later for Freetype init
             this->glfw_init();
 #endif

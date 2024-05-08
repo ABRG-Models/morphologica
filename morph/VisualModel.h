@@ -10,12 +10,14 @@
 
 #pragma once
 
-#ifndef USE_GLEW
-# ifdef __OSX__
-#  include <OpenGL/gl3.h>
-# else
-#  include <GL3/gl3.h>
-#  include <GL/glext.h>
+#ifndef VISUAL_NO_GL_INCLUDE
+# ifndef USE_GLEW
+#  ifdef __OSX__
+#   include <OpenGL/gl3.h>
+#  else
+#   include <GL3/gl3.h>
+#   include <GL/glext.h>
+#  endif
 # endif
 #endif
 

@@ -18,11 +18,13 @@
 #include <morph/tools.h>
 #include <morph/VisualCommon.h> // for visgl::CharInfo
 
-#ifndef USE_GLEW
-# ifdef __OSX__
-#  include <OpenGL/gl3.h>
-# else
-#  include <GL3/gl3.h>
+#ifndef VISUAL_NO_GL_INCLUDE
+# ifndef USE_GLEW
+#  ifdef __OSX__
+#   include <OpenGL/gl3.h>
+#  else
+#   include <GL3/gl3.h>
+#  endif
 # endif
 #endif
 
