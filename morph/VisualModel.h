@@ -179,6 +179,24 @@ namespace morph {
 #endif
         }
 
+        // reinit ONLY vertexColors buffer
+        void reinit_colour_buffer()
+        {
+            if (this->postVertexInitRequired == true) { this->postVertexInit(); }
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+            // Now re-set up the VBOs
+#ifdef CAREFULLY_UNBIND_AND_REBIND // Experimenting with better buffer binding.
+            glBindVertexArray (this->vao);
+            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
+#endif
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
+
+#ifdef CAREFULLY_UNBIND_AND_REBIND
+            glBindVertexArray(0);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
+        }
+
         void clearTexts() { this->texts.clear(); }
 
         //! Clear out the model, *including text models*
