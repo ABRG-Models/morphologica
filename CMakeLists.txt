@@ -123,7 +123,7 @@ if(USE_GLEW)
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
 endif(USE_GLEW)
-find_package(glfw3 3.3 REQUIRED)
+find_package(glfw3 3.2...3.4 REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
 #set(HDF5_USE_STATIC_LIBRARIES ON)
 find_package(HDF5)
