@@ -64,23 +64,17 @@ namespace morph {
 #ifndef OWNED_MODE
         void glfw_init()
         {
-            // Can I test if init already happened? This is once per program, so if an external
-            // program already set glfw up then we're scuppered.
-
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
             // Set up error callback
             glfwSetErrorCallback (morph::VisualResources<glver>::errorCallback);
 
+#ifdef HAVE_A_USE_FOR_MONITOR_CONTENT_SCALE
             // See https://www.glfw.org/docs/latest/monitor_guide.html
-            GLFWmonitor* primary = glfwGetPrimaryMonitor();
-            if (primary == nullptr) {
-                throw std::runtime_error ("Primary was null");
-            }
-#if 0
-            // This is available in glfw 3.3+ only and not actually made use of.
+            GLFWmonitor* primary = glfwGetPrimaryMonitor(); // glfw 3.0+
+            if (primary == nullptr) { throw std::runtime_error ("Primary was null"); }
             float xscale, yscale;
-            glfwGetMonitorContentScale (primary, &xscale, &yscale);
+            glfwGetMonitorContentScale (primary, &xscale, &yscale); // glfw 3.3+
 #endif
             if constexpr (morph::gl::version::gles (glver) == true) {
                 glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
