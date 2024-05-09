@@ -32,9 +32,11 @@
 # endif
 #else // glfw3 not yet included
 # ifndef OWNED_MODE
-#  define GLFW_INCLUDE_NONE // Here, we explicitly include GL3/gl3.h and GL/glext.h, leaving none of this to GLFW
+#  define GLFW_INCLUDE_NONE // Here, we tell GLFW that we will explicitly include GL3/gl3.h and GL/glext.h
 #  include <GLFW/glfw3.h>
-#  define VISUAL_MANAGES_GLFW 1 // Used in VisualResources.h
+#  ifndef VISUAL_MANAGES_GLFW
+#   define VISUAL_MANAGES_GLFW 1 // Used in VisualResources.h
+#  endif
 # endif
 #endif // _glfw3_h_
 

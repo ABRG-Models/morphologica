@@ -90,7 +90,8 @@ namespace morph {
             this->centre_horz = _centre_horz;
         }
 
-        TextFeatures (const float _fontsize, const int _fontres, const std::array<float, 3> _colour = morph::colour::black, const bool _centre_horz = false)
+        TextFeatures (const float _fontsize, const int _fontres,
+                      const std::array<float, 3> _colour = morph::colour::black, const bool _centre_horz = false)
             : fontsize(_fontsize), fontres(_fontres), colour(_colour)
         {
             this->centre_horz = _centre_horz;

@@ -14,6 +14,9 @@
 # ifndef OWNED_MODE
 #  define GLFW_INCLUDE_NONE
 #  include <GLFW/glfw3.h>
+#  ifndef VISUAL_MANAGES_GLFW
+#   define VISUAL_MANAGES_GLFW 1 // Probably already defined in Visual.h
+#  endif
 # endif
 #endif
 
