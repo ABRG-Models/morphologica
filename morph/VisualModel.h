@@ -1076,7 +1076,7 @@ namespace morph {
             GLuint endMiddle = idx + (GLuint)nverts - 1u;
             GLuint endStartIdx = capStartIdx + (3u * segments);
 
-            //std::cout << "start cap" << std::endl;
+            // Start cap
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (capMiddle);
                 this->indices.push_back (capStartIdx + j);
@@ -1087,13 +1087,13 @@ namespace morph {
             this->indices.push_back (capStartIdx + segments - 1);
             this->indices.push_back (capStartIdx);
 
-            // MIDDLE SECTIONS
+            // Middle sections
             for (int lsection = 0; lsection < 3; ++lsection) {
                 capStartIdx = idx + 1 + lsection*segments;
                 endStartIdx = capStartIdx + segments;
                 // This does sides between start and end. I want to do this three times.
                 for (int j = 0; j < segments; j++) {
-                    //std::cout << "Triangle 1\n";
+                    // Triangle 1
                     this->indices.push_back (capStartIdx + j);
                     if (j == (segments-1)) {
                         this->indices.push_back (capStartIdx);
@@ -1101,8 +1101,7 @@ namespace morph {
                         this->indices.push_back (capStartIdx + 1 + j);
                     }
                     this->indices.push_back (endStartIdx + j);
-
-                    //std::cout << "Triangle 2\n";
+                    // Triangle 2
                     this->indices.push_back (endStartIdx + j);
                     if (j == (segments-1)) {
                         this->indices.push_back (endStartIdx);
@@ -1117,7 +1116,7 @@ namespace morph {
                 }
             }
 
-            // bottom cap
+            // Bottom cap
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (endMiddle);
                 this->indices.push_back (endStartIdx + j);
@@ -1211,8 +1210,6 @@ namespace morph {
             // After creating vertices, push all the indices.
             GLuint capMiddle = idx;
             GLuint capStartIdx = idx + 1;
-            //GLuint endMiddle = idx + (GLuint)nverts - 1;
-            //GLuint endStartIdx = capStartIdx + (3*segments);
 
             // Start cap indices
             for (int j = 0; j < segments-1; j++) {
@@ -1959,9 +1956,7 @@ namespace morph {
                 this->vertex_push (vstart, this->vertexPositions);
                 this->vertex_push (uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
-                //std::cout << "centre point is index " << (idx + startvertices) << std::endl;
                 ++startvertices;
-
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
@@ -1969,10 +1964,8 @@ namespace morph {
                     this->vertex_push (vstart+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
-                    //std::cout << "capvertex is index " << (idx + startvertices) << std::endl;
                     ++startvertices;
                 }
-                //std::cout << "startvertices = " << startvertices << std::endl;
             }
 
             this->vertex_push (c1, this->vertexPositions);
@@ -1997,20 +1990,16 @@ namespace morph {
                 this->vertex_push (vend, this->vertexPositions);
                 this->vertex_push (uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
-                //std::cout << "centre point is index " << (idx + 4 + startvertices + endvertices) << std::endl;
                 ++endvertices;
-
-                // Start cap vertices (a triangle fan)
+                // End cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                     morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
                     this->vertex_push (vend+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
-                    //std::cout << "capvertex is index " << (idx +  4 + startvertices + endvertices) << std::endl;
                     ++endvertices;
                 }
-                //std::cout << "endvertices = " << endvertices << std::endl;
             }
 
             // After creating vertices, push all the indices.
@@ -2020,7 +2009,6 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
                     int inc1 = 1+j;
                     int inc2 = 1+((j+1)%segments);
-                    //std::cout << "tri: " << topcap << "," << topcap+inc1 << "," << topcap+inc2 << std::endl;
                     this->indices.push_back (topcap);
                     this->indices.push_back (topcap+inc1);
                     this->indices.push_back (topcap+inc2);
@@ -2028,8 +2016,7 @@ namespace morph {
                 this->idx += startvertices;
             }
 
-            //std::cout << "Line tri idxs: " << idx << "," << idx+1 << "," << idx+2 << std::endl;
-            //std::cout << "Line tri idxs: " << idx << "," << idx+2 << "," << idx+3 << std::endl;
+            // The line itself
             this->indices.push_back (idx);
             this->indices.push_back (idx+1);
             this->indices.push_back (idx+2);
@@ -2044,14 +2031,12 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
                     int inc1 = 1+j;
                     int inc2 = 1+((j+1)%segments);
-                    //std::cout << "tri: " << botcap << "," << botcap+inc1 << "," << botcap+inc2 << std::endl;
                     this->indices.push_back (botcap);
                     this->indices.push_back (botcap+inc1);
                     this->indices.push_back (botcap+inc2);
                 }
                 this->idx += endvertices;
             }
-            //std::cout << "end computeFlatLine(Caps): idx = " << idx << std::endl;
         } // end computeFlatLine
 
         //! Like computeFlatLine, but this line has no thickness and you can provide the
