@@ -1104,6 +1104,191 @@ namespace morph {
             idx += nverts;
         } // end computeTube with ux/uy vectors for faces
 
+        /*!
+         * Create a flared tube from \a start to \a end, with radius \a r at the start and a colour
+         * which transitions from the colour \a colStart to \a colEnd. The radius of the end is
+         * determined by the given angle, flare, in radians.
+         *
+         * \param idx The index into the 'vertex array'
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param colStart The tube starting colour
+         * \param colEnd The tube's ending colour
+         * \param r Radius of the tube
+         * \param segments Number of segments used to render the tube
+         * \param flare The angle, measured wrt the direction of the tube in radians, by which the
+         * tube 'flares'
+         */
+        void computeFlaredTube (GLuint& idx, morph::vec<float> start, morph::vec<float> end,
+                                std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                                float r = 1.0f, int segments = 12, float flare = 0.0f)
+        {
+            // Find the length of the tube
+            morph::vec<float> v = end - start;
+            float l = v.length();
+            // Compute end radius from the length and the flare angle:
+            float r_add = l * std::tan (std::abs(flare)) * (flare > 0.0f ? 1.0f : -1.0f);
+            float r_end = r + r_add;
+            // Now call into the other overload:
+            this->computeFlaredTube (idx, start, end, colStart, colEnd, r, r_end, segments);
+        }
+
+        /*!
+         * Create a flared tube from \a start to \a end, with radius \a r at the start and a colour
+         * which transitions from the colour \a colStart to \a colEnd. The radius of the end is
+         * r_end, given as a function argument.
+         *
+         * \param idx The index into the 'vertex array'
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param colStart The tube starting colour
+         * \param colEnd The tube's ending colour
+         * \param r Radius of the tube's start cap
+         * \param r_end radius of the end cap
+         * \param segments Number of segments used to render the tube
+         */
+        void computeFlaredTube (GLuint& idx, morph::vec<float> start, morph::vec<float> end,
+                                std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                                float r = 1.0f, float r_end = 1.0f, int segments = 12)
+        {
+            // The vector from start to end defines a vector and a plane. Find a
+            // 'circle' of points in that plane.
+            morph::vec<float> vstart = start;
+            morph::vec<float> vend = end;
+            morph::vec<float> v = vend - vstart;
+            v.renormalize();
+
+            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
+            // (v) can be found: Choose random vector vr. A vector inplane = vr ^ v. The
+            // unit in-plane vector is inplane.normalise. Can now use that vector in the
+            // plan to define a point on the circle. Note that this starting point on
+            // the circle is at a random position, which means that this version of
+            // computeTube is useful for tubes that have quite a few segments.
+            morph::vec<float> rand_vec;
+            rand_vec.randomize();
+            morph::vec<float> inplane = rand_vec.cross(v);
+            inplane.renormalize();
+
+            // Now use parameterization of circle inplane = p1-x1 and
+            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
+            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
+            morph::vec<float> v_x_inplane = v.cross(inplane);
+
+            // Push the central point of the start cap - this is at location vstart
+            this->vertex_push (vstart, this->vertexPositions);
+            this->vertex_push (-v, this->vertexNormals);
+            this->vertex_push (colStart, this->vertexColors);
+
+            // Start cap vertices. Draw as a triangle fan, but record indices so that we
+            // only need a single call to glDrawElements.
+            for (int j = 0; j < segments; j++) {
+                // t is the angle of the segment
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                this->vertex_push (-v, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near start cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near end cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r_end + v_x_inplane * std::cos(t) * r_end;
+                this->vertex_push (vend+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap vertices
+            for (int j = 0; j < segments; j++) {
+                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r_end + v_x_inplane * std::cos(t) * r_end;
+                this->vertex_push (vend+c, this->vertexPositions);
+                this->vertex_push (v, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap. Push centre vertex as the last vertex.
+            this->vertex_push (vend, this->vertexPositions);
+            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (colEnd, this->vertexColors);
+
+            // Note: number of vertices = segments * 4 + 2.
+            int nverts = (segments * 4) + 2;
+
+            // After creating vertices, push all the indices.
+            GLuint capMiddle = idx;
+            GLuint capStartIdx = idx + 1u;
+            GLuint endMiddle = idx + (GLuint)nverts - 1u;
+            GLuint endStartIdx = capStartIdx + (3u * segments);
+
+            //std::cout << "start cap" << std::endl;
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (capMiddle);
+                this->indices.push_back (capStartIdx + j);
+                this->indices.push_back (capStartIdx + 1 + j);
+            }
+            // Last one
+            this->indices.push_back (capMiddle);
+            this->indices.push_back (capStartIdx + segments - 1);
+            this->indices.push_back (capStartIdx);
+
+            // MIDDLE SECTIONS
+            for (int lsection = 0; lsection < 3; ++lsection) {
+                capStartIdx = idx + 1 + lsection*segments;
+                endStartIdx = capStartIdx + segments;
+                // This does sides between start and end. I want to do this three times.
+                for (int j = 0; j < segments; j++) {
+                    //std::cout << "Triangle 1\n";
+                    this->indices.push_back (capStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + 1 + j);
+                    }
+                    this->indices.push_back (endStartIdx + j);
+
+                    //std::cout << "Triangle 2\n";
+                    this->indices.push_back (endStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (endStartIdx);
+                    } else {
+                        this->indices.push_back (endStartIdx + 1 + j);
+                    }
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + j + 1);
+                    }
+                }
+            }
+
+            // bottom cap
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (endMiddle);
+                this->indices.push_back (endStartIdx + j);
+                this->indices.push_back (endStartIdx + 1 + j);
+            }
+            // Last one
+            this->indices.push_back (endMiddle);
+            this->indices.push_back (endStartIdx + segments - 1);
+            this->indices.push_back (endStartIdx);
+
+            // Update idx
+            idx += nverts;
+        } // end computeFlaredTube with randomly initialized end vertices
+
         //! Compute a Quad from 4 arbitrary corners which must be ordered clockwise around the quad.
         void computeFlatQuad (GLuint& idx,
                               vec<float> c1, vec<float> c2,
