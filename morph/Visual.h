@@ -948,9 +948,9 @@ namespace morph {
 #endif
 
             unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
-            std::cout << "morph::Visual<glver=" << morph::gl::version::vstring (glver)
-                      << "> version " << morph::version_string()
-                      << " running on OpenGL Version " << glv << std::endl;
+            std::cout << "This is version " << morph::version_string()
+                      << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)
+                      << "> running on OpenGL Version " << glv << std::endl;
 
 #ifndef OWNED_MODE
             // Swap as fast as possible (fixes lag of scene with mouse movements)
