@@ -10,12 +10,16 @@
 
 #pragma once
 
-#ifndef USE_GLEW
-# ifdef __OSX__
-#  include <OpenGL/gl3.h>
-# else
-#  include <GL3/gl3.h>
-#  include <GL/glext.h>
+#if defined __gl3_h_ || defined __gl_h_
+// GL headers have been externally included
+#else
+# ifndef USE_GLEW
+#  ifdef __OSX__
+#   include <OpenGL/gl3.h>
+#  else
+#   include <GL3/gl3.h>
+#   include <GL/glext.h>
+#  endif
 # endif
 #endif
 
@@ -167,6 +171,24 @@ namespace morph {
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
             this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
             this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
+
+#ifdef CAREFULLY_UNBIND_AND_REBIND
+            glBindVertexArray(0);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
+        }
+
+        // reinit ONLY vertexColors buffer
+        void reinit_colour_buffer()
+        {
+            if (this->postVertexInitRequired == true) { this->postVertexInit(); }
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+            // Now re-set up the VBOs
+#ifdef CAREFULLY_UNBIND_AND_REBIND // Experimenting with better buffer binding.
+            glBindVertexArray (this->vao);
+            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
+#endif
             this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
 
 #ifdef CAREFULLY_UNBIND_AND_REBIND
@@ -765,6 +787,9 @@ namespace morph {
          * Create a tube from \a start to \a end, with radius \a r and a colour which
          * transitions from the colour \a colStart to \a colEnd.
          *
+         * This version simply sub-calls into computeFlaredTube which will randomly choose the angle
+         * of the vertices around the centre of each end cap.
+         *
          * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
@@ -777,168 +802,8 @@ namespace morph {
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12)
         {
-            // The vector from start to end defines a vector and a plane. Find a
-            // 'circle' of points in that plane.
-            vec<float> vstart = start;
-            vec<float> vend = end;
-            vec<float> v = vend - vstart;
-            v.renormalize();
-
-            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
-            // (v) can be found: Choose random vector vr. A vector inplane = vr ^ v. The
-            // unit in-plane vector is inplane.normalise. Can now use that vector in the
-            // plan to define a point on the circle. Note that this starting point on
-            // the circle is at a random position, which means that this version of
-            // computeTube is useful for tubes that have quite a few segments.
-            vec<float> rand_vec;
-            rand_vec.randomize();
-            vec<float> inplane = rand_vec.cross(v);
-            inplane.renormalize();
-
-            // Now use parameterization of circle inplane = p1-x1 and
-            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
-            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
-            vec<float> v_x_inplane = v.cross(inplane);
-
-            // Push the central point of the start cap - this is at location vstart
-            this->vertex_push (vstart, this->vertexPositions);
-            this->vertex_push (-v, this->vertexNormals);
-            this->vertex_push (colStart, this->vertexColors);
-
-            // Start cap vertices. Draw as a triangle fan, but record indices so that we
-            // only need a single call to glDrawElements.
-            for (int j = 0; j < segments; j++) {
-                // t is the angle of the segment
-                float t = j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
-                this->vertex_push (vstart+c, this->vertexPositions);
-                this->vertex_push (-v, this->vertexNormals);
-                this->vertex_push (colStart, this->vertexColors);
-            }
-
-            // Intermediate, near start cap. Normals point in direction c
-            for (int j = 0; j < segments; j++) {
-                float t = j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
-                this->vertex_push (vstart+c, this->vertexPositions);
-                c.renormalize();
-                this->vertex_push (c, this->vertexNormals);
-                this->vertex_push (colStart, this->vertexColors);
-            }
-
-            // Intermediate, near end cap. Normals point in direction c
-            for (int j = 0; j < segments; j++) {
-                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
-                this->vertex_push (vend+c, this->vertexPositions);
-                c.renormalize();
-                this->vertex_push (c, this->vertexNormals);
-                this->vertex_push (colEnd, this->vertexColors);
-            }
-
-            // Bottom cap vertices
-            for (int j = 0; j < segments; j++) {
-                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
-                this->vertex_push (vend+c, this->vertexPositions);
-                this->vertex_push (v, this->vertexNormals);
-                this->vertex_push (colEnd, this->vertexColors);
-            }
-
-            // Bottom cap. Push centre vertex as the last vertex.
-            this->vertex_push (vend, this->vertexPositions);
-            this->vertex_push (v, this->vertexNormals);
-            this->vertex_push (colEnd, this->vertexColors);
-
-            // Note: number of vertices = segments * 4 + 2.
-            int nverts = (segments * 4) + 2;
-
-            // After creating vertices, push all the indices.
-            GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1u;
-            GLuint endMiddle = idx + (GLuint)nverts - 1u;
-            GLuint endStartIdx = capStartIdx + (3u * segments);
-
-            //std::cout << "start cap" << std::endl;
-            for (int j = 0; j < segments-1; j++) {
-                this->indices.push_back (capMiddle);
-                //std::cout << "add " << capMiddle << " to indices\n";
-                this->indices.push_back (capStartIdx + j);
-                //std::cout << "add " << (capStartIdx+j) << " to indices\n";
-                this->indices.push_back (capStartIdx + 1 + j);
-                //std::cout << "add " << (capStartIdx+1+j) << " to indices\n";
-            }
-            // Last one
-            this->indices.push_back (capMiddle);
-            //std::cout << "add " << capMiddle << " to indices\n";
-            this->indices.push_back (capStartIdx + segments - 1);
-            //std::cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
-            this->indices.push_back (capStartIdx);
-            //std::cout << "add " << (capStartIdx) << " to indices\n";
-
-            // MIDDLE SECTIONS
-            for (int lsection = 0; lsection < 3; ++lsection) {
-                capStartIdx = idx + 1 + lsection*segments;
-                endStartIdx = capStartIdx + segments;
-                //std::cout << "For lsection " << lsection << " capStartIdx=" << capStartIdx
-                //          << ", and endStartIdx=" << endStartIdx << std::endl;
-                // This does sides between start and end. I want to do this three times.
-                for (int j = 0; j < segments; j++) {
-                    //std::cout << "Triangle 1\n";
-                    this->indices.push_back (capStartIdx + j);
-                    //std::cout << "1. add " << (capStartIdx + j) << " to indices\n";
-                    if (j == (segments-1)) {
-                        this->indices.push_back (capStartIdx);
-                        //std::cout << "1. add " << (capStartIdx) << " to indices\n";
-                    } else {
-                        this->indices.push_back (capStartIdx + 1 + j);
-                        //std::cout << "1. add " << (capStartIdx + j + 1) << " to indices\n";
-                    }
-                    this->indices.push_back (endStartIdx + j);
-                    //std::cout << "1. add " << (endStartIdx + j) << " to indices\n";
-                    // 2:
-                    //std::cout << "Triangle 2\n";
-                    this->indices.push_back (endStartIdx + j);
-                    //std::cout << "2. add " << (endStartIdx + j) << " to indices\n";
-                    if (j == (segments-1)) {
-                        this->indices.push_back (endStartIdx);
-                        //std::cout << "2. add " << (endStartIdx) << " to indices\n";
-                    } else {
-                        this->indices.push_back (endStartIdx + 1 + j);
-                        //std::cout << "2. add " << (endStartIdx + 1 + j) << " to indices\n";
-                    }
-                    if (j == (segments-1)) {
-                        this->indices.push_back (capStartIdx);
-                        //std::cout << "2. add " << (capStartIdx) << " to indices\n";
-                    } else {
-                        this->indices.push_back (capStartIdx + j + 1);
-                        //std::cout << "2. add " << (capStartIdx + j + 1) << " to indices\n";
-                    }
-                }
-            }
-            //std::cout << "endStartIdx after loop = " << endStartIdx << std::endl;
-
-            // bottom cap
-            //std::cout << "vend cap" << std::endl;
-            for (int j = 0; j < segments-1; j++) {
-                this->indices.push_back (endMiddle);
-                //std::cout << "add " << (endMiddle) << " to indices\n";
-                this->indices.push_back (endStartIdx + j);
-                //std::cout << "add " << (endStartIdx + j) << " to indices\n";
-                this->indices.push_back (endStartIdx + 1 + j);
-                //std::cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
-            }
-            // Last one
-            this->indices.push_back (endMiddle);
-            //std::cout << "add " << (endMiddle) << " to indices\n";
-            this->indices.push_back (endStartIdx + segments - 1);
-            //std::cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
-            this->indices.push_back (endStartIdx);
-            //std::cout << "add " << (endStartIdx) << " to indices\n";
-
-            // Update idx
-            idx += nverts;
-        } // end computeTube with randomly initialized end vertices
+            this->computeFlaredTube (idx, start, end, colStart, colEnd, r, r, segments);
+        }
 
         /*!
          * Compute a tube. This version requires unit vectors for orientation of the
@@ -1082,6 +947,190 @@ namespace morph {
             idx += nverts;
         } // end computeTube with ux/uy vectors for faces
 
+        /*!
+         * Create a flared tube from \a start to \a end, with radius \a r at the start and a colour
+         * which transitions from the colour \a colStart to \a colEnd. The radius of the end is
+         * determined by the given angle, flare, in radians.
+         *
+         * \param idx The index into the 'vertex array'
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param colStart The tube starting colour
+         * \param colEnd The tube's ending colour
+         * \param r Radius of the tube
+         * \param segments Number of segments used to render the tube
+         * \param flare The angle, measured wrt the direction of the tube in radians, by which the
+         * tube 'flares'
+         */
+        void computeFlaredTube (GLuint& idx, morph::vec<float> start, morph::vec<float> end,
+                                std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                                float r = 1.0f, int segments = 12, float flare = 0.0f)
+        {
+            // Find the length of the tube
+            morph::vec<float> v = end - start;
+            float l = v.length();
+            // Compute end radius from the length and the flare angle:
+            float r_add = l * std::tan (std::abs(flare)) * (flare > 0.0f ? 1.0f : -1.0f);
+            float r_end = r + r_add;
+            // Now call into the other overload:
+            this->computeFlaredTube (idx, start, end, colStart, colEnd, r, r_end, segments);
+        }
+
+        /*!
+         * Create a flared tube from \a start to \a end, with radius \a r at the start and a colour
+         * which transitions from the colour \a colStart to \a colEnd. The radius of the end is
+         * r_end, given as a function argument.
+         *
+         * \param idx The index into the 'vertex array'
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param colStart The tube starting colour
+         * \param colEnd The tube's ending colour
+         * \param r Radius of the tube's start cap
+         * \param r_end radius of the end cap
+         * \param segments Number of segments used to render the tube
+         */
+        void computeFlaredTube (GLuint& idx, morph::vec<float> start, morph::vec<float> end,
+                                std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                                float r = 1.0f, float r_end = 1.0f, int segments = 12)
+        {
+            // The vector from start to end defines a vector and a plane. Find a
+            // 'circle' of points in that plane.
+            morph::vec<float> vstart = start;
+            morph::vec<float> vend = end;
+            morph::vec<float> v = vend - vstart;
+            v.renormalize();
+
+            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
+            // (v) can be found: Choose random vector vr. A vector inplane = vr ^ v. The
+            // unit in-plane vector is inplane.normalise. Can now use that vector in the
+            // plan to define a point on the circle. Note that this starting point on
+            // the circle is at a random position, which means that this version of
+            // computeTube is useful for tubes that have quite a few segments.
+            morph::vec<float> rand_vec;
+            rand_vec.randomize();
+            morph::vec<float> inplane = rand_vec.cross(v);
+            inplane.renormalize();
+
+            // Now use parameterization of circle inplane = p1-x1 and
+            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
+            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
+            morph::vec<float> v_x_inplane = v.cross(inplane);
+
+            // Push the central point of the start cap - this is at location vstart
+            this->vertex_push (vstart, this->vertexPositions);
+            this->vertex_push (-v, this->vertexNormals);
+            this->vertex_push (colStart, this->vertexColors);
+
+            // Start cap vertices. Draw as a triangle fan, but record indices so that we
+            // only need a single call to glDrawElements.
+            for (int j = 0; j < segments; j++) {
+                // t is the angle of the segment
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                this->vertex_push (-v, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near start cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near end cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r_end + v_x_inplane * std::cos(t) * r_end;
+                this->vertex_push (vend+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap vertices
+            for (int j = 0; j < segments; j++) {
+                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r_end + v_x_inplane * std::cos(t) * r_end;
+                this->vertex_push (vend+c, this->vertexPositions);
+                this->vertex_push (v, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap. Push centre vertex as the last vertex.
+            this->vertex_push (vend, this->vertexPositions);
+            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (colEnd, this->vertexColors);
+
+            // Note: number of vertices = segments * 4 + 2.
+            int nverts = (segments * 4) + 2;
+
+            // After creating vertices, push all the indices.
+            GLuint capMiddle = idx;
+            GLuint capStartIdx = idx + 1u;
+            GLuint endMiddle = idx + (GLuint)nverts - 1u;
+            GLuint endStartIdx = capStartIdx + (3u * segments);
+
+            // Start cap
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (capMiddle);
+                this->indices.push_back (capStartIdx + j);
+                this->indices.push_back (capStartIdx + 1 + j);
+            }
+            // Last one
+            this->indices.push_back (capMiddle);
+            this->indices.push_back (capStartIdx + segments - 1);
+            this->indices.push_back (capStartIdx);
+
+            // Middle sections
+            for (int lsection = 0; lsection < 3; ++lsection) {
+                capStartIdx = idx + 1 + lsection*segments;
+                endStartIdx = capStartIdx + segments;
+                // This does sides between start and end. I want to do this three times.
+                for (int j = 0; j < segments; j++) {
+                    // Triangle 1
+                    this->indices.push_back (capStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + 1 + j);
+                    }
+                    this->indices.push_back (endStartIdx + j);
+                    // Triangle 2
+                    this->indices.push_back (endStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (endStartIdx);
+                    } else {
+                        this->indices.push_back (endStartIdx + 1 + j);
+                    }
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + j + 1);
+                    }
+                }
+            }
+
+            // Bottom cap
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (endMiddle);
+                this->indices.push_back (endStartIdx + j);
+                this->indices.push_back (endStartIdx + 1 + j);
+            }
+            // Last one
+            this->indices.push_back (endMiddle);
+            this->indices.push_back (endStartIdx + segments - 1);
+            this->indices.push_back (endStartIdx);
+
+            // Update idx
+            idx += nverts;
+        } // end computeFlaredTube with randomly initialized end vertices
+
         //! Compute a Quad from 4 arbitrary corners which must be ordered clockwise around the quad.
         void computeFlatQuad (GLuint& idx,
                               vec<float> c1, vec<float> c2,
@@ -1161,8 +1210,6 @@ namespace morph {
             // After creating vertices, push all the indices.
             GLuint capMiddle = idx;
             GLuint capStartIdx = idx + 1;
-            //GLuint endMiddle = idx + (GLuint)nverts - 1;
-            //GLuint endStartIdx = capStartIdx + (3*segments);
 
             // Start cap indices
             for (int j = 0; j < segments-1; j++) {
@@ -1909,9 +1956,7 @@ namespace morph {
                 this->vertex_push (vstart, this->vertexPositions);
                 this->vertex_push (uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
-                //std::cout << "centre point is index " << (idx + startvertices) << std::endl;
                 ++startvertices;
-
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
@@ -1919,10 +1964,8 @@ namespace morph {
                     this->vertex_push (vstart+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
-                    //std::cout << "capvertex is index " << (idx + startvertices) << std::endl;
                     ++startvertices;
                 }
-                //std::cout << "startvertices = " << startvertices << std::endl;
             }
 
             this->vertex_push (c1, this->vertexPositions);
@@ -1947,20 +1990,16 @@ namespace morph {
                 this->vertex_push (vend, this->vertexPositions);
                 this->vertex_push (uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
-                //std::cout << "centre point is index " << (idx + 4 + startvertices + endvertices) << std::endl;
                 ++endvertices;
-
-                // Start cap vertices (a triangle fan)
+                // End cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                     morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
                     this->vertex_push (vend+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
-                    //std::cout << "capvertex is index " << (idx +  4 + startvertices + endvertices) << std::endl;
                     ++endvertices;
                 }
-                //std::cout << "endvertices = " << endvertices << std::endl;
             }
 
             // After creating vertices, push all the indices.
@@ -1970,7 +2009,6 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
                     int inc1 = 1+j;
                     int inc2 = 1+((j+1)%segments);
-                    //std::cout << "tri: " << topcap << "," << topcap+inc1 << "," << topcap+inc2 << std::endl;
                     this->indices.push_back (topcap);
                     this->indices.push_back (topcap+inc1);
                     this->indices.push_back (topcap+inc2);
@@ -1978,8 +2016,7 @@ namespace morph {
                 this->idx += startvertices;
             }
 
-            //std::cout << "Line tri idxs: " << idx << "," << idx+1 << "," << idx+2 << std::endl;
-            //std::cout << "Line tri idxs: " << idx << "," << idx+2 << "," << idx+3 << std::endl;
+            // The line itself
             this->indices.push_back (idx);
             this->indices.push_back (idx+1);
             this->indices.push_back (idx+2);
@@ -1994,14 +2031,12 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
                     int inc1 = 1+j;
                     int inc2 = 1+((j+1)%segments);
-                    //std::cout << "tri: " << botcap << "," << botcap+inc1 << "," << botcap+inc2 << std::endl;
                     this->indices.push_back (botcap);
                     this->indices.push_back (botcap+inc1);
                     this->indices.push_back (botcap+inc2);
                 }
                 this->idx += endvertices;
             }
-            //std::cout << "end computeFlatLine(Caps): idx = " << idx << std::endl;
         } // end computeFlatLine
 
         //! Like computeFlatLine, but this line has no thickness and you can provide the

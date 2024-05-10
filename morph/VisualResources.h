@@ -10,10 +10,16 @@
 
 #pragma once
 
-#ifndef OWNED_MODE
-# define GLFW_INCLUDE_NONE
-# include <GLFW/glfw3.h>
+#ifndef _glfw3_h_
+# ifndef OWNED_MODE
+#  define GLFW_INCLUDE_NONE
+#  include <GLFW/glfw3.h>
+#  ifndef VISUAL_MANAGES_GLFW
+#   define VISUAL_MANAGES_GLFW 1 // Probably already defined in Visual.h
+#  endif
+# endif
 #endif
+
 #include <iostream>
 #include <tuple>
 #include <set>
@@ -51,8 +57,10 @@ namespace morph {
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
 
 #ifndef OWNED_MODE
+# ifdef VISUAL_MANAGES_GLFW
             // Shut down GLFW
             glfwTerminate();
+# endif
 #endif
         }
 
@@ -64,11 +72,13 @@ namespace morph {
             // Set up error callback
             glfwSetErrorCallback (morph::VisualResources<glver>::errorCallback);
 
+#ifdef HAVE_A_USE_FOR_MONITOR_CONTENT_SCALE
             // See https://www.glfw.org/docs/latest/monitor_guide.html
-            GLFWmonitor* primary = glfwGetPrimaryMonitor();
+            GLFWmonitor* primary = glfwGetPrimaryMonitor(); // glfw 3.0+
+            if (primary == nullptr) { throw std::runtime_error ("Primary was null"); }
             float xscale, yscale;
-            glfwGetMonitorContentScale(primary, &xscale, &yscale);
-
+            glfwGetMonitorContentScale (primary, &xscale, &yscale); // glfw 3.3+
+#endif
             if constexpr (morph::gl::version::gles (glver) == true) {
                 glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
                 glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
@@ -86,8 +96,10 @@ namespace morph {
         void init()
         {
 #ifndef OWNED_MODE
+# ifdef VISUAL_MANAGES_GLFW
             // The initial init only does glfw. Have to wait until later for Freetype init
             this->glfw_init();
+# endif
 #endif
         }
 

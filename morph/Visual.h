@@ -25,20 +25,34 @@
 //
 // Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
 // morph::Visual is the owner of a Window provided by GLFW.
-#ifndef OWNED_MODE
-# define GLFW_INCLUDE_NONE // Here, we explicitly include GL3/gl3.h and GL/glext.h, leaving none of this to GLFW
-# include <GLFW/glfw3.h>
-#endif
 
-// Include the correct GL headers before VisualCommon.h (VisualModel.h will bring these in, too)
-#ifndef USE_GLEW
-# ifdef __OSX__
-#  include <OpenGL/gl3.h>
-# else
-#  include <GL3/gl3.h>
-#  include <GL/glext.h>
+#ifdef _glfw3_h_ // glfw3 has already been externally included
+# ifdef OWNED_MODE
+#  error "glfw3 has been #included but OWNED_MODE is defined"
 # endif
-#endif
+#else // glfw3 not yet included
+# ifndef OWNED_MODE
+#  define GLFW_INCLUDE_NONE // Here, we tell GLFW that we will explicitly include GL3/gl3.h and GL/glext.h
+#  include <GLFW/glfw3.h>
+#  ifndef VISUAL_MANAGES_GLFW
+#   define VISUAL_MANAGES_GLFW 1 // Used in VisualResources.h
+#  endif
+# endif
+#endif // _glfw3_h_
+
+#if defined __gl3_h_ || defined __gl_h_
+// GL headers appear to have been externally included.
+#else
+// Include the correct GL headers before VisualCommon.h (VisualModel.h will bring these in, too)
+# ifndef USE_GLEW
+#  ifdef __OSX__
+#   include <OpenGL/gl3.h>
+#  else
+#   include <GL3/gl3.h>
+#   include <GL/glext.h>
+#  endif
+# endif
+#endif // GL headers
 
 #include <morph/gl/version.h>
 #include <morph/VisualModel.h>
@@ -936,9 +950,9 @@ namespace morph {
 #endif
 
             unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
-            std::cout << "morph::Visual<glver=" << morph::gl::version::vstring (glver)
-                      << "> version " << morph::version_string()
-                      << " running on OpenGL Version " << glv << std::endl;
+            std::cout << "This is version " << morph::version_string()
+                      << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)
+                      << "> running on OpenGL Version " << glv << std::endl;
 
 #ifndef OWNED_MODE
             // Swap as fast as possible (fixes lag of scene with mouse movements)

@@ -10,13 +10,18 @@
 
 #pragma once
 
-#ifndef USE_GLEW
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
+#if defined __gl3_h_ || defined __gl_h_
+// GL headers have been externally included
 #else
-# include <GL3/gl3.h>
+# ifndef USE_GLEW
+#  ifdef __OSX__
+#   include <OpenGL/gl3.h>
+#  else
+#   include <GL3/gl3.h>
+#  endif
+# endif
 #endif
-#endif
+
 #include <morph/gl/version.h>
 #include <morph/TransformMatrix.h>
 #include <morph/vec.h>
@@ -85,7 +90,8 @@ namespace morph {
             this->centre_horz = _centre_horz;
         }
 
-        TextFeatures (const float _fontsize, const int _fontres, const std::array<float, 3> _colour = morph::colour::black, const bool _centre_horz = false)
+        TextFeatures (const float _fontsize, const int _fontres,
+                      const std::array<float, 3> _colour = morph::colour::black, const bool _centre_horz = false)
             : fontsize(_fontsize), fontres(_fontres), colour(_colour)
         {
             this->centre_horz = _centre_horz;
