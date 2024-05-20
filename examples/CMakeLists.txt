@@ -302,6 +302,12 @@ if(USE_GLEW)
   target_link_libraries(rod GLEW::GLEW)
 endif()
 
+add_executable(cone cone.cpp)
+target_link_libraries(cone OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(cone GLEW::GLEW)
+endif()
+
 add_executable(tri tri.cpp)
 target_link_libraries(tri OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
