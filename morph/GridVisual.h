@@ -1,12 +1,5 @@
 #pragma once
 
-#ifndef USE_GLEW
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
-#endif
-#endif
 #include <morph/ColourMap.h>
 #include <morph/VisualDataModel.h>
 #include <morph/Grid.h>

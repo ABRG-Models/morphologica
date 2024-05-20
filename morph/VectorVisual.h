@@ -4,13 +4,7 @@
  * \file Declares VectorVisual to visualize a vector.
  */
 
-#ifndef USE_GLEW
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
-#endif
-#endif
+#include <morph/VisualModel.h>
 #include <array>
 #include <morph/vec.h>
 #include <morph/colour.h>
