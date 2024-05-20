@@ -1593,7 +1593,7 @@ namespace morph {
                 float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 // Subtract the vector which makes this circle
-                c = c + (c * ringoffset);
+                c = c + (v * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
@@ -1603,7 +1603,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
-                c = c + (c * ringoffset);
+                c = c + (v * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -1614,7 +1614,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
-                c = c + (c * ringoffset);
+                c = c + (v * ringoffset);
                 this->vertex_push (vtip, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
