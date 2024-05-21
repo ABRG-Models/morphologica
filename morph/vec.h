@@ -241,7 +241,7 @@ namespace morph {
         }
 
         //! Stream the elements of the vector into \a ss as a comma separated list.
-        void str_comma_separated (std::stringstream& ss) const
+        void str_comma_separated (std::stringstream& ss, const char sep = ',') const
         {
             ss << std::setprecision (std::numeric_limits<S>::max_digits10);
             bool first = true;
@@ -250,9 +250,16 @@ namespace morph {
                     ss << i;
                     first = false;
                 } else {
-                    ss << "," << i;
+                    ss << sep << i;
                 }
             }
+        }
+
+        std::string str_comma_separated (const char sep = ',') const
+        {
+            std::stringstream ss;
+            this->str_comma_separated (ss, sep);
+            return ss.str();
         }
 
         /*!

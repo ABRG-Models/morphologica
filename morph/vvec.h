@@ -241,7 +241,8 @@ namespace morph {
          * num_in_line: How many elements to output before inserting a newline
          */
         void str_comma_separated (std::stringstream& ss,
-                                  const unsigned int num_in_line=std::numeric_limits<unsigned int>::max()) const
+                                  const unsigned int num_in_line=std::numeric_limits<unsigned int>::max(),
+                                  const char sep = ',') const
         {
             if (this->empty()) { return; }
             ss << std::setprecision (std::numeric_limits<S>::max_digits10);
@@ -253,7 +254,7 @@ namespace morph {
                     first = false;
                     if (elementcount == num_in_line-1) { ss << "\n"; }
                 } else {
-                    ss << "," << (elementcount%num_in_line==0 ? "\n" : "") << i;
+                    ss << sep << (elementcount%num_in_line==0 ? "\n" : "") << i;
                 }
                 ++elementcount;
             }
