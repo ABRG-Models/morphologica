@@ -36,10 +36,10 @@ namespace morph {
     class TransformMatrix
     {
     private:
-        const Flt oneOver360   = 0.00277777777778;
-        const Flt pi           = 3.14159265358979;
-        const Flt piOver360    = 0.00872664625997;
-        const Flt twoPiOver360 = 0.01745329251994;
+        const Flt piOver360 = Flt{0.00872664625997};
+        // Would prefer a constexpr:
+        // static constexpr Flt piOver360 = Flt{0.00872664625997}; // or use of morph::mathconst
+        // But this triggers an ambiguous overload error to do with operator=
 
     public:
         //! Default constructor
