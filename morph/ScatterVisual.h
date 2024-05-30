@@ -116,6 +116,11 @@ namespace morph {
                 } else {
                     this->computeSphere (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
                 }
+
+                if (this->labelIndices == true) {
+                    // Draw an index label...
+                    this->addLabel (std::to_string (i), (*this->dataCoords)[i] + labelOffset, morph::TextFeatures(0.05f) );
+                }
             }
         }
 
@@ -134,6 +139,11 @@ namespace morph {
         float hue1 = 0.1f;
         float hue2 = 0.5f;
         float hue3 = -1.0f;
+
+        // Do we add index labels?
+        bool labelIndices = false;
+
+        morph::vec<float, 3> labelOffset = { 0.04f, 0.0f, 0.0f };
     };
 
 } // namespace morph
