@@ -46,7 +46,7 @@ int main()
         v.bindmodel (sv);
         sv->setDataCoords (&icoverts);
         sv->setScalarData (&data);
-        sv->radiusFixed = 0.03f;
+        sv->radiusFixed = 0.01f;
         sv->colourScale = scale;
         sv->cm.setType (morph::ColourMapType::Plasma);
         sv->labelIndices = true;
@@ -58,7 +58,7 @@ int main()
         v.bindmodel (sv);
         sv->setDataCoords (&fcentres);
         sv->setScalarData (&data2);
-        sv->radiusFixed = 0.05f;
+        sv->radiusFixed = 0.01f;
         sv->colourScale = scale;
         sv->cm.setType (morph::ColourMapType::Plasma);
         sv->labelIndices = true;
@@ -75,6 +75,7 @@ int main()
                                                                  icoverts[icofaces[i][2]],
                                                                  colr);
             v.bindmodel (tv);
+            tv->setAlpha (0.8f);
             tv->finalize();
             v.addVisualModel (tv);
         }

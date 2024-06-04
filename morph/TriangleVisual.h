@@ -72,8 +72,8 @@ namespace morph {
             // Draw a triangle. That's it.
             this->computeTriangle (this->idx, this->coord1, this->coord2, this->coord3, this->col);
 
-            std::cout << "idx now has value: " << this->idx << std::endl;
-            std::cout << "vertexPositions has size " <<  this->vertexPositions.size()<< std::endl;
+            //std::cout << "idx now has value: " << this->idx << std::endl;
+            //std::cout << "vertexPositions has size " <<  this->vertexPositions.size()<< std::endl;
         }
 
         //! The position of the vertices of the triangle
