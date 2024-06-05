@@ -26,7 +26,7 @@ int main()
     // First create an empty polyhedron object
     morph::geometry::polyhedron<float> geo;
     // ...then pass it into a geodesic polyhedron creation function
-    morph::geometry::icosahedral_geodesic<float, 3> (geo);
+    morph::geometry::icosahedral_geodesic<float> (geo, 3);
 
     // Coordinates of face centres (for debug/viz)
     //morph::vvec<morph::vec<float, 3>> fcentres(icofaces.size(), {2.5f, 0.0f, 0.0f});

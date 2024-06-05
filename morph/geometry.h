@@ -109,18 +109,20 @@ namespace morph {
          *
          * \tparam iterations The number f times to subdivide the initial icosahedron
          */
-        template<typename F, int iterations>
-        void icosahedral_geodesic (morph::geometry::polyhedron<F>& geo)
+        template<typename F>
+        void icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
         {
             // From iterations, we can compute the number of vertices, edges and faces
             // expected. (see https://en.wikipedia.org/wiki/Geodesic_polyhedron)
-            constexpr int T = std::pow (4, iterations);
-            constexpr int n_verts = 10 * T + 2;
-            constexpr int n_faces = 20 * T; // also, n_edges is 30T, but we don't need it
+            const int T = std::pow (4, iterations);
+            const int n_verts = 10 * T + 2;
+            const int n_faces = 20 * T; // also, n_edges is 30T, but we don't need it
 
             // Start out with an icosahedron
             if (geo.vertices.empty() && geo.faces.empty()) {
                 geo = morph::geometry::icosahedron<F>();
+            } else {
+                throw std::runtime_error ("Pass in an empty polyhedron");
             }
 
             // A special comparison function to order vertices in our Geodesic polyhedron. The
