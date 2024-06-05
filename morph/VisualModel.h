@@ -1552,7 +1552,7 @@ namespace morph {
                                  std::array<std::array<float, 3>, 20> face_colours,
                                  float r = 1.0f) // radius or side length?
         {
-            morph::geometry::polygon<float> ico = morph::geometry::icosahedron<float>();
+            morph::geometry::polyhedron<float> ico = morph::geometry::icosahedron<float>();
 
             for (int j = 0; j < 20; ++j) {
                 // Compute the face normal

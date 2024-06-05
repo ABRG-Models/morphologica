@@ -1,3 +1,7 @@
+/*
+ * Geometry algorithms. Initially, the code to generate icosahedrons and geodesic polyhedrons.
+ */
+
 #pragma once
 
 #include <map>
@@ -13,9 +17,9 @@
 namespace morph {
     namespace geometry {
 
-        //! a container class for the vertices and faces of a polygon
+        //! a container class for the vertices and faces of a polyhedron
         template<typename F>
-        struct polygon
+        struct polyhedron
         {
             //! A list of the vertices
             morph::vvec<morph::vec<F, 3>> vertices;
@@ -23,14 +27,14 @@ namespace morph {
             morph::vvec<morph::vec<int, 3>> faces;
         };
 
-        //! Return a geometry::polygon object containing vertices and face indices for
+        //! Return a geometry::polyhedron object containing vertices and face indices for
         //! an icosahedron
         template<typename F>
-        static polygon<F> icosahedron()
+        static polyhedron<F> icosahedron()
         {
             constexpr F phi = (F{1} + std::sqrt(F{5})) / F{2};
 
-            morph::geometry::polygon<F> ico;
+            morph::geometry::polyhedron<F> ico;
 
             // Arranged 'in spiral order', going with positive angle in x/y plane (i.e. around z axis)
             ico.vertices = {

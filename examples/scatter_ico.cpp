@@ -26,7 +26,7 @@ int main()
     //v.coordArrowsInScene = true;
     v.lightingEffects();
 
-    morph::geometry::polygon<float> ico = morph::geometry::icosahedron<float>();
+    morph::geometry::polyhedron<float> ico = morph::geometry::icosahedron<float>();
 
     // Coordinates of face centres
     morph::vvec<morph::vec<float, 3>> fcentres(20, {0.0, 0.0, 0.0});

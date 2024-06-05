@@ -24,9 +24,7 @@ int main()
     v.lightingEffects();
 
     // First create an icosahedron...
-    //morph::vvec<morph::vec<float, 3>> icoverts(12, {0.0f, 0.0f, 0.0f});
-    //morph::vvec<morph::vec<int, 3>> icofaces(20, {0, 0, 0});
-    morph::geometry::polygon geo = morph::geometry::icosahedron<float>();
+    morph::geometry::polyhedron geo = morph::geometry::icosahedron<float>();
     // ...then make it into a geodesic polyhedron
     morph::geometry::subdivide_triangles<float, 3> (geo.vertices, geo.faces);
 
