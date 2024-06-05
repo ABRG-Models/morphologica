@@ -23,10 +23,10 @@ int main()
     v.showCoordArrows = true;
     v.lightingEffects();
 
-    // First create an icosahedron...
-    morph::geometry::polyhedron geo = morph::geometry::icosahedron<float>();
-    // ...then make it into a geodesic polyhedron
-    morph::geometry::subdivide_triangles<float, 3> (geo.vertices, geo.faces);
+    // First create an empty polyhedron object
+    morph::geometry::polyhedron<float> geo;
+    // ...then pass it into a geodesic polyhedron creation function
+    morph::geometry::icosahedral_geodesic<float, 3> (geo);
 
     // Coordinates of face centres (for debug/viz)
     //morph::vvec<morph::vec<float, 3>> fcentres(icofaces.size(), {2.5f, 0.0f, 0.0f});
