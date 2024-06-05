@@ -32,21 +32,21 @@ namespace morph {
 
             // Arranged 'in spiral order', going with positive angle in x/y plane (i.e. around z axis)
             vertices = {
-                {F{-1},  phi,   F{0} },
+                { F{-1}, phi,   F{0}  },
 
-                { F{1},  phi,   F{0} },
-                { F{0},  F{1}, -phi  },
-                {-phi,   F{0}, F{-1} },
-                {-phi,   F{0},  F{1} },
-                { F{0},  F{1},  phi  },
+                { F{1},  phi,   F{0}  },
+                { F{0},  F{1},  -phi  },
+                { -phi,  F{0},  F{-1} },
+                { -phi,  F{0},  F{1}  },
+                { F{0},  F{1},  phi   },
 
-                { phi,   F{0},  F{1} },
-                { phi,   F{0}, F{-1} },
-                { F{0}, F{-1}, -phi  },
-                {F{-1}, -phi,   F{0} },
-                { F{0}, F{-1},  phi  },
+                { phi,   F{0},  F{1}  },
+                { phi,   F{0},  F{-1} },
+                { F{0},  F{-1}, -phi  },
+                { F{-1}, -phi,  F{0}  },
+                { F{0},  F{-1}, phi   },
 
-                { F{1}, -phi,   F{0} }
+                { F{1},  -phi,  F{0}  }
             };
 
             // Set up the transform matrix for our rotation, made up of a rotation about the z axis...
