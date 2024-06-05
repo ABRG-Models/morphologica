@@ -11,6 +11,7 @@
 #include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
+#include <morph/geometry.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -27,7 +28,7 @@ int main()
 
     morph::vvec<morph::vec<float, 3>> icoverts(12, {0.0, 0.0, 0.0});
     morph::vvec<morph::vec<int, 3>> icofaces(20, {0, 0, 0});
-    morph::VisualModel<>::icosahedron (icoverts, icofaces);
+    morph::geometry::icosahedron (icoverts, icofaces);
 
     // Coordinates of face centres
     morph::vvec<morph::vec<float, 3>> fcentres(20, {0.0, 0.0, 0.0});

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/Quaternion.h>
