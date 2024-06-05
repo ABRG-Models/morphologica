@@ -23,15 +23,17 @@ namespace morph {
             morph::vvec<morph::vec<int, 3>> faces;
         };
 
-        //! Compute the vertices and face indices for an icosahedron
+        //! Return a geometry::polygon object containing vertices and face indices for
+        //! an icosahedron
         template<typename F>
-        static void icosahedron (morph::vvec<morph::vec<F, 3>>& vertices,
-                                 morph::vvec<morph::vec<int, 3>>& faces)
+        static polygon<F> icosahedron()
         {
             constexpr F phi = (F{1} + std::sqrt(F{5})) / F{2};
 
+            morph::geometry::polygon<F> ico;
+
             // Arranged 'in spiral order', going with positive angle in x/y plane (i.e. around z axis)
-            vertices = {
+            ico.vertices = {
                 { F{-1}, phi,   F{0}  },
 
                 { F{1},  phi,   F{0}  },
@@ -61,19 +63,21 @@ namespace morph {
 
             // For each vertex, apply rotational transform and renormalize
             morph::vec<F, 4> v4;
-            for (auto &vertex : vertices) {
+            for (auto& vertex : ico.vertices) {
                 v4 = rmat * vertex;         // Apply the rotation (returns 4D vector)
                 vertex = v4.less_one_dim(); // Extract 3D vector
                 vertex.renormalize();       // Make it length 1
             }
-            // after this, the vertex order is no longer spiral from top to bottom...
+            // after this, the vertex order is no longer spiral from top to bottom
 
             // Each face is defined by three vertices
-            faces = {
+            ico.faces = {
                 {0, 1, 2}, {0, 2, 3}, {0, 3, 4}, {0, 4, 5}, {0, 5, 1},
                 {5, 6, 1}, {1, 6, 7}, {1, 7, 2}, {2, 7, 8}, {2, 8, 3}, {3, 8, 9}, {3, 9, 4}, {4, 9, 10}, {4, 10, 5}, {5, 10, 6},
                 {10, 11, 6}, {6, 11, 7}, {7, 11, 8}, {8, 11, 9}, {9, 11, 10}
             };
+
+            return ico;
         }
 
         /*!

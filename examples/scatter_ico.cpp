@@ -26,18 +26,16 @@ int main()
     //v.coordArrowsInScene = true;
     v.lightingEffects();
 
-    morph::vvec<morph::vec<float, 3>> icoverts(12, {0.0, 0.0, 0.0});
-    morph::vvec<morph::vec<int, 3>> icofaces(20, {0, 0, 0});
-    morph::geometry::icosahedron (icoverts, icofaces);
+    morph::geometry::polygon<float> ico = morph::geometry::icosahedron<float>();
 
     // Coordinates of face centres
     morph::vvec<morph::vec<float, 3>> fcentres(20, {0.0, 0.0, 0.0});
     for (unsigned int i = 0; i < 20; ++i) {
-        fcentres[i] = (icoverts[icofaces[i][0]] + icoverts[icofaces[i][1]] + icoverts[icofaces[i][2]])/3.0f;
+        fcentres[i] = (ico.vertices[ico.faces[i][0]] + ico.vertices[ico.faces[i][1]] + ico.vertices[ico.faces[i][2]]).as_float() / 3.0f;
     }
     try {
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
-        morph::Scale<float> scale;
+        morph::Scale<float, float> scale;
         scale.setParams (1.0, 0.0);
 
         morph::vvec<float> data(12, 0.06f);
@@ -45,7 +43,7 @@ int main()
 
         auto sv = std::make_unique<morph::ScatterVisual<float>> (offset);
         v.bindmodel (sv);
-        sv->setDataCoords (&icoverts);
+        sv->setDataCoords (&ico.vertices);
         sv->setScalarData (&data);
         sv->radiusFixed = 0.01f;
         sv->colourScale = scale;
@@ -71,9 +69,9 @@ int main()
         for (unsigned int i = 0; i < 20; ++i) {
             std::array<float, 3> colr = cm.convert (i/20.0f);
             auto tv = std::make_unique<morph::TriangleVisual<>> (offset,
-                                                                 icoverts[icofaces[i][0]],
-                                                                 icoverts[icofaces[i][1]],
-                                                                 icoverts[icofaces[i][2]],
+                                                                 ico.vertices[ico.faces[i][0]],
+                                                                 ico.vertices[ico.faces[i][1]],
+                                                                 ico.vertices[ico.faces[i][2]],
                                                                  colr);
             v.bindmodel (tv);
             tv->setAlpha (0.8f);

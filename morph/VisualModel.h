@@ -1552,16 +1552,14 @@ namespace morph {
                                  std::array<std::array<float, 3>, 20> face_colours,
                                  float r = 1.0f) // radius or side length?
         {
-            morph::vvec<morph::vec<float, 3>> icoverts(12, morph::vec<float, 3>({0.0f, 0.0f, 0.0f}));
-            morph::vvec<morph::vec<int, 3>> icofaces(20, morph::vec<int, 3>({0, 0, 0}));
-            morph::geometry::icosahedron<float> (icoverts, icofaces); // Returns normalized icosahedron
+            morph::geometry::polygon<float> ico = morph::geometry::icosahedron<float>();
 
             for (int j = 0; j < 20; ++j) {
                 // Compute the face normal
-                morph::vec<float, 3> norml = (icoverts[icofaces[j][0]] + icoverts[icofaces[j][1]] + icoverts[icofaces[j][2]])/3.0f;
-                this->vertex_push (centre + (icoverts[icofaces[j][0]] * r), this->vertexPositions);
-                this->vertex_push (centre + (icoverts[icofaces[j][1]] * r), this->vertexPositions);
-                this->vertex_push (centre + (icoverts[icofaces[j][2]] * r), this->vertexPositions);
+                morph::vec<float, 3> norml = (ico.vertices[ico.faces[j][0]] + ico.vertices[ico.faces[j][1]] + ico.vertices[ico.faces[j][2]])/3.0f;
+                this->vertex_push (centre + (ico.vertices[ico.faces[j][0]] * r), this->vertexPositions);
+                this->vertex_push (centre + (ico.vertices[ico.faces[j][1]] * r), this->vertexPositions);
+                this->vertex_push (centre + (ico.vertices[ico.faces[j][2]] * r), this->vertexPositions);
                 for (int i = 0; i < 3; ++i) {
                     this->vertex_push (norml, this->vertexNormals);
                     this->vertex_push (face_colours[j], this->vertexColors);

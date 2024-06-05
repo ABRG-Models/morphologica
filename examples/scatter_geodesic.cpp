@@ -24,17 +24,17 @@ int main()
     v.lightingEffects();
 
     // First create an icosahedron...
-    morph::vvec<morph::vec<float, 3>> icoverts(12, {0.0f, 0.0f, 0.0f});
-    morph::vvec<morph::vec<int, 3>> icofaces(20, {0, 0, 0});
-    morph::geometry::icosahedron<float> (icoverts, icofaces);
+    //morph::vvec<morph::vec<float, 3>> icoverts(12, {0.0f, 0.0f, 0.0f});
+    //morph::vvec<morph::vec<int, 3>> icofaces(20, {0, 0, 0});
+    morph::geometry::polygon geo = morph::geometry::icosahedron<float>();
     // ...then make it into a geodesic polyhedron
-    morph::geometry::subdivide_triangles<float, 3> (icoverts, icofaces);
+    morph::geometry::subdivide_triangles<float, 3> (geo.vertices, geo.faces);
 
     // Coordinates of face centres (for debug/viz)
     //morph::vvec<morph::vec<float, 3>> fcentres(icofaces.size(), {2.5f, 0.0f, 0.0f});
-    morph::vvec<morph::vec<float, 3>> fcentres(icofaces.size(), {0.0f, 0.0f, 0.0f});
-    for (unsigned int i = 0; i < icofaces.size(); ++i) {
-        fcentres[i] += (icoverts[icofaces[i][0]] + icoverts[icofaces[i][1]] + icoverts[icofaces[i][2]])/3.0f;
+    morph::vvec<morph::vec<float, 3>> fcentres(geo.faces.size(), {0.0f, 0.0f, 0.0f});
+    for (unsigned int i = 0; i < geo.faces.size(); ++i) {
+        fcentres[i] += (geo.vertices[geo.faces[i][0]] + geo.vertices[geo.faces[i][1]] + geo.vertices[geo.faces[i][2]])/3.0f;
     }
 
     try {
@@ -42,12 +42,12 @@ int main()
         morph::Scale<float> scale;
         scale.setParams (1.0f, 0.0f);
 
-        morph::vvec<float> data(icoverts.size(), 0.06f);
-        morph::vvec<float> data2(icofaces.size(), 0.95f);
+        morph::vvec<float> data(geo.vertices.size(), 0.06f);
+        morph::vvec<float> data2(geo.faces.size(), 0.95f);
 #if 1
         auto sv = std::make_unique<morph::ScatterVisual<float>> (offset);
         v.bindmodel (sv);
-        sv->setDataCoords (&icoverts);
+        sv->setDataCoords (&geo.vertices);
         sv->setScalarData (&data);
         sv->radiusFixed = 0.005f;
         sv->colourScale = scale;
@@ -76,13 +76,13 @@ int main()
 #if 1
         // Triangle visuals for the faces
         morph::ColourMap<float> cm(morph::ColourMapType::Jet);
-        for (unsigned int i = 0; i < icofaces.size(); ++i) {
-            std::array<float, 3> colr = cm.convert (i/static_cast<float>(icofaces.size()));
-            //std::cout << "Draw triangle with vertices: " << icofaces[i] << std::endl;
+        for (unsigned int i = 0; i < geo.faces.size(); ++i) {
+            std::array<float, 3> colr = cm.convert (i/static_cast<float>(geo.faces.size()));
+            //std::cout << "Draw triangle with vertices: " << geo.faces[i] << std::endl;
             auto tv = std::make_unique<morph::TriangleVisual<>> (offset,
-                                                                 icoverts[icofaces[i][0]],
-                                                                 icoverts[icofaces[i][1]],
-                                                                 icoverts[icofaces[i][2]],
+                                                                 geo.vertices[geo.faces[i][0]],
+                                                                 geo.vertices[geo.faces[i][1]],
+                                                                 geo.vertices[geo.faces[i][2]],
                                                                  colr);
             v.bindmodel (tv);
             tv->setAlpha (0.8f);

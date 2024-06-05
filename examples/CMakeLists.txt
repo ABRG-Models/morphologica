@@ -212,8 +212,6 @@ if(USE_GLEW)
   target_link_libraries(scatter_geodesic GLEW::GLEW)
 endif()
 
-add_executable(vtx_ordering vtx_ordering.cpp)
-
 add_executable(scatter_dynamic scatter_dynamic.cpp)
 target_link_libraries(scatter_dynamic OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
