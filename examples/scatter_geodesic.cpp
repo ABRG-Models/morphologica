@@ -438,7 +438,7 @@ int main()
         sv->finalize();
         v.addVisualModel (sv);
 #endif
-#if 0
+#if 1
         // Use a second scatter visual to show the centre of each face, numbered in a different colour
         auto sv2 = std::make_unique<morph::ScatterVisual<float>> (offset);
         v.bindmodel (sv2);
@@ -448,6 +448,8 @@ int main()
         sv2->colourScale = scale;
         sv2->cm.setType (morph::ColourMapType::Plasma);
         sv2->labelIndices = true;
+        sv2->labelOffset = { 0.01f, 0.0f, 0.0f };
+        sv2->labelSize = 0.02f;
         sv2->finalize();
         v.addVisualModel (sv2);
 #endif

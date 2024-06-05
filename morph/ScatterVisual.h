@@ -119,7 +119,7 @@ namespace morph {
 
                 if (this->labelIndices == true) {
                     // Draw an index label...
-                    this->addLabel (std::to_string (i), (*this->dataCoords)[i] + labelOffset, morph::TextFeatures(0.05f) );
+                    this->addLabel (std::to_string (i), (*this->dataCoords)[i] + labelOffset, morph::TextFeatures(labelSize) );
                 }
             }
         }
@@ -144,6 +144,7 @@ namespace morph {
         bool labelIndices = false;
 
         morph::vec<float, 3> labelOffset = { 0.04f, 0.0f, 0.0f };
+        float labelSize = 0.03f;
     };
 
 } // namespace morph
