@@ -1554,7 +1554,7 @@ namespace morph {
         {
             morph::vvec<morph::vec<float, 3>> icoverts(12, morph::vec<float, 3>({0.0f, 0.0f, 0.0f}));
             morph::vvec<morph::vec<int, 3>> icofaces(20, morph::vec<int, 3>({0, 0, 0}));
-            morph::geometry::icosahedron (icoverts, icofaces); // Returns normalized icosahedron
+            morph::geometry::icosahedron<float> (icoverts, icofaces); // Returns normalized icosahedron
 
             for (int j = 0; j < 20; ++j) {
                 // Compute the face normal
