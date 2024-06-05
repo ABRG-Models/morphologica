@@ -14,7 +14,30 @@
 #include <cmath>
 #include <array>
 
-// function to subdivide triangles to make a geodesic
+/*!
+ * A function to subdivide the triangles of an icosahedron to make a geodesic polynomial
+ * sphere. The inputs are the vertices (3D coordinates) and faces (sets of 3 indices)
+ * that define an icosahedron. The inputs are resized and re-populated with the vertices
+ * and faces of the geodesic sphere obtained by sub-dividing the triangles of the
+ * icosahedron 'iterations' times. In principle this algorithm could be applied to other
+ * input shapes, such as an augmented dodecahedron ('augmentation' is the pre-processing
+ * step of subdivision of the non-triangular faces into triangles). Hwoever, the runtime
+ * tests for n_verts and n_faces assume the input shape was an icosahedron.
+ *
+ * Importantly, in this algorithm, the vertices and the faces are *ordered* in a spiral
+ * order from the vertex coordinate (or face centroid coordinate) with maximum z value
+ * down to the one with minimum z value. This generates memory structures that are
+ * easier to iterate through and more useful for visualization.
+ *
+ * \param vertices Input/output. Provide 12 vertices of an icosahedron.
+ *
+ * \param faces Input/output. Provide 20 triplets of indices into vertices that define
+ * the 20 faces of an icosahedron.
+ *
+ * \tparam F The floating point type for the coordinate elements. Use float or double.
+ *
+ * \tparam iterations The number f times to subdivide
+ */
 template<typename F, int iterations>
 void subdivide_triangles (morph::vvec<morph::vec<F, 3>>& vertices,
                           morph::vvec<morph::vec<int, 3>>& faces)
@@ -25,12 +48,16 @@ void subdivide_triangles (morph::vvec<morph::vec<F, 3>>& vertices,
     constexpr int n_verts = 10 * T + 2;
     constexpr int n_faces = 20 * T; // also, n_edges is 30T, but we don't need it
 
-    // Special comparison function to order vertices in a Geodesic polyhedron
+    // A special comparison function to order vertices in our Geodesic polyhedron. The
+    // vertices (or face centroids) are arranged in a spiral, from z_max to z_min,
+    // spiralling anticlockwise in the x-y plane (that is, with decreasing value in the
+    // z axis and with increasing angle in the x-y plane)
     auto _vtx_cmp = [](morph::vec<F, 3> a, morph::vec<F, 3> b)
     {
+        constexpr F z_thresh = 10 * std::numeric_limits<F>::epsilon();
         // Compare first by vertex's z location
         bool is_less_than = false;
-        if (std::abs(a[2] - b[2]) < 10 * std::numeric_limits<F>::epsilon()) {
+        if (std::abs(a[2] - b[2]) < z_thresh) {
             // and then by rotational angle in the x-y plane
             F angle_a = std::atan2 (a[1], a[0]);
             F angle_b = std::atan2 (b[1], b[0]);
@@ -49,9 +76,9 @@ void subdivide_triangles (morph::vvec<morph::vec<F, 3>>& vertices,
     std::map<morph::vec<F, 3>, int, decltype(_vtx_cmp)> vertices_map(_vtx_cmp);
     std::map<int, int> idx_remap;
 
-    static constexpr bool debug_vertices = false;
-    static constexpr bool debug_faces = false;
-    static constexpr bool debug_general = false;
+    constexpr bool debug_vertices = false;
+    constexpr bool debug_faces = false;
+    constexpr bool debug_general = false;
 
     for (int i = 0; i < iterations; ++i) {
 
@@ -227,9 +254,13 @@ void subdivide_triangles (morph::vvec<morph::vec<F, 3>>& vertices,
     }
 
     // Check our structures against n_faces and n_verts
-    std::cout << "vertices.size(): " << vertices.size() << " n_verts: " << n_verts << std::endl;
+    if constexpr (debug_general) {
+        std::cout << "vertices.size(): " << vertices.size() << " n_verts: " << n_verts << std::endl;
+    }
     if (static_cast<int>(vertices.size()) != n_verts) { throw std::runtime_error ("vertices has wrong size"); }
-    std::cout << "faces.size(): " << faces.size() << " n_faces: " << n_faces << std::endl;
+    if constexpr (debug_general) {
+        std::cout << "faces.size(): " << faces.size() << " n_faces: " << n_faces << std::endl;
+    }
     if (static_cast<int>(faces.size()) != n_faces) { throw std::runtime_error ("faces has wrong size"); }
 }
 
