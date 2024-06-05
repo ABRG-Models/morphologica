@@ -15,146 +15,6 @@
 #include <array>
 
 // function to subdivide triangles to make a geodesic
-void subdivide_triangles_once (morph::vvec<morph::vec<float, 3>>& vertices,
-                               morph::vvec<morph::vec<int, 3>>& faces, const int iteration)
-{
-    // From the current iteration, we can compute the number of vertices, edges and faces
-    // expected. (see https://en.wikipedia.org/wiki/Geodesic_polyhedron)
-    const int T = std::pow (4, iteration);
-    const int n_verts = 10 * T + 2;
-    const int n_faces = 20 * T; // also, n_edges is 30T, but we don't need it
-
-    // Get a characteristic length scale from vertices for the icosahedron
-    const float length_scale = (vertices[faces[0][0]] - vertices[faces[0][1]]).length();
-    const float z_thresh = (length_scale / std::sqrt(T)) * 0.1f;
-
-    // Special comparison function to order vertices in a Geodesic polyhedron
-    auto _vtx_cmp = [z_thresh](morph::vec<float, 3> a, morph::vec<float, 3> b)
-    {
-        // Compare first by vertex's z location
-        bool is_less_than = false;
-        if (std::abs(a[2] - b[2]) < z_thresh) {
-            // and then by rotational angle in the x-y plane
-            float angle_a = std::atan2 (a[1], a[0]);
-            float angle_b = std::atan2 (b[1], b[0]);
-            if (angle_a < angle_b) { is_less_than = true; }
-        } else if (a[2] < b[2]) { // Put max z at start of array
-            is_less_than = false;
-        } else {
-            is_less_than = true;
-        }
-        return is_less_than;
-    };
-
-    // Make a keyed container for the vertices, as we will need to reorder them. note:
-    // morph::vec is key to map, as we will have a very custom sorting function. This
-    // requires some care with the sorting function used by the std::map
-    std::map<morph::vec<float, 3>, int, decltype(_vtx_cmp)> vertices_map(_vtx_cmp);
-    std::map<int, int> idx_remap;
-
-    // (Re)Populate vertices_map from vertices.
-    int ii = 0;
-    vertices_map.clear();
-    for (auto v : vertices) { // original order of vertices (unordered)
-        vertices_map[v] = ii++; // Orders into a new *good* order (spiral) and records the value of the original order.
-    }
-
-    std::map<morph::vec<float, 3>, // Comparing on the vertex key
-             morph::vec<int, 3>, decltype(_vtx_cmp)> faces_map(_vtx_cmp);
-    int count = 0;
-
-    for (const auto f : faces) { // faces contains indexes into vertices.
-        morph::vec<float, 3> va = (vertices[f[1]] + vertices[f[0]]) / 2.0f;
-        morph::vec<float, 3> vb = (vertices[f[2]] + vertices[f[1]]) / 2.0f;
-        morph::vec<float, 3> vc = (vertices[f[0]] + vertices[f[2]]) / 2.0f;
-        // Renormalize the new vertices, placing them on the surface of a sphere
-        va.renormalize();
-        vb.renormalize();
-        vc.renormalize();
-
-        // Is va/vb/vc new?
-        int a = 0;
-        try {
-            a = vertices_map.at (va); // a is the existing index (old money)
-        } catch (const std::out_of_range& e) {
-
-            a = vertices.size();
-            vertices.push_back (va);
-            vertices_map[va] = a;
-        }
-        int b = 0;
-        try {
-            b = vertices_map.at (vb);
-        } catch (const std::out_of_range& e) {
-            b = vertices.size();
-            vertices.push_back (vb);
-            vertices_map[vb] = b;
-        }
-        int c = 0;
-        try {
-            c = vertices_map.at (vc);
-        } catch (const std::out_of_range& e) {
-            c = vertices.size();
-            vertices.push_back (vc);
-            vertices_map[vc] = c;
-        }
-
-        // Now add to faces_map (keyed by centroid of each face) faces contains indices.
-        faces_map[(vertices[f[0]] + va + vc) / 3.0f] = { f[0], a, c }; // indices in old money here
-        count += 1;
-        if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
-
-        faces_map[(vertices[f[1]] + vb + va) / 3.0f] = { f[1], b, a };
-        count += 1;
-        if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
-
-        faces_map[(vertices[f[2]] + vc + vb) / 3.0f] = { f[2], c, b };
-        count += 1;
-        if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
-
-        faces_map[(    va         + vb + vc) / 3.0f] = {  a  , b, c };
-        count += 1;
-        if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
-    }
-
-    // Copy faces_map back to faces
-    faces.resize (faces_map.size());
-    int j = 0;
-    for (auto fm : faces_map) {
-        faces[j] = fm.second;
-        j++;
-    } // faces should now be correctly ordered
-
-    // idx_remap is keyed on the badly ordered indices; value is correct ordering (j
-    // follows order of vertices_map)
-    int k = 0;
-    idx_remap.clear();
-    for (auto v : vertices_map) { idx_remap[v.second] = k++; }
-
-    // faces is in the language of 'badly ordered indices'. We want it to be
-    // expressed with the new ordered indices, inherent in the vertices_map
-    // ordering, as we'll be writing data from vertices_map into vertices with the
-    // correct ordering
-
-    for (auto& _f : faces) {
-        _f[0] = idx_remap[_f[0]]; // remap old money faces index to new money index
-        _f[1] = idx_remap[_f[1]];
-        _f[2] = idx_remap[_f[2]];
-    }
-
-    // Populate vertices
-    vertices.resize (vertices_map.size());
-    int l = 0;
-    for (auto v : vertices_map) { vertices[l++] = v.first; }
-
-    // Check our structures against n_faces and n_verts
-    std::cout << "vertices.size(): " << vertices.size() << " n_verts: " << n_verts << std::endl;
-    if (static_cast<int>(vertices.size()) != n_verts) { throw std::runtime_error ("vertices has wrong size"); }
-    std::cout << "faces.size(): " << faces.size() << " n_faces: " << n_faces << std::endl;
-    if (static_cast<int>(faces.size()) != n_faces) { throw std::runtime_error ("faces has wrong size"); }
-} // end 'once'
-
-// function to subdivide triangles to make a geodesic
 void subdivide_triangles (morph::vvec<morph::vec<float, 3>>& vertices,
                           morph::vvec<morph::vec<int, 3>>& faces, const int iterations = 1)
 {
@@ -165,16 +25,16 @@ void subdivide_triangles (morph::vvec<morph::vec<float, 3>>& vertices,
     const int n_faces = 20 * T; // also, n_edges is 30T, but we don't need it
 
     // Get a characteristic length scale from vertices for the icosahedron
-    const float length_scale = (vertices[faces[0][0]] - vertices[faces[0][1]]).length();
-    const float z_thresh = (length_scale / std::sqrt(T)) * 0.1f;
+    //const float length_scale = (vertices[faces[0][0]] - vertices[faces[0][1]]).length();
+    //const float z_thresh = (length_scale / std::sqrt(T)) * 0.1f;
 
     // Special comparison function to order vertices in a Geodesic polyhedron
-    auto _vtx_cmp = [z_thresh](morph::vec<float, 3> a, morph::vec<float, 3> b)
+    auto _vtx_cmp = [](morph::vec<float, 3> a, morph::vec<float, 3> b)
     {
         //std::cout << "_vtx_cmp (" <<a << "<" << b << "?)\n";
         // Compare first by vertex's z location
         bool is_less_than = false;
-        if (std::abs(a[2] - b[2]) < z_thresh) {
+        if (std::abs(a[2] - b[2]) < 10 * std::numeric_limits<float>::epsilon()) {
             // and then by rotational angle in the x-y plane
             float angle_a = std::atan2 (a[1], a[0]);
             float angle_b = std::atan2 (b[1], b[0]);
@@ -235,21 +95,29 @@ void subdivide_triangles (morph::vvec<morph::vec<float, 3>>& vertices,
             vc.renormalize();
 
             // Is va/vb/vc new?
+            morph::vec<float, 3> vtx161 = {-1, -1, -1};
+            for (auto vtx : vertices_map) {
+                if (vtx.second == 161) { vtx161 = vtx.first; break; }
+            }
+
+            int idx = vertices.size();
             int a = 0;
             try {
                 a = vertices_map.at (va); // a is the existing index (old money)
                 if constexpr (debug_vertices) {
                     std::cout << "a is EXISTING VERTEX " << va << ", index " << a << std::endl; // old money
                 }
-            } catch (const std::out_of_range& e) {
 
-                a = vertices.size();
+            } catch (const std::out_of_range& e) {
+                a = idx++;
                 vertices.push_back (va);
                 vertices_map[va] = a;
                 if constexpr (debug_vertices) {
                     std::cout << "INSERTED NEW vertex " << va << " into vertices_map with index " << a << "\n"; // old money
                 }
             }
+            if (a == 634) { std::cout << "Vertex a " << a << " is " << va << " 161 is " << vtx161 << std::endl; }
+
             int b = 0;
             try {
                 b = vertices_map.at (vb);
@@ -257,64 +125,76 @@ void subdivide_triangles (morph::vvec<morph::vec<float, 3>>& vertices,
                     std::cout << "b is EXISTING VERTEX " << vb << ", index " << b  << std::endl; // old money
                 }
             } catch (const std::out_of_range& e) {
-                b = vertices.size();
+                b = idx++;
                 vertices.push_back (vb);
                 vertices_map[vb] = b;
                 if constexpr (debug_vertices) {
                     std::cout << "INSERTED NEW vertex " << vb << " into vertices_map with index " << b << "\n"; // old money
                 }
             }
+            if (b == 634) { std::cout << "Vertex b " << b << " is " << vb << " 161 is " << vtx161 << std::endl; }
+
             int c = 0;
             try {
                 c = vertices_map.at (vc);
                 if constexpr (debug_vertices) {
-                    std::cout << "c is EXISTING VERTEX " << vc  << ", index " << c << std::endl; // old money
+                    std::cout << "c is EXISTING VERTEX " << vc << ", index " << c << std::endl; // old money
                 }
             } catch (const std::out_of_range& e) {
-                c = vertices.size();
+                c = idx++;
                 vertices.push_back (vc);
                 vertices_map[vc] = c;
                 if constexpr (debug_vertices) {
                     std::cout << "INSERTED NEW vertex " << vc << " into vertices_map with index " << c << "\n"; // old money
                 }
             }
+            if (c == 634) { std::cout << "Vertex c " << c << " is " << vc << " 161 is " << vtx161 << std::endl; }
 
             // Now add to faces_map (keyed by centroid of each face) faces contains indices.
-            faces_map[(vertices[f[0]] + va + vc) / 3.0f] = { f[0], a, c }; // indices in old money here
-            count += 1;
-            if constexpr (debug_faces) {
-                std::cout << "\n1 Added a face [" << vertices[f[0]] << " -- " << va << " -- " << vc << "]\n        (" << ((vertices[f[0]] + va + vc) / 3.0f) << "). ";
-                std::cout << "\n1 Added a face [" << f[0] << " -- " << a << " -- " << c << "]\n        (" << ((vertices[f[0]] + va + vc) / 3.0f) << "). ";
-                std::cout << "faces_map size should now be " << count << " but is: " << faces_map.size() << std::endl;
-            }
-            ////if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
+            auto add_face = [&faces_map, &count, &vertices] (const morph::vec<float, 3>& vA,
+                                                             const morph::vec<float, 3>& vB,
+                                                             const morph::vec<float, 3>& vC,
+                                                             const morph::vec<int, 3>& newface,
+                                                             const int newface_num)
+            {
+                morph::vec<float, 3> centroid = (vA + vB + vC) / 3.0f;
+                if (faces_map.count (centroid) > 0u) {
+                    std::stringstream ee;
+                    ee << "The face " << newface << ", vertices: " << vertices[newface[0]] << "," << vertices[newface[1]] << "," << vertices[newface[2]]
+                       << ", centroid " << centroid << " already exists as a key in faces_map with value: " << faces_map[centroid] << ", vertices "
+                       << vertices[faces_map[centroid][0]] << "," << vertices[faces_map[centroid][1]] << "," << vertices[faces_map[centroid][2]];
+                    throw std::runtime_error (ee.str());
+                }
+                faces_map[centroid] = newface;
+                count += 1;
+                if constexpr (debug_faces) {
+                    std::cout << "\n" << newface_num << " Added a face [" << vA << " -- " << vB << " -- " << vC << "]\n"
+                              <<"        (" << ((vA + vB + vC) / 3.0f) << "). ";
+                    std::cout << "\n" << newface_num << " Centroid: " << centroid;
+                    std::cout << "\n" << newface_num << " Added a face ["
+                              << newface[0] << " -- " << newface[1] << " -- " << newface[2] << "]\n";
+                    std::cout << "faces_map size should now be " << count << " but is: " << faces_map.size() << std::endl;
+                }
+                if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
+                try {
+                    std::cout << "faces_map[centroid] = " << faces_map.at(centroid) << std::endl;
+                } catch (const std::out_of_range& e) {
+                    throw std::runtime_error ("Failed to retrieve faces_map element just created");
+                }
 
-            faces_map[(vertices[f[1]] + vb + va) / 3.0f] = { f[1], b, a };
-            count += 1;
-            if constexpr (debug_faces) {
-                //std::cout << "\n2 Added a face [" << vertices[f[1]] << " -- " << vb << " -- " << va << "]\n        (" << ((vertices[f[1]] + vb + va) / 3.0f) << "). ";
-                std::cout << "\n2 Added a face [" << f[1] << " -- " << b << " -- " << a << "]\n        (" << ((vertices[f[1]] + vb + va) / 3.0f) << "). ";
-                std::cout << "faces_map size should now be " << count << " but is: " << faces_map.size() << std::endl;
-            }
-            ////if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
+            };
 
-            faces_map[(vertices[f[2]] + vc + vb) / 3.0f] = { f[2], c, b };
-            count += 1;
-            if constexpr (debug_faces) {
-                //std::cout << "\n3 Added a face [" << vertices[f[2]] << " -- " << vc << " -- " << vb << "]\n        (" << ((vertices[f[2]] + vc + vb) / 3.0f) << "). ";
-                std::cout << "\n3 Added a face [" << f[2] << " -- " << c << " -- " << b << "]\n        (" << ((vertices[f[2]] + vc + vb) / 3.0f) << "). ";
-                std::cout << "faces_map size should now be " << count << " but is: " << faces_map.size() << std::endl;
-            }
-            ////if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
+            morph::vec<int, 3> newface = { f[0], a, c }; // indices in old money here
+            add_face (vertices[f[0]], va, vc, newface, 1);
 
-            faces_map[(    va         + vb + vc) / 3.0f] = {  a  , b, c };
-            count += 1;
-            if constexpr (debug_faces) {
-                std::cout << "\n4 Added a face [" << va << " -- " << vb << " -- " << vc << "]\n        (" << ((va + vb + vc) / 3.0f) << "). ";
-                std::cout << "\n4 Added a face [" << a << " -- " << b << " -- " << c << "]\n        (" << ((va + vb + vc) / 3.0f) << "). ";
-                std::cout << "faces_map size should now be " << count << " but is: " << faces_map.size() << std::endl;
-            }
-            ////if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
+            newface = { f[1], b, a };
+            add_face (vertices[f[1]], vb, va, newface, 2);
+
+            newface = { f[2], c, b };
+            add_face (vertices[f[2]], vc, vb, newface, 3);
+
+            newface = { a, b, c };
+            add_face (va, vb, vc, newface, 4);
         }
 
         if constexpr (debug_faces) {
@@ -387,7 +267,7 @@ void subdivide_triangles (morph::vvec<morph::vec<float, 3>>& vertices,
     std::cout << "vertices.size(): " << vertices.size() << " n_verts: " << n_verts << std::endl;
     if (static_cast<int>(vertices.size()) != n_verts) { throw std::runtime_error ("vertices has wrong size"); }
     std::cout << "faces.size(): " << faces.size() << " n_faces: " << n_faces << std::endl;
-    ////if (static_cast<int>(faces.size()) != n_faces) { throw std::runtime_error ("faces has wrong size"); }
+    if (static_cast<int>(faces.size()) != n_faces) { throw std::runtime_error ("faces has wrong size"); }
 }
 
 int main()
@@ -403,11 +283,11 @@ int main()
     morph::vvec<morph::vec<int, 3>> icofaces(20, {0, 0, 0});
     morph::geometry::icosahedron (icoverts, icofaces);
     // ...then make it into a geodesic polyhedron
-#if 0
+#if 1
     // The function that iterates internally (issues more likely to show up)
-    subdivide_triangles (icoverts, icofaces, 3);
+    subdivide_triangles (icoverts, icofaces, 5);
 #else
-    // The 'call the function over and over' method (still has issues)
+    // The 'call the function over and over' method (still has issues) (see subdivide_once.h)
     for (int ii = 1; ii <= 3; ++ii) {
         subdivide_triangles_once (icoverts, icofaces, ii);
     }
@@ -438,7 +318,7 @@ int main()
         sv->finalize();
         v.addVisualModel (sv);
 #endif
-#if 1
+#if 0
         // Use a second scatter visual to show the centre of each face, numbered in a different colour
         auto sv2 = std::make_unique<morph::ScatterVisual<float>> (offset);
         v.bindmodel (sv2);
