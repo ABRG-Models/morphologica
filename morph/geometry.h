@@ -333,4 +333,69 @@ namespace morph {
         }
 
     } // geometry
+
+    //! Experimental constexpr-capable geometry
+    namespace geometry_ce {
+
+        //! a container class for the vertices and faces of a polyhedron. Note this contains vec not vvec
+        template<typename F, size_t n_verts, size_t n_faces>
+        struct polyhedron
+        {
+            //! A list of the vertices
+            morph::vec<morph::vec<F, 3>, n_verts> vertices;
+            //! A list of the faces
+            morph::vec<morph::vec<int, 3>, n_faces> faces;
+        };
+
+        //! Return a geometry::polyhedron object containing vertices and face indices
+        //! for an icosahedron. To compute the vertices, I ran the non-constexpr capable
+        //! version in morph::geometry and transcribed the vertex numbers - a bit tedious.
+        template<typename F>
+        constexpr polyhedron<F, 12, 20> icosahedron()
+        {
+            morph::geometry_ce::polyhedron<F, 12, 20> ico = {
+                { // vertices that have been rotated (they're not the same as the starters in geometry::icosahedron)
+                    morph::vec<F, 3>({ F{0},                    F{0},                    F{1}                    }),
+                    morph::vec<F, 3>({ F{0.89442719099991597},  F{0},                    F{0.44721359549995798}  }),
+                    morph::vec<F, 3>({ F{0.27639320225002101},  F{0.85065080835203999},  F{0.44721359549995771}  }),
+                    morph::vec<F, 3>({ F{-0.72360679774997894}, F{0.5257311121191337},   F{0.44721359549995782}  }),
+                    morph::vec<F, 3>({ F{-0.72360679774997894}, F{-0.52573111211913348}, F{0.44721359549995809}  }),
+                    morph::vec<F, 3>({ F{0.27639320225002101},  F{-0.85065080835203999}, F{0.44721359549995809}  }),
+                    morph::vec<F, 3>({ F{0.72360679774997894},  F{-0.5257311121191337},  F{-0.44721359549995782} }),
+                    morph::vec<F, 3>({ F{0.72360679774997894},  F{0.52573111211913348},  F{-0.44721359549995809} }),
+                    morph::vec<F, 3>({ F{-0.27639320225002101}, F{0.85065080835203999},  F{-0.44721359549995809} }),
+                    morph::vec<F, 3>({ F{-0.89442719099991597}, F{0},                    F{-0.44721359549995798} }),
+                    morph::vec<F, 3>({ F{-0.27639320225002101}, F{-0.85065080835203999}, F{-0.44721359549995771} }),
+                    morph::vec<F, 3>({ F{0},                    F{0},                    F{-1}                   })
+                },
+                { // Each face is defined by three vertices
+                    morph::vec<int, 3>({0, 1, 2}),
+                    morph::vec<int, 3>({0, 2, 3}),
+                    morph::vec<int, 3>({0, 3, 4}),
+                    morph::vec<int, 3>({0, 4, 5}),
+                    morph::vec<int, 3>({0, 5, 1}),
+
+                    morph::vec<int, 3>({5, 6, 1}),
+                    morph::vec<int, 3>({1, 6, 7}),
+                    morph::vec<int, 3>({1, 7, 2}),
+                    morph::vec<int, 3>({2, 7, 8}),
+                    morph::vec<int, 3>({2, 8, 3}),
+                    morph::vec<int, 3>({3, 8, 9}),
+                    morph::vec<int, 3>({3, 9, 4}),
+                    morph::vec<int, 3>({4, 9, 10}),
+                    morph::vec<int, 3>({4, 10, 5}),
+                    morph::vec<int, 3>({5, 10, 6}),
+
+                    morph::vec<int, 3>({10, 11, 6}),
+                    morph::vec<int, 3>({6, 11, 7}),
+                    morph::vec<int, 3>({7, 11, 8}),
+                    morph::vec<int, 3>({8, 11, 9}),
+                    morph::vec<int, 3>({9, 11, 10})
+                }
+            };
+
+            return ico;
+        }
+    }
+
 } // morph

@@ -326,6 +326,9 @@ if(USE_GLEW)
   target_link_libraries(icosahedron GLEW::GLEW)
 endif()
 
+add_executable(testce testce.cpp)
+set_property(TARGET testce PROPERTY CXX_STANDARD 23)
+
 add_executable(geodesic geodesic.cpp)
 target_link_libraries(geodesic OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
