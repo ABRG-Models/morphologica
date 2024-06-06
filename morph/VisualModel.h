@@ -1303,8 +1303,15 @@ namespace morph {
         {
             if (iterations < 0) { throw std::runtime_error ("computeSphereGeo: iterations must be positive"); }
             // test if type F is float
-            if (iterations > 10) { throw std::runtime_error ("computeSphereGeo: You're going to get a *lot* of faces..."); }
-
+            if constexpr (std::is_same<std::decay_t<F>, float>::value == true) {
+                if (iterations > 5) {
+                    throw std::runtime_error ("computeSphereGeo: For iterations > 5, F needs to be double precision");
+                }
+            } else {
+                if (iterations > 10) {
+                    throw std::runtime_error ("computeSphereGeo: This is an abitrary iterations limit (10 gives 20971520 faces)");
+                }
+            }
             // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
             morph::geometry::polyhedron<F> geo;
             int n_faces = morph::geometry::icosahedral_geodesic<F> (geo, iterations);
