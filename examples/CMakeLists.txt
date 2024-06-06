@@ -326,6 +326,12 @@ if(USE_GLEW)
   target_link_libraries(icosahedron GLEW::GLEW)
 endif()
 
+add_executable(geodesic geodesic.cpp)
+target_link_libraries(geodesic OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(geodesic GLEW::GLEW)
+endif()
+
 add_executable(tri tri.cpp)
 target_link_libraries(tri OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)

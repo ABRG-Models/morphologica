@@ -56,6 +56,7 @@ int main()
         sv->radiusFixed = 0.03f;
         sv->colourScale = scale;
         sv->cm.setType (morph::ColourMapType::Plasma);
+        sv->labelIndices = true;
         sv->finalize();
         v.addVisualModel (sv);
 

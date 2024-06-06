@@ -108,9 +108,11 @@ namespace morph {
          * double.
          *
          * \tparam iterations The number f times to subdivide the initial icosahedron
+         *
+         * \return The number of faces in the generated geodesic
          */
         template<typename F>
-        void icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
+        int icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
         {
             // From iterations, we can compute the number of vertices, edges and faces
             // expected. (see https://en.wikipedia.org/wiki/Geodesic_polyhedron)
@@ -326,6 +328,8 @@ namespace morph {
                 std::cout << "faces.size(): " << geo.faces.size() << " n_faces: " << n_faces << std::endl;
             }
             if (static_cast<int>(geo.faces.size()) != n_faces) { throw std::runtime_error ("faces has wrong size"); }
+
+            return n_faces;
         }
 
     } // geometry

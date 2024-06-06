@@ -112,9 +112,19 @@ namespace morph {
                     clr = this->cm.convert (vdcopy1[i], vdcopy2[i]);
                 }
                 if (this->sizeFactor == Flt{0}) {
-                    this->computeSphere (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
+                    if constexpr (draw_spheres_as_geodesics) {
+                        // Slower than regular computeSphere(). 2 iterations gives 320 faces
+                        this->computeSphereGeo (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed, 2);
+                    } else {
+                        // (16+2) * 20 gives 360 faces
+                        this->computeSphere (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
+                    }
                 } else {
-                    this->computeSphere (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
+                    if constexpr (draw_spheres_as_geodesics) {
+                        this->computeSphereGeo (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 2);
+                    } else {
+                        this->computeSphere (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
+                    }
                 }
 
                 if (this->labelIndices == true) {
@@ -123,6 +133,15 @@ namespace morph {
                 }
             }
         }
+
+        // I've tested geodesic sphere drawing code, but it probably isn't yet suitable
+        // for use where many spheres are repeatedly computed (the base geodesic is
+        // repeatedly computed, which is a waste of cycles). In fact, the overall
+        // approach here, where each sphere model is repeatedly re-computed for each
+        // point is probably about the least performant way you could draw a bunch of
+        // spheres in OpenGL! However, using geodesic code is noticably slower even than
+        // the regular VisualModel::computeSphere()
+        static constexpr bool draw_spheres_as_geodesics = false;
 
         //! Set this->radiusFixed, then re-compute vertices.
         void setRadius (float fr)

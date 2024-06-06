@@ -1265,6 +1265,68 @@ namespace morph {
         }
 
         /*!
+         * Sphere, 1 colour geodesic polygon version.
+         *
+         * \tparam F The type used for the polyhedron computation. Use float or double.
+         *
+         * \param idx The index into the 'vertex indices array'
+         * \param so The sphere offset. Where to place this sphere...
+         * \param sc The sphere colour.
+         * \param r Radius of the sphere
+         * \param iterations how many iterations of the geodesic polygon algo to go
+         * through. Determines faces:
+         *
+         * For 0 iterations, get a geodesic with 20 faces        *0
+         * For 1 iterations, get a geodesic with 80 faces
+         * For 2 iterations, get a geodesic with 320 faces       *1
+         * For 3 iterations, get a geodesic with 1280 faces      *2
+         * For 4 iterations, get a geodesic with 5120 faces      *3
+         * For 5 iterations, get a geodesic with 20480 faces     *4
+         * For 6 iterations, get a geodesic with 81920 faces
+         * For 7 iterations, get a geodesic with 327680 faces
+         * For 8 iterations, get a geodesic with 1310720 faces
+         * For 9 iterations, get a geodesic with 5242880 faces
+         *
+         * *0: You'll get an icosahedron
+         * *1: decent graphical results
+         * *2: excellent graphical results
+         * *3: You can *just about* see a difference between 4 iterations and 3, but not
+         *  between 4 and 5.
+         * *4: The iterations limit if F is float (you'll get a runtime error 'vertices
+         *  has wrong size' for iterations>5)
+         *
+         * \return The number of face in the generated sphere
+         */
+        template<typename F=float>
+        int computeSphereGeo (GLuint& idx, vec<float> so, std::array<float, 3> sc,
+                              float r = 1.0f, int iterations = 2)
+        {
+            if (iterations < 0) { throw std::runtime_error ("computeSphereGeo: iterations must be positive"); }
+            // test if type F is float
+            if (iterations > 10) { throw std::runtime_error ("computeSphereGeo: You're going to get a *lot* of faces..."); }
+
+            // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
+            morph::geometry::polyhedron<F> geo;
+            int n_faces = morph::geometry::icosahedral_geodesic<F> (geo, iterations);
+
+            // Now essentially copy geo into vertex buffers
+            for (auto v : geo.vertices) {
+                this->vertex_push (v.as_float() * r + so, this->vertexPositions);
+                this->vertex_push (v.as_float(), this->vertexNormals);
+                this->vertex_push (sc, this->vertexColors);
+            }
+            for (auto f : geo.faces) {
+                this->indices.push_back (idx + f[0]);
+                this->indices.push_back (idx + f[1]);
+                this->indices.push_back (idx + f[2]);
+            }
+            // idx is the *vertex index* and should be incremented by the number of vertices in the polyhedron
+            idx += geo.vertices.size();
+
+            return n_faces;
+        }
+
+        /*!
          * Sphere, 1 colour version.
          *
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
@@ -1275,6 +1337,8 @@ namespace morph {
          * \param r Radius of the sphere
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
+         *
+         * Number of faces should be (2 + rings) * segments
          */
         void computeSphere (GLuint& idx, vec<float> so,
                             std::array<float, 3> sc,
