@@ -104,6 +104,24 @@ namespace morph {
         }
 
         /*!
+         * A function to get the number of faces and vertices that we'll generate when
+         * we call icosahedral_geodesic(..., iterations)
+         *
+         * \param iterations The number of times the initial icosahedron will be subdivided
+         */
+        morph::geometry::geodesic_info
+        icosahedral_geodesic_numbers (const int iterations)
+        {
+            morph::geometry::geodesic_info gi;
+            // From iterations, we can compute the number of vertices, edges and faces
+            // expected. (see https://en.wikipedia.org/wiki/Geodesic_polyhedron)
+            const int T = std::pow (4, iterations);
+            gi.n_vertices = 10 * T + 2;
+            gi.n_faces = 20 * T;
+            return gi;
+        }
+
+        /*!
          * A function to subdivide the triangles of an icosahedron to make a geodesic
          * polynomial sphere. The inputs are the vertices (3D coordinates) and faces
          * (sets of 3 indices) that define an icosahedron. The inputs are resized and
@@ -126,7 +144,7 @@ namespace morph {
          * \tparam F The floating point type for the coordinate elements. Use float or
          * double.
          *
-         * \tparam iterations The number f times to subdivide the initial icosahedron
+         * \param iterations The number of times to subdivide the initial icosahedron
          *
          * \return A struct containing info about the geodesic. n_faces, n_verts and
          * indices of the five-fold symmetry vertices.
@@ -135,16 +153,7 @@ namespace morph {
         morph::geometry::geodesic_info
         icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
         {
-            morph::geometry::geodesic_info gi;
-
-            // From iterations, we can compute the number of vertices, edges and faces
-            // expected. (see https://en.wikipedia.org/wiki/Geodesic_polyhedron)
-            const int T = std::pow (4, iterations);
-            const int n_verts = 10 * T + 2;
-            const int n_faces = 20 * T; // also, n_edges is 30T, but we don't need it
-
-            gi.n_vertices = n_verts;
-            gi.n_faces = n_faces;
+            morph::geometry::geodesic_info gi = morph::geometry::icosahedral_geodesic_numbers (iterations);
 
             // Start out with an icosahedron
             if (geo.vertices.empty() && geo.faces.empty()) {
@@ -364,13 +373,13 @@ namespace morph {
 
             // Check our structures against n_faces and n_verts
             if constexpr (debug_general) {
-                std::cout << "vertices.size(): " << geo.vertices.size() << " n_verts: " << n_verts << std::endl;
+                std::cout << "vertices.size(): " << geo.vertices.size() << " n_verts: " << gi.n_vertices << std::endl;
             }
-            if (static_cast<int>(geo.vertices.size()) != n_verts) { throw std::runtime_error ("vertices has wrong size"); }
+            if (static_cast<int>(geo.vertices.size()) != gi.n_vertices) { throw std::runtime_error ("vertices has wrong size"); }
             if constexpr (debug_general) {
-                std::cout << "faces.size(): " << geo.faces.size() << " n_faces: " << n_faces << std::endl;
+                std::cout << "faces.size(): " << geo.faces.size() << " n_faces: " << gi.n_faces << std::endl;
             }
-            if (static_cast<int>(geo.faces.size()) != n_faces) { throw std::runtime_error ("faces has wrong size"); }
+            if (static_cast<int>(geo.faces.size()) != gi.n_faces) { throw std::runtime_error ("faces has wrong size"); }
 
             if constexpr (debug_general) {
                 std::cout << "At end, gi.fivefold_vertices:\n";

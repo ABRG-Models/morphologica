@@ -1265,8 +1265,13 @@ namespace morph {
         }
 
         /*!
-         * Sphere, 1 colour geodesic polygon version (or *vertices* but not faces can be
-         * re-coloured in multi-colours).
+         * Sphere, geodesic polygon version.
+         *
+         * This function creates an object with exactly one OpenGL vertex per 'geometric
+         * vertex of the polyhedron'. That means that colouring this object must be
+         * achieved by colouring the vertices an faces cannot be coloured
+         * distinctly. Pass in a single colour for the initial object. To recolour,
+         * modify the content of vertexColors.
          *
          * \tparam F The type used for the polyhedron computation. Use float or double.
          *
@@ -1336,22 +1341,24 @@ namespace morph {
         }
 
         /*!
-         * Sphere, multi colour geodesic polygon version (with faces colourable, which
-         * means you have to have 5 or 6 OpenGL vertices per geometric vertex, depending
-         * on which vertex it is. The reordering of vertices will complexify the
-         * identification of the vertices that have 5 neighbours instead of 6.
+         * Sphere, geodesic polygon version with coloured faces
+         *
+         * To colour the faces of this polyhedron, update this->vertexColors (for an
+         * example see morph::GeodesicVisual). To make faces distinctly colourizable, we
+         * have to generate 3 OpenGL vertices for each of the geometric vertices in the
+         * polyhedron.
          *
          * \tparam F The type used for the polyhedron computation. Use float or double.
          *
          * \param idx The index into the 'vertex indices array'
          * \param so The sphere offset. Where to place this sphere...
-         * \param colours The sphere colours
+         * \param sc The default colour
          * \param r Radius of the sphere
          * \param iterations how many iterations of the geodesic polygon algo to go
-         * through. Determines faces
+         * through. Determines number of faces
          */
         template<typename F=float>
-        int computeSphereGeoFaces (GLuint& idx, morph::vec<float> so, morph::vvec<std::array<float, 3>>& sc,
+        int computeSphereGeoFaces (GLuint& idx, morph::vec<float> so, std::array<float, 3> sc,
                                    float r = 1.0f, int iterations = 2)
         {
             if (iterations < 0) { throw std::runtime_error ("computeSphereGeo: iterations must be positive"); }
@@ -1369,10 +1376,6 @@ namespace morph {
             morph::geometry::polyhedron<F> geo;
             morph::geometry::geodesic_info gi = morph::geometry::icosahedral_geodesic<F> (geo, iterations);
 
-            if (sc.size() != geo.faces.size()) {
-                throw std::runtime_error ("computeSphereGeoFaces: sc size does not match geo.faces size");
-            }
-
             for (int i = 0; i < gi.n_faces; ++i) { // For each face in the geodesic...
                 morph::vec<F, 3> norm = { F{0}, F{0}, F{0} };
                 for (auto vtx : geo.faces[i]) { // For each vertex in face...
@@ -1382,8 +1385,8 @@ namespace morph {
                 morph::vec<float, 3> nf = (norm / F{3}).as_float();
                 for (int j = 0; j < 3; ++j) { // Faces all have size 3
                     this->vertex_push (nf, this->vertexNormals);
-                    this->vertex_push (sc[i], this->vertexColors);
-                    this->indices.push_back (idx + geo.faces[i][j]);
+                    this->vertex_push (sc, this->vertexColors); // A default colour
+                    this->indices.push_back (idx + (3 * i) + j); // indices is vertex index
                 }
             }
             // An index for each vertex of each face.
