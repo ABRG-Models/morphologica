@@ -48,17 +48,37 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
-            if (iterations > 5) {
-                // Note odd necessity to stick in the 'template' keyword after this->
-                this->n_verts = this->template computeSphereGeo<double> (this->idx, morph::vec<float, 3>({0,0,0}),
-                                                                         this->cm.convert(0.0f), this->radius, this->iterations);
-            } else {
-                // computeSphereGeo F defaults to float
-                this->n_verts = this->computeSphereGeo (this->idx, morph::vec<float, 3>({0,0,0}),
-                                                        this->cm.convert(0.0f), this->radius, this->iterations);
+
+            morph::geometry::geodesic_info gi = morph::geometry::icosahedral_geodesic_numbers (this->iterations);
+            this->n_faces = gi.n_faces;
+            this->n_verts = gi.n_vertices;
+
+            if (this->colourFaces == true) {
+                // Resize our data.
+                this->data.resize (this->n_faces, T{0});
+
+                if (iterations > 5) {
+                    this->n_verts = this->template computeSphereGeoFaces<double> (this->idx, morph::vec<float, 3>({0,0,0}),
+                                                                                  this->cm.convert(0.0f), this->radius, this->iterations);
+                } else {
+                    this->n_verts = this->computeSphereGeoFaces (this->idx, morph::vec<float, 3>({0,0,0}),
+                                                                 this->cm.convert(0.0f), this->radius, this->iterations);
+                }
+
+            } else { // colour vertices
+
+                if (iterations > 5) {
+                    // Note odd necessity to stick in the 'template' keyword after this->
+                    this->n_verts = this->template computeSphereGeo<double> (this->idx, morph::vec<float, 3>({0,0,0}),
+                                                                             this->cm.convert(0.0f), this->radius, this->iterations);
+                } else {
+                    // computeSphereGeo F defaults to float
+                    this->n_verts = this->computeSphereGeo (this->idx, morph::vec<float, 3>({0,0,0}),
+                                                            this->cm.convert(0.0f), this->radius, this->iterations);
+                }
+                // Resize our data.
+                this->data.resize (n_verts, T{0});
             }
-            // Resize our data.
-            this->data.resize (n_verts, T{0});
         }
 
         //! Update the colours based on vvec<T> data
@@ -73,9 +93,12 @@ namespace morph {
 
             size_t n_data = this->data.size();
 
-            // there are n_vertex colours, and n_data data points. Argh. To colour
-            // faces, need to have multiple vertices per vertex! Of course.
-            if (n_cvals != 3 * n_data) { throw std::runtime_error ("data is not right size");  }
+            // there are n_vertex colours, and n_data data points.
+            if (this->colourFaces == true) {
+                if (n_cvals != 3 * 3 * n_data) { throw std::runtime_error ("data is not right size");  }
+            } else {
+                if (n_cvals != 3 * n_data) { throw std::runtime_error ("data is not right size");  }
+            }
 
             // Scale data
             morph::vvec<float> scaled_data (this->data);
@@ -87,7 +110,9 @@ namespace morph {
             for (size_t i = 0u; i < n_data; ++i) {
                 // Update the 3 RGB values in vertexColors
                 auto c = this->cm.convert (scaled_data[i]);
-                this->vertex_push (c, this->vertexColors);
+                for (int ci = 0; ci < (this->colourFaces == true ? 3 : 1); ++ci) {
+                    this->vertex_push (c, this->vertexColors);
+                }
             }
 
             // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
@@ -100,14 +125,18 @@ namespace morph {
         //! independently, or possibly to size of vertices to colour the vertices. Fill
         //! this vvec with data *after* calling initialize.
         morph::vvec<T> data;
+        //! Do we colour vertices or faces? Set before finalize()
+        bool colourFaces = true;
         //! A colour map for data plotting
         morph::ColourMap<float> cm;
         //! A scaling for data colour
         morph::Scale<T, float> colourScale;
         //! The number of iterations in the geodesic sphere. Set before finalize() to change from the default.
         int iterations = 2;
-        //! This will be filled with the number of vertices in the geodesic
+        //! This may be filled with the number of vertices in the geodesic
         int n_verts = 0;
+        //! This may be filled with the number of faces in the geodesic
+        int n_faces = 0;
     };
 
 } // namespace morph

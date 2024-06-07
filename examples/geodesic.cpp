@@ -18,7 +18,6 @@ int main()
 
     morph::Visual v(1024, 768, "Geodesic Polyhedron");
     v.showCoordArrows = true;
-    //v.lightingEffects (true);
 
     try {
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
@@ -31,22 +30,26 @@ int main()
             gv1->iterations = i;
             std::string lbl = std::string("iterations = ") + std::to_string(i);
             gv1->addLabel (lbl, {0, -1, 0}, morph::TextFeatures(0.06f));
-            gv1->cm.setType (morph::ColourMapType::Plasma);
-            gv1->colourScale.do_autoscale = false;
-            gv1->colourScale.compute_autoscale (0.0f, 2.0f);
+            gv1->cm.setType (morph::ColourMapType::Jet);
+            //gv1->colourScale.do_autoscale = false;
+            //gv1->colourScale.compute_autoscale (0.0f, 2.0f);
             gv1->finalize();
+#if 0       // no re-colouring
+            v.addVisualModel (gv1);
+#else       // re-colour after construction
             auto gv1p = v.addVisualModel (gv1);
 
             float imax_mult = 1.0f / static_cast<float>(imax);
-#if 0
+# if 0      // Funky pattern colouring
             for (unsigned int j = 0; j < gv1p->data.size(); ++j) {
                 gv1p->data[j] = j%3 ? 0 : (1+i) * imax_mult;
             }
-#else
+# else      // sequential colouring
             size_t sz1 = gv1p->data.size();
             gv1p->data.linspace (0.0f, 1+i * imax_mult, sz1);
-#endif
+# endif
             gv1p->updateColours();
+#endif
         }
 
         v.keepOpen();
