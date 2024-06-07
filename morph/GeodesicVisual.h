@@ -84,37 +84,58 @@ namespace morph {
         //! Update the colours based on vvec<T> data
         void updateColours()
         {
-            if (this->data.empty()) { return; }
+            if (this->data.empty() && this->cdata.empty()) { return; }
 
             size_t n_cvals = this->vertexColors.size();
             if (n_cvals == 0u) { return; } // model doesn't exist yet
 
-            this->vertexColors.clear(); // could potentially just replace values
+            if (!this->cdata.empty()) {
 
-            size_t n_data = this->data.size();
+                this->vertexColors.clear(); // could potentially just replace values
+                size_t n_data = this->cdata.size();
 
-            // there are n_vertex colours, and n_data data points.
-            if (this->colourFaces == true) {
-                if (n_cvals != 3 * 3 * n_data) { throw std::runtime_error ("data is not right size");  }
+                // there are n_vertex colours, and n_data data points.
+                if (this->colourFaces == true) {
+                    if (n_cvals != 3 * 3 * n_data) { throw std::runtime_error ("data is not right size");  }
+                } else {
+                    if (n_cvals != 3 * n_data) { throw std::runtime_error ("data is not right size");  }
+                }
+
+                // Re-colour
+                for (size_t i = 0u; i < n_data; ++i) {
+                    // Update the 3 RGB values in vertexColors
+                    for (int ci = 0; ci < (this->colourFaces == true ? 3 : 1); ++ci) {
+                        this->vertex_push (cdata[i], this->vertexColors);
+                    }
+                }
+
             } else {
-                if (n_cvals != 3 * n_data) { throw std::runtime_error ("data is not right size");  }
-            }
 
-            // Scale data
-            morph::vvec<float> scaled_data (this->data);
-            if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
-            this->colourScale.transform (this->data, scaled_data);
-            //std::cout << "data range: " << data.range() << ", scaled_data range " << scaled_data.range() << std::endl;
+                this->vertexColors.clear(); // could potentially just replace values
+                size_t n_data = this->data.size();
 
-            // Re-colour
-            for (size_t i = 0u; i < n_data; ++i) {
-                // Update the 3 RGB values in vertexColors
-                auto c = this->cm.convert (scaled_data[i]);
-                for (int ci = 0; ci < (this->colourFaces == true ? 3 : 1); ++ci) {
-                    this->vertex_push (c, this->vertexColors);
+                // there are n_vertex colours, and n_data data points.
+                if (this->colourFaces == true) {
+                    if (n_cvals != 3 * 3 * n_data) { throw std::runtime_error ("data is not right size");  }
+                } else {
+                    if (n_cvals != 3 * n_data) { throw std::runtime_error ("data is not right size");  }
+                }
+
+                // Scale data
+                morph::vvec<float> scaled_data (this->data);
+                if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+                this->colourScale.transform (this->data, scaled_data);
+                //std::cout << "data range: " << data.range() << ", scaled_data range " << scaled_data.range() << std::endl;
+
+                // Re-colour
+                for (size_t i = 0u; i < n_data; ++i) {
+                    // Update the 3 RGB values in vertexColors
+                    auto c = this->cm.convert (scaled_data[i]);
+                    for (int ci = 0; ci < (this->colourFaces == true ? 3 : 1); ++ci) {
+                        this->vertex_push (c, this->vertexColors);
+                    }
                 }
             }
-
             // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
             this->reinit_colour_buffer();
         }
@@ -125,6 +146,8 @@ namespace morph {
         //! independently, or possibly to size of vertices to colour the vertices. Fill
         //! this vvec with data *after* calling initialize.
         morph::vvec<T> data;
+        //! Can also colour with direct colour data
+        morph::vvec<std::array<float, 3>> cdata;
         //! Do we colour vertices or faces? Set before finalize()
         bool colourFaces = true;
         //! A colour map for data plotting
