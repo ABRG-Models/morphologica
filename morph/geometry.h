@@ -5,6 +5,8 @@
 #pragma once
 
 #include <map>
+#include <set>
+#include <algorithm>
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
@@ -17,7 +19,9 @@
 namespace morph {
     namespace geometry {
 
-        //! a container class for the vertices and faces of a polyhedron
+        /*!
+         * a container class for the vertices and faces of a polyhedron
+         */
         template<typename F>
         struct polyhedron
         {
@@ -27,8 +31,23 @@ namespace morph {
             morph::vvec<morph::vec<int, 3>> faces;
         };
 
-        //! Return a geometry::polyhedron object containing vertices and face indices for
-        //! an icosahedron
+        /*!
+         * A return information struct for the icosahedral_geodesic function. The
+         * fivefold_vertices information *could* be part of a derived class icosahedron
+         * (deriving from polyhedron). Polyhedron already contains n_vertices and
+         * n_faces (as the size()s of vertices and faces)
+         */
+        struct geodesic_info
+        {
+            int n_vertices = 0;
+            int n_faces = 0;
+            std::set<int> fivefold_vertices; // Should end up with size 12
+        };
+
+        /*!
+         * Return a geometry::polyhedron object containing vertices and face indices for
+         * an icosahedron
+         */
         template<typename F>
         inline polyhedron<F> icosahedron()
         {
@@ -109,16 +128,23 @@ namespace morph {
          *
          * \tparam iterations The number f times to subdivide the initial icosahedron
          *
-         * \return The number of faces in the generated geodesic
+         * \return A struct containing info about the geodesic. n_faces, n_verts and
+         * indices of the five-fold symmetry vertices.
          */
         template<typename F>
-        int icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
+        morph::geometry::geodesic_info
+        icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
         {
+            morph::geometry::geodesic_info gi;
+
             // From iterations, we can compute the number of vertices, edges and faces
             // expected. (see https://en.wikipedia.org/wiki/Geodesic_polyhedron)
             const int T = std::pow (4, iterations);
             const int n_verts = 10 * T + 2;
             const int n_faces = 20 * T; // also, n_edges is 30T, but we don't need it
+
+            gi.n_vertices = n_verts;
+            gi.n_faces = n_faces;
 
             // Start out with an icosahedron
             if (geo.vertices.empty() && geo.faces.empty()) {
@@ -126,6 +152,8 @@ namespace morph {
             } else {
                 throw std::runtime_error ("Pass in an empty polyhedron");
             }
+            // As geo is currently an icosahedron, all vertices in geo are five-fold at this point
+            for (int v = 0; v < static_cast<int>(geo.vertices.size()); ++v) { gi.fivefold_vertices.insert (v); }
 
             // A special comparison function to order vertices in our Geodesic polyhedron. The
             // vertices (or face centroids) are arranged in a spiral, from z_max to z_min,
@@ -165,6 +193,10 @@ namespace morph {
                 int ii = 0;
                 vertices_map.clear();
                 for (auto v : geo.vertices) { // original order of vertices (unordered)
+                    if (i == 0) {
+                        // On 0th iteration, all vertices are five-fold symmetric.
+                        gi.fivefold_vertices.insert (ii);
+                    }
                     vertices_map[v] = ii++; // Orders into a new *good* order (spiral) and records the value of the original order.
                 }
 
@@ -291,7 +323,18 @@ namespace morph {
                 // follows order of vertices_map)
                 int k = 0;
                 idx_remap.clear();
-                for (auto v : vertices_map) { idx_remap[v.second] = k++; }
+                std::set<int> ffv; // temporary storage for a new fivefold_vertices set
+                for (auto v : vertices_map) {
+                    // See if we are remapping a fivefold vertex
+                    if (gi.fivefold_vertices.count (v.second)) {
+                        // Then v.second is a fivefold vertex, so insert its replacement, k, into ffv
+                        // std::cout << "Replace old fivefold vertex index " << v.second << " with new one " << k << std::endl;
+                        ffv.insert (k);
+                    }
+                    idx_remap[v.second] = k++;
+                }
+                // swap new five fold vertices into gi object
+                std::swap (ffv, gi.fivefold_vertices);
 
                 // faces is in the language of 'badly ordered indices'. We want it to be
                 // expressed with the new ordered indices, inherent in the vertices_map
@@ -329,7 +372,13 @@ namespace morph {
             }
             if (static_cast<int>(geo.faces.size()) != n_faces) { throw std::runtime_error ("faces has wrong size"); }
 
-            return n_faces;
+            if constexpr (debug_general) {
+                std::cout << "At end, gi.fivefold_vertices:\n";
+                for (auto ffv : gi.fivefold_vertices) {
+                    std::cout << "    vertex " << ffv << "\n";
+                }
+            }
+            return gi;
         }
 
     } // geometry
