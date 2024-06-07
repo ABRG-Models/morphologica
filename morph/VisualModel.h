@@ -1265,7 +1265,8 @@ namespace morph {
         }
 
         /*!
-         * Sphere, 1 colour geodesic polygon version.
+         * Sphere, 1 colour geodesic polygon version (or *vertices* but not faces can be
+         * re-coloured in multi-colours).
          *
          * \tparam F The type used for the polyhedron computation. Use float or double.
          *
@@ -1295,7 +1296,7 @@ namespace morph {
          * *4: The iterations limit if F is float (you'll get a runtime error 'vertices
          *  has wrong size' for iterations>5)
          *
-         * \return The number of face in the generated sphere
+         * \return The number of vertices in the generated geodesic sphere
          */
         template<typename F=float>
         int computeSphereGeo (GLuint& idx, vec<float> so, std::array<float, 3> sc,
@@ -1314,7 +1315,7 @@ namespace morph {
             }
             // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
             morph::geometry::polyhedron<F> geo;
-            int n_faces = morph::geometry::icosahedral_geodesic<F> (geo, iterations);
+            morph::geometry::icosahedral_geodesic<F> (geo, iterations);
 
             // Now essentially copy geo into vertex buffers
             for (auto v : geo.vertices) {
@@ -1328,7 +1329,63 @@ namespace morph {
                 this->indices.push_back (idx + f[2]);
             }
             // idx is the *vertex index* and should be incremented by the number of vertices in the polyhedron
-            idx += geo.vertices.size();
+            int n_verts = static_cast<int>(geo.vertices.size());
+            idx += n_verts;
+
+            return n_verts;
+        }
+
+        /*!
+         * Sphere, multi colour geodesic polygon version (with faces colourable, which
+         * means you have to have 5 or 6 OpenGL vertices per geometric vertex, depending
+         * on which vertex it is. The reordering of vertices will complexify the
+         * identification of the vertices that have 5 neighbours instead of 6.
+         *
+         * \tparam F The type used for the polyhedron computation. Use float or double.
+         *
+         * \param idx The index into the 'vertex indices array'
+         * \param so The sphere offset. Where to place this sphere...
+         * \param colours The sphere colours
+         * \param r Radius of the sphere
+         * \param iterations how many iterations of the geodesic polygon algo to go
+         * through. Determines faces
+         */
+        template<typename F=float>
+        int computeSphereGeo (GLuint& idx, morph::vec<float> so, morph::vvec<std::array<float, 3>>& sc,
+                              float r = 1.0f, int iterations = 2)
+        {
+            throw std::runtime_error ("Finish me");
+
+            if (iterations < 0) { throw std::runtime_error ("computeSphereGeo: iterations must be positive"); }
+            // test if type F is float
+            if constexpr (std::is_same<std::decay_t<F>, float>::value == true) {
+                if (iterations > 5) {
+                    throw std::runtime_error ("computeSphereGeo: For iterations > 5, F needs to be double precision");
+                }
+            } else {
+                if (iterations > 10) {
+                    throw std::runtime_error ("computeSphereGeo: This is an abitrary iterations limit (10 gives 20971520 faces)");
+                }
+            }
+            // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
+            morph::geometry::polyhedron<F> geo;
+            int n_faces = morph::geometry::icosahedral_geodesic<F> (geo, iterations);
+
+            // Now essentially copy geo into vertex buffers
+            for (size_t i = 0; i < geo.vertices.size(); ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    this->vertex_push (geo.vertices[i].as_float() * r + so, this->vertexPositions);
+                    this->vertex_push (geo.vertices[i].as_float(), this->vertexNormals);
+                    this->vertex_push (sc[i+j], this->vertexColors); // or something
+                }
+            }
+            for (auto f : geo.faces) {
+                this->indices.push_back (idx + f[0]); // plus the rest
+                this->indices.push_back (idx + f[1]);
+                this->indices.push_back (idx + f[2]);
+            }
+            // 3 vertices for each vertex.
+            idx += 3 * geo.vertices.size();
 
             return n_faces;
         }

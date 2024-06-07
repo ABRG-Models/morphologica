@@ -18,25 +18,35 @@ int main()
 
     morph::Visual v(1024, 768, "Geodesic Polyhedron");
     v.showCoordArrows = true;
-    // Switch on a mix of diffuse/ambient lighting
-    v.lightingEffects(true);
+    //v.lightingEffects (true);
 
     try {
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
         morph::vec<float, 3> step = { 2.2, 0.0, 0.0 };
 
-        morph::ColourMap<float> cmap (morph::ColourMapType::Jet);
-
-        int imax = 7;
-        float imax_mult = 1.0f/static_cast<float>(imax);
+        int imax = 4;
         for (int i = 0; i < imax; ++i) {
-            auto gv1 = std::make_unique<morph::GeodesicVisual<>> (offset + step * i, 0.9f, cmap.convert(i*imax_mult));
+            auto gv1 = std::make_unique<morph::GeodesicVisual<float>> (offset + step * i, 0.9f);
             v.bindmodel (gv1);
             gv1->iterations = i;
-            gv1->finalize();
             std::string lbl = std::string("iterations = ") + std::to_string(i);
             gv1->addLabel (lbl, {0, -1, 0}, morph::TextFeatures(0.06f));
-            v.addVisualModel (gv1);
+            gv1->cm.setType (morph::ColourMapType::Plasma);
+            gv1->colourScale.do_autoscale = false;
+            gv1->colourScale.compute_autoscale (0.0f, 2.0f);
+            gv1->finalize();
+            auto gv1p = v.addVisualModel (gv1);
+
+            float imax_mult = 1.0f / static_cast<float>(imax);
+#if 0
+            for (unsigned int j = 0; j < gv1p->data.size(); ++j) {
+                gv1p->data[j] = j%3 ? 0 : (1+i) * imax_mult;
+            }
+#else
+            size_t sz1 = gv1p->data.size();
+            gv1p->data.linspace (0.0f, 1+i * imax_mult, sz1);
+#endif
+            gv1p->updateColours();
         }
 
         v.keepOpen();
