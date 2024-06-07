@@ -1351,11 +1351,9 @@ namespace morph {
          * through. Determines faces
          */
         template<typename F=float>
-        int computeSphereGeo (GLuint& idx, morph::vec<float> so, morph::vvec<std::array<float, 3>>& sc,
-                              float r = 1.0f, int iterations = 2)
+        int computeSphereGeoFaces (GLuint& idx, morph::vec<float> so, morph::vvec<std::array<float, 3>>& sc,
+                                   float r = 1.0f, int iterations = 2)
         {
-            throw std::runtime_error ("Finish me");
-
             if (iterations < 0) { throw std::runtime_error ("computeSphereGeo: iterations must be positive"); }
             // test if type F is float
             if constexpr (std::is_same<std::decay_t<F>, float>::value == true) {
@@ -1369,25 +1367,29 @@ namespace morph {
             }
             // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
             morph::geometry::polyhedron<F> geo;
-            int n_faces = morph::geometry::icosahedral_geodesic<F> (geo, iterations);
+            morph::geometry::geodesic_info gi = morph::geometry::icosahedral_geodesic<F> (geo, iterations);
 
-            // Now essentially copy geo into vertex buffers
-            for (size_t i = 0; i < geo.vertices.size(); ++i) {
-                for (int j = 0; j < 3; ++j) {
-                    this->vertex_push (geo.vertices[i].as_float() * r + so, this->vertexPositions);
-                    this->vertex_push (geo.vertices[i].as_float(), this->vertexNormals);
-                    this->vertex_push (sc[i+j], this->vertexColors); // or something
+            if (sc.size() != geo.faces.size()) {
+                throw std::runtime_error ("computeSphereGeoFaces: sc size does not match geo.faces size");
+            }
+
+            for (int i = 0; i < gi.n_faces; ++i) { // For each face in the geodesic...
+                morph::vec<F, 3> norm = { F{0}, F{0}, F{0} };
+                for (auto vtx : geo.faces[i]) { // For each vertex in face...
+                    norm += vtx; // Add to the face norm
+                    this->vertex_push (geo.vertices[vtx].as_float() * r + so, this->vertexPositions);
+                }
+                morph::vec<float, 3> nf = (norm / F{3}).as_float();
+                for (int j = 0; j < 3; ++j) { // Faces all have size 3
+                    this->vertex_push (nf, this->vertexNormals);
+                    this->vertex_push (sc[i], this->vertexColors);
+                    this->indices.push_back (idx + geo.faces[i][j]);
                 }
             }
-            for (auto f : geo.faces) {
-                this->indices.push_back (idx + f[0]); // plus the rest
-                this->indices.push_back (idx + f[1]);
-                this->indices.push_back (idx + f[2]);
-            }
-            // 3 vertices for each vertex.
-            idx += 3 * geo.vertices.size();
+            // An index for each vertex of each face.
+            idx += 3 * gi.n_faces;
 
-            return n_faces;
+            return gi.n_faces;
         }
 
         /*!
