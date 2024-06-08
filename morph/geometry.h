@@ -396,13 +396,24 @@ namespace morph {
     namespace geometry_ce {
 
         //! a container class for the vertices and faces of a polyhedron. Note this contains vec not vvec
-        template<typename F, size_t n_verts, size_t n_faces>
+        template<typename F, int n_verts, int n_faces>
         struct polyhedron
         {
             //! A list of the vertices
             morph::vec<morph::vec<F, 3>, n_verts> vertices;
             //! A list of the faces
             morph::vec<morph::vec<int, 3>, n_faces> faces;
+        };
+
+        // Container class specific to icosahedral geodesic
+        template<typename F, int iterations>
+        struct icosahedral_geodesic
+        {
+            static constexpr int T = std::pow(4, iterations);
+            static constexpr int n_verts = 10 * T + 2;
+            static constexpr int n_faces = 20 * T;
+            geometry_ce::polyhedron <F, n_verts, n_faces> poly;
+            std::array<int, 12> fivefold_vertices;
         };
 
         //! Return a geometry::polyhedron object containing vertices and face indices
@@ -453,6 +464,162 @@ namespace morph {
             };
 
             return ico;
+        }
+
+        //! Experimental for constexpr. No ordering of vertices as in morph::geometry version. DO want to test for duplicate vertices.
+        template<typename F, int iterations>
+        constexpr morph::geometry_ce::icosahedral_geodesic<F, iterations> make_icosahedral_geodesic()
+        {
+            morph::geometry_ce::icosahedral_geodesic<F, iterations> geo; // our return object
+
+            // Start out with an icosahedron
+            constexpr morph::geometry_ce::polyhedron<F, 12, 20> initial_ico = morph::geometry_ce::icosahedron<F>();
+
+            // copy initial_ico into geo.poly As geo is currently an icosahedron, all
+            // vertices in geo are five-fold at this point, so populate this (and then
+            // leave it alone)
+            for (int i = 0; i < 12; ++i) {
+                geo.poly.vertices[i] = initial_ico.vertices[i];
+                geo.fivefold_vertices[i] = i;
+            }
+            for (int i = 0; i < 20; ++i) { geo.poly.faces[i] = initial_ico.faces[i]; }
+
+#if 0
+            // A special comparison function to order vertices in our Geodesic polyhedron. The
+            // vertices (or face centroids) are arranged in a spiral, from z_max to z_min,
+            // spiralling anticlockwise in the x-y plane (that is, with decreasing value in the
+            // z axis and with increasing angle in the x-y plane)
+            auto _vtx_cmp = [](morph::vec<F, 3> a, morph::vec<F, 3> b)
+            {
+                constexpr F z_thresh = 10 * std::numeric_limits<F>::epsilon();
+                // Compare first by vertex's z location
+                bool is_less_than = false;
+                if (std::abs(a[2] - b[2]) < z_thresh) {
+                    // and then by rotational angle in the x-y plane
+                    F angle_a = std::atan2 (a[1], a[0]);
+                    F angle_b = std::atan2 (b[1], b[0]);
+                    if (angle_a < angle_b) { is_less_than = true; }
+                } else if (a[2] < b[2]) { // Put max z at start of array
+                    is_less_than = false;
+                } else {
+                    is_less_than = true;
+                }
+                return is_less_than;
+            };
+
+            // DO need to identify repeated vertices - just search in geo.poly.vertices each time!
+            std::set<morph::vec<F, 3>, decltype(_vtx_cmp)> vertices_set(_vtx_cmp); // The set makes this function a constant expression?
+#endif
+
+            for (int i = 0; i < iterations; ++i) {
+
+                // This will need to be geo.faces for the right *stage* of the process
+                // OR iterate with an i that is the right size
+                for (const auto f : geo.faces) { // faces contains indexes into vertices.
+                    morph::vec<F, 3> va = (geo.poly.vertices[f[1]] + geo.poly.vertices[f[0]]) / 2.0f;
+                    morph::vec<F, 3> vb = (geo.poly.vertices[f[2]] + geo.poly.vertices[f[1]]) / 2.0f;
+                    morph::vec<F, 3> vc = (geo.poly.vertices[f[0]] + geo.poly.vertices[f[2]]) / 2.0f;
+                    // Renormalize the new vertices, placing them on the surface of a sphere
+                    va.renormalize();
+                    vb.renormalize();
+                    vc.renormalize();
+
+                    // Is va/vb/vc new?
+
+                    int a = 0;
+                    try {
+                        a = vertices_map.at (va); // a is the existing index (old money)
+
+                    } catch (const std::out_of_range& e) {
+                        a = geo.vertices.size();
+                        geo.vertices.push_back (va);
+                        vertices_map[va] = a;
+                    }
+
+                    int b = 0;
+                    try {
+                        b = vertices_map.at (vb);
+                    } catch (const std::out_of_range& e) {
+                        b = geo.vertices.size();
+                        geo.vertices.push_back (vb);
+                        vertices_map[vb] = b;
+                    }
+
+                    int c = 0;
+                    try {
+                        c = vertices_map.at (vc);
+                    } catch (const std::out_of_range& e) {
+                        c = geo.vertices.size();
+                        geo.vertices.push_back (vc);
+                        vertices_map[vc] = c;
+                    }
+
+                    morph::vec<int, 3> newface = { f[0], a, c }; // indices in old money here
+                    add_face (geo.vertices[f[0]], va, vc, newface, 1);
+
+                    newface = { f[1], b, a };
+                    add_face (geo.vertices[f[1]], vb, va, newface, 2);
+
+                    newface = { f[2], c, b };
+                    add_face (geo.vertices[f[2]], vc, vb, newface, 3);
+
+                    newface = { a, b, c };
+                    add_face (va, vb, vc, newface, 4);
+                }
+#if 0
+
+                // Copy faces_map back to faces?
+                geo.faces.resize (faces_map.size());
+                int j = 0;
+                for (auto fm : faces_map) {
+                    geo.faces[j] = fm.second;
+                    j++;
+                } // faces should now be correctly ordered
+
+                // idx_remap is keyed on the badly ordered indices; value is correct ordering (j
+                // follows order of vertices_map)
+                int k = 0;
+                idx_remap.clear();
+                std::set<int> ffv; // temporary storage for a new fivefold_vertices set
+                for (auto v : vertices_map) {
+                    // See if we are remapping a fivefold vertex
+                    if (gi.fivefold_vertices.count (v.second)) {
+                        // Then v.second is a fivefold vertex, so insert its replacement, k, into ffv
+                        // std::cout << "Replace old fivefold vertex index " << v.second << " with new one " << k << std::endl;
+                        ffv.insert (k);
+                    }
+                    idx_remap[v.second] = k++;
+                }
+                // swap new five fold vertices into gi object
+                std::swap (ffv, gi.fivefold_vertices);
+
+                // faces is in the language of 'badly ordered indices'. We want it to be
+                // expressed with the new ordered indices, inherent in the vertices_map
+                // ordering, as we'll be writing data from vertices_map into vertices with the
+                // correct ordering
+
+                for (auto& _f : geo.faces) {
+                    _f[0] = idx_remap[_f[0]]; // remap old money faces index to new money index
+                    _f[1] = idx_remap[_f[1]];
+                    _f[2] = idx_remap[_f[2]];
+                }
+
+                // Populate vertices
+                geo.vertices.resize (vertices_map.size());
+                int l = 0;
+                for (auto v : vertices_map) {
+                    geo.vertices[l++] = v.first;
+                }
+#endif
+            }
+
+#if 0
+            // Check our structures against n_faces and n_verts
+            if (static_cast<int>(geo.vertices.size()) != gi.n_vertices) { throw std::runtime_error ("vertices has wrong size"); }
+            if (static_cast<int>(geo.faces.size()) != gi.n_faces) { throw std::runtime_error ("faces has wrong size"); }
+#endif
+
+            return geo;
         }
     }
 
