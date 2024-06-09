@@ -475,8 +475,8 @@ namespace morph {
             // geo must be fully initialized in a constexpr function (this could be constructor in icosahedral_geodesic<>
             constexpr morph::vec<int, 3> fz = { 0, 0, 0 };
             constexpr morph::vec<F, 3> vz = { F{0}, F{0}, F{0} };
-            for (int i = 0; i < geo.poly.faces.size(); ++i) { geo.poly.faces[i] = fz; }
-            for (int i = 0; i < geo.poly.vertices.size(); ++i) { geo.poly.vertices[i] = vz; }
+            for (unsigned int i = 0; i < geo.poly.faces.size(); ++i) { geo.poly.faces[i] = fz; }
+            for (unsigned int i = 0; i < geo.poly.vertices.size(); ++i) { geo.poly.vertices[i] = vz; }
 
             // Start out with an icosahedron
             constexpr morph::geometry_ce::polyhedron<F, 12, 20> initial_ico = morph::geometry_ce::icosahedron<F>();
