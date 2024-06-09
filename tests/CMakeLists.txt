@@ -253,6 +253,14 @@ add_test(testQuaternion testQuaternion)
 add_executable(testvec testvec.cpp)
 add_test(testvec testvec)
 
+# constexpr functionality in morph::vec
+# Need C++20 for the way I use constexpr here so that it is legal to
+# have "a definition of a variable for which no initialization is
+# performed".
+add_executable(testvec_constexpr testvec_constexpr.cpp)
+set_property(TARGET testvec_constexpr PROPERTY CXX_STANDARD 20)
+add_test(testvec_constexpr testvec_constexpr)
+
 add_executable(testvec_asmapkey testvec_asmapkey.cpp)
 add_test(testvec_asmapkey testvec_asmapkey)
 

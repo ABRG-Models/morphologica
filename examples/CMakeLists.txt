@@ -326,8 +326,11 @@ if(USE_GLEW)
   target_link_libraries(icosahedron GLEW::GLEW)
 endif()
 
+# Need C++20 for the way I use constexpr here so that it is legal to
+# have "a definition of a variable for which no initialization is
+# performed".
 add_executable(testce testce.cpp)
-set_property(TARGET testce PROPERTY CXX_STANDARD 23)
+set_property(TARGET testce PROPERTY CXX_STANDARD 20)
 
 add_executable(geodesic geodesic.cpp)
 target_link_libraries(geodesic OpenGL::GL glfw Freetype::Freetype)

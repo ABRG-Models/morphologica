@@ -300,7 +300,7 @@ namespace morph {
 
         //! Renormalize the vector to length 1.0. Only for S types that are floating point.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void renormalize()
+        constexpr void renormalize()
         {
             auto add_squared = [](_S a, _S b) { return a + b * b; };
             const _S denom = std::sqrt (std::accumulate (this->begin(), this->end(), _S{0}, add_squared));
@@ -1195,9 +1195,10 @@ namespace morph {
 
         //! Scalar divide by s
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> operator/ (const _S& s) const
+        constexpr vec<S, N> operator/ (const _S& s) const
         {
             vec<S, N> rtn;
+            for (std::size_t i = 0; i < N; ++i) { rtn[i] = S{0}; } // init rtn
             auto div_by_s = [s](S elmnt) { return elmnt / s; };
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
@@ -1213,7 +1214,7 @@ namespace morph {
 
         //! vec addition operator
         template<typename _S=S>
-        vec<S, N> operator+ (const vec<_S, N>& v) const
+        constexpr vec<S, N> operator+ (const vec<_S, N>& v) const
         {
             vec<S, N> vrtn{};
             auto vi = v.begin();
