@@ -400,9 +400,9 @@ namespace morph {
         struct polyhedron
         {
             //! A list of the vertices
-            morph::vec<morph::vec<F, 3>, n_verts> vertices;
+            std::array<std::array<F, 3>, n_verts> vertices;
             //! A list of the faces
-            morph::vec<morph::vec<int, 3>, n_faces> faces;
+            std::array<std::array<int, 3>, n_faces> faces;
         };
 
         // Container class specific to icosahedral geodesic
@@ -424,42 +424,42 @@ namespace morph {
         {
             morph::geometry_ce::polyhedron<F, 12, 20> ico = {
                 { // vertices that have been rotated (they're not the same as the starters in geometry::icosahedron)
-                    morph::vec<F, 3>({ F{0},                    F{0},                    F{1}                    }),
-                    morph::vec<F, 3>({ F{0.89442719099991597},  F{0},                    F{0.44721359549995798}  }),
-                    morph::vec<F, 3>({ F{0.27639320225002101},  F{0.85065080835203999},  F{0.44721359549995771}  }),
-                    morph::vec<F, 3>({ F{-0.72360679774997894}, F{0.5257311121191337},   F{0.44721359549995782}  }),
-                    morph::vec<F, 3>({ F{-0.72360679774997894}, F{-0.52573111211913348}, F{0.44721359549995809}  }),
-                    morph::vec<F, 3>({ F{0.27639320225002101},  F{-0.85065080835203999}, F{0.44721359549995809}  }),
-                    morph::vec<F, 3>({ F{0.72360679774997894},  F{-0.5257311121191337},  F{-0.44721359549995782} }),
-                    morph::vec<F, 3>({ F{0.72360679774997894},  F{0.52573111211913348},  F{-0.44721359549995809} }),
-                    morph::vec<F, 3>({ F{-0.27639320225002101}, F{0.85065080835203999},  F{-0.44721359549995809} }),
-                    morph::vec<F, 3>({ F{-0.89442719099991597}, F{0},                    F{-0.44721359549995798} }),
-                    morph::vec<F, 3>({ F{-0.27639320225002101}, F{-0.85065080835203999}, F{-0.44721359549995771} }),
-                    morph::vec<F, 3>({ F{0},                    F{0},                    F{-1}                   })
+                    std::array<F, 3>({ F{0},                    F{0},                    F{1}                    }),
+                    std::array<F, 3>({ F{0.89442719099991597},  F{0},                    F{0.44721359549995798}  }),
+                    std::array<F, 3>({ F{0.27639320225002101},  F{0.85065080835203999},  F{0.44721359549995771}  }),
+                    std::array<F, 3>({ F{-0.72360679774997894}, F{0.5257311121191337},   F{0.44721359549995782}  }),
+                    std::array<F, 3>({ F{-0.72360679774997894}, F{-0.52573111211913348}, F{0.44721359549995809}  }),
+                    std::array<F, 3>({ F{0.27639320225002101},  F{-0.85065080835203999}, F{0.44721359549995809}  }),
+                    std::array<F, 3>({ F{0.72360679774997894},  F{-0.5257311121191337},  F{-0.44721359549995782} }),
+                    std::array<F, 3>({ F{0.72360679774997894},  F{0.52573111211913348},  F{-0.44721359549995809} }),
+                    std::array<F, 3>({ F{-0.27639320225002101}, F{0.85065080835203999},  F{-0.44721359549995809} }),
+                    std::array<F, 3>({ F{-0.89442719099991597}, F{0},                    F{-0.44721359549995798} }),
+                    std::array<F, 3>({ F{-0.27639320225002101}, F{-0.85065080835203999}, F{-0.44721359549995771} }),
+                    std::array<F, 3>({ F{0},                    F{0},                    F{-1}                   })
                 },
                 { // Each face is defined by three vertices
-                    morph::vec<int, 3>({0, 1, 2}),
-                    morph::vec<int, 3>({0, 2, 3}),
-                    morph::vec<int, 3>({0, 3, 4}),
-                    morph::vec<int, 3>({0, 4, 5}),
-                    morph::vec<int, 3>({0, 5, 1}),
+                    std::array<int, 3>({0, 1, 2}),
+                    std::array<int, 3>({0, 2, 3}),
+                    std::array<int, 3>({0, 3, 4}),
+                    std::array<int, 3>({0, 4, 5}),
+                    std::array<int, 3>({0, 5, 1}),
 
-                    morph::vec<int, 3>({5, 6, 1}),
-                    morph::vec<int, 3>({1, 6, 7}),
-                    morph::vec<int, 3>({1, 7, 2}),
-                    morph::vec<int, 3>({2, 7, 8}),
-                    morph::vec<int, 3>({2, 8, 3}),
-                    morph::vec<int, 3>({3, 8, 9}),
-                    morph::vec<int, 3>({3, 9, 4}),
-                    morph::vec<int, 3>({4, 9, 10}),
-                    morph::vec<int, 3>({4, 10, 5}),
-                    morph::vec<int, 3>({5, 10, 6}),
+                    std::array<int, 3>({5, 6, 1}),
+                    std::array<int, 3>({1, 6, 7}),
+                    std::array<int, 3>({1, 7, 2}),
+                    std::array<int, 3>({2, 7, 8}),
+                    std::array<int, 3>({2, 8, 3}),
+                    std::array<int, 3>({3, 8, 9}),
+                    std::array<int, 3>({3, 9, 4}),
+                    std::array<int, 3>({4, 9, 10}),
+                    std::array<int, 3>({4, 10, 5}),
+                    std::array<int, 3>({5, 10, 6}),
 
-                    morph::vec<int, 3>({10, 11, 6}),
-                    morph::vec<int, 3>({6, 11, 7}),
-                    morph::vec<int, 3>({7, 11, 8}),
-                    morph::vec<int, 3>({8, 11, 9}),
-                    morph::vec<int, 3>({9, 11, 10})
+                    std::array<int, 3>({10, 11, 6}),
+                    std::array<int, 3>({6, 11, 7}),
+                    std::array<int, 3>({7, 11, 8}),
+                    std::array<int, 3>({8, 11, 9}),
+                    std::array<int, 3>({9, 11, 10})
                 }
             };
 
@@ -472,6 +472,12 @@ namespace morph {
         {
             morph::geometry_ce::icosahedral_geodesic<F, iterations> geo; // our return object
 
+            // geo must be fully initialized in a constexpr function (this could be constructor in icosahedral_geodesic<>
+            constexpr std::array<int, 3> fz = { 0, 0, 0 };
+            constexpr std::array<F, 3> vz = { F{0}, F{0}, F{0} };
+            for (int i = 0; i < geo.poly.faces.size(); ++i) { geo.poly.faces[i] = fz; }
+            for (int i = 0; i < geo.poly.vertices.size(); ++i) { geo.poly.vertices[i] = vz; }
+
             // Start out with an icosahedron
             constexpr morph::geometry_ce::polyhedron<F, 12, 20> initial_ico = morph::geometry_ce::icosahedron<F>();
 
@@ -482,89 +488,69 @@ namespace morph {
                 geo.poly.vertices[i] = initial_ico.vertices[i];
                 geo.fivefold_vertices[i] = i;
             }
-            for (int i = 0; i < 20; ++i) { geo.poly.faces[i] = initial_ico.faces[i]; }
-
-#if 0
-            // A special comparison function to order vertices in our Geodesic polyhedron. The
-            // vertices (or face centroids) are arranged in a spiral, from z_max to z_min,
-            // spiralling anticlockwise in the x-y plane (that is, with decreasing value in the
-            // z axis and with increasing angle in the x-y plane)
-            auto _vtx_cmp = [](morph::vec<F, 3> a, morph::vec<F, 3> b)
-            {
-                constexpr F z_thresh = 10 * std::numeric_limits<F>::epsilon();
-                // Compare first by vertex's z location
-                bool is_less_than = false;
-                if (std::abs(a[2] - b[2]) < z_thresh) {
-                    // and then by rotational angle in the x-y plane
-                    F angle_a = std::atan2 (a[1], a[0]);
-                    F angle_b = std::atan2 (b[1], b[0]);
-                    if (angle_a < angle_b) { is_less_than = true; }
-                } else if (a[2] < b[2]) { // Put max z at start of array
-                    is_less_than = false;
-                } else {
-                    is_less_than = true;
-                }
-                return is_less_than;
-            };
-
-            // DO need to identify repeated vertices - just search in geo.poly.vertices each time!
-            std::set<morph::vec<F, 3>, decltype(_vtx_cmp)> vertices_set(_vtx_cmp); // The set makes this function a constant expression?
-#endif
+            for (int i = 0; i < 20; ++i) {
+                geo.poly.faces[i] = initial_ico.faces[i];
+            }
 
             for (int i = 0; i < iterations; ++i) {
 
+                // Compute n_verts/n_faces for current iterations i
+                int _T = std::pow(4, i);
+                int _n_verts = 10 * _T + 2; // i=0; 12 i=1; 42
+                int _n_faces = 20 * _T;     // i=0; 20 i=1; 80
+
                 // This will need to be geo.faces for the right *stage* of the process
                 // OR iterate with an i that is the right size
-                for (const auto f : geo.faces) { // faces contains indexes into vertices.
-                    morph::vec<F, 3> va = (geo.poly.vertices[f[1]] + geo.poly.vertices[f[0]]) / 2.0f;
-                    morph::vec<F, 3> vb = (geo.poly.vertices[f[2]] + geo.poly.vertices[f[1]]) / 2.0f;
-                    morph::vec<F, 3> vc = (geo.poly.vertices[f[0]] + geo.poly.vertices[f[2]]) / 2.0f;
+                //for (const auto f : geo.faces) { // faces contains indexes into vertices.
+                for (int f = 0; f < _n_faces; ++f) {
+                    //std::cout << "f: " << f << " _n_faces: " << _n_faces << " geo.poly.faces.size(): " << geo.poly.faces.size() << std::endl;
+                    std::array<F, 3> va = { 0, 0, 0 };
+                    std::array<F, 3> vb = { 0, 0, 0 };
+                    std::array<F, 3> vc = { 0, 0, 0 };
+                    for (unsigned int vi = 0; vi < 3; ++vi) {
+                        va[vi] = (geo.poly.vertices[geo.poly.faces[f][1]][vi] + geo.poly.vertices[geo.poly.faces[f][0]][vi]) / 2.0f;
+                        // Renorm va - can accumulate length in this loop
+                        vb[vi] = (geo.poly.vertices[geo.poly.faces[f][2]][vi] + geo.poly.vertices[geo.poly.faces[f][1]][vi]) / 2.0f;
+                        vc[vi] = (geo.poly.vertices[geo.poly.faces[f][0]][vi] + geo.poly.vertices[geo.poly.faces[f][2]][vi]) / 2.0f;
+                    }
+                    //va.renormalize(); // vec version was made constexpr, but now I know about initilization - maybe I *can* use morph::vec
+#if 0
+                    std::array<F, 3> vb = (geo.poly.vertices[geo.poly.faces[f][2]] + geo.poly.vertices[geo.poly.faces[f][1]]) / 2.0f;
+                    std::array<F, 3> vc = (geo.poly.vertices[geo.poly.faces[f][0]] + geo.poly.vertices[geo.poly.faces[f][2]]) / 2.0f;
                     // Renormalize the new vertices, placing them on the surface of a sphere
-                    va.renormalize();
                     vb.renormalize();
                     vc.renormalize();
 
                     // Is va/vb/vc new?
 
-                    int a = 0;
-                    try {
-                        a = vertices_map.at (va); // a is the existing index (old money)
-
-                    } catch (const std::out_of_range& e) {
-                        a = geo.vertices.size();
-                        geo.vertices.push_back (va);
-                        vertices_map[va] = a;
+                    int a = -1;
+                    for (int v = 0; v < _n_verts; ++v) {
+                        if (geo.poly.vertices[v][0] == va[0]
+                            && geo.poly.vertices[v][1] == va[1]
+                            && geo.poly.vertices[v][2] == va[2]) {
+                            // not new
+                            a = v;
+                        }
+                    }
+                    if (a == -1) {
+                        geo.poly.vertices[_n_verts] = va;
+                        a = _n_verts;
+                        _n_verts++;
                     }
 
+                    // sim for b,c
                     int b = 0;
-                    try {
-                        b = vertices_map.at (vb);
-                    } catch (const std::out_of_range& e) {
-                        b = geo.vertices.size();
-                        geo.vertices.push_back (vb);
-                        vertices_map[vb] = b;
-                    }
-
                     int c = 0;
-                    try {
-                        c = vertices_map.at (vc);
-                    } catch (const std::out_of_range& e) {
-                        c = geo.vertices.size();
-                        geo.vertices.push_back (vc);
-                        vertices_map[vc] = c;
-                    }
 
-                    morph::vec<int, 3> newface = { f[0], a, c }; // indices in old money here
-                    add_face (geo.vertices[f[0]], va, vc, newface, 1);
-
-                    newface = { f[1], b, a };
-                    add_face (geo.vertices[f[1]], vb, va, newface, 2);
-
-                    newface = { f[2], c, b };
-                    add_face (geo.vertices[f[2]], vc, vb, newface, 3);
-
+                    std::array<int, 3> newface = { geo.poly.faces[f][0], a, c };
+                    geo.poly.faces[_n_faces] = newface; // FIXME!
+                    newface = { geo.poly.faces[f][1], b, a };
+                    geo.poly.faces[_n_faces] = newface;
+                    newface = { geo.poly.faces[f][2], c, b };
+                    geo.poly.faces[_n_faces] = newface;
                     newface = { a, b, c };
-                    add_face (va, vb, vc, newface, 4);
+                    geo.poly.faces[_n_faces] = newface;
+#endif
                 }
 #if 0
 
