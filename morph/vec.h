@@ -1117,7 +1117,7 @@ namespace morph {
          * \return Hadamard product of left hand size (*this) and right hand size (\a v)
          */
         template<typename _S=S>
-        vec<S, N> operator* (const vec<_S, N>& v) const
+        constexpr vec<S, N> operator* (const vec<_S, N>& v) const
         {
             vec<S, N> rtn = {};
             auto vi = v.begin();
@@ -1132,7 +1132,7 @@ namespace morph {
          * Hadamard product. Multiply *this vector with \a v, elementwise.
          */
         template <typename _S=S>
-        void operator*= (const vec<_S, N>& v)
+        constexpr void operator*= (const vec<_S, N>& v)
         {
             auto vi = v.begin();
             auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
@@ -1146,7 +1146,7 @@ namespace morph {
          * scalar type. Multiplies this vec<S, N> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> operator* (const _S& s) const
+        constexpr vec<S, N> operator* (const _S& s) const
         {
             vec<S, N> rtn{};
             auto mult_by_s = [s](S elmnt) { return elmnt * s; };
@@ -1161,7 +1161,7 @@ namespace morph {
          * scalar type. Multiplies this vec<S, N> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator*= (const _S& s)
+        constexpr void operator*= (const _S& s)
         {
             auto mult_by_s = [s](S elmnt) { return elmnt * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
@@ -1175,7 +1175,7 @@ namespace morph {
          * \return elementwise division of left hand size (*this) by right hand size (\a v)
          */
         template<typename _S=S>
-        vec<S, N> operator/ (const vec<_S, N>& v) const
+        constexpr vec<S, N> operator/ (const vec<_S, N>& v) const
         {
             vec<S, N> rtn{};
             std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
@@ -1188,7 +1188,7 @@ namespace morph {
          * Element by element division. Divide *this vector by \a v, elementwise.
          */
         template <typename _S=S>
-        void operator/= (const vec<_S, N>& v)
+        constexpr void operator/= (const vec<_S, N>& v)
         {
             std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
         }
@@ -1206,7 +1206,7 @@ namespace morph {
 
         //! Scalar divide by s
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator/= (const _S& s)
+        constexpr void operator/= (const _S& s)
         {
             auto div_by_s = [s](S elmnt) { return elmnt / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
@@ -1225,7 +1225,7 @@ namespace morph {
 
         //! vec addition operator
         template<typename _S=S>
-        void operator+= (const vec<_S, N>& v)
+        constexpr void operator+= (const vec<_S, N>& v)
         {
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
@@ -1234,7 +1234,7 @@ namespace morph {
 
         //! vec subtraction operator
         template<typename _S=S>
-        vec<S, N> operator- (const vec<_S, N>& v) const
+        constexpr vec<S, N> operator- (const vec<_S, N>& v) const
         {
             vec<S, N> vrtn{};
             auto vi = v.begin();
@@ -1245,7 +1245,7 @@ namespace morph {
 
         //! vec subtraction operator
         template<typename _S=S>
-        void operator-= (const vec<_S, N>& v)
+        constexpr void operator-= (const vec<_S, N>& v)
         {
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
@@ -1254,7 +1254,7 @@ namespace morph {
 
         //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> operator+ (const _S& s) const
+        constexpr vec<S, N> operator+ (const _S& s) const
         {
             vec<S, N> rtn{};
             auto add_s = [s](S elmnt) { return elmnt + s; };
@@ -1264,7 +1264,7 @@ namespace morph {
 
         //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator+= (const _S& s)
+        constexpr void operator+= (const _S& s)
         {
             auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
@@ -1272,7 +1272,7 @@ namespace morph {
 
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> operator- (const _S& s) const
+        constexpr vec<S, N> operator- (const _S& s) const
         {
             vec<S, N> rtn{};
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
@@ -1282,14 +1282,14 @@ namespace morph {
 
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator-= (const _S& s)
+        constexpr void operator-= (const _S& s)
         {
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
         //! Addition which should work for any member type that implements the + operator
-        vec<S, N> operator+ (const S& s) const
+        constexpr vec<S, N> operator+ (const S& s) const
         {
             vec<S, N> rtn{};
             auto add_s = [s](S elmnt) { return elmnt + s; };
@@ -1298,14 +1298,14 @@ namespace morph {
         }
 
         //! Addition += operator for any type same as the enclosed type that implements + op
-        void operator+= (const S& s) const
+        constexpr void operator+= (const S& s) const
         {
             auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
         //! Subtraction which should work for any member type that implements the - operator
-        vec<S, N> operator- (const S& s) const
+        constexpr vec<S, N> operator- (const S& s) const
         {
             vec<S, N> rtn{};
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
@@ -1314,7 +1314,7 @@ namespace morph {
         }
 
         //! Subtraction -= operator for any time same as the enclosed type that implements - op
-        void operator-= (const S& s) const
+        constexpr void operator-= (const S& s) const
         {
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
@@ -1335,11 +1335,12 @@ namespace morph {
     // e.g. vec<float> denom = {1,2,3}; vec<float> result = float(1) / denom;
 
     //! Scalar * vec<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
-    template <typename S, std::size_t N> vec<S, N> operator* (S lhs, const vec<S, N>& rhs) { return rhs * lhs; }
+    template <typename S, std::size_t N>
+    constexpr vec<S, N> operator* (S lhs, const vec<S, N>& rhs) { return rhs * lhs; }
 
     //! Scalar / vec<>
     template <typename S, std::size_t N>
-    vec<S, N> operator/ (S lhs, const vec<S, N>& rhs)
+    constexpr vec<S, N> operator/ (S lhs, const vec<S, N>& rhs)
     {
         vec<S, N> division;
         auto lhs_div_by_vec = [lhs](S elmnt) { return lhs / elmnt; };
@@ -1348,11 +1349,12 @@ namespace morph {
     }
 
     //! Scalar + vec<> (commutative)
-    template <typename S, std::size_t N> vec<S, N> operator+ (S lhs, const vec<S, N>& rhs) { return rhs + lhs; }
+    template <typename S, std::size_t N>
+    constexpr vec<S, N> operator+ (S lhs, const vec<S, N>& rhs) { return rhs + lhs; }
 
     //! Scalar - vec<>
     template <typename S, std::size_t N>
-    vec<S, N> operator- (S lhs, const vec<S, N>& rhs)
+    constexpr vec<S, N> operator- (S lhs, const vec<S, N>& rhs)
     {
         vec<S, N> subtraction;
         auto lhs_minus_vec = [lhs](S elmnt) { return lhs - elmnt; };

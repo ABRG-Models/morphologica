@@ -24,6 +24,80 @@ static constexpr morph::vec<double, 3> vec_div_scalar()
     return vce;
 }
 
+static constexpr morph::vec<double, 3> vec_diveq_scalar()
+{
+    morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
+    v1 /= 2.0;
+    return v1;
+}
+
+static constexpr morph::vec<double, 3> vec_div_vec()
+{
+    morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
+    morph::vec<double, 3> v2 = { 2.0, 2.0, 2.0 };
+    morph::vec<double, 3> vce = v1 / v2;
+    return vce;
+}
+
+static constexpr morph::vec<double, 3> vec_diveq_vec()
+{
+    morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
+    morph::vec<double, 3> v2 = { 2.0, 2.0, 2.0 };
+    v1 /= v2;
+    return v1;
+}
+
+static constexpr morph::vec<double, 3> vec_mult_vec()
+{
+    morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
+    morph::vec<double, 3> v2 = { 5.0, 2.0, 5.0 };
+    morph::vec<double, 3> vce = v1 * v2;
+    return vce;
+}
+
+static constexpr morph::vec<double, 3> vec_multeq_vec()
+{
+    morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
+    morph::vec<double, 3> v2 = { 5.0, 2.0, 5.0 };
+    v1 *= v2;
+    return v1;
+}
+
+static constexpr morph::vec<double, 3> vec_mult_scalar()
+{
+    morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
+    double v2 = 5.0;
+    morph::vec<double, 3> vce = v1 * v2;
+    return vce;
+}
+
+static constexpr morph::vec<double, 3> vec_multeq_scalar()
+{
+    morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
+    double v2 = 5.0;
+    v1 *= v2;
+    return v1;
+}
+
+static constexpr morph::vec<double, 3> vec_several_ops()
+{
+    morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
+    morph::vec<double, 3> v2 = { 6.0, 5.0, 2.0 };
+    morph::vec<double, 3> v3 = { 1.0, 1.0, 1.0 };
+    v1 += v2;
+    v2 = v1 - v3;
+    v3 -= v2;
+    v1 = (v3 + 1.0) - 2.0;
+    v1 -= 0.5;
+    v2 = v1 + 10.0;
+    v2 += 10.0;
+    v1 = 1.0 + v2;
+    v2 = 1.0 - v1;
+    v1 = 2.0 * v2;
+    v2 = 4.0 / v1;
+    return v1;
+}
+
 static constexpr morph::vec<double, 3> vec_renormalize()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
@@ -121,7 +195,6 @@ int main()
     constexpr morph::vec<double, 3> result3 = vec_renormalize();
     if (result3.length() != 1.0) { std::cout << "Fail 3\n"; rtn -= 1; }
 
-    // set_from() overloads
     constexpr morph::vec<float, 3> result4 = vec_set_from1();
     if (result4[1] != 2.0f) { std::cout << "Fail 4\n"; rtn -= 1; }
 
@@ -151,6 +224,30 @@ int main()
 
     constexpr morph::vec<float, 100> result13 = vec_setmax_setlowest();
     if (result13[1] != std::numeric_limits<float>::lowest()) { std::cout << "Fail 13\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result14 = vec_mult_vec();
+    if (result14[0] != 20.0) { std::cout << "Fail 14\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result15 = vec_multeq_vec();
+    if (result15[0] != 20.0) { std::cout << "Fail 15\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result16 = vec_mult_scalar();
+    if (result16[0] != 20.0) { std::cout << "Fail 16\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result17 = vec_multeq_scalar();
+    if (result17[0] != 20.0) { std::cout << "Fail 17\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result18 = vec_diveq_scalar();
+    if (result18[0] != 0.5) { std::cout << "Fail 18\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result19 = vec_div_vec();
+    if (result19[0] != 0.5) { std::cout << "Fail 19\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result20 = vec_diveq_vec();
+    if (result20[0] != 0.5) { std::cout << "Fail 20\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result21 = vec_several_ops();
+    if (result21[0] != -21.0) { std::cout << "Fail 21\n"; rtn -= 1; }
 
     return rtn;
 }
