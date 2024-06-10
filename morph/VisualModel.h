@@ -1395,6 +1395,40 @@ namespace morph {
             return gi.n_faces;
         }
 
+        //! Fast computeSphereGeo, which uses constexpr make_icosahedral_geodesic. The
+        //! resulting vertices and faces are NOT in any kind of order, but ok for
+        //! plotting, e.g. scatter graph spheres.
+        template<typename F=float, int iterations = 2>
+        int computeSphereGeoFast (GLuint& idx, vec<float> so, std::array<float, 3> sc,
+                                  float r = 1.0f)
+        {
+            // test if type F is float
+            if constexpr (std::is_same<std::decay_t<F>, float>::value == true) {
+                static_assert (iterations <= 5, "computeSphereGeoFast: For iterations > 5, F needs to be double precision");
+            } else {
+                static_assert (iterations <= 10, "computeSphereGeoFast: This is an abitrary iterations limit (10 gives 20971520 faces)");
+            }
+            // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
+            constexpr morph::geometry_ce::icosahedral_geodesic<F, iterations>  geo = morph::geometry_ce::make_icosahedral_geodesic<F, iterations>();
+
+            // Now essentially copy geo into vertex buffers
+            for (auto v : geo.poly.vertices) {
+                this->vertex_push (v.as_float() * r + so, this->vertexPositions);
+                this->vertex_push (v.as_float(), this->vertexNormals);
+                this->vertex_push (sc, this->vertexColors);
+            }
+            for (auto f : geo.poly.faces) {
+                this->indices.push_back (idx + f[0]);
+                this->indices.push_back (idx + f[1]);
+                this->indices.push_back (idx + f[2]);
+            }
+            // idx is the *vertex index* and should be incremented by the number of vertices in the polyhedron
+            int n_verts = static_cast<int>(geo.poly.vertices.size());
+            idx += n_verts;
+
+            return n_verts;
+        }
+
         /*!
          * Sphere, 1 colour version.
          *

@@ -175,6 +175,9 @@ if(wxWidgets_FOUND)
   endif()
 endif()
 
+# Make it possible to compile complex constexpr functions
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=5000000000")
+
 # rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
 #include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 
