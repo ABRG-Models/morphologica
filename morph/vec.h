@@ -94,7 +94,7 @@ namespace morph {
 
         //! Set data members from an array the of same size and type.
         template <typename _S=S>
-        void set_from (const std::array<_S, N>& ar)
+        constexpr void set_from (const std::array<_S, N>& ar)
         {
             std::copy (ar.begin(), ar.end(), this->begin());
         }
@@ -105,7 +105,7 @@ namespace morph {
          * graphics applications involving 4x4 transform matrices.
          */
         template <typename _S=S>
-        void set_from (const std::array<_S, (N+1)>& ar)
+        constexpr void set_from (const std::array<_S, (N+1)>& ar)
         {
             // Don't use std::copy here, because ar has more elements than *this.
             for (std::size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
@@ -118,7 +118,7 @@ namespace morph {
          * z set to 0.
          */
         template <typename _S=S>
-        void set_from (const std::array<_S, (N-1)>& ar)
+        constexpr void set_from (const std::array<_S, (N-1)>& ar)
         {
             // Don't use std::copy here, because ar has more elements than *this.
             for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = ar[i]; }
@@ -130,14 +130,14 @@ namespace morph {
          * have been operated on by 4x4 matrices) into 3D vectors.
          */
         template <typename _S=S>
-        void set_from (const vec<_S, (N+1)>& v)
+        constexpr void set_from (const vec<_S, (N+1)>& v)
         {
             for (std::size_t i = 0; i < N; ++i) { (*this)[i] = v[i]; }
         }
 
         //! Set an N D vec from an (N-1) D vec.
         template <typename _S=S>
-        void set_from (const vec<_S, (N-1)>& v)
+        constexpr void set_from (const vec<_S, (N-1)>& v)
         {
             for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = v[i]; }
             (*this)[N-1] = S{0};
@@ -145,7 +145,7 @@ namespace morph {
 
         //! Set all elements from the value type v
         template <typename _S=S>
-        void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
+        constexpr void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!
          * Set a linear sequence into the vector from value start to value stop. Uses
@@ -153,7 +153,7 @@ namespace morph {
          * with integer types, but be prepared to notice strange rounding errors.
          */
         template <typename _S=S, typename _S2=S>
-        void linspace (const _S start, const _S2 stop)
+        constexpr void linspace (const _S start, const _S2 stop)
         {
             S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (N-1);
             for (std::size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
@@ -165,7 +165,7 @@ namespace morph {
          * full. If too few, then the rest will be 0.
          */
         template <typename _S=S, typename _S2=S>
-        void arange (const _S start, const _S2 stop, const _S2 increment)
+        constexpr void arange (const _S start, const _S2 stop, const _S2 increment)
         {
             this->zero();
             // Figure out how many elements given the increment:
@@ -390,11 +390,11 @@ namespace morph {
         }
 
         //! Zero the vector. Set all elements to 0
-        void zero() { std::fill (this->begin(), this->end(), S{0}); }
+        constexpr void zero() { std::fill (this->begin(), this->end(), S{0}); }
         //! Set all elements of the vector to the maximum possible value given type S
-        void set_max() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::max()); }
+        constexpr void set_max() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::max()); }
         //! Set all elements of the vector to the lowest (i.e. most negative) possible value given type S
-        void set_lowest() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::lowest()); }
+        constexpr void set_lowest() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::lowest()); }
 
         /*!
          * Randomize the vector
