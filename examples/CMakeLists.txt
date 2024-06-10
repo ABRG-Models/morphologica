@@ -195,6 +195,7 @@ if(USE_GLEW)
 endif()
 
 add_executable(scatter scatter.cpp)
+set_property(TARGET scatter PROPERTY CXX_STANDARD 20)
 target_link_libraries(scatter OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(scatter GLEW::GLEW)
@@ -326,13 +327,23 @@ if(USE_GLEW)
   target_link_libraries(icosahedron GLEW::GLEW)
 endif()
 
+# Need C++20 for the way I use constexpr here so that it is legal to
+# have "a definition of a variable for which no initialization is
+# performed".
 add_executable(testce testce.cpp)
-set_property(TARGET testce PROPERTY CXX_STANDARD 23)
+set_property(TARGET testce PROPERTY CXX_STANDARD 20)
 
 add_executable(geodesic geodesic.cpp)
 target_link_libraries(geodesic OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(geodesic GLEW::GLEW)
+endif()
+
+add_executable(geodesic_ce geodesic_ce.cpp)
+set_property(TARGET geodesic_ce PROPERTY CXX_STANDARD 20)
+target_link_libraries(geodesic_ce OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(geodesic_ce GLEW::GLEW)
 endif()
 
 add_executable(tri tri.cpp)

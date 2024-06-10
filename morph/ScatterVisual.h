@@ -114,14 +114,14 @@ namespace morph {
                 if (this->sizeFactor == Flt{0}) {
                     if constexpr (draw_spheres_as_geodesics) {
                         // Slower than regular computeSphere(). 2 iterations gives 320 faces
-                        this->computeSphereGeo (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed, 2);
+                        this->template computeSphereGeoFast<float, 3> (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed);
                     } else {
                         // (16+2) * 20 gives 360 faces
                         this->computeSphere (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
                     }
                 } else {
                     if constexpr (draw_spheres_as_geodesics) {
-                        this->computeSphereGeo (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 2);
+                        this->template computeSphereGeoFast<float, 3> (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor);
                     } else {
                         this->computeSphere (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
                     }
@@ -134,13 +134,9 @@ namespace morph {
             }
         }
 
-        // I've tested geodesic sphere drawing code, but it probably isn't yet suitable
-        // for use where many spheres are repeatedly computed (the base geodesic is
-        // repeatedly computed, which is a waste of cycles). In fact, the overall
-        // approach here, where each sphere model is repeatedly re-computed for each
-        // point is probably about the least performant way you could draw a bunch of
-        // spheres in OpenGL! However, using geodesic code is noticably slower even than
-        // the regular VisualModel::computeSphere()
+        // The constexpr, unordered geodesic code is no slower than the regular
+        // VisualModel::computeSphere(), but leave this off for now (if true, C++-20 is
+        // required)
         static constexpr bool draw_spheres_as_geodesics = false;
 
         //! Set this->radiusFixed, then re-compute vertices.
