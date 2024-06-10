@@ -163,7 +163,7 @@ static constexpr morph::vec<float, 100> vec_linspace()
 static constexpr morph::vec<float, 100> vec_arange()
 {
     morph::vec<float, 100> v;
-    v.arange (0.0f, 99.0f, 1.0f);
+    v.arange (0.0f, 100.0f, 1.0f);
     return v;
 }
 
@@ -179,6 +179,49 @@ static constexpr morph::vec<float, 100> vec_setmax_setlowest()
     morph::vec<float, 100> v;
     v.set_max();
     v.set_lowest();
+    return v;
+}
+
+static constexpr morph::vec<double, 4> vec_dimchanges()
+{
+    morph::vec<unsigned int, 3> v00 = { 1, 2, 3 };
+    morph::vec<int, 3> v0 = v00.as_int();
+    morph::vec<double, 3> v = v0.as_uint().as_double() / 10.0;
+    morph::vec<double, 4> v1 = v.plus_one_dim();
+    morph::vec<double, 3> v2 = v1.less_one_dim();
+    morph::vec<double, 4> v3 = v2.plus_one_dim (0.4);
+    return v3;
+}
+
+static constexpr morph::vec<double, 3> vec_floatchanges()
+{
+    morph::vec<double, 3> v = { 0.1, 0.2, 0.3 };
+    morph::vec<float, 3> v1 = v.as_float();
+    morph::vec<double, 3> v2 = v1.as_double();
+    return v2;
+}
+
+static constexpr morph::range<double> vec_range()
+{
+    morph::vec<double> v = {1, 2, 3};
+    morph::range<double> r = v.range();
+    return r;
+}
+
+static constexpr morph::range<double> vec_rescale()
+{
+    morph::vec<double, 5> v = { 1, 2, 3, 4, 5 };
+    v.rescale_neg();
+    v.rescale_sym();
+    v.rescale();
+    return v.range();
+}
+static constexpr morph::vec<double, 6> vec_rotate()
+{
+    morph::vec<double, 6> v = { 1, 2, 3, 4, 5, 6 };
+    v.rotate();
+    v.rotate(-2);
+    v.rotate_pairs();
     return v;
 }
 
@@ -202,25 +245,25 @@ int main()
     if (result5[2] != 3.0f) { std::cout << "Fail 5\n"; rtn -= 1; }
 
     constexpr morph::vec<float, 3> result6 = vec_set_from3();
-    if (result6[2] != 0.0f && result6[1] != 2.0f) { std::cout << "Fail 6\n"; rtn -= 1; }
+    if (result6[2] != 0.0f || result6[1] != 2.0f) { std::cout << "Fail 6\n"; rtn -= 1; }
 
     constexpr morph::vec<float, 3> result7 = vec_set_from4();
     if (result7[2] != 3.0f) { std::cout << "Fail 7\n"; rtn -= 1; }
 
     constexpr morph::vec<float, 3> result8 = vec_set_from5();
-    if (result8[2] != 0.0f && result8[1] != 2.0f) { std::cout << "Fail 8\n"; rtn -= 1; }
+    if (result8[2] != 0.0f || result8[1] != 2.0f) { std::cout << "Fail 8\n"; rtn -= 1; }
 
     constexpr morph::vec<float, 3> result9 = vec_set_from6();
     if (result9[2] != 4.4f) { std::cout << "Fail 9\n"; rtn -= 1; }
 
     constexpr morph::vec<float, 100> result10 = vec_linspace();
-    if (result10[0] != 0.0f && result10[99] != 99.0f) { std::cout << "Fail 10\n"; rtn -= 1; }
+    if (result10[0] != 0.0f || result10[99] != 99.0f) { std::cout << "Fail 10\n"; rtn -= 1; }
 
     constexpr morph::vec<float, 100> result11 = vec_arange();
-    if (result11[0] != 0.0f && result11[99] != 99.0f) { std::cout << "Fail 11\n"; rtn -= 1; }
+    if (result11[0] != 0.0f || result11[99] != 99.0f) { std::cout << "Fail 11\n"; rtn -= 1; }
 
     constexpr morph::vec<float, 100> result12 = vec_zero();
-    if (result12[1] != 0.0f && result12[67] != 0.0f) { std::cout << "Fail 12\n"; rtn -= 1; }
+    if (result12[1] != 0.0f || result12[67] != 0.0f) { std::cout << "Fail 12\n"; rtn -= 1; }
 
     constexpr morph::vec<float, 100> result13 = vec_setmax_setlowest();
     if (result13[1] != std::numeric_limits<float>::lowest()) { std::cout << "Fail 13\n"; rtn -= 1; }
@@ -248,6 +291,23 @@ int main()
 
     constexpr morph::vec<double, 3> result21 = vec_several_ops();
     if (result21[0] != -21.0) { std::cout << "Fail 21\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 4> result22 = vec_dimchanges();
+    if (result22[3] != 0.4) { std::cout << "Fail 22\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result23 = vec_floatchanges();
+    if (std::abs(result23[0] - 0.1) > std::numeric_limits<float>::epsilon()) {
+        std::cout << "Fail 23" << result23 << "\n"; rtn -= 1;
+    }
+
+    constexpr morph::range<double> result24 = vec_range();
+    if (result24.min != 1 || result24.max != 3) { std::cout << "Fail 24\n"; rtn -= 1; }
+
+    constexpr morph::range<double> result25 = vec_rescale();
+    if (result25.min != 0 || result25.max != 1) { std::cout << "Fail 25\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 6> result26 = vec_rotate();
+    if (result26[0] != 1.0 || result26[1] != 6.0) { std::cout << "Fail 26\n"; rtn -= 1; }
 
     return rtn;
 }

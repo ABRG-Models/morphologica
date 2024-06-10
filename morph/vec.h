@@ -179,7 +179,7 @@ namespace morph {
         }
 
         //! Return a vector with one less dimension - losing the last one.
-        vec<S, N-1> less_one_dim () const
+        constexpr vec<S, N-1> less_one_dim () const
         {
             vec<S, N-1> rtn;
             for (std::size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
@@ -187,7 +187,7 @@ namespace morph {
         }
 
         //! Return a vector with one additional dimension - setting it to 0.
-        vec<S, N+1> plus_one_dim () const
+        constexpr vec<S, N+1> plus_one_dim () const
         {
             vec<S, N+1> rtn;
             for (std::size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
@@ -196,7 +196,7 @@ namespace morph {
         }
 
         //! Return a vector with one additional dimension - setting it to val.
-        vec<S, N+1> plus_one_dim (const S val) const
+        constexpr vec<S, N+1> plus_one_dim (const S val) const
         {
             vec<S, N+1> rtn;
             for (std::size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
@@ -205,7 +205,7 @@ namespace morph {
         }
 
         //! Return this vec in single precision, float format
-        vec<float, N> as_float() const
+        constexpr vec<float, N> as_float() const
         {
             vec<float, N> v;
             v.zero();
@@ -214,7 +214,7 @@ namespace morph {
         }
 
         //! Return this vec in double precision, float format
-        vec<double, N> as_double() const
+        constexpr vec<double, N> as_double() const
         {
             vec<double, N> v;
             v.zero();
@@ -223,7 +223,7 @@ namespace morph {
         }
 
         //! Return this vec in single precision, int format
-        vec<int, N> as_int() const
+        constexpr vec<int, N> as_int() const
         {
             vec<int, N> v;
             v.zero();
@@ -232,7 +232,7 @@ namespace morph {
         }
 
         //! Return this vec in single precision, unsigned int format
-        vec<unsigned int, N> as_uint() const
+        constexpr vec<unsigned int, N> as_uint() const
         {
             vec<unsigned int, N> v;
             v.zero();
@@ -313,9 +313,9 @@ namespace morph {
 
         //! Rescale the vector elements so that they all lie in the range 0-1. NOT the same as renormalize.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale()
+        constexpr void rescale()
         {
-            morph::range<_S> r = this->minmax();
+            morph::range<_S> r = this->range();
             _S m = r.max - r.min;
             _S g = r.min;
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
@@ -324,9 +324,9 @@ namespace morph {
 
         //! Rescale the vector elements so that they all lie in the range -1 to 0.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale_neg()
+        constexpr void rescale_neg()
         {
-            morph::range<_S> r = this->minmax();
+            morph::range<_S> r = this->range();
             _S m = r.max - r.min;
             _S g = r.max;
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
@@ -335,9 +335,9 @@ namespace morph {
 
         //! Rescale the vector elements symetrically about 0 so that they all lie in the range -1 to 1.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale_sym()
+        constexpr void rescale_sym()
         {
-            morph::range<_S> r = this->minmax();
+            morph::range<_S> r = this->range();
             _S m = (r.max - r.min) / _S{2};
             _S g = (r.max + r.min) / _S{2};
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
@@ -348,7 +348,7 @@ namespace morph {
          * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
          * swapping x and y in a 2D vec.
          */
-        void rotate()
+        constexpr void rotate()
         {
             if constexpr (N>1) {
                 S z_el = (*this)[0];
@@ -361,7 +361,7 @@ namespace morph {
 
         //! Templated rotate for integral types T
         template <typename T=int>
-        void rotate (T n)
+        constexpr void rotate (T n)
         {
             static_assert (std::numeric_limits<T>::is_integer);
 
@@ -378,7 +378,7 @@ namespace morph {
         }
 
         //! If N is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
-        void rotate_pairs()
+        constexpr void rotate_pairs()
         {
             static_assert ((N%2==0), "N must be even to call morph::vec::rotate_pairs");
             S tmp_el = S{0};
@@ -651,15 +651,8 @@ namespace morph {
             return idx;
         }
 
-        //! Return the min and max values of the vec
-        morph::range<S> minmax() const
-        {
-            auto mm = std::minmax_element (this->begin(), this->end());
-            return morph::range<S>(*mm.first, *mm.second);
-        }
-
         //! Return the range of the vec (the min and max values of the vec)
-        morph::range<S> range() const
+        constexpr morph::range<S> range() const
         {
             auto mm = std::minmax_element (this->begin(), this->end());
             return morph::range<S>(*mm.first, *mm.second);
