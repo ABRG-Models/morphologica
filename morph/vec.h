@@ -71,16 +71,16 @@ namespace morph {
     {
         //! \return the first component of the vector
         template <std::size_t _N = N, std::enable_if_t<(_N>0), int> = 0>
-        S x() const { return (*this)[0]; }
+        constexpr S x() const { return (*this)[0]; }
         //! \return the second component of the vector
         template <std::size_t _N = N, std::enable_if_t<(_N>1), int> = 0>
-        S y() const { return (*this)[1]; }
+        constexpr S y() const { return (*this)[1]; }
         //! \return the third component of the vector
         template <std::size_t _N = N, std::enable_if_t<(_N>2), int> = 0>
-        S z() const { return (*this)[2]; }
+        constexpr S z() const { return (*this)[2]; }
         //! \return the fourth component of the vector
         template <std::size_t _N = N, std::enable_if_t<(_N>3), int> = 0>
-        S w() const { return (*this)[3]; }
+        constexpr S w() const { return (*this)[3]; }
 
         //! Set data members from an std::vector
         template <typename _S=S>
@@ -94,7 +94,7 @@ namespace morph {
 
         //! Set data members from an array the of same size and type.
         template <typename _S=S>
-        void set_from (const std::array<_S, N>& ar)
+        constexpr void set_from (const std::array<_S, N>& ar)
         {
             std::copy (ar.begin(), ar.end(), this->begin());
         }
@@ -105,7 +105,7 @@ namespace morph {
          * graphics applications involving 4x4 transform matrices.
          */
         template <typename _S=S>
-        void set_from (const std::array<_S, (N+1)>& ar)
+        constexpr void set_from (const std::array<_S, (N+1)>& ar)
         {
             // Don't use std::copy here, because ar has more elements than *this.
             for (std::size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
@@ -118,7 +118,7 @@ namespace morph {
          * z set to 0.
          */
         template <typename _S=S>
-        void set_from (const std::array<_S, (N-1)>& ar)
+        constexpr void set_from (const std::array<_S, (N-1)>& ar)
         {
             // Don't use std::copy here, because ar has more elements than *this.
             for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = ar[i]; }
@@ -130,14 +130,14 @@ namespace morph {
          * have been operated on by 4x4 matrices) into 3D vectors.
          */
         template <typename _S=S>
-        void set_from (const vec<_S, (N+1)>& v)
+        constexpr void set_from (const vec<_S, (N+1)>& v)
         {
             for (std::size_t i = 0; i < N; ++i) { (*this)[i] = v[i]; }
         }
 
         //! Set an N D vec from an (N-1) D vec.
         template <typename _S=S>
-        void set_from (const vec<_S, (N-1)>& v)
+        constexpr void set_from (const vec<_S, (N-1)>& v)
         {
             for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = v[i]; }
             (*this)[N-1] = S{0};
@@ -145,7 +145,7 @@ namespace morph {
 
         //! Set all elements from the value type v
         template <typename _S=S>
-        void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
+        constexpr void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!
          * Set a linear sequence into the vector from value start to value stop. Uses
@@ -153,7 +153,7 @@ namespace morph {
          * with integer types, but be prepared to notice strange rounding errors.
          */
         template <typename _S=S, typename _S2=S>
-        void linspace (const _S start, const _S2 stop)
+        constexpr void linspace (const _S start, const _S2 stop)
         {
             S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (N-1);
             for (std::size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
@@ -165,7 +165,7 @@ namespace morph {
          * full. If too few, then the rest will be 0.
          */
         template <typename _S=S, typename _S2=S>
-        void arange (const _S start, const _S2 stop, const _S2 increment)
+        constexpr void arange (const _S start, const _S2 stop, const _S2 increment)
         {
             this->zero();
             // Figure out how many elements given the increment:
@@ -179,7 +179,7 @@ namespace morph {
         }
 
         //! Return a vector with one less dimension - losing the last one.
-        vec<S, N-1> less_one_dim () const
+        constexpr vec<S, N-1> less_one_dim () const
         {
             vec<S, N-1> rtn;
             for (std::size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
@@ -187,7 +187,7 @@ namespace morph {
         }
 
         //! Return a vector with one additional dimension - setting it to 0.
-        vec<S, N+1> plus_one_dim () const
+        constexpr vec<S, N+1> plus_one_dim () const
         {
             vec<S, N+1> rtn;
             for (std::size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
@@ -196,7 +196,7 @@ namespace morph {
         }
 
         //! Return a vector with one additional dimension - setting it to val.
-        vec<S, N+1> plus_one_dim (const S val) const
+        constexpr vec<S, N+1> plus_one_dim (const S val) const
         {
             vec<S, N+1> rtn;
             for (std::size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
@@ -205,7 +205,7 @@ namespace morph {
         }
 
         //! Return this vec in single precision, float format
-        vec<float, N> as_float() const
+        constexpr vec<float, N> as_float() const
         {
             vec<float, N> v;
             v.zero();
@@ -214,7 +214,7 @@ namespace morph {
         }
 
         //! Return this vec in double precision, float format
-        vec<double, N> as_double() const
+        constexpr vec<double, N> as_double() const
         {
             vec<double, N> v;
             v.zero();
@@ -223,7 +223,7 @@ namespace morph {
         }
 
         //! Return this vec in single precision, int format
-        vec<int, N> as_int() const
+        constexpr vec<int, N> as_int() const
         {
             vec<int, N> v;
             v.zero();
@@ -232,7 +232,7 @@ namespace morph {
         }
 
         //! Return this vec in single precision, unsigned int format
-        vec<unsigned int, N> as_uint() const
+        constexpr vec<unsigned int, N> as_uint() const
         {
             vec<unsigned int, N> v;
             v.zero();
@@ -313,9 +313,9 @@ namespace morph {
 
         //! Rescale the vector elements so that they all lie in the range 0-1. NOT the same as renormalize.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale()
+        constexpr void rescale()
         {
-            morph::range<_S> r = this->minmax();
+            morph::range<_S> r = this->range();
             _S m = r.max - r.min;
             _S g = r.min;
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
@@ -324,9 +324,9 @@ namespace morph {
 
         //! Rescale the vector elements so that they all lie in the range -1 to 0.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale_neg()
+        constexpr void rescale_neg()
         {
-            morph::range<_S> r = this->minmax();
+            morph::range<_S> r = this->range();
             _S m = r.max - r.min;
             _S g = r.max;
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
@@ -335,9 +335,9 @@ namespace morph {
 
         //! Rescale the vector elements symetrically about 0 so that they all lie in the range -1 to 1.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale_sym()
+        constexpr void rescale_sym()
         {
-            morph::range<_S> r = this->minmax();
+            morph::range<_S> r = this->range();
             _S m = (r.max - r.min) / _S{2};
             _S g = (r.max + r.min) / _S{2};
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
@@ -348,7 +348,7 @@ namespace morph {
          * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
          * swapping x and y in a 2D vec.
          */
-        void rotate()
+        constexpr void rotate()
         {
             if constexpr (N>1) {
                 S z_el = (*this)[0];
@@ -361,7 +361,7 @@ namespace morph {
 
         //! Templated rotate for integral types T
         template <typename T=int>
-        void rotate (T n)
+        constexpr void rotate (T n)
         {
             static_assert (std::numeric_limits<T>::is_integer);
 
@@ -378,7 +378,7 @@ namespace morph {
         }
 
         //! If N is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
-        void rotate_pairs()
+        constexpr void rotate_pairs()
         {
             static_assert ((N%2==0), "N must be even to call morph::vec::rotate_pairs");
             S tmp_el = S{0};
@@ -390,11 +390,11 @@ namespace morph {
         }
 
         //! Zero the vector. Set all elements to 0
-        void zero() { std::fill (this->begin(), this->end(), S{0}); }
+        constexpr void zero() { std::fill (this->begin(), this->end(), S{0}); }
         //! Set all elements of the vector to the maximum possible value given type S
-        void set_max() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::max()); }
+        constexpr void set_max() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::max()); }
         //! Set all elements of the vector to the lowest (i.e. most negative) possible value given type S
-        void set_lowest() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::lowest()); }
+        constexpr void set_lowest() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::lowest()); }
 
         /*!
          * Randomize the vector
@@ -443,7 +443,7 @@ namespace morph {
          * \return true if the length of the vector is 1.
          */
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        bool checkunit() const
+        constexpr bool checkunit() const
         {
             /*!
              * \brief Unit vector threshold
@@ -460,7 +460,7 @@ namespace morph {
              * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
              * sense.
              */
-            static constexpr _S unitThresh = _S{0.001};
+            constexpr _S unitThresh = _S{0.001};
 
             auto subtract_squared = [](_S a, _S b) { return static_cast<_S>(a - b * b); };
             const _S metric = std::accumulate (this->begin(), this->end(), _S{1}, subtract_squared);
@@ -476,7 +476,7 @@ namespace morph {
          * \return a value which is as close as possible to the length
          */
         template <typename _S=S>
-        _S length() const
+        constexpr _S length() const
         {
             auto add_squared = [](_S a, S b) { return a + b * b; };
             // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of std::sqrt()
@@ -490,7 +490,7 @@ namespace morph {
         //! Reduce the length of the vector by the amount dl, if possible. If dl makes the vector
         //! have a negative length, then return a null vector
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> shorten (const S dl) const
+        constexpr vec<S, N> shorten (const S dl) const
         {
             vec<S, N> v = *this;
             S newlen = this->length() - dl;
@@ -505,7 +505,7 @@ namespace morph {
         //! Increase the length of the vector by the amount dl, if possible. If dl makes the vector
         //! have a negative length, then return a null vector
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> lengthen (const S dl) const
+        constexpr vec<S, N> lengthen (const S dl) const
         {
             vec<S, N> v = *this;
             S newlen = this->length() + dl;
@@ -526,7 +526,7 @@ namespace morph {
          * a scalar.
          */
         template <typename _S=S>
-        _S length_sq() const
+        constexpr _S length_sq() const
         {
             _S _sos = _S{0};
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
@@ -562,14 +562,14 @@ namespace morph {
          * \return the length squared
          */
         template <typename _S=S>
-        _S sos() const
+        constexpr _S sos() const
         {
             auto add_squared = [](_S a, S b) { return a + b * b; };
             return std::accumulate (this->begin(), this->end(), _S{0}, add_squared);
         }
 
         //! Return the value of the longest component of the vector.
-        S longest() const
+        constexpr S longest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
             auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -578,7 +578,7 @@ namespace morph {
         }
 
         //! Return the index of the longest component of the vector.
-        std::size_t arglongest() const
+        constexpr std::size_t arglongest() const
         {
             std::size_t idx = 0;
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
@@ -594,7 +594,7 @@ namespace morph {
         }
 
         //! Return the value of the shortest component of the vector.
-        S shortest() const
+        constexpr S shortest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
             auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -603,7 +603,7 @@ namespace morph {
         }
 
         //! Return the index of the shortest component of the vector.
-        std::size_t argshortest() const
+        constexpr std::size_t argshortest() const
         {
             std::size_t idx = 0;
             // Check on the type S. If S is a vec thing, then abs_compare needs to be different.
@@ -620,7 +620,7 @@ namespace morph {
         }
 
         //! Return the value of the maximum (most positive) component of the vector.
-        S max() const
+        constexpr S max() const
         {
             auto themax = std::max_element (this->begin(), this->end());
             S rtn = *themax;
@@ -628,7 +628,7 @@ namespace morph {
         }
 
         //! Return the index of the maximum (most positive) component of the vector.
-        std::size_t argmax() const
+        constexpr std::size_t argmax() const
         {
             auto themax = std::max_element (this->begin(), this->end());
             std::size_t idx = (themax - this->begin());
@@ -636,7 +636,7 @@ namespace morph {
         }
 
         //! Return the value of the minimum (smallest or most negative) component of the vector.
-        S min() const
+        constexpr S min() const
         {
             auto themin = std::min_element (this->begin(), this->end());
             S rtn = *themin;
@@ -644,35 +644,28 @@ namespace morph {
         }
 
         //! Return the index of the minimum (smallest or most negative) component of the vector.
-        std::size_t argmin() const
+        constexpr std::size_t argmin() const
         {
             auto themin = std::min_element (this->begin(), this->end());
             std::size_t idx = (themin - this->begin());
             return idx;
         }
 
-        //! Return the min and max values of the vec
-        morph::range<S> minmax() const
-        {
-            auto mm = std::minmax_element (this->begin(), this->end());
-            return morph::range<S>(*mm.first, *mm.second);
-        }
-
         //! Return the range of the vec (the min and max values of the vec)
-        morph::range<S> range() const
+        constexpr morph::range<S> range() const
         {
             auto mm = std::minmax_element (this->begin(), this->end());
             return morph::range<S>(*mm.first, *mm.second);
         }
 
         //! Return true if any element is zero
-        bool has_zero() const
+        constexpr bool has_zero() const
         {
             return std::any_of (this->cbegin(), this->cend(), [](S i){ return i == S{0}; });
         }
 
         //! Return true if any element is infinity
-        bool has_inf() const
+        constexpr bool has_inf() const
         {
             if constexpr (std::numeric_limits<S>::has_infinity) {
                 return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isinf(i);});
@@ -682,7 +675,7 @@ namespace morph {
         }
 
         //! Return true if any element is NaN
-        bool has_nan() const
+        constexpr bool has_nan() const
         {
             if constexpr (std::numeric_limits<S>::has_quiet_NaN
                           || std::numeric_limits<S>::has_signaling_NaN) {
@@ -693,20 +686,20 @@ namespace morph {
         }
 
         //! Return true if any element is NaN or infinity
-        bool has_nan_or_inf() const
+        constexpr bool has_nan_or_inf() const
         {
             bool has_nan_or_inf = false;
             has_nan_or_inf = this->has_nan();
             return has_nan_or_inf ? has_nan_or_inf : this->has_inf();
         }
 
-        void replace_nan_with (const S replacement)
+        constexpr void replace_nan_with (const S replacement)
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
             for (auto& i : *this) { if (std::isnan(i)) { i = replacement; } }
         }
 
-        void replace_nan_or_inf_with (const S replacement)
+        constexpr void replace_nan_or_inf_with (const S replacement)
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
             static_assert (std::numeric_limits<S>::has_infinity, "S does not have infinities");
@@ -715,7 +708,7 @@ namespace morph {
 
         //! Return the arithmetic mean of the elements
         template<typename _S=S>
-        _S mean() const
+        constexpr _S mean() const
         {
             const _S sum = std::accumulate (this->begin(), this->end(), _S{0});
             return sum / this->size();
@@ -723,7 +716,7 @@ namespace morph {
 
         //! Return the variance of the elements
         template<typename _S=S>
-        _S variance() const
+        constexpr _S variance() const
         {
             if (this->empty()) { return S{0}; }
             _S _mean = this->mean<_S>();
@@ -737,7 +730,7 @@ namespace morph {
 
         //! Return the standard deviation of the elements
         template<typename _S=S>
-        _S std() const
+        constexpr _S std() const
         {
             if (this->empty()) { return _S{0}; }
             return std::sqrt (this->variance<_S>());
@@ -745,14 +738,14 @@ namespace morph {
 
         //! Return the sum of the elements
         template<typename _S=S>
-        _S sum() const
+        constexpr _S sum() const
         {
             return std::accumulate (this->begin(), this->end(), _S{0});
         }
 
         //! Return the product of the elements
         template<typename _S=S>
-        _S product() const
+        constexpr _S product() const
         {
             auto _product = [](_S a, S b) mutable { return a ? a * b : b; };
             return std::accumulate (this->begin(), this->end(), _S{0}, _product);
@@ -763,7 +756,7 @@ namespace morph {
          *
          * \return a vec whose elements have been raised to the power p
          */
-        vec<S, N> pow (const S& p) const
+        constexpr vec<S, N> pow (const S& p) const
         {
             vec<S, N> rtn{};
             auto raise_to_p = [p](S elmnt) -> S { return static_cast<S>(std::pow(elmnt, p)); };
@@ -771,11 +764,11 @@ namespace morph {
             return rtn;
         }
         //! Raise each element to the power p
-        void pow_inplace (const S& p) { for (auto& i : *this) { i = static_cast<S>(std::pow (i, p)); } }
+        constexpr void pow_inplace (const S& p) { for (auto& i : *this) { i = static_cast<S>(std::pow (i, p)); } }
 
         //! Element-wise power
         template<typename _S=S>
-        vec<S, N> pow (const vec<_S, N>& p) const
+        constexpr vec<S, N> pow (const vec<_S, N>& p) const
         {
             auto pi = p.begin();
             vec<S, N> rtn{};
@@ -791,51 +784,51 @@ namespace morph {
         }
 
         //! Return the signum of the vec, with signum(0)==0
-        vec<S, N> signum() const
+        constexpr vec<S, N> signum() const
         {
             vec<S, N> rtn{};
             auto _signum = [](S elmnt) -> S { return (elmnt > S{0} ? S{1} : (elmnt == S{0} ? S{0} : S{-1})); };
             std::transform (this->begin(), this->end(), rtn.begin(), _signum);
             return rtn;
         }
-        void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
+        constexpr void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
         //! Return the floor of the vec
-        vec<S, N> floor() const
+        constexpr vec<S, N> floor() const
         {
             vec<S, N> rtn{};
             auto _floor = [](S elmnt) -> S { return (std::floor(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _floor);
             return rtn;
         }
-        void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
+        constexpr void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
 
         //! Return the floor-or-ceiling of the vector's elements - i.e. apply std::trunc
-        vec<S, N> trunc() const
+        constexpr vec<S, N> trunc() const
         {
             vec<S, N> rtn{};
             auto _trunc = [](S elmnt) -> S { return (std::trunc(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _trunc);
             return rtn;
         }
-        void trunc_inplace() { for (auto& i : *this) { i = std::trunc(i); } }
+        constexpr void trunc_inplace() { for (auto& i : *this) { i = std::trunc(i); } }
 
         //! Return the ceiling of the vec
-        vec<S, N> ceil() const
+        constexpr vec<S, N> ceil() const
         {
             vec<S, N> rtn{};
             auto _ceil = [](S elmnt) -> S { return (std::ceil(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
             return rtn;
         }
-        void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
+        constexpr void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
 
         /*!
          * Compute the element-wise square root of the vector
          *
          * \return a vec whose elements have been square-rooted
          */
-        vec<S, N> sqrt() const
+        constexpr vec<S, N> sqrt() const
         {
             vec<S, N> rtn{};
             auto sqrt_element = [](S elmnt) -> S { return static_cast<S>(std::sqrt(elmnt)); };
@@ -843,14 +836,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own square root
-        void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
+        constexpr void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
 
         /*!
          * Compute the element-wise square of the vector
          *
          * \return a vec whose elements have been squared
          */
-        vec<S, N> sq() const
+        constexpr vec<S, N> sq() const
         {
             vec<S, N> rtn{};
             auto sq_element = [](S elmnt) -> S { return (elmnt * elmnt); };
@@ -858,14 +851,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own square
-        void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
+        constexpr void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
 
         /*!
          * Compute the element-wise natural log of the vector
          *
          * \return a vec whose elements have been logged
          */
-        vec<S, N> log() const
+        constexpr vec<S, N> log() const
         {
             vec<S, N> rtn{};
             auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log(elmnt)); };
@@ -873,14 +866,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own natural log
-        void log_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log(i)); } }
+        constexpr void log_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log(i)); } }
 
         /*!
          * Compute the element-wise log to base 10 of the vector
          *
          * \return a vec whose elements have been logged
          */
-        vec<S, N> log10() const
+        constexpr vec<S, N> log10() const
         {
             vec<S, N> rtn{};
             auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log10(elmnt)); };
@@ -888,14 +881,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own log to base 10
-        void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10(i)); } }
+        constexpr void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10(i)); } }
 
         /*!
          * Compute the element-wise natural exponential of the vector
          *
          * \return a vec whose elements have been exponentiated
          */
-        vec<S, N> exp() const
+        constexpr vec<S, N> exp() const
         {
             vec<S, N> rtn{};
             auto exp_element = [](S elmnt) -> S { return static_cast<S>(std::exp(elmnt)); };
@@ -903,14 +896,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own natural exponential
-        void exp_inplace() { for (auto& i : *this) { i = static_cast<S>(std::exp(i)); } }
+        constexpr void exp_inplace() { for (auto& i : *this) { i = static_cast<S>(std::exp(i)); } }
 
         /*!
          * Compute the element-wise absolute values of the vector
          *
          * \return a vec of the absolute values of *this
          */
-        vec<S, N> abs() const
+        constexpr vec<S, N> abs() const
         {
             vec<S, N> rtn{};
             auto abs_element = [](S elmnt) -> S { return static_cast<S>(std::abs(elmnt)); };
@@ -918,31 +911,31 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own absolute value
-        void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
+        constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
 
         //! Less than a scalar. Return true if every element is less than the scalar
-        bool operator<(const S rhs) const
+        constexpr bool operator<(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) -> S { return a + (b < rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! <= a scalar. Return true if every element is less than the scalar
-        bool operator<=(const S rhs) const
+        constexpr bool operator<=(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) -> S { return a + (b <= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! Greater than a scalar. Return true if every element is gtr than the scalar
-        bool operator>(const S rhs) const
+        constexpr bool operator>(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b > rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! >= a scalar. Return true if every element is gtr than the scalar
-        bool operator>=(const S rhs) const
+        constexpr bool operator>=(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b >= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
@@ -991,7 +984,7 @@ namespace morph {
 
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
-        bool operator< (const vec<_S, N>& rhs) const
+        constexpr bool operator< (const vec<_S, N>& rhs) const
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b < (*ri++) ? S{0} : S{1}); };
@@ -1000,7 +993,7 @@ namespace morph {
 
         //! Return true if each element of *this is <= its counterpart in rhs.
         template<typename _S=S>
-        bool operator<= (const vec<_S, N>& rhs) const
+        constexpr bool operator<= (const vec<_S, N>& rhs) const
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b <= (*ri++) ? S{0} : S{1}); };
@@ -1009,7 +1002,7 @@ namespace morph {
 
         //! Return true if each element of *this is greater than its counterpart in rhs.
         template<typename _S=S>
-        bool operator> (const vec<_S, N>& rhs) const
+        constexpr bool operator> (const vec<_S, N>& rhs) const
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b > (*ri++) ? S{0} : S{1}); };
@@ -1018,7 +1011,7 @@ namespace morph {
 
         //! Return true if each element of *this is >= its counterpart in rhs.
         template<typename _S=S>
-        bool operator>= (const vec<_S, N>& rhs) const
+        constexpr bool operator>= (const vec<_S, N>& rhs) const
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b >= (*ri++) ? S{0} : S{1}); };
@@ -1030,7 +1023,7 @@ namespace morph {
          *
          * \return a vec whose elements have been negated.
          */
-        vec<S, N> operator-() const
+        constexpr vec<S, N> operator-() const
         {
             vec<S, N> rtn{};
             std::transform (this->begin(), this->end(), rtn.begin(), std::negate<S>());
@@ -1042,7 +1035,7 @@ namespace morph {
          *
          * \return true if the vector length is 0, otherwise it returns false.
          */
-        bool operator!() const { return (this->length() == S{0}) ? true : false; }
+        constexpr bool operator!() const { return (this->length() == S{0}) ? true : false; }
 
         /*!
          * \brief Scalar (dot) product
@@ -1052,7 +1045,7 @@ namespace morph {
          * \return scalar product
          */
         template<typename _S=S>
-        S dot (const vec<_S, N>& v) const
+        constexpr S dot (const vec<_S, N>& v) const
         {
             auto vi = v.begin();
             auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
@@ -1068,7 +1061,7 @@ namespace morph {
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        vec<S, _N> cross (const vec<_S, _N>& v) const
+        constexpr vec<S, _N> cross (const vec<_S, _N>& v) const
         {
             vec<S, _N> vrtn{};
             vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
@@ -1079,7 +1072,7 @@ namespace morph {
 
         //! Define a 2D cross product, v x w to be v_x w_y - v_y w_x.
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        S cross (const vec<_S, _N>& w) const
+        constexpr S cross (const vec<_S, _N>& w) const
         {
             S rtn = (*this)[0] * w.y() - (*this)[1] * w.x();
             return rtn;
@@ -1089,7 +1082,7 @@ namespace morph {
          * Two dimensional angle in radians (only for N=2)
          */
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        S angle() const
+        constexpr S angle() const
         {
             S _angle = std::atan2 ((*this)[1], (*this)[0]);
             return _angle;
@@ -1100,7 +1093,7 @@ namespace morph {
          * length is 0, in which case set as unit vector.
          */
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        void set_angle (const _S _ang)
+        constexpr void set_angle (const _S _ang)
         {
             S l = this->length();
             (*this)[0] = std::cos (_ang);
@@ -1117,7 +1110,7 @@ namespace morph {
          * \return Hadamard product of left hand size (*this) and right hand size (\a v)
          */
         template<typename _S=S>
-        vec<S, N> operator* (const vec<_S, N>& v) const
+        constexpr vec<S, N> operator* (const vec<_S, N>& v) const
         {
             vec<S, N> rtn = {};
             auto vi = v.begin();
@@ -1132,7 +1125,7 @@ namespace morph {
          * Hadamard product. Multiply *this vector with \a v, elementwise.
          */
         template <typename _S=S>
-        void operator*= (const vec<_S, N>& v)
+        constexpr void operator*= (const vec<_S, N>& v)
         {
             auto vi = v.begin();
             auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
@@ -1146,7 +1139,7 @@ namespace morph {
          * scalar type. Multiplies this vec<S, N> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> operator* (const _S& s) const
+        constexpr vec<S, N> operator* (const _S& s) const
         {
             vec<S, N> rtn{};
             auto mult_by_s = [s](S elmnt) { return elmnt * s; };
@@ -1161,7 +1154,7 @@ namespace morph {
          * scalar type. Multiplies this vec<S, N> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator*= (const _S& s)
+        constexpr void operator*= (const _S& s)
         {
             auto mult_by_s = [s](S elmnt) { return elmnt * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
@@ -1175,7 +1168,7 @@ namespace morph {
          * \return elementwise division of left hand size (*this) by right hand size (\a v)
          */
         template<typename _S=S>
-        vec<S, N> operator/ (const vec<_S, N>& v) const
+        constexpr vec<S, N> operator/ (const vec<_S, N>& v) const
         {
             vec<S, N> rtn{};
             std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
@@ -1188,7 +1181,7 @@ namespace morph {
          * Element by element division. Divide *this vector by \a v, elementwise.
          */
         template <typename _S=S>
-        void operator/= (const vec<_S, N>& v)
+        constexpr void operator/= (const vec<_S, N>& v)
         {
             std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
         }
@@ -1206,7 +1199,7 @@ namespace morph {
 
         //! Scalar divide by s
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator/= (const _S& s)
+        constexpr void operator/= (const _S& s)
         {
             auto div_by_s = [s](S elmnt) { return elmnt / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
@@ -1225,7 +1218,7 @@ namespace morph {
 
         //! vec addition operator
         template<typename _S=S>
-        void operator+= (const vec<_S, N>& v)
+        constexpr void operator+= (const vec<_S, N>& v)
         {
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
@@ -1234,7 +1227,7 @@ namespace morph {
 
         //! vec subtraction operator
         template<typename _S=S>
-        vec<S, N> operator- (const vec<_S, N>& v) const
+        constexpr vec<S, N> operator- (const vec<_S, N>& v) const
         {
             vec<S, N> vrtn{};
             auto vi = v.begin();
@@ -1245,7 +1238,7 @@ namespace morph {
 
         //! vec subtraction operator
         template<typename _S=S>
-        void operator-= (const vec<_S, N>& v)
+        constexpr void operator-= (const vec<_S, N>& v)
         {
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
@@ -1254,7 +1247,7 @@ namespace morph {
 
         //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> operator+ (const _S& s) const
+        constexpr vec<S, N> operator+ (const _S& s) const
         {
             vec<S, N> rtn{};
             auto add_s = [s](S elmnt) { return elmnt + s; };
@@ -1264,7 +1257,7 @@ namespace morph {
 
         //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator+= (const _S& s)
+        constexpr void operator+= (const _S& s)
         {
             auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
@@ -1272,7 +1265,7 @@ namespace morph {
 
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> operator- (const _S& s) const
+        constexpr vec<S, N> operator- (const _S& s) const
         {
             vec<S, N> rtn{};
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
@@ -1282,14 +1275,14 @@ namespace morph {
 
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator-= (const _S& s)
+        constexpr void operator-= (const _S& s)
         {
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
         //! Addition which should work for any member type that implements the + operator
-        vec<S, N> operator+ (const S& s) const
+        constexpr vec<S, N> operator+ (const S& s) const
         {
             vec<S, N> rtn{};
             auto add_s = [s](S elmnt) { return elmnt + s; };
@@ -1298,14 +1291,14 @@ namespace morph {
         }
 
         //! Addition += operator for any type same as the enclosed type that implements + op
-        void operator+= (const S& s) const
+        constexpr void operator+= (const S& s) const
         {
             auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
         //! Subtraction which should work for any member type that implements the - operator
-        vec<S, N> operator- (const S& s) const
+        constexpr vec<S, N> operator- (const S& s) const
         {
             vec<S, N> rtn{};
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
@@ -1314,7 +1307,7 @@ namespace morph {
         }
 
         //! Subtraction -= operator for any time same as the enclosed type that implements - op
-        void operator-= (const S& s) const
+        constexpr void operator-= (const S& s) const
         {
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
@@ -1335,11 +1328,12 @@ namespace morph {
     // e.g. vec<float> denom = {1,2,3}; vec<float> result = float(1) / denom;
 
     //! Scalar * vec<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
-    template <typename S, std::size_t N> vec<S, N> operator* (S lhs, const vec<S, N>& rhs) { return rhs * lhs; }
+    template <typename S, std::size_t N>
+    constexpr vec<S, N> operator* (S lhs, const vec<S, N>& rhs) { return rhs * lhs; }
 
     //! Scalar / vec<>
     template <typename S, std::size_t N>
-    vec<S, N> operator/ (S lhs, const vec<S, N>& rhs)
+    constexpr vec<S, N> operator/ (S lhs, const vec<S, N>& rhs)
     {
         vec<S, N> division;
         auto lhs_div_by_vec = [lhs](S elmnt) { return lhs / elmnt; };
@@ -1348,11 +1342,12 @@ namespace morph {
     }
 
     //! Scalar + vec<> (commutative)
-    template <typename S, std::size_t N> vec<S, N> operator+ (S lhs, const vec<S, N>& rhs) { return rhs + lhs; }
+    template <typename S, std::size_t N>
+    constexpr vec<S, N> operator+ (S lhs, const vec<S, N>& rhs) { return rhs + lhs; }
 
     //! Scalar - vec<>
     template <typename S, std::size_t N>
-    vec<S, N> operator- (S lhs, const vec<S, N>& rhs)
+    constexpr vec<S, N> operator- (S lhs, const vec<S, N>& rhs)
     {
         vec<S, N> subtraction;
         auto lhs_minus_vec = [lhs](S elmnt) { return lhs - elmnt; };

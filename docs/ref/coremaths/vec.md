@@ -37,7 +37,9 @@ Header file: [morph/vec.h](https://github.com/ABRG-Models/morphologica/blob/main
 
 `morph::vec` is a fixed-size mathematical vector class. It derives
 from `std::array` and can be used in much the same way as its STL
-parent. It has iterators and you can apply STL algorithms.
+parent. It has iterators and you can apply STL algorithms. It is
+constexpr-capable, meaning that it can be incorporated into constexpr
+functions to do compile-time maths.
 
 ```c++
 namespace morph {
