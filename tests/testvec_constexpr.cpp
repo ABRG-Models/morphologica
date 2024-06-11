@@ -7,6 +7,7 @@
  * Each constexpr function in morph::vec is tested within a global constexpr function.
  */
 
+#include <morph/mathconst.h>
 #include <morph/vec.h>
 
 static constexpr morph::vec<double, 3> vec_add()
@@ -330,6 +331,73 @@ constexpr morph::vec<double, 5> vec_ops2()
     return (v - v3 + neg + neg1.abs());
 }
 
+constexpr morph::vec<bool, 8> vec_comparisons()
+{
+    morph::vec<bool, 8> rtn = { false, false, false, false, false, false, false, false };
+
+    morph::vec<double, 5> v1 = { 1, 2, 3, 4, 5 };
+    morph::vec<double, 5> v2 = { 1.1, 2, 3, 4, 5 };
+    morph::vec<double, 5> v3 = { 1, 2, 3, 4, 5 };
+
+    rtn[0] = v1 < v2;
+    rtn[1] = v1 <= v2;
+    rtn[2] = v1 > v2;
+    rtn[3] = v1 <= v3;
+    rtn[4] = v1 < 6.0;
+    rtn[5] = v1 <= 5.0;
+    rtn[6] = v1 > 6.0;
+    rtn[7] = v1 <= 4.0;
+
+    return rtn;
+}
+
+constexpr bool vec_negate_not()
+{
+    morph::vec<double, 5> v = { 1, 2, 3, 4, 5 };
+    morph::vec<double, 5> v2 = -v;
+    bool notv2 = !v2;
+    return notv2; // false
+}
+
+constexpr morph::vec<double, 3> vec_maths()
+{
+    morph::vec<double, 3> f1 = {-10, 0, 0};
+    morph::vec<double, 3> f2 = {-20, 0, 0};
+    morph::vec<double, 3> f3 = {-30, 0, 0};
+
+    morph::vec<double, 3> x = { 1, 0, 0 };
+    morph::vec<double, 3> z = { 0, 0, 1 };
+
+    double dp = x.dot (z); // 0
+
+    morph::vec<double, 2> xx = { 1, 0 };
+    morph::vec<double, 2> yy = { 0, 1 };
+
+    if (dp == 0.0) {
+        morph::vec<double, 3> y = z.cross(x);
+        double cp = xx.cross(yy);
+        if (cp == 1.0) {
+            return y;
+        } else {
+            return f3;
+        }
+    } else {
+        return f2;
+    }
+    return f1;
+}
+
+constexpr morph::vec<float, 2> vec_angle()
+{
+    morph::vec<float, 2> va = { 0, 1 };
+    float angle = va.angle();
+    if (angle == morph::mathconst<float>::pi_over_2) {
+        va.set_angle (morph::mathconst<float>::pi_over_4);
+        return va;
+    }
+    return va;
+}
+
 int main()
 {
     int rtn = 0;
@@ -425,6 +493,20 @@ int main()
 
     constexpr morph::vec<double, 5> result30 = vec_ops2();
     if (result30[2] != 2.0 || result30[4] != 2.0) { std::cout << "Fail 30\n"; rtn -= 1; }
+
+    constexpr morph::vec<bool, 8> result31 = vec_comparisons();
+    if (result31[0] || !result31[1] || result31[2] || result31[7]) {
+        std::cout << "Fail 31\n"; rtn -= 1;
+    }
+
+    constexpr bool result32 = vec_negate_not();
+    if (result32 == true) { std::cout << "Fail 32\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result33 = vec_maths();
+    if (result33[1] != 1) { std::cout << "Fail 33\n"; rtn -= 1; }
+
+    constexpr morph::vec<float, 2> result34 = vec_angle();
+    if (result34[0] != std::sqrt(2.0f)/2.0f) { std::cout << "Fail 34\n"; rtn -= 1; }
 
     return rtn;
 }

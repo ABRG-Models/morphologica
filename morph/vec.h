@@ -71,16 +71,16 @@ namespace morph {
     {
         //! \return the first component of the vector
         template <std::size_t _N = N, std::enable_if_t<(_N>0), int> = 0>
-        S x() const { return (*this)[0]; }
+        constexpr S x() const { return (*this)[0]; }
         //! \return the second component of the vector
         template <std::size_t _N = N, std::enable_if_t<(_N>1), int> = 0>
-        S y() const { return (*this)[1]; }
+        constexpr S y() const { return (*this)[1]; }
         //! \return the third component of the vector
         template <std::size_t _N = N, std::enable_if_t<(_N>2), int> = 0>
-        S z() const { return (*this)[2]; }
+        constexpr S z() const { return (*this)[2]; }
         //! \return the fourth component of the vector
         template <std::size_t _N = N, std::enable_if_t<(_N>3), int> = 0>
-        S w() const { return (*this)[3]; }
+        constexpr S w() const { return (*this)[3]; }
 
         //! Set data members from an std::vector
         template <typename _S=S>
@@ -914,28 +914,28 @@ namespace morph {
         constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
 
         //! Less than a scalar. Return true if every element is less than the scalar
-        bool operator<(const S rhs) const
+        constexpr bool operator<(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) -> S { return a + (b < rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! <= a scalar. Return true if every element is less than the scalar
-        bool operator<=(const S rhs) const
+        constexpr bool operator<=(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) -> S { return a + (b <= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! Greater than a scalar. Return true if every element is gtr than the scalar
-        bool operator>(const S rhs) const
+        constexpr bool operator>(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b > rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! >= a scalar. Return true if every element is gtr than the scalar
-        bool operator>=(const S rhs) const
+        constexpr bool operator>=(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b >= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
@@ -984,7 +984,7 @@ namespace morph {
 
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
-        bool operator< (const vec<_S, N>& rhs) const
+        constexpr bool operator< (const vec<_S, N>& rhs) const
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b < (*ri++) ? S{0} : S{1}); };
@@ -993,7 +993,7 @@ namespace morph {
 
         //! Return true if each element of *this is <= its counterpart in rhs.
         template<typename _S=S>
-        bool operator<= (const vec<_S, N>& rhs) const
+        constexpr bool operator<= (const vec<_S, N>& rhs) const
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b <= (*ri++) ? S{0} : S{1}); };
@@ -1002,7 +1002,7 @@ namespace morph {
 
         //! Return true if each element of *this is greater than its counterpart in rhs.
         template<typename _S=S>
-        bool operator> (const vec<_S, N>& rhs) const
+        constexpr bool operator> (const vec<_S, N>& rhs) const
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b > (*ri++) ? S{0} : S{1}); };
@@ -1011,7 +1011,7 @@ namespace morph {
 
         //! Return true if each element of *this is >= its counterpart in rhs.
         template<typename _S=S>
-        bool operator>= (const vec<_S, N>& rhs) const
+        constexpr bool operator>= (const vec<_S, N>& rhs) const
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b >= (*ri++) ? S{0} : S{1}); };
@@ -1023,7 +1023,7 @@ namespace morph {
          *
          * \return a vec whose elements have been negated.
          */
-        vec<S, N> operator-() const
+        constexpr vec<S, N> operator-() const
         {
             vec<S, N> rtn{};
             std::transform (this->begin(), this->end(), rtn.begin(), std::negate<S>());
@@ -1035,7 +1035,7 @@ namespace morph {
          *
          * \return true if the vector length is 0, otherwise it returns false.
          */
-        bool operator!() const { return (this->length() == S{0}) ? true : false; }
+        constexpr bool operator!() const { return (this->length() == S{0}) ? true : false; }
 
         /*!
          * \brief Scalar (dot) product
@@ -1045,7 +1045,7 @@ namespace morph {
          * \return scalar product
          */
         template<typename _S=S>
-        S dot (const vec<_S, N>& v) const
+        constexpr S dot (const vec<_S, N>& v) const
         {
             auto vi = v.begin();
             auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
@@ -1061,7 +1061,7 @@ namespace morph {
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        vec<S, _N> cross (const vec<_S, _N>& v) const
+        constexpr vec<S, _N> cross (const vec<_S, _N>& v) const
         {
             vec<S, _N> vrtn{};
             vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
@@ -1072,7 +1072,7 @@ namespace morph {
 
         //! Define a 2D cross product, v x w to be v_x w_y - v_y w_x.
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        S cross (const vec<_S, _N>& w) const
+        constexpr S cross (const vec<_S, _N>& w) const
         {
             S rtn = (*this)[0] * w.y() - (*this)[1] * w.x();
             return rtn;
@@ -1082,7 +1082,7 @@ namespace morph {
          * Two dimensional angle in radians (only for N=2)
          */
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        S angle() const
+        constexpr S angle() const
         {
             S _angle = std::atan2 ((*this)[1], (*this)[0]);
             return _angle;
@@ -1093,7 +1093,7 @@ namespace morph {
          * length is 0, in which case set as unit vector.
          */
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        void set_angle (const _S _ang)
+        constexpr void set_angle (const _S _ang)
         {
             S l = this->length();
             (*this)[0] = std::cos (_ang);
