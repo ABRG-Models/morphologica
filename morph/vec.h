@@ -443,7 +443,7 @@ namespace morph {
          * \return true if the length of the vector is 1.
          */
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        bool checkunit() const
+        constexpr bool checkunit() const
         {
             /*!
              * \brief Unit vector threshold
@@ -460,7 +460,7 @@ namespace morph {
              * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
              * sense.
              */
-            static constexpr _S unitThresh = _S{0.001};
+            constexpr _S unitThresh = _S{0.001};
 
             auto subtract_squared = [](_S a, _S b) { return static_cast<_S>(a - b * b); };
             const _S metric = std::accumulate (this->begin(), this->end(), _S{1}, subtract_squared);
@@ -476,7 +476,7 @@ namespace morph {
          * \return a value which is as close as possible to the length
          */
         template <typename _S=S>
-        _S length() const
+        constexpr _S length() const
         {
             auto add_squared = [](_S a, S b) { return a + b * b; };
             // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of std::sqrt()
@@ -490,7 +490,7 @@ namespace morph {
         //! Reduce the length of the vector by the amount dl, if possible. If dl makes the vector
         //! have a negative length, then return a null vector
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> shorten (const S dl) const
+        constexpr vec<S, N> shorten (const S dl) const
         {
             vec<S, N> v = *this;
             S newlen = this->length() - dl;
@@ -505,7 +505,7 @@ namespace morph {
         //! Increase the length of the vector by the amount dl, if possible. If dl makes the vector
         //! have a negative length, then return a null vector
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        vec<S, N> lengthen (const S dl) const
+        constexpr vec<S, N> lengthen (const S dl) const
         {
             vec<S, N> v = *this;
             S newlen = this->length() + dl;
@@ -526,7 +526,7 @@ namespace morph {
          * a scalar.
          */
         template <typename _S=S>
-        _S length_sq() const
+        constexpr _S length_sq() const
         {
             _S _sos = _S{0};
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
@@ -562,14 +562,14 @@ namespace morph {
          * \return the length squared
          */
         template <typename _S=S>
-        _S sos() const
+        constexpr _S sos() const
         {
             auto add_squared = [](_S a, S b) { return a + b * b; };
             return std::accumulate (this->begin(), this->end(), _S{0}, add_squared);
         }
 
         //! Return the value of the longest component of the vector.
-        S longest() const
+        constexpr S longest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
             auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -578,7 +578,7 @@ namespace morph {
         }
 
         //! Return the index of the longest component of the vector.
-        std::size_t arglongest() const
+        constexpr std::size_t arglongest() const
         {
             std::size_t idx = 0;
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
@@ -594,7 +594,7 @@ namespace morph {
         }
 
         //! Return the value of the shortest component of the vector.
-        S shortest() const
+        constexpr S shortest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
             auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -603,7 +603,7 @@ namespace morph {
         }
 
         //! Return the index of the shortest component of the vector.
-        std::size_t argshortest() const
+        constexpr std::size_t argshortest() const
         {
             std::size_t idx = 0;
             // Check on the type S. If S is a vec thing, then abs_compare needs to be different.
@@ -620,7 +620,7 @@ namespace morph {
         }
 
         //! Return the value of the maximum (most positive) component of the vector.
-        S max() const
+        constexpr S max() const
         {
             auto themax = std::max_element (this->begin(), this->end());
             S rtn = *themax;
@@ -628,7 +628,7 @@ namespace morph {
         }
 
         //! Return the index of the maximum (most positive) component of the vector.
-        std::size_t argmax() const
+        constexpr std::size_t argmax() const
         {
             auto themax = std::max_element (this->begin(), this->end());
             std::size_t idx = (themax - this->begin());
@@ -636,7 +636,7 @@ namespace morph {
         }
 
         //! Return the value of the minimum (smallest or most negative) component of the vector.
-        S min() const
+        constexpr S min() const
         {
             auto themin = std::min_element (this->begin(), this->end());
             S rtn = *themin;
@@ -644,7 +644,7 @@ namespace morph {
         }
 
         //! Return the index of the minimum (smallest or most negative) component of the vector.
-        std::size_t argmin() const
+        constexpr std::size_t argmin() const
         {
             auto themin = std::min_element (this->begin(), this->end());
             std::size_t idx = (themin - this->begin());
@@ -659,13 +659,13 @@ namespace morph {
         }
 
         //! Return true if any element is zero
-        bool has_zero() const
+        constexpr bool has_zero() const
         {
             return std::any_of (this->cbegin(), this->cend(), [](S i){ return i == S{0}; });
         }
 
         //! Return true if any element is infinity
-        bool has_inf() const
+        constexpr bool has_inf() const
         {
             if constexpr (std::numeric_limits<S>::has_infinity) {
                 return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isinf(i);});
@@ -675,7 +675,7 @@ namespace morph {
         }
 
         //! Return true if any element is NaN
-        bool has_nan() const
+        constexpr bool has_nan() const
         {
             if constexpr (std::numeric_limits<S>::has_quiet_NaN
                           || std::numeric_limits<S>::has_signaling_NaN) {
@@ -686,20 +686,20 @@ namespace morph {
         }
 
         //! Return true if any element is NaN or infinity
-        bool has_nan_or_inf() const
+        constexpr bool has_nan_or_inf() const
         {
             bool has_nan_or_inf = false;
             has_nan_or_inf = this->has_nan();
             return has_nan_or_inf ? has_nan_or_inf : this->has_inf();
         }
 
-        void replace_nan_with (const S replacement)
+        constexpr void replace_nan_with (const S replacement)
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
             for (auto& i : *this) { if (std::isnan(i)) { i = replacement; } }
         }
 
-        void replace_nan_or_inf_with (const S replacement)
+        constexpr void replace_nan_or_inf_with (const S replacement)
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
             static_assert (std::numeric_limits<S>::has_infinity, "S does not have infinities");
@@ -708,7 +708,7 @@ namespace morph {
 
         //! Return the arithmetic mean of the elements
         template<typename _S=S>
-        _S mean() const
+        constexpr _S mean() const
         {
             const _S sum = std::accumulate (this->begin(), this->end(), _S{0});
             return sum / this->size();
@@ -716,7 +716,7 @@ namespace morph {
 
         //! Return the variance of the elements
         template<typename _S=S>
-        _S variance() const
+        constexpr _S variance() const
         {
             if (this->empty()) { return S{0}; }
             _S _mean = this->mean<_S>();
@@ -730,7 +730,7 @@ namespace morph {
 
         //! Return the standard deviation of the elements
         template<typename _S=S>
-        _S std() const
+        constexpr _S std() const
         {
             if (this->empty()) { return _S{0}; }
             return std::sqrt (this->variance<_S>());
@@ -738,14 +738,14 @@ namespace morph {
 
         //! Return the sum of the elements
         template<typename _S=S>
-        _S sum() const
+        constexpr _S sum() const
         {
             return std::accumulate (this->begin(), this->end(), _S{0});
         }
 
         //! Return the product of the elements
         template<typename _S=S>
-        _S product() const
+        constexpr _S product() const
         {
             auto _product = [](_S a, S b) mutable { return a ? a * b : b; };
             return std::accumulate (this->begin(), this->end(), _S{0}, _product);
@@ -756,7 +756,7 @@ namespace morph {
          *
          * \return a vec whose elements have been raised to the power p
          */
-        vec<S, N> pow (const S& p) const
+        constexpr vec<S, N> pow (const S& p) const
         {
             vec<S, N> rtn{};
             auto raise_to_p = [p](S elmnt) -> S { return static_cast<S>(std::pow(elmnt, p)); };
@@ -764,11 +764,11 @@ namespace morph {
             return rtn;
         }
         //! Raise each element to the power p
-        void pow_inplace (const S& p) { for (auto& i : *this) { i = static_cast<S>(std::pow (i, p)); } }
+        constexpr void pow_inplace (const S& p) { for (auto& i : *this) { i = static_cast<S>(std::pow (i, p)); } }
 
         //! Element-wise power
         template<typename _S=S>
-        vec<S, N> pow (const vec<_S, N>& p) const
+        constexpr vec<S, N> pow (const vec<_S, N>& p) const
         {
             auto pi = p.begin();
             vec<S, N> rtn{};
@@ -784,51 +784,51 @@ namespace morph {
         }
 
         //! Return the signum of the vec, with signum(0)==0
-        vec<S, N> signum() const
+        constexpr vec<S, N> signum() const
         {
             vec<S, N> rtn{};
             auto _signum = [](S elmnt) -> S { return (elmnt > S{0} ? S{1} : (elmnt == S{0} ? S{0} : S{-1})); };
             std::transform (this->begin(), this->end(), rtn.begin(), _signum);
             return rtn;
         }
-        void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
+        constexpr void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
         //! Return the floor of the vec
-        vec<S, N> floor() const
+        constexpr vec<S, N> floor() const
         {
             vec<S, N> rtn{};
             auto _floor = [](S elmnt) -> S { return (std::floor(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _floor);
             return rtn;
         }
-        void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
+        constexpr void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
 
         //! Return the floor-or-ceiling of the vector's elements - i.e. apply std::trunc
-        vec<S, N> trunc() const
+        constexpr vec<S, N> trunc() const
         {
             vec<S, N> rtn{};
             auto _trunc = [](S elmnt) -> S { return (std::trunc(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _trunc);
             return rtn;
         }
-        void trunc_inplace() { for (auto& i : *this) { i = std::trunc(i); } }
+        constexpr void trunc_inplace() { for (auto& i : *this) { i = std::trunc(i); } }
 
         //! Return the ceiling of the vec
-        vec<S, N> ceil() const
+        constexpr vec<S, N> ceil() const
         {
             vec<S, N> rtn{};
             auto _ceil = [](S elmnt) -> S { return (std::ceil(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
             return rtn;
         }
-        void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
+        constexpr void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
 
         /*!
          * Compute the element-wise square root of the vector
          *
          * \return a vec whose elements have been square-rooted
          */
-        vec<S, N> sqrt() const
+        constexpr vec<S, N> sqrt() const
         {
             vec<S, N> rtn{};
             auto sqrt_element = [](S elmnt) -> S { return static_cast<S>(std::sqrt(elmnt)); };
@@ -836,14 +836,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own square root
-        void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
+        constexpr void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
 
         /*!
          * Compute the element-wise square of the vector
          *
          * \return a vec whose elements have been squared
          */
-        vec<S, N> sq() const
+        constexpr vec<S, N> sq() const
         {
             vec<S, N> rtn{};
             auto sq_element = [](S elmnt) -> S { return (elmnt * elmnt); };
@@ -851,14 +851,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own square
-        void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
+        constexpr void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
 
         /*!
          * Compute the element-wise natural log of the vector
          *
          * \return a vec whose elements have been logged
          */
-        vec<S, N> log() const
+        constexpr vec<S, N> log() const
         {
             vec<S, N> rtn{};
             auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log(elmnt)); };
@@ -866,14 +866,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own natural log
-        void log_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log(i)); } }
+        constexpr void log_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log(i)); } }
 
         /*!
          * Compute the element-wise log to base 10 of the vector
          *
          * \return a vec whose elements have been logged
          */
-        vec<S, N> log10() const
+        constexpr vec<S, N> log10() const
         {
             vec<S, N> rtn{};
             auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log10(elmnt)); };
@@ -881,14 +881,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own log to base 10
-        void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10(i)); } }
+        constexpr void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10(i)); } }
 
         /*!
          * Compute the element-wise natural exponential of the vector
          *
          * \return a vec whose elements have been exponentiated
          */
-        vec<S, N> exp() const
+        constexpr vec<S, N> exp() const
         {
             vec<S, N> rtn{};
             auto exp_element = [](S elmnt) -> S { return static_cast<S>(std::exp(elmnt)); };
@@ -896,14 +896,14 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own natural exponential
-        void exp_inplace() { for (auto& i : *this) { i = static_cast<S>(std::exp(i)); } }
+        constexpr void exp_inplace() { for (auto& i : *this) { i = static_cast<S>(std::exp(i)); } }
 
         /*!
          * Compute the element-wise absolute values of the vector
          *
          * \return a vec of the absolute values of *this
          */
-        vec<S, N> abs() const
+        constexpr vec<S, N> abs() const
         {
             vec<S, N> rtn{};
             auto abs_element = [](S elmnt) -> S { return static_cast<S>(std::abs(elmnt)); };
@@ -911,7 +911,7 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own absolute value
-        void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
+        constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
 
         //! Less than a scalar. Return true if every element is less than the scalar
         bool operator<(const S rhs) const

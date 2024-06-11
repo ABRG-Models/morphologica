@@ -225,6 +225,111 @@ static constexpr morph::vec<double, 6> vec_rotate()
     return v;
 }
 
+constexpr double vec_stats()
+{
+    double rtn = 0.0;
+
+    morph::vec<double, 5> v = { 1, 0, 0, 0, 0 };
+    bool isunit = v.checkunit();
+
+    if (isunit) {
+        v = v.shorten (0.5);
+        v = v.lengthen (0.5);
+        rtn = v.length();
+        rtn = v.length_sq();
+        std::size_t idx = v.arglongest();
+        if (idx == 0) {
+            rtn = v.longest();
+        } else {
+            idx = v.argshortest();
+            if (idx == 0) {
+                rtn = 2.0;
+            } else {
+                rtn = 3.0;
+            }
+        }
+        idx = v.argmax();
+        if (idx == 0) {
+            rtn = v.max();
+        } else { rtn = 4.0; }
+    }
+
+    if (v.has_inf() || v.has_nan() || v.has_nan_or_inf()) {
+        return 6.0;
+    }
+
+    v[3] = std::numeric_limits<double>::infinity();
+    v[4] = std::numeric_limits<double>::quiet_NaN();
+    v.replace_nan_with (0.0);
+    v.replace_nan_or_inf_with (0.0);
+
+    if (v.has_zero()) {
+        return rtn;
+    }
+
+    return 5.0;
+}
+
+constexpr double vec_stats2()
+{
+    morph::vec<double, 5> v = { 1, 2, 6, 7, 9 };
+    double _mean = v.mean();
+    double _var = v.variance();
+    double _std = v.std();
+    double _sum = v.sum();
+    double _prod = v.product();
+    return _var + _mean + _std + _sum + _prod; // returns 800.891
+}
+
+constexpr morph::vec<double, 5> vec_ops()
+{
+    morph::vec<double, 5> p = { 4.0, 3.0, 2.0, 1.0, 1.0 };
+    morph::vec<double, 5> v = { 1, 2, 6, 7, 9 };
+    morph::vec<double, 5> v2 = v.pow (2.0);
+    v2.pow_inplace (2.0);
+    morph::vec<double, 5> v3 = v.pow (p);
+
+    morph::vec<double, 5> v4 = v.signum();
+    v4.signum_inplace();
+
+    morph::vec<double, 5> vfl = { 1.1, 2.5, 5.7, 8.9, 1.0 };
+    morph::vec<double, 5> v5 = vfl.floor();
+    vfl.floor_inplace();
+
+    morph::vec<double, 5> vce = { 1.1, 2.5, 5.7, 8.9, 1.0 };
+    morph::vec<double, 5> v6 = vce.ceil();
+    vce.ceil_inplace();
+
+    morph::vec<double, 5> vtr = { 1.1, 2.5, 5.7, 8.9, 1.0 };
+    morph::vec<double, 5> v7 = vtr.trunc();
+    vtr.trunc_inplace();
+
+    morph::vec<double, 5> vsqrt = { 25.0, 16.0, 9.0, 4.0, 1.0 };
+    morph::vec<double, 5> v8 = vsqrt.sqrt().sq();
+    vsqrt.sqrt_inplace();
+    vsqrt.sq_inplace();
+
+    return v3 + v5 - v3 + v6 + v7 + v8;
+}
+
+constexpr morph::vec<double, 5> vec_ops2()
+{
+    morph::vec<double, 5> v = { 1, 2, 3, 4, 5 };
+    morph::vec<double, 5> v1 = v.log();
+    morph::vec<double, 5> v2 = v1.exp();
+    morph::vec<double, 5> v3 = v2.log10();
+
+    v.log_inplace();
+    v.exp_inplace();
+    v.log10_inplace();
+
+    morph::vec<double, 5> neg = { -1, -1, -1, -1, -1 };
+    neg.abs_inplace();
+    morph::vec<double, 5> neg1 = { -1, -1, -1, -1, -1 };
+
+    return (v - v3 + neg + neg1.abs());
+}
+
 int main()
 {
     int rtn = 0;
@@ -308,6 +413,18 @@ int main()
 
     constexpr morph::vec<double, 6> result26 = vec_rotate();
     if (result26[0] != 1.0 || result26[1] != 6.0) { std::cout << "Fail 26\n"; rtn -= 1; }
+
+    constexpr double result27 = vec_stats();
+    if (result27 != 1.0) { std::cout << "Fail 27, returned " << result27 << "\n"; rtn -= 1; }
+
+    constexpr double result28 = vec_stats2();
+    if (std::abs(result28 - 800.891) > 0.0005 ) { std::cout << "Fail 28\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 5> result29 = vec_ops();
+    if (result29[2] != 25.0 || result29[4] != 4.0) { std::cout << "Fail 29\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 5> result30 = vec_ops2();
+    if (result30[2] != 2.0 || result30[4] != 2.0) { std::cout << "Fail 30\n"; rtn -= 1; }
 
     return rtn;
 }
