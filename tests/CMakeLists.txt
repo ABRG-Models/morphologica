@@ -328,6 +328,11 @@ add_test(testScaleVector testScaleVector)
 add_executable(testTransformMatrix testTransformMatrix.cpp)
 add_test(testTransformMatrix testTransformMatrix)
 
+# constexpr TransformMatrix
+add_executable(testTransMat_constexpr testTransMat_constexpr.cpp)
+set_property(TARGET testTransMat_constexpr PROPERTY CXX_STANDARD 20)
+add_test(testTransMat_constexpr testTransMat_constexpr)
+
 # Test morph::Matrix33 (3x3 matrix)
 add_executable(testMatrix33 testMatrix33.cpp)
 add_test(testMatrix33 testMatrix33)
