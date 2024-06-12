@@ -1077,8 +1077,18 @@ namespace morph {
             (*this) *= persMat;
         }
 
-        //! Make an orthographic projection
-        void orthographic (const vec<Flt, 2>& bl, const vec<Flt, 2>& tr,
+        /*!
+         * Make an orthographic projection
+         *
+         * \param rt Right-top coordinate. rt[0] is 'x' and thus the right and rt[1] ('y') is the top
+         *
+         * \param lb Left-bottom coordinate. lb[0] is 'x' and thus the left and lb[1] 'y' and is the bottom
+         *
+         * \param zFar The 'far' z coordinate of the canonical viewing volume
+         *
+         * \param zNear The 'near' z coordinate of the canonical viewing volume
+         */
+        void orthographic (const vec<Flt, 2>& lb, const vec<Flt, 2>& rt,
                            const Flt zNear, const Flt zFar)
         {
             if (zNear == zFar) { return; }
@@ -1086,12 +1096,12 @@ namespace morph {
             // Orthographic matrix to multiply self by
             std::array<Flt, 16> orthoMat;
             orthoMat.fill (Flt{0});
-            orthoMat[0] = Flt{2}/(tr[0]-bl[1]);
-            orthoMat[5] = Flt{2}/(tr[1]-bl[1]);
-            orthoMat[10] = Flt{-2}/(zFar-zNear);
-            orthoMat[12] = -(tr[0]+bl[1])/(tr[0]-bl[0]);
-            orthoMat[13] = -(tr[1]+bl[1])/(tr[1]-bl[1]);
-            orthoMat[14] = -(zFar+zNear)/(zFar-zNear);
+            orthoMat[0] = Flt{2}/(rt[0]-lb[0]);             //      2/(r-l)
+            orthoMat[5] = Flt{2}/(rt[1]-lb[1]);             //      2/(t-b)
+            orthoMat[10] = Flt{-2}/(zFar-zNear);            //     -2/(f-n)
+            orthoMat[12] = -(rt[0]+lb[0])/(rt[0]-lb[0]);    // -(r+l)/(r-l)
+            orthoMat[13] = -(rt[1]+lb[1])/(rt[1]-lb[1]);    // -(t+b)/(t-b)
+            orthoMat[14] = -(zFar+zNear)/(zFar-zNear);      // -(f+n)/(f-n)
             orthoMat[15] = Flt{1};
 
             (*this) *= orthoMat;

@@ -646,7 +646,7 @@ namespace morph {
         void setOrthographic()
         {
             this->projection.setToIdentity();
-            this->projection.orthographic (this->ortho_bl, this->ortho_tr, this->zNear, this->zFar);
+            this->projection.orthographic (this->ortho_lb, this->ortho_rt, this->zNear, this->zFar);
             this->invproj = this->projection.invert();
         }
 
@@ -683,10 +683,10 @@ namespace morph {
         //! Can change this to orthographic
         perspective_type ptype = perspective_type::perspective;
 
-        //! Orthographic screen bottom left coordinate (you can change these to encapsulate your models)
-        morph::vec<float, 2> ortho_bl = { -4.0f, -4.0f };
-        //! Orthographic screen top right coordinate
-        morph::vec<float, 2> ortho_tr = { 4.0f, 4.0f };
+        //! Orthographic screen left-bottom coordinate (you can change these to encapsulate your models)
+        morph::vec<float, 2> ortho_lb = { -1.3f, -1.0f };
+        //! Orthographic screen right-top coordinate
+        morph::vec<float, 2> ortho_rt = { 1.3f, 1.0f };
 
         //! The background colour; white by default.
         std::array<float, 4> bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
