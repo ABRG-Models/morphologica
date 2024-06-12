@@ -28,28 +28,26 @@ namespace morph {
     {
     public:
         // Note, we need a Quaternion which has magnitude 1 as the default.
-        Quaternion()
+        constexpr Quaternion()
             : w(Flt{1})
             , x(Flt{0})
             , y(Flt{0})
             , z(Flt{0}) {}
 
-        Quaternion (Flt _w, Flt _x, Flt _y, Flt _z)
+        constexpr Quaternion (Flt _w, Flt _x, Flt _y, Flt _z)
             : w(_w)
             , x(_x)
             , y(_y)
             , z(_z) {}
 
-        //! User-declared destructor
-        ~Quaternion() {}
         //! User-declared copy constructor
-        Quaternion (const Quaternion<Flt>& rhs)
+        constexpr Quaternion (const Quaternion<Flt>& rhs)
             : w(rhs.w)
             , x(rhs.x)
             , y(rhs.y)
             , z(rhs.z) {}
         //! User-declared copy assignment constructor
-        Quaternion<Flt>& operator= (Quaternion<Flt>& other)
+        constexpr Quaternion<Flt>& operator= (Quaternion<Flt>& other)
         {
             w = other.w;
             x = other.x;
@@ -67,19 +65,11 @@ namespace morph {
         alignas(Flt) Flt y;
         alignas(Flt) Flt z;
 
-        //! String output
-        std::string str() const
-        {
-            std::stringstream ss;
-            ss << "Quaternion[wxyz]=(" << w << "," << x << "," << y << "," << z << ")";
-            return ss.str();
-        }
-
         /*!
          * Renormalize the Quaternion, in case floating point precision errors have
          * caused it to have a magnitude significantly different from 1.
          */
-        void renormalize()
+        constexpr void renormalize()
         {
             Flt oneovermag = Flt{1} / std::sqrt (w*w + x*x + y*y + z*z);
             this->w *= oneovermag;
@@ -92,10 +82,10 @@ namespace morph {
          * The threshold outside of which the Quaternion is no longer considered to be a
          * unit Quaternion.
          */
-        const Flt unitThresh = 0.001;
+        static constexpr Flt unitThresh = 0.001;
 
         //! Test to see if this Quaternion is a unit Quaternion.
-        bool checkunit()
+        constexpr bool checkunit()
         {
             bool rtn = true;
             Flt metric = Flt{1} - (w*w + x*x + y*y + z*z);
@@ -106,7 +96,7 @@ namespace morph {
         }
 
         //! Initialize the Quaternion from the given axis and angle *in degrees*
-        void initFromAxisAngle (const vec<Flt>& axis, const Flt& angle)
+        constexpr void initFromAxisAngle (const vec<Flt>& axis, const Flt& angle)
         {
             Flt a = morph::mathconst<Flt>::pi_over_360 * angle; // angle/2 converted to rads
             Flt s = std::sin(a);
@@ -132,7 +122,7 @@ namespace morph {
         }
 
         //! Equality operator. True if all elements match
-        bool operator==(const Quaternion<Flt>& rhs) const
+        constexpr bool operator==(const Quaternion<Flt>& rhs) const
         {
             return (std::abs(this->w - rhs.w) < std::numeric_limits<Flt>::epsilon()
                     && std::abs(this->x - rhs.x) < std::numeric_limits<Flt>::epsilon()
@@ -141,7 +131,7 @@ namespace morph {
         }
 
         //! Not equals
-        bool operator!=(const Quaternion<Flt>& rhs) const
+        constexpr bool operator!=(const Quaternion<Flt>& rhs) const
         {
             return (std::abs(this->w - rhs.w) >= std::numeric_limits<Flt>::epsilon()
                     || std::abs(this->x - rhs.x) >= std::numeric_limits<Flt>::epsilon()
@@ -151,7 +141,7 @@ namespace morph {
 
         //! Overload * operator. q1 is 'this->'
         template <typename F=Flt>
-        Quaternion<Flt> operator* (const Quaternion<F>& q2) const
+        constexpr Quaternion<Flt> operator* (const Quaternion<F>& q2) const
         {
             Quaternion<Flt> q;
             q.w = this->w * q2.w - this->x * q2.x - this->y * q2.y - this->z * q2.z;
@@ -162,7 +152,7 @@ namespace morph {
         }
 
         //! Overload / operator. q1 is 'this->', so this is q = q1 / q2
-        Quaternion<Flt> operator/ (const Quaternion<Flt>& q2) const
+        constexpr Quaternion<Flt> operator/ (const Quaternion<Flt>& q2) const
         {
             Quaternion<Flt> q;
             Flt denom = (w*w + x*x + y*y + z*z);
@@ -174,7 +164,7 @@ namespace morph {
         }
 
         //! Division by a scalar
-        Quaternion<Flt> operator/ (const Flt f) const
+        constexpr Quaternion<Flt> operator/ (const Flt f) const
         {
             Quaternion<Flt> q;
             q.w = this->w / f;
@@ -185,7 +175,7 @@ namespace morph {
         }
 
         //! Invert the rotation represented by this Quaternion and return the result.
-        Quaternion<Flt> invert() const
+        constexpr Quaternion<Flt> invert() const
         {
             Quaternion<Flt> qi = *this;
             qi.w = -this->w;
@@ -194,23 +184,23 @@ namespace morph {
 
         //! Conjugate of the Quaternion. This happens to give a quaternion representing the same
         //! rotation as that returned by invert() because -q represents an quivalent rotation to q.
-        Quaternion<Flt> conjugate() const
+        constexpr Quaternion<Flt> conjugate() const
         {
             Quaternion<Flt> qconj (this->w, -this->x, -this->y, -this->z);
             return qconj;
         }
 
         //! Compute the inverse, q^-1. Also known as the reciprocal, q^-1 * q = I.
-        Quaternion<Flt> inverse() const
+        constexpr Quaternion<Flt> inverse() const
         {
             return (this->conjugate() / (w*w + x*x + y*y + z*z));
         }
 
         //! Return the magnitude of the Quaternion
-        Flt magnitude() const { return std::sqrt (w*w + x*x + y*y + z*z); }
+        constexpr Flt magnitude() const { return std::sqrt (w*w + x*x + y*y + z*z); }
 
         //! Reset to a zero rotation
-        void reset()
+        constexpr void reset()
         {
             this->w = Flt{1};
             this->x = Flt{0};
@@ -219,7 +209,7 @@ namespace morph {
         }
 
         //! Multiply this quaternion by other as: this = this * q2, i.e. q1 is 'this->'
-        void postmultiply (const Quaternion<Flt>& q2)
+        constexpr void postmultiply (const Quaternion<Flt>& q2)
         {
             // First make copies of w, x, y, z
             Flt q1_w = this->w;
@@ -234,7 +224,7 @@ namespace morph {
         }
 
         //! Multiply this quaternion by other as: this = q1 * this
-        void premultiply (const Quaternion<Flt>& q1)
+        constexpr void premultiply (const Quaternion<Flt>& q1)
         {
             // First make copies of w, x, y, z
             Flt q2_w = this->w;
@@ -252,7 +242,7 @@ namespace morph {
          * Change this Quaternion to represent a new rotation by rotating it \a angle
          * (radians) around the axis given by \a axis_x, \a axis_y, \a axis_z.
          */
-        void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt angle)
+        constexpr void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt angle)
         {
             Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
@@ -265,7 +255,7 @@ namespace morph {
          * Change this Quaternion to represent a new rotation by rotating it \a angle
          * (radians) around the axis given by \a axis.
          */
-        void rotate (const std::array<Flt, 3>& axis, const Flt angle)
+        constexpr void rotate (const std::array<Flt, 3>& axis, const Flt angle)
         {
             Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
@@ -278,7 +268,7 @@ namespace morph {
          * Change this Quaternion to represent a new rotation by rotating it \a angle
          * (radians) around the axis given by \a axis.
          */
-        void rotate (const vec<Flt, 3>& axis, const Flt angle)
+        constexpr void rotate (const vec<Flt, 3>& axis, const Flt angle)
         {
             Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
@@ -299,7 +289,7 @@ namespace morph {
          *  2  6 10 14
          *  3  7 11 15
          */
-        std::array<Flt, 16> rotationMatrix() const
+        constexpr std::array<Flt, 16> rotationMatrix() const
         {
             std::array<Flt, 16> mat;
             this->rotationMatrix (mat);
@@ -307,7 +297,7 @@ namespace morph {
         }
 
         //! Rotate the matrix \a mat by this Quaternion witout assuming it's a unit Quaternion
-        void rotationMatrix (std::array<Flt, 16>& mat) const
+        constexpr void rotationMatrix (std::array<Flt, 16>& mat) const
         {
             mat[0] = w*w + x*x - y*y - z*z;
             mat[1] = Flt{2}*x*y + Flt{2}*w*z;
@@ -331,7 +321,7 @@ namespace morph {
         }
 
         //! Obtain rotation matrix assuming this IS a unit Quaternion
-        std::array<Flt, 16> unitRotationMatrix() const
+        constexpr std::array<Flt, 16> unitRotationMatrix() const
         {
             std::array<Flt, 16> mat;
             this->unitRotationMatrix (mat);
@@ -339,7 +329,7 @@ namespace morph {
         }
 
         //! Rotate the matrix \a mat by this Quaternion, assuming it's a unit Quaternion
-        void unitRotationMatrix (std::array<Flt, 16>& mat) const
+        constexpr void unitRotationMatrix (std::array<Flt, 16>& mat) const
         {
             mat[0] = Flt{1} - Flt{2}*y*y - Flt{2}*z*z;
             mat[1] = Flt{2}*x*y + Flt{2}*w*z;
@@ -369,7 +359,7 @@ namespace morph {
     template <typename Flt>
     std::ostream& operator<< (std::ostream& os, const Quaternion<Flt>& q)
     {
-        os << q.str();
+        os << "Quaternion[wxyz]=(" << q.w << "," << q.x << "," << q.y << "," << q.z << ")";
         return os;
     }
 

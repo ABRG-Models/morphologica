@@ -249,6 +249,10 @@ add_test(testConfig testConfig)
 add_executable(testQuaternion testQuaternion.cpp)
 add_test(testQuaternion testQuaternion)
 
+add_executable(testQuat_constexpr testQuat_constexpr.cpp)
+set_property(TARGET testQuat_constexpr PROPERTY CXX_STANDARD 20)
+add_test(testQuat_constexpr testQuat_constexpr)
+
 # test morph::vec.
 add_executable(testvec testvec.cpp)
 add_test(testvec testvec)
