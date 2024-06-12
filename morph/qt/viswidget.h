@@ -69,7 +69,9 @@ namespace morph {
 
             void resizeGL (int w, int h) override
             {
-                v.set_winsize (w, h);
+                double dpr = this->devicePixelRatio();
+                v.set_winsize (static_cast<int>(std::round(w * dpr)),
+                               static_cast<int>(std::round(h * dpr)));
                 this->update();
             }
 
