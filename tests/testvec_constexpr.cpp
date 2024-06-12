@@ -10,7 +10,7 @@
 #include <morph/mathconst.h>
 #include <morph/vec.h>
 
-static constexpr morph::vec<double, 3> vec_add()
+constexpr morph::vec<double, 3> vec_add()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
     morph::vec<double, 3> v2 = { 1.0, 2.0, 3.0 };
@@ -18,21 +18,21 @@ static constexpr morph::vec<double, 3> vec_add()
     return vce;
 }
 
-static constexpr morph::vec<double, 3> vec_div_scalar()
+constexpr morph::vec<double, 3> vec_div_scalar()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
     morph::vec<double, 3> vce = v1 / 2.0;
     return vce;
 }
 
-static constexpr morph::vec<double, 3> vec_diveq_scalar()
+constexpr morph::vec<double, 3> vec_diveq_scalar()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
     v1 /= 2.0;
     return v1;
 }
 
-static constexpr morph::vec<double, 3> vec_div_vec()
+constexpr morph::vec<double, 3> vec_div_vec()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
     morph::vec<double, 3> v2 = { 2.0, 2.0, 2.0 };
@@ -40,7 +40,7 @@ static constexpr morph::vec<double, 3> vec_div_vec()
     return vce;
 }
 
-static constexpr morph::vec<double, 3> vec_diveq_vec()
+constexpr morph::vec<double, 3> vec_diveq_vec()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
     morph::vec<double, 3> v2 = { 2.0, 2.0, 2.0 };
@@ -48,7 +48,7 @@ static constexpr morph::vec<double, 3> vec_diveq_vec()
     return v1;
 }
 
-static constexpr morph::vec<double, 3> vec_mult_vec()
+constexpr morph::vec<double, 3> vec_mult_vec()
 {
     morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
     morph::vec<double, 3> v2 = { 5.0, 2.0, 5.0 };
@@ -56,7 +56,7 @@ static constexpr morph::vec<double, 3> vec_mult_vec()
     return vce;
 }
 
-static constexpr morph::vec<double, 3> vec_multeq_vec()
+constexpr morph::vec<double, 3> vec_multeq_vec()
 {
     morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
     morph::vec<double, 3> v2 = { 5.0, 2.0, 5.0 };
@@ -64,7 +64,7 @@ static constexpr morph::vec<double, 3> vec_multeq_vec()
     return v1;
 }
 
-static constexpr morph::vec<double, 3> vec_mult_scalar()
+constexpr morph::vec<double, 3> vec_mult_scalar()
 {
     morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
     double v2 = 5.0;
@@ -72,7 +72,7 @@ static constexpr morph::vec<double, 3> vec_mult_scalar()
     return vce;
 }
 
-static constexpr morph::vec<double, 3> vec_multeq_scalar()
+constexpr morph::vec<double, 3> vec_multeq_scalar()
 {
     morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
     double v2 = 5.0;
@@ -80,7 +80,7 @@ static constexpr morph::vec<double, 3> vec_multeq_scalar()
     return v1;
 }
 
-static constexpr morph::vec<double, 3> vec_several_ops()
+constexpr morph::vec<double, 3> vec_several_ops()
 {
     morph::vec<double, 3> v1 = { 4.0, 2.0, 3.0 };
     morph::vec<double, 3> v2 = { 6.0, 5.0, 2.0 };
@@ -99,14 +99,14 @@ static constexpr morph::vec<double, 3> vec_several_ops()
     return v1;
 }
 
-static constexpr morph::vec<double, 3> vec_renormalize()
+constexpr morph::vec<double, 3> vec_renormalize()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
     v1.renormalize();
     return v1;
 }
 
-static constexpr morph::vec<float, 3> vec_set_from1()
+constexpr morph::vec<float, 3> vec_set_from1()
 {
     std::array<float, 3> v1 = { 1.0f, 2.0f, 3.0f };
     morph::vec<float, 3> v2;
@@ -114,7 +114,7 @@ static constexpr morph::vec<float, 3> vec_set_from1()
     return v2;
 }
 
-static constexpr morph::vec<float, 3> vec_set_from2()
+constexpr morph::vec<float, 3> vec_set_from2()
 {
     std::array<float, 4> v1 = { 1.0f, 2.0f, 3.0f, 4.0f };
     morph::vec<float, 3> v2;
@@ -122,7 +122,7 @@ static constexpr morph::vec<float, 3> vec_set_from2()
     return v2;
 }
 
-static constexpr morph::vec<float, 3> vec_set_from3()
+constexpr morph::vec<float, 3> vec_set_from3()
 {
     std::array<float, 2> v1 = { 1.0f, 2.0f };
     morph::vec<float, 3> v2;
@@ -130,7 +130,7 @@ static constexpr morph::vec<float, 3> vec_set_from3()
     return v2;
 }
 
-static constexpr morph::vec<float, 3> vec_set_from4()
+constexpr morph::vec<float, 3> vec_set_from4()
 {
     morph::vec<float, 4> v1 = { 1.0f, 2.0f, 3.0f, 4.0f };
     morph::vec<float, 3> v2;
@@ -138,7 +138,7 @@ static constexpr morph::vec<float, 3> vec_set_from4()
     return v2;
 }
 
-static constexpr morph::vec<float, 3> vec_set_from5()
+constexpr morph::vec<float, 3> vec_set_from5()
 {
     morph::vec<float, 2> v1 = { 1.0f, 2.0f };
     morph::vec<float, 3> v2;
@@ -146,7 +146,7 @@ static constexpr morph::vec<float, 3> vec_set_from5()
     return v2;
 }
 
-static constexpr morph::vec<float, 3> vec_set_from6()
+constexpr morph::vec<float, 3> vec_set_from6()
 {
     float val = 4.4f;
     morph::vec<float, 3> v2;
@@ -154,28 +154,28 @@ static constexpr morph::vec<float, 3> vec_set_from6()
     return v2;
 }
 
-static constexpr morph::vec<float, 100> vec_linspace()
+constexpr morph::vec<float, 100> vec_linspace()
 {
     morph::vec<float, 100> v;
     v.linspace (0.0f, 99.0f);
     return v;
 }
 
-static constexpr morph::vec<float, 100> vec_arange()
+constexpr morph::vec<float, 100> vec_arange()
 {
     morph::vec<float, 100> v;
     v.arange (0.0f, 100.0f, 1.0f);
     return v;
 }
 
-static constexpr morph::vec<float, 100> vec_zero()
+constexpr morph::vec<float, 100> vec_zero()
 {
     morph::vec<float, 100> v;
     v.zero();
     return v;
 }
 
-static constexpr morph::vec<float, 100> vec_setmax_setlowest()
+constexpr morph::vec<float, 100> vec_setmax_setlowest()
 {
     morph::vec<float, 100> v;
     v.set_max();
@@ -183,7 +183,7 @@ static constexpr morph::vec<float, 100> vec_setmax_setlowest()
     return v;
 }
 
-static constexpr morph::vec<double, 4> vec_dimchanges()
+constexpr morph::vec<double, 4> vec_dimchanges()
 {
     morph::vec<unsigned int, 3> v00 = { 1, 2, 3 };
     morph::vec<int, 3> v0 = v00.as_int();
@@ -194,7 +194,7 @@ static constexpr morph::vec<double, 4> vec_dimchanges()
     return v3;
 }
 
-static constexpr morph::vec<double, 3> vec_floatchanges()
+constexpr morph::vec<double, 3> vec_floatchanges()
 {
     morph::vec<double, 3> v = { 0.1, 0.2, 0.3 };
     morph::vec<float, 3> v1 = v.as_float();
@@ -202,14 +202,14 @@ static constexpr morph::vec<double, 3> vec_floatchanges()
     return v2;
 }
 
-static constexpr morph::range<double> vec_range()
+constexpr morph::range<double> vec_range()
 {
     morph::vec<double> v = {1, 2, 3};
     morph::range<double> r = v.range();
     return r;
 }
 
-static constexpr morph::range<double> vec_rescale()
+constexpr morph::range<double> vec_rescale()
 {
     morph::vec<double, 5> v = { 1, 2, 3, 4, 5 };
     v.rescale_neg();
@@ -217,7 +217,7 @@ static constexpr morph::range<double> vec_rescale()
     v.rescale();
     return v.range();
 }
-static constexpr morph::vec<double, 6> vec_rotate()
+constexpr morph::vec<double, 6> vec_rotate()
 {
     morph::vec<double, 6> v = { 1, 2, 3, 4, 5, 6 };
     v.rotate();
