@@ -71,7 +71,7 @@ namespace morph {
             {
                 double dpr = this->devicePixelRatio();
                 v.set_winsize (static_cast<int>(std::round(w * dpr)),
-                               static_cast<int>(std::round(h * dpr));
+                               static_cast<int>(std::round(h * dpr)));
                 this->update();
             }
 
