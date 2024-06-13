@@ -1319,22 +1319,21 @@ namespace morph {
                 }
             }
             // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
-            morph::geometry::polyhedron<F> geo;
-            morph::geometry::make_icosahedral_geodesic<F> (geo, iterations);
+            morph::geometry::icosahedral_geodesic<F> geo = morph::geometry::make_icosahedral_geodesic<F> (iterations);
 
             // Now essentially copy geo into vertex buffers
-            for (auto v : geo.vertices) {
+            for (auto v : geo.poly.vertices) {
                 this->vertex_push (v.as_float() * r + so, this->vertexPositions);
                 this->vertex_push (v.as_float(), this->vertexNormals);
                 this->vertex_push (sc, this->vertexColors);
             }
-            for (auto f : geo.faces) {
+            for (auto f : geo.poly.faces) {
                 this->indices.push_back (idx + f[0]);
                 this->indices.push_back (idx + f[1]);
                 this->indices.push_back (idx + f[2]);
             }
             // idx is the *vertex index* and should be incremented by the number of vertices in the polyhedron
-            int n_verts = static_cast<int>(geo.vertices.size());
+            int n_verts = static_cast<int>(geo.poly.vertices.size());
             idx += n_verts;
 
             return n_verts;
@@ -1373,14 +1372,14 @@ namespace morph {
                 }
             }
             // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
-            morph::geometry::polyhedron<F> geo;
-            morph::geometry::geodesic_info gi = morph::geometry::make_icosahedral_geodesic<F> (geo, iterations);
+            morph::geometry::icosahedral_geodesic<F> geo = morph::geometry::make_icosahedral_geodesic<F> (iterations);
+            int n_faces = static_cast<int>(geo.poly.faces.size());
 
-            for (int i = 0; i < gi.n_faces; ++i) { // For each face in the geodesic...
+            for (int i = 0; i < n_faces; ++i) { // For each face in the geodesic...
                 morph::vec<F, 3> norm = { F{0}, F{0}, F{0} };
-                for (auto vtx : geo.faces[i]) { // For each vertex in face...
+                for (auto vtx : geo.poly.faces[i]) { // For each vertex in face...
                     norm += vtx; // Add to the face norm
-                    this->vertex_push (geo.vertices[vtx].as_float() * r + so, this->vertexPositions);
+                    this->vertex_push (geo.poly.vertices[vtx].as_float() * r + so, this->vertexPositions);
                 }
                 morph::vec<float, 3> nf = (norm / F{3}).as_float();
                 for (int j = 0; j < 3; ++j) { // Faces all have size 3
@@ -1390,9 +1389,9 @@ namespace morph {
                 }
             }
             // An index for each vertex of each face.
-            idx += 3 * gi.n_faces;
+            idx += 3 * n_faces;
 
-            return gi.n_faces;
+            return n_faces;
         }
 
         //! Fast computeSphereGeo, which uses constexpr make_icosahedral_geodesic. The
