@@ -1375,6 +1375,7 @@ namespace morph {
                 } else {
                     this->ptype = morph::perspective_type::perspective;
                 }
+                needs_render = true;
             }
 
             this->key_callback_extra (_key, scancode, action, mods);
