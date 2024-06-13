@@ -1543,9 +1543,13 @@ namespace morph {
             if (this->sceneLocked) { return false; }
 
             if (this->ptype == perspective_type::orthographic) {
-                // In orthographic, the wheel should scale ortho_lb, ortho_rt, zNear and zFar
-                this->ortho_lb -= yoffset * this->scenetrans_stepsize;
-                this->ortho_rt += yoffset * this->scenetrans_stepsize;
+                // In orthographic, the wheel should scale ortho_lb and ortho_rt
+                morph::vec<float, 2> _lb = this->ortho_lb + (yoffset * this->scenetrans_stepsize);
+                morph::vec<float, 2> _rt = this->ortho_rt - (yoffset * this->scenetrans_stepsize);
+                if (_lb < 0.0f && _rt > 0.0f) {
+                    this->ortho_lb = _lb;
+                    this->ortho_rt = _rt;
+                }
 
             } else { // perspective_type::perspective or perspective_type::cylindrical
 
