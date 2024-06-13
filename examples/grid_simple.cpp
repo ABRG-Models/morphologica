@@ -17,6 +17,11 @@ int main()
 {
     morph::Visual v(1600, 1000, "morph::GridVisual");
 
+#ifdef ORTHOGRAPHIC
+    // Here's how to set your Visual to do an orthographic projection rather than perspective
+    v.ptype = morph::perspective_type::orthographic;
+#endif
+
     // Create a grid to show in the scene
     constexpr unsigned int Nside = 100;
     constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.01f};

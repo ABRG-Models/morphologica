@@ -141,6 +141,14 @@ if(ARMADILLO_FOUND)
     target_link_libraries(grid_simple GLEW::GLEW)
   endif()
 
+  # grid_simple, but orthographic view is the default
+  add_executable(grid_ortho grid_simple.cpp)
+  target_compile_definitions(grid_ortho PUBLIC ORTHOGRAPHIC=1)
+  target_link_libraries(grid_ortho OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(grid_ortho GLEW::GLEW)
+  endif()
+
   add_executable(grid_image grid_image.cpp)
   target_link_libraries(grid_image OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
