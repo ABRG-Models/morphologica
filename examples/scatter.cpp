@@ -64,7 +64,6 @@ int main()
         while (v.readyToFinish == false) {
             v.waitevents (0.018);
             v.render();
-            v.readyToFinish = true; // debug/profile
         }
 
     } catch (const std::exception& e) {
