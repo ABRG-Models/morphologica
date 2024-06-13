@@ -114,14 +114,14 @@ namespace morph {
                 if (this->sizeFactor == Flt{0}) {
                     if constexpr (draw_spheres_as_geodesics) {
                         // Slower than regular computeSphere(). 2 iterations gives 320 faces
-                        this->template computeSphereGeoFast<float, 3> (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed);
+                        this->template computeSphereGeoFast<float, 2> (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed);
                     } else {
                         // (16+2) * 20 gives 360 faces
                         this->computeSphere (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
                     }
                 } else {
                     if constexpr (draw_spheres_as_geodesics) {
-                        this->template computeSphereGeoFast<float, 3> (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor);
+                        this->template computeSphereGeoFast<float, 2> (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor);
                     } else {
                         this->computeSphere (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
                     }
