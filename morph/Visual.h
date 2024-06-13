@@ -1543,18 +1543,29 @@ namespace morph {
 
             if (this->sceneLocked) { return false; }
 
-            // xoffset does what mouse drag left/right in rotateModMode does (L/R scene trans)
-            this->scenetrans[0] -= xoffset * this->scenetrans_stepsize;
-            this->cyl_cam_pos[0] += xoffset * this->scenetrans_stepsize;
+            if (this->ptype == perspective_type::orthographic) {
+                // In orthographic, the wheel should scale ortho_lb and ortho_rt
+                morph::vec<float, 2> _lb = this->ortho_lb + (yoffset * this->scenetrans_stepsize);
+                morph::vec<float, 2> _rt = this->ortho_rt - (yoffset * this->scenetrans_stepsize);
+                if (_lb < 0.0f && _rt > 0.0f) {
+                    this->ortho_lb = _lb;
+                    this->ortho_rt = _rt;
+                }
 
-            // yoffset does the 'in-out zooming'
-            morph::vec<float, 4> scroll_move_y = { 0.0f, static_cast<float>(yoffset) * this->scenetrans_stepsize, 0.0f, 1.0f };
-            this->scenetrans[2] += scroll_move_y[1];
-            // Translate scroll_move_y then add it to cyl_cam_pos here
-            morph::TransformMatrix<float> sceneview_rotn;
-            sceneview_rotn.rotate (this->rotation);
-            this->cyl_cam_pos += sceneview_rotn * scroll_move_y;
+            } else { // perspective_type::perspective or perspective_type::cylindrical
 
+                // xoffset does what mouse drag left/right in rotateModMode does (L/R scene trans)
+                this->scenetrans[0] -= xoffset * this->scenetrans_stepsize;
+                this->cyl_cam_pos[0] += xoffset * this->scenetrans_stepsize;
+
+                // yoffset does the 'in-out zooming'
+                morph::vec<float, 4> scroll_move_y = { 0.0f, static_cast<float>(yoffset) * this->scenetrans_stepsize, 0.0f, 1.0f };
+                this->scenetrans[2] += scroll_move_y[1];
+                // Translate scroll_move_y then add it to cyl_cam_pos here
+                morph::TransformMatrix<float> sceneview_rotn;
+                sceneview_rotn.rotate (this->rotation);
+                this->cyl_cam_pos += sceneview_rotn * scroll_move_y;
+            }
             return true; // needs_render
         }
 
