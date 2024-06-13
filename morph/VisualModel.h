@@ -1320,7 +1320,7 @@ namespace morph {
             }
             // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
             morph::geometry::polyhedron<F> geo;
-            morph::geometry::icosahedral_geodesic<F> (geo, iterations);
+            morph::geometry::make_icosahedral_geodesic<F> (geo, iterations);
 
             // Now essentially copy geo into vertex buffers
             for (auto v : geo.vertices) {
@@ -1374,7 +1374,7 @@ namespace morph {
             }
             // Note that we need double precision to compute higher iterations of the geodesic (iterations > 5)
             morph::geometry::polyhedron<F> geo;
-            morph::geometry::geodesic_info gi = morph::geometry::icosahedral_geodesic<F> (geo, iterations);
+            morph::geometry::geodesic_info gi = morph::geometry::make_icosahedral_geodesic<F> (geo, iterations);
 
             for (int i = 0; i < gi.n_faces; ++i) { // For each face in the geodesic...
                 morph::vec<F, 3> norm = { F{0}, F{0}, F{0} };

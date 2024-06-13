@@ -119,7 +119,17 @@ namespace morph {
             return ico;
         }
 
-        //! Experimental for constexpr. No ordering of vertices as in morph::geometry version. DO want to test for duplicate vertices.
+        /*!
+         * constexpr icosahedral geodesic manufacturing function. No ordering of vertices as in
+         * morph::geometry version. DO want to test for duplicate vertices.
+         *
+         * \tparam F The type used for the vertex coordinates (float or double)
+         *
+         * \tparam iterations How many times to subdivide the triangles of the initial icosahedron
+         *
+         * \return the literal type object morph::geometry_ce::icosahedral_geodesic containing
+         * vertices and faces of the geodesic.
+         */
         template<typename F, int iterations>
         constexpr morph::geometry_ce::icosahedral_geodesic<F, iterations> make_icosahedral_geodesic()
         {
@@ -141,52 +151,21 @@ namespace morph {
                 geo.poly.vertices[i] = initial_ico.vertices[i];
                 geo.fivefold_vertices[i] = i;
             }
-            for (int i = 0; i < 20; ++i) {
-                geo.poly.faces[i] = initial_ico.faces[i];
-            }
-#ifdef NON_CONSTEXPR_DEBUG
-            for (auto ver : geo.poly.vertices) {
-                std::cout << "vertex: " << ver << std::endl;
-            }
-            for (auto fac : geo.poly.faces) {
-                std::cout << "face: " << fac << std::endl;
-            }
-#endif
+            for (int i = 0; i < 20; ++i) { geo.poly.faces[i] = initial_ico.faces[i]; }
+
             for (int i = 0; i < iterations; ++i) {
 
                 // Compute n_verts/n_faces for current iterations i
                 int _T = std::pow(4, i);
                 int _n_verts = 10 * _T + 2; // i=0; 12 i=1; 42
                 int _n_faces = 20 * _T;     // i=0; 20 i=1; 80
-#ifdef NON_CONSTEXPR_DEBUG
-                // Also compute n_verts_nxt/n_faces_nxt
-                int _T_nxt = std::pow(4, i+1);
-                int _n_verts_nxt = 10 * _T_nxt + 2; // i=0; 12 i=1; 42
-                int _n_faces_nxt = 20 * _T_nxt;     // i=0; 20 i=1; 80
-                std::cout << "iteration i=" << i << " for which _T=" << _T
-                          << " and _n_verts=" << _n_verts << ", _n_faces=" << _n_faces << " and next: _T_nxt=" << _T_nxt
-                          << " with _n_verts_nxt=" << _n_verts_nxt << ", _n_faces_nxt=" << _n_faces_nxt << std::endl;
-#endif
+
                 int next_face = _n_faces;
                 for (int f = 0; f < _n_faces; ++f) { // Loop over existing faces
-#ifdef NON_CONSTEXPR_DEBUG
-                    std::cout << "Start of loop. f: " << f << " _n_faces: " << _n_faces << " _n_faces_nxt: " << _n_faces_nxt
-                              << " geo.poly.faces.size(): " << geo.poly.faces.size() << " geo.poly.vertices.size(): " << geo.poly.vertices.size() << std::endl;
-                    std::cout << "   geo.poly.faces["<<f<<"] : " << geo.poly.faces[f] << std::endl;
-                    std::cout << "   geo.poly.faces["<<f<<"][0] : " << geo.poly.faces[f][0] << std::endl;
-                    std::cout << "   geo.poly.faces["<<f<<"][1] : " << geo.poly.faces[f][1] << std::endl;
-                    std::cout << "   geo.poly.faces["<<f<<"][2] : " << geo.poly.faces[f][2] << std::endl;
-                    std::cout << "   (geo.poly.faces[0] : " << geo.poly.faces[0] << ")" << std::endl;
-                    int fcount = 0;
-                    for (auto fac : geo.poly.faces) {
-                        std::cout << "f " << f << ": face " << fcount++ << ": " << fac << std::endl;
-                    }
-#endif
-
                     morph::vec<F, 3> va = (geo.poly.vertices[geo.poly.faces[f][1]] + geo.poly.vertices[geo.poly.faces[f][0]]) / 2.0f;
                     morph::vec<F, 3> vb = (geo.poly.vertices[geo.poly.faces[f][2]] + geo.poly.vertices[geo.poly.faces[f][1]]) / 2.0f;
                     morph::vec<F, 3> vc = (geo.poly.vertices[geo.poly.faces[f][0]] + geo.poly.vertices[geo.poly.faces[f][2]]) / 2.0f;
-                    va.renormalize(); // constexpr capable function in morph::vec
+                    va.renormalize();
                     vb.renormalize();
                     vc.renormalize();
 
@@ -197,17 +176,10 @@ namespace morph {
                         if (std::abs(geo.poly.vertices[v][0] - va[0]) < thresh * std::numeric_limits<F>::epsilon()
                             && std::abs(geo.poly.vertices[v][1] - va[1]) < thresh * std::numeric_limits<F>::epsilon()
                             && std::abs(geo.poly.vertices[v][2] - va[2]) < thresh * std::numeric_limits<F>::epsilon()) {
-                            // va is not a new vertex, set a to be the correct index
-                            a = v;
+                            a = v; // va is not a new vertex, set a to be the correct index
                         }
                     }
-                    if (a == -1) {
-                        // va is a new vertex, add to poly.vertices
-#ifdef NON_CONSTEXPR_DEBUG
-                        if (_n_verts >= static_cast<int>(geo.poly.vertices.size())) {
-                            throw std::runtime_error ("off the end of vertices...");
-                        }
-#endif
+                    if (a == -1) { // va is a new vertex, add to poly.vertices
                         geo.poly.vertices[_n_verts] = va;
                         a = _n_verts;
                         _n_verts++;
@@ -218,17 +190,10 @@ namespace morph {
                         if (std::abs(geo.poly.vertices[v][0] - vb[0]) < thresh * std::numeric_limits<F>::epsilon()
                             && std::abs(geo.poly.vertices[v][1] - vb[1]) < thresh * std::numeric_limits<F>::epsilon()
                             && std::abs(geo.poly.vertices[v][2] - vb[2]) < thresh * std::numeric_limits<F>::epsilon()) {
-                            // vb is not a new vertex, set b to be the correct index
-                            b = v;
+                            b = v; // vb is not a new vertex, set b to be the correct index
                         }
                     }
-                    if (b == -1) {
-                        // vb is a new vertex, add to poly.vertices
-#ifdef NON_CONSTEXPR_DEBUG
-                        if (_n_verts >= static_cast<int>(geo.poly.vertices.size())) {
-                            throw std::runtime_error ("off the end of vertices...");
-                        }
-#endif
+                    if (b == -1) { // vb is a new vertex, add to poly.vertices
                         geo.poly.vertices[_n_verts] = vb;
                         b = _n_verts;
                         _n_verts++;
@@ -239,53 +204,25 @@ namespace morph {
                         if (std::abs(geo.poly.vertices[v][0] - vc[0]) < thresh * std::numeric_limits<F>::epsilon()
                             && std::abs(geo.poly.vertices[v][1] - vc[1]) < thresh * std::numeric_limits<F>::epsilon()
                             && std::abs(geo.poly.vertices[v][2] - vc[2]) < thresh * std::numeric_limits<F>::epsilon()) {
-                            // vc is not a new vertex, set c to be the correct index
-                            c = v;
+                            c = v; // vc is not a new vertex, set c to be the correct index
                         }
                     }
-                    if (c == -1) {
-                        // vc is a new vertex, add to poly.vertices
-#ifdef NON_CONSTEXPR_DEBUG
-                        if (_n_verts >= static_cast<int>(geo.poly.vertices.size())) {
-                            throw std::runtime_error ("off the end of vertices...");
-                        }
-#endif
+                    if (c == -1) { // vc is a new vertex, add to poly.vertices
                         geo.poly.vertices[_n_verts] = vc;
                         c = _n_verts;
                         _n_verts++;
                     }
 
-                    // Can't ONLY add to faces. We actually replace one face with 4.
-#ifdef NON_CONSTEXPR_DEBUG
-                    std::cout << "First newface from geo.poly.faces["<<f<<"][0] = " << geo.poly.faces[f][0] << std::endl;
-#endif
+                    // Add new face. However, we don't ONLY add to faces. We replace 1 triangle with
+                    // 4 new triangles.
                     morph::vec<int, 3> newface = { geo.poly.faces[f][0], a, c };
-#ifdef NON_CONSTEXPR_DEBUG
-                    std::cout << "add " << newface << " to poly.faces (size " << geo.poly.faces.size() << ") at index " << next_face << std::endl;
-#endif
                     geo.poly.faces[next_face++] = newface;
-#ifdef NON_CONSTEXPR_DEBUG
-                    std::cout << "Second newface from geo.poly.faces["<<f<<"][1] = " << geo.poly.faces[f][1] << std::endl;
-#endif
                     newface = { geo.poly.faces[f][1], b, a };
-#ifdef NON_CONSTEXPR_DEBUG
-                    std::cout << "add " << newface << " to poly.faces (size " << geo.poly.faces.size() << ") at index " << next_face << std::endl;
-#endif
                     geo.poly.faces[next_face++] = newface;
                     newface = { geo.poly.faces[f][2], c, b };
-#ifdef NON_CONSTEXPR_DEBUG
-                    std::cout << "add " << newface << " to poly.faces (size " << geo.poly.faces.size() << ") at index " << next_face << std::endl;
-#endif
                     geo.poly.faces[next_face++] = newface;
                     newface = { a, b, c };
-#ifdef NON_CONSTEXPR_DEBUG
-                    std::cout << "add " << newface << " to poly.faces (size " << geo.poly.faces.size() << ") at index " << f << std::endl;
-#endif
                     geo.poly.faces[f] = newface; // The 4th face replaces the old face
-
-#ifdef NON_CONSTEXPR_DEBUG
-                    std::cout << "End of loop\n";
-#endif
                 }
             }
 
@@ -385,7 +322,7 @@ namespace morph {
          */
         template<typename F>
         morph::geometry::geodesic_info
-        icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
+        make_icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
         {
             morph::geometry::geodesic_info gi = morph::geometry::icosahedral_geodesic_numbers (iterations);
 
