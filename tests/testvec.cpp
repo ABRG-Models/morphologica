@@ -1,4 +1,5 @@
 #include "morph/vec.h"
+#include "morph/mathconst.h"
 #include <set>
 #include <algorithm>
 #include <complex>
@@ -251,6 +252,12 @@ int main() {
     fv1 *= vmult;
     std::cout << " and after: " << fv1 << std::endl;
     if (fv1 != morph::vec<float>({ 0.0f,0.0f,0.0f })) { --rtn; }
+
+    morph::vec<float, 4> avec1 = { 1, 0, 0, 0 };
+    morph::vec<float, 4> avec2 = { 0, 0, 1, 0 };
+    std::cout << "angle (degrees) between " << avec1 << " and " << avec2 << " is "
+              << (avec1.angle(avec2) * morph::mathconst<float>::rad2deg)
+              << " or " << (avec2.angle(avec1) * morph::mathconst<float>::rad2deg) << std::endl;
 
     return rtn;
 }
