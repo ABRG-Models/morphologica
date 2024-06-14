@@ -240,8 +240,62 @@ namespace morph {
         {
             //! A list of the vertices
             morph::vvec<morph::vec<F, 3>> vertices;
+            //! For each vertex in the list above, there is a list of indices into
+            //! geometry::polyhedron::vertices that are the neighbours.
+            morph::vvec<std::set<int>> vneighbours;
             //! A list of the faces
             morph::vvec<morph::vec<int, 3>> faces;
+
+            void populate_neighbours()
+            {
+                // For each vertex, find the faces containing that vertex. Neighbours
+                // include the other vertices in that face.
+                int vsz = static_cast<int>(this->vertices.size());
+                this->vneighbours.resize (vsz);
+                for (int i = 0; i < vsz; ++i) {
+                    for (auto f : this->faces) {
+                        for (auto fi1 : f) {
+                            if (fi1 == i) {
+                                for (auto fi2 : f) {
+                                    if (fi2 != i) { this->vneighbours[i].insert (fi2); }
+                                }
+                            }
+                        }
+                    }
+#if 0
+                    std::cout << vneighbours[i].size() << " neighbours of vertex " << i << " are: (";
+                    for (auto vn : vneighbours[i]) {
+                        std::cout << vn << ",";
+                    }
+                    std::cout << ")\n";
+#endif
+                }
+            }
+
+            // Get a vvec of the coordinates of the face centres
+            morph::vvec<morph::vec<F, 3>> get_face_centres() const
+            {
+                morph::vvec<morph::vec<F, 3>> fcentres(this->faces.size(), { F{0}, F{0}, F{0} });
+                for (unsigned int i = 0; i < this->faces.size(); ++i) {
+                    fcentres[i] += (this->vertices[this->faces[i][0]]
+                                    + this->vertices[this->faces[i][1]]
+                                    + this->vertices[this->faces[i][2]])/F{3};
+                }
+                return fcentres;
+            }
+
+            // Get a vvec of the vectors of the neighbouring vertices of the face centres
+            morph::vvec<morph::vvec<morph::vec<F, 3>>> get_neighbour_vectors() const
+            {
+                morph::vvec<morph::vvec<morph::vec<F, 3>>> vneighb_vectors_per_vertex (this->vneighbours.size());
+                for (unsigned int i = 0; i < this->vneighbours.size(); ++i) {
+                    for (auto n : this->vneighbours[i]) { // vneighbour[i] is a set<int>
+                        morph::vec<F, 3> _v = this->vertices[n] - this->vertices[i];
+                        vneighb_vectors_per_vertex[i].push_back (_v);
+                    }
+                }
+                return vneighb_vectors_per_vertex;
+            }
         };
 
         /*!
@@ -252,6 +306,48 @@ namespace morph {
         {
             geometry::polyhedron <F> poly;
             std::set<int> fivefold_vertices;
+
+            // Get RGB neighbour vectors. This is icosahedral_geodesic specific.
+            morph::vvec<morph::vvec<morph::vec<F, 3>>> get_neighbour_hexdir_vectors() const
+            {
+                morph::vvec<morph::vvec<morph::vec<F, 3>>> vneighb_vectors_per_vertex (this->poly.vneighbours.size());
+                for (int i = 0; i < static_cast<int>(this->poly.vneighbours.size()); ++i) {
+                    for (auto n : this->poly.vneighbours[i]) { // vneighbour[i] is a set<int>
+                        morph::vec<F, 3> _v = this->poly.vertices[n] - this->poly.vertices[i];
+                        vneighb_vectors_per_vertex[i].push_back (_v);
+                    }
+                    // Now select which 3 to keep.
+
+                    // First, order the vectors about the normal.
+                    morph::vec<F, 3> nrm = this->poly.vertices[i];
+                    nrm.renormalize();
+                    // Vector to the zero vertex
+                    morph::vec<F, 3> tozero = this->poly.vertices[0] - this->poly.vertices[i];
+                    // Find angles to 'tozero'
+                    int vnsz = static_cast<int>(vneighb_vectors_per_vertex[i].size());
+                    morph::vvec<F> angles(vnsz, F{0});
+                    F min_angle = std::numeric_limits<F>::max();
+                    int min_angle_index = -1;
+                    for (int j = 0; j < vnsz; ++j) {
+                        angles[j] = vneighb_vectors_per_vertex[i][j].angle (tozero);
+                        min_angle_index = (angles[j] < min_angle) ? j : min_angle_index;
+                        min_angle = (angles[j] < min_angle) ? angles[j] : min_angle;
+                    }
+                    // we have min angle index. This vector is first/the one for our inplace stuff
+                    morph::vec<F> first_vec = vneighb_vectors_per_vertex[i][min_angle_index];
+
+                    // For each of the others, if the first_vec cross the other is in the normal direction then we have the rotation.
+
+                    //morph::vec<F> inplane = first_vec.cross (nrm);
+                    //inplane.renormalize();
+                    //morph::vec<F> v_x_inplane = v.cross (inplane);
+
+                    // etc FINISHME
+
+                }
+                return vneighb_vectors_per_vertex;
+            }
+
         };
 
         /*!
@@ -543,6 +639,9 @@ namespace morph {
                     std::cout << "    vertex " << ffv << "\n";
                 }
             }
+
+            // Post-creation, compute the neighbour relations
+            geo.poly.populate_neighbours();
 
             return geo;
         }

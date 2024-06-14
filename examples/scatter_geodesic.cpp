@@ -5,6 +5,7 @@
 #include <morph/Visual.h>
 #include <morph/ColourMap.h>
 #include <morph/ScatterVisual.h>
+#include <morph/QuiverVisual.h>
 #include <morph/TriangleVisual.h>
 #include <morph/Scale.h>
 #include <morph/vec.h>
@@ -23,17 +24,18 @@ int main()
     v.showCoordArrows = true;
     v.lightingEffects();
 
+    constexpr int iterations = 2;
+
     // First create an empty polyhedron object
     // ...then pass it into a geodesic polyhedron creation function
-    morph::geometry::icosahedral_geodesic<float> geo = morph::geometry::make_icosahedral_geodesic<float> (3);
+    morph::geometry::icosahedral_geodesic<float> geo = morph::geometry::make_icosahedral_geodesic<float> (iterations);
 
     // Coordinates of face centres (for debug/viz)
-    morph::vvec<morph::vec<float, 3>> fcentres(geo.poly.faces.size(), {0.0f, 0.0f, 0.0f});
-    for (unsigned int i = 0; i < geo.poly.faces.size(); ++i) {
-        fcentres[i] += (geo.poly.vertices[geo.poly.faces[i][0]]
-                        + geo.poly.vertices[geo.poly.faces[i][1]]
-                        + geo.poly.vertices[geo.poly.faces[i][2]])/3.0f;
-    }
+    morph::vvec<morph::vec<float, 3>> fcentres = geo.poly.get_face_centres();
+
+    // Compute neighbour vectors from neighbour indices
+    //morph::vvec<morph::vvec<morph::vec<float, 3>>> vneighb_vertices = geo.poly.get_neighbour_vectors();
+    morph::vvec<morph::vvec<morph::vec<float, 3>>> vneighb_vertices = geo.get_neighbour_hexdir_vectors();
 
     try {
         morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
@@ -83,11 +85,26 @@ int main()
                                                                  geo.poly.vertices[geo.poly.faces[i][2]],
                                                                  colr);
             v.bindmodel (tv);
-            tv->setAlpha (0.8f);
+            tv->setAlpha (0.6f);
             tv->finalize();
             v.addVisualModel (tv);
         }
 #endif
+        // For each vertex, one QuiverVisual for the immediate neighbour vertices.
+        morph::vvec<float> clrs;
+        for (unsigned int i = 0; i < vneighb_vertices.size(); ++i) {
+            morph::vvec<morph::vec<float, 3>> coords (vneighb_vertices[i].size(), geo.poly.vertices[i]);
+            auto vmp = std::make_unique<morph::QuiverVisual<float>>(&coords, offset, &vneighb_vertices[i],
+                                                                    morph::ColourMapType::Jet);
+            v.bindmodel (vmp);
+            clrs.linspace (0, 1, vneighb_vertices[i].size());
+            vmp->scalarData = &clrs;
+            vmp->do_quiver_length_scaling = false; // Don't (auto)scale the lengths of the vectors
+            vmp->quiver_length_gain = 0.5f;        // Apply a fixed gain to the length of the quivers on screen
+            vmp->fixed_quiver_thickness = 0.01f/iterations;  // Fixed quiver thickness
+            vmp->finalize();
+            v.addVisualModel (vmp);
+        }
         v.keepOpen();
 
     } catch (const std::exception& e) {
