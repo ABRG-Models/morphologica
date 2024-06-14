@@ -53,11 +53,10 @@ namespace morph {
                 return;
             }
 
-            vec<Flt> zero3 = { Flt{0}, Flt{0}, Flt{0} };
             vvec<Flt> dlengths;
             // Compute the lengths of each vector
             for (unsigned int i = 0; i < nquiv; ++i) {
-                dlengths.push_back (MathAlgo::distance<Flt, 3> (zero3, (*this->vectorData)[i]));
+                dlengths.push_back ( (*this->vectorData)[i].length() );
             }
 
             // Linearly scale the dlengths to generate colours
@@ -69,7 +68,14 @@ namespace morph {
             // Set the colours based on either length of the vectors or values in
             // this->scalarData:
             if (this->scalarData == nullptr || this->scalarData->size() == 0) {
-                this->colourScale.transform (dlengths, lengthcolours);
+                if (this->do_quiver_length_scaling == false) {
+                    // lengthcolours already is a copy of dlengths, but given that in this
+                    // case we're NOT scaling, we have to make sure that the colours are all
+                    // usable, so set to 0.5.
+                    lengthcolours.set_from (Flt{0.5});
+                } else  {
+                    this->colourScale.transform (dlengths, lengthcolours);
+                }
             } else {
                 // We have scalarData, use these for the colours
                 vvec<Flt> sdata (this->scalarData->size());
@@ -80,15 +86,17 @@ namespace morph {
             // Now scale the lengths for their size on screen. Do this with a linear or log scaling.
 
             // (if log) First replace zeros with NaNs so that log transform will work.
-            if (this->length_scale.getType() == morph::ScaleFn::Logarithmic) {
+            if (this->do_quiver_length_scaling == true && this->length_scale.getType() == morph::ScaleFn::Logarithmic) {
                 dlengths.search_replace (Flt{0}, std::numeric_limits<Flt>::quiet_NaN());
             }
 
             // Transform data lengths into "nrmlzedlengths"
-            vvec<float> nrmlzedlengths (dlengths.size(), this->fixed_length);
-            if (this->fixed_length == 0.0f) {
+            vvec<float> nrmlzedlengths (dlengths);
+            if (this->fixed_length != 0.0f) {
+                nrmlzedlengths.set_from (this->fixed_length);
+            } else if (this->do_quiver_length_scaling == true) {
                 this->length_scale.transform (dlengths, nrmlzedlengths);
-            }
+            } // else lengths are left as in the data
 
             // Find the scaling factor to scale real lengths into screen lengths, which are the
             // normalized lengths multiplied by a user-settable quiver_length_gain.
@@ -103,7 +111,6 @@ namespace morph {
                 coords_i = (*this->dataCoords)[i];
 
                 float len = nrmlzedlengths[i] * this->quiver_length_gain;
-
                 if ((std::isnan(dlengths[i]) || dlengths[i] == Flt{0}) && this->show_zero_vectors) {
                     // NaNs denote zero vectors when the lengths have been log scaled.
                     this->computeSphere (this->idx, coords_i, zero_vector_colour, this->zero_vector_marker_size * quiver_thickness_gain);
@@ -191,6 +198,9 @@ namespace morph {
         // QuiverVisual::setlog() before calling finalize(). The scaling can be ignored by calling
         // QuiverVisual::length_scale.compute_autoscale (0, 1); before finalize().
         morph::Scale<Flt, float> length_scale;
+        // Set this false to avoid applying length_scale to quiver lengths and also and
+        // colourScale (in the absence of ScalarData).
+        bool do_quiver_length_scaling = true;
     };
 
 } // namespace morph
