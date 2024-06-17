@@ -23,12 +23,14 @@ int main()
     // Jet, Plasma, Inferno, Twilight, Rainbow, Viridis, Greyscale, MonochromeRed, MonovalRed
     //
     // See morph/ColourMap.h for the full list in the definition of ColourMapType
-    constexpr morph::ColourMapType colour_map_type = morph::ColourMapType::Viridis;
+    constexpr morph::ColourMapType colour_map_type = morph::ColourMapType::Rainbow;
 
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
     std::string title_str = "ColourBar (" + morph::ColourMap<float>::colourMapTypeToStr (colour_map_type) + ")";
-    morph::Visual v(1600, 1000, title_str);
+    morph::Visual v(1200, 1000, title_str);
+    // Position with some scene trans setup code (try Ctrl-z in the program and see stdout):
+    v.setSceneTrans (morph::vec<float,3>({-0.140266f, 0.237435f, -3.5f}));
 
     // A HexGrid to show in the scene.
     morph::HexGrid hg(0.01f, 3.0f, 0.0f);
@@ -52,7 +54,7 @@ int main()
     auto hgvp = v.addVisualModel (hgv);
 
     // Add the colour bar
-    offset = {1.0f, 0.0f, 0.0f};
+    offset = {0.8f, -0.3f, 0.0f};
     auto cbv =  std::make_unique<morph::ColourBarVisual<float>>(offset);
     v.bindmodel (cbv);
     cbv->cm.setType (colour_map_type); // ColourBarVisual also has a ColourMapType 'cm' member
@@ -66,7 +68,7 @@ int main()
     v.addVisualModel (cbv);
 
     // Add a horizontal colourbar, too
-    offset = {1.5f, 0.0f, 0.0f};
+    offset = {-0.3f, -1.0f, 0.0f};
     cbv =  std::make_unique<morph::ColourBarVisual<float>>(offset);
     v.bindmodel (cbv);
     cbv->cm.setType (colour_map_type);
