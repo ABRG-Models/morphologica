@@ -20,10 +20,10 @@ int main()
     // Choose a colourmap.
     //
     // Options include:
-    // Jet, Plasma, Inferno, Twilight, Rainbow, Viridis, Greyscale, MonochromeRed, MonovalRed
+    // Jet, Plasma, Inferno, Twilight, Rainbow, Viridis, Cividis, Greyscale, MonochromeRed, MonovalRed
     //
     // See morph/ColourMap.h for the full list in the definition of ColourMapType
-    constexpr morph::ColourMapType colour_map_type = morph::ColourMapType::Rainbow;
+    constexpr morph::ColourMapType colour_map_type = morph::ColourMapType::Inferno;
 
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
