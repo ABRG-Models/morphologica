@@ -240,21 +240,211 @@ namespace morph {
         {
             //! A list of the vertices
             morph::vvec<morph::vec<F, 3>> vertices;
+            //! For each vertex in the list above, there is a list of indices into
+            //! geometry::polyhedron::vertices that are the neighbours.
+            morph::vvec<std::set<int>> vneighbours;
             //! A list of the faces
             morph::vvec<morph::vec<int, 3>> faces;
+
+            void populate_neighbours()
+            {
+                // For each vertex, find the faces containing that vertex. Neighbours
+                // include the other vertices in that face.
+                int vsz = static_cast<int>(this->vertices.size());
+                this->vneighbours.resize (vsz);
+                for (int i = 0; i < vsz; ++i) {
+                    for (auto f : this->faces) {
+                        for (auto fi1 : f) {
+                            if (fi1 == i) {
+                                for (auto fi2 : f) {
+                                    if (fi2 != i) { this->vneighbours[i].insert (fi2); }
+                                }
+                            }
+                        }
+                    }
+#if 0
+                    std::cout << vneighbours[i].size() << " neighbours of vertex " << i << " are: (";
+                    for (auto vn : vneighbours[i]) {
+                        std::cout << vn << ",";
+                    }
+                    std::cout << ")\n";
+#endif
+                }
+            }
+
+            // Get a vvec of the coordinates of the face centres
+            morph::vvec<morph::vec<F, 3>> get_face_centres() const
+            {
+                morph::vvec<morph::vec<F, 3>> fcentres(this->faces.size(), { F{0}, F{0}, F{0} });
+                for (unsigned int i = 0; i < this->faces.size(); ++i) {
+                    fcentres[i] += (this->vertices[this->faces[i][0]]
+                                    + this->vertices[this->faces[i][1]]
+                                    + this->vertices[this->faces[i][2]])/F{3};
+                }
+                return fcentres;
+            }
+
+            // Get a vvec of the vectors of the neighbouring vertices of the face centres
+            morph::vvec<morph::vvec<morph::vec<F, 3>>> get_neighbour_vectors() const
+            {
+                morph::vvec<morph::vvec<morph::vec<F, 3>>> vneighb_vectors_per_vertex (this->vneighbours.size());
+                for (unsigned int i = 0; i < this->vneighbours.size(); ++i) {
+                    for (auto n : this->vneighbours[i]) { // vneighbour[i] is a set<int>
+                        morph::vec<F, 3> _v = this->vertices[n] - this->vertices[i];
+                        vneighb_vectors_per_vertex[i].push_back (_v);
+                    }
+                }
+                return vneighb_vectors_per_vertex;
+            }
         };
 
         /*!
-         * A return information struct for the icosahedral_geodesic function. The
-         * fivefold_vertices information *could* be part of a derived class icosahedron
-         * (deriving from polyhedron). Polyhedron already contains n_vertices and
-         * n_faces (as the size()s of vertices and faces)
+         * A specific class to be an icosahedral geodesic
          */
-        struct geodesic_info
+        template<typename F>
+        struct icosahedral_geodesic
         {
+            //! The base polyhedron that defines this icosahedral geodesic polyhedron
+            geometry::polyhedron <F> poly;
+
+            //! The 12 vertices with five-fold symmetry
+            std::set<int> fivefold_vertices;
+
+            /*!
+             * Get a vvec of vvecs of vecs. There are as many vvecs of vecs as there are vertices in
+             * the geodesic. For each one, there will be 3 vecs, the 'R, G and B' basis vectors for
+             * the hexagonal-like mesh.
+             */
+            morph::vvec<morph::vvec<morph::vec<F, 3>>> get_neighbour_hexdir_vectors() const
+            {
+                morph::vvec<morph::vvec<morph::vec<F, 3>>> vneighb_vectors_per_vertex (this->poly.vneighbours.size());
+
+                /*!
+                 * A function to choose the hexagonal basis vectors for a vertex i. This will
+                 * replace the 5 or 6 vectors in vneighb_vectors_per_vertex[i] with 3 'RGB' basis
+                 * vectors. It uses a reference vector 'ref_vec' to figure out which neighbour
+                 * vector should be 'R'. The 'G' and 'B' basis vectors are then selected
+                 * sequentially with increasing anticlockwise angle about the vertex normal.
+                 *
+                 * \param i The vertex index.
+                 *
+                 * \param ref_vec A reference vector. The vector in vneighb_vectors_per_vertex[i]
+                 * which most closely matches ref_vec will be the 'R' vector of the basis.
+                 *
+                 * \param nrm_vec The vector which is normal to vertex[i]
+                 */
+                auto _select_hex_basis_vectors = [&vneighb_vectors_per_vertex](const int i,
+                                                                               const morph::vec<F, 3>& ref_vec,
+                                                                               const morph::vec<F, 3>& nrm_vec)
+                {
+                    constexpr F Fmax = std::numeric_limits<F>::max();
+                    morph::vvec<morph::vec<F, 3>> rgb_vectors (3, morph::vec<F, 3>{ F{0}, F{0}, F{0} });
+
+                    int vnsz = static_cast<int>(vneighb_vectors_per_vertex[i].size()); // 5 or 6 neighbours?
+
+                    morph::vvec<F> angles(vnsz, F{0});
+                    F min_angle = Fmax;                 // Find the minimum angle
+                    int min_angle_index = -1;           // index of min_angle
+
+                    // First loop simply finds rgb_vector[0], which is the vector most aligned with ref_vec
+                    for (int j = 0; j < vnsz; ++j) {
+                        // Compute each angle wrt to ref_vec
+                        angles[j] = vneighb_vectors_per_vertex[i][j].angle (ref_vec);
+                        if (angles[j] < min_angle) {
+                            min_angle_index = j;
+                            min_angle = angles[j];
+                        }
+                    }
+                    int r_index = min_angle_index;
+                    rgb_vectors[0] = vneighb_vectors_per_vertex[i][r_index];
+
+                    // Now find the next two, in anticlockwise order.
+                    angles.zero();
+                    std::map<F, morph::vec<F, 3>> vec_map; // A map with key as angle, to order vectors easily
+                    for (int j = 0; j < vnsz; ++j) {
+                        if (j != r_index) {
+                            // Compute each angle wrt to the reference (rgb_vectors[0])
+                            angles[j] = vneighb_vectors_per_vertex[i][j].angle (rgb_vectors[0]);
+                            // The angle to the normal of the cross product should be nearly 0 or nearly pi
+                            morph::vec<F, 3> cross_prod = vneighb_vectors_per_vertex[i][j].cross (rgb_vectors[0]);
+                            bool in_line = cross_prod.angle (nrm_vec) < morph::mathconst<F>::pi_over_2;
+                            // This ensures angles will order nicely (as the key in the map). It assumes vectors lie on a plane (which is nearly true)
+                            angles[j] = in_line == false ? angles[j] : morph::mathconst<F>::two_pi - angles[j];
+                        } // else angle[j] == 0
+
+                        // Populate the map, using the angle as key
+                        vec_map[angles[j]] = vneighb_vectors_per_vertex[i][j];
+                    }
+
+                    // Copy from vec_map into rgb_vectors[1] and [2]...
+                    auto vec_map_iter = vec_map.begin();
+                    rgb_vectors[1] = (++vec_map_iter)->second; // Skip rgb_vectors[0]
+                    rgb_vectors[2] = (++vec_map_iter)->second;
+                    // ...then swap into vneighb_vectors_per_vertex. Done.
+                    std::swap (vneighb_vectors_per_vertex[i], rgb_vectors);
+                }; // end of _select_hex_basis_vectors()
+
+                // Unit vector in x direction
+                constexpr morph::vec<F, 3> ux = { F{1}, F{0}, F{0} };
+                // Algorithm choices
+                constexpr bool align_all_R_with_ux = true;
+                constexpr bool align_each_R_with_a_neighbour = !align_all_R_with_ux;
+
+                for (int i = 0; i < static_cast<int>(this->poly.vneighbours.size()); ++i) {
+
+                    // Compute the neighbour vectors
+                    for (auto n : this->poly.vneighbours[i]) { // vneighbour[i] is a set<int>
+                        morph::vec<F, 3> _v = this->poly.vertices[n] - this->poly.vertices[i];
+                        vneighb_vectors_per_vertex[i].push_back (_v);
+                    }
+
+                    morph::vec<F, 3> nrm = this->poly.vertices[i]; // no need to renormalize
+
+                    if constexpr (align_all_R_with_ux) {
+
+                        // For each vertex, our reference is ux. This is quite good in large regions.
+                        _select_hex_basis_vectors (i, ux, nrm);
+
+                    } else if constexpr (align_each_R_with_a_neighbour) {
+
+                        // Do first wrt ux, and subsequent wrt any neighbour. Works ok.
+                        if (i == 0) {
+                            _select_hex_basis_vectors (i, ux, nrm);
+                        } else {
+                            // From i and down, see if it's a neighbour. If so, use it.
+                            for (int j = i-1; j >= 0; --j) {
+                                // Is vertex j a neighbour?
+                                if (this->poly.vneighbours[i].count(j)) {
+                                    // yes, so use it
+                                    _select_hex_basis_vectors (i, vneighb_vectors_per_vertex[j][0], nrm);
+                                } // else loop to next j
+                            }
+                        }
+
+                    } else {
+                        throw std::runtime_error ("get_neighbour_hexdir_vectors: check your constexpr bools");
+                    }
+                }
+
+                return vneighb_vectors_per_vertex;
+            }
+
+        };
+
+        /*!
+         * Work out how many vertices and faces you'll have for an icosahedral geodesic constructed
+         * with a certain number of iterations.
+         */
+        struct icosahedral_geodesic_info
+        {
+            icosahedral_geodesic_info (const int iterations)
+            {
+                const int T = std::pow (4, iterations);
+                this->n_vertices = 10 * T + 2;
+                this->n_faces = 20 * T;
+            }
             int n_vertices = 0;
             int n_faces = 0;
-            std::set<int> fivefold_vertices; // Should end up with size 12
         };
 
         /*!
@@ -272,24 +462,6 @@ namespace morph {
             std::copy (initial_ico.vertices.begin(), initial_ico.vertices.end(), ico.vertices.begin());
             std::copy (initial_ico.faces.begin(), initial_ico.faces.end(), ico.faces.begin());
             return ico;
-        }
-
-        /*!
-         * A function to get the number of faces and vertices that we'll generate when
-         * we call icosahedral_geodesic(..., iterations)
-         *
-         * \param iterations The number of times the initial icosahedron will be subdivided
-         */
-        morph::geometry::geodesic_info
-        icosahedral_geodesic_numbers (const int iterations)
-        {
-            morph::geometry::geodesic_info gi;
-            // From iterations, we can compute the number of vertices, edges and faces
-            // expected. (see https://en.wikipedia.org/wiki/Geodesic_polyhedron)
-            const int T = std::pow (4, iterations);
-            gi.n_vertices = 10 * T + 2;
-            gi.n_faces = 20 * T;
-            return gi;
         }
 
         /*!
@@ -321,19 +493,14 @@ namespace morph {
          * indices of the five-fold symmetry vertices.
          */
         template<typename F>
-        morph::geometry::geodesic_info
-        make_icosahedral_geodesic (morph::geometry::polyhedron<F>& geo, const int iterations)
+        morph::geometry::icosahedral_geodesic<F> make_icosahedral_geodesic (const int iterations)
         {
-            morph::geometry::geodesic_info gi = morph::geometry::icosahedral_geodesic_numbers (iterations);
-
+            morph::geometry::icosahedral_geodesic<F> geo;
             // Start out with an icosahedron
-            if (geo.vertices.empty() && geo.faces.empty()) {
-                geo = morph::geometry::icosahedron<F>();
-            } else {
-                throw std::runtime_error ("Pass in an empty polyhedron");
-            }
+            geo.poly = morph::geometry::icosahedron<F>();
+
             // As geo is currently an icosahedron, all vertices in geo are five-fold at this point
-            for (int v = 0; v < static_cast<int>(geo.vertices.size()); ++v) { gi.fivefold_vertices.insert (v); }
+            for (int v = 0; v < static_cast<int>(geo.poly.vertices.size()); ++v) { geo.fivefold_vertices.insert(v); }
 
             // A special comparison function to order vertices in our Geodesic polyhedron. The
             // vertices (or face centroids) are arranged in a spiral, from z_max to z_min,
@@ -372,23 +539,19 @@ namespace morph {
                 // (Re)Populate vertices_map from vertices.
                 int ii = 0;
                 vertices_map.clear();
-                for (auto v : geo.vertices) { // original order of vertices (unordered)
-                    if (i == 0) {
-                        // On 0th iteration, all vertices are five-fold symmetric.
-                        gi.fivefold_vertices.insert (ii);
-                    }
+                for (auto v : geo.poly.vertices) { // original order of vertices (unordered)
                     vertices_map[v] = ii++; // Orders into a new *good* order (spiral) and records the value of the original order.
                 }
 
                 if constexpr (debug_general) {
-                    std::cout << "ITERATION START\nOn iteration " << i << " vertices size is " << geo.vertices.size() << std::endl;
+                    std::cout << "ITERATION START\nOn iteration " << i << " vertices size is " << geo.poly.vertices.size() << std::endl;
                 }
                 std::map<morph::vec<F, 3>, // Comparing on the vertex key
                          morph::vec<int, 3>, decltype(_vtx_cmp)> faces_map(_vtx_cmp);
                 int count = 0;
                 int fcount = 0;
                 if constexpr (debug_faces) {
-                    std::cout << "Looping through " << geo.faces.size() << " faces...\n";
+                    std::cout << "Looping through " << geo.poly.faces.size() << " faces...\n";
                 }
 
                 // A function to add to faces_map (keyed by centroid of each face) faces contains indices.
@@ -412,14 +575,14 @@ namespace morph {
                     if (static_cast<size_t>(count) != faces_map.size()) { throw std::runtime_error ("count != faces_map.size()"); }
                 };
 
-                for (const auto f : geo.faces) { // faces contains indexes into vertices.
+                for (const auto f : geo.poly.faces) { // faces contains indexes into vertices.
                     if constexpr (debug_faces) {
                         std::cout << "Working on origin face " << fcount++ << " made of vertices " << f << std::endl;
-                        std::cout << "  which are: " << geo.vertices[f[0]] << " / " << geo.vertices[f[1]] << " / " << geo.vertices[f[2]] << "\n";
+                        std::cout << "  which are: " << geo.poly.vertices[f[0]] << " / " << geo.poly.vertices[f[1]] << " / " << geo.poly.vertices[f[2]] << "\n";
                     }
-                    morph::vec<F, 3> va = (geo.vertices[f[1]] + geo.vertices[f[0]]) / 2.0f;
-                    morph::vec<F, 3> vb = (geo.vertices[f[2]] + geo.vertices[f[1]]) / 2.0f;
-                    morph::vec<F, 3> vc = (geo.vertices[f[0]] + geo.vertices[f[2]]) / 2.0f;
+                    morph::vec<F, 3> va = (geo.poly.vertices[f[1]] + geo.poly.vertices[f[0]]) / 2.0f;
+                    morph::vec<F, 3> vb = (geo.poly.vertices[f[2]] + geo.poly.vertices[f[1]]) / 2.0f;
+                    morph::vec<F, 3> vc = (geo.poly.vertices[f[0]] + geo.poly.vertices[f[2]]) / 2.0f;
                     // Renormalize the new vertices, placing them on the surface of a sphere
                     va.renormalize();
                     vb.renormalize();
@@ -435,8 +598,8 @@ namespace morph {
                         }
 
                     } catch (const std::out_of_range& e) {
-                        a = geo.vertices.size();
-                        geo.vertices.push_back (va);
+                        a = geo.poly.vertices.size();
+                        geo.poly.vertices.push_back (va);
                         vertices_map[va] = a;
                         if constexpr (debug_vertices) {
                             std::cout << "INSERTED NEW vertex " << va << " into vertices_map with index " << a << "\n"; // old money
@@ -450,8 +613,8 @@ namespace morph {
                             std::cout << "b is EXISTING VERTEX " << vb << ", index " << b  << std::endl; // old money
                         }
                     } catch (const std::out_of_range& e) {
-                        b = geo.vertices.size();
-                        geo.vertices.push_back (vb);
+                        b = geo.poly.vertices.size();
+                        geo.poly.vertices.push_back (vb);
                         vertices_map[vb] = b;
                         if constexpr (debug_vertices) {
                             std::cout << "INSERTED NEW vertex " << vb << " into vertices_map with index " << b << "\n"; // old money
@@ -465,8 +628,8 @@ namespace morph {
                             std::cout << "c is EXISTING VERTEX " << vc << ", index " << c << std::endl; // old money
                         }
                     } catch (const std::out_of_range& e) {
-                        c = geo.vertices.size();
-                        geo.vertices.push_back (vc);
+                        c = geo.poly.vertices.size();
+                        geo.poly.vertices.push_back (vc);
                         vertices_map[vc] = c;
                         if constexpr (debug_vertices) {
                             std::cout << "INSERTED NEW vertex " << vc << " into vertices_map with index " << c << "\n"; // old money
@@ -474,13 +637,13 @@ namespace morph {
                     }
 
                     morph::vec<int, 3> newface = { f[0], a, c }; // indices in old money here
-                    add_face (geo.vertices[f[0]], va, vc, newface, 1);
+                    add_face (geo.poly.vertices[f[0]], va, vc, newface, 1);
 
                     newface = { f[1], b, a };
-                    add_face (geo.vertices[f[1]], vb, va, newface, 2);
+                    add_face (geo.poly.vertices[f[1]], vb, va, newface, 2);
 
                     newface = { f[2], c, b };
-                    add_face (geo.vertices[f[2]], vc, vb, newface, 3);
+                    add_face (geo.poly.vertices[f[2]], vc, vb, newface, 3);
 
                     newface = { a, b, c };
                     add_face (va, vb, vc, newface, 4);
@@ -491,13 +654,13 @@ namespace morph {
                 }
 
                 // Copy faces_map back to faces?
-                geo.faces.resize (faces_map.size());
+                geo.poly.faces.resize (faces_map.size());
                 int j = 0;
                 for (auto fm : faces_map) {
-                    geo.faces[j] = fm.second;
+                    geo.poly.faces[j] = fm.second;
                     j++;
                 } // faces should now be correctly ordered
-                if constexpr (debug_faces) { std::cout << "faces size " << geo.faces.size() << std::endl; }
+                if constexpr (debug_faces) { std::cout << "faces size " << geo.poly.faces.size() << std::endl; }
 
                 // idx_remap is keyed on the badly ordered indices; value is correct ordering (j
                 // follows order of vertices_map)
@@ -506,7 +669,7 @@ namespace morph {
                 std::set<int> ffv; // temporary storage for a new fivefold_vertices set
                 for (auto v : vertices_map) {
                     // See if we are remapping a fivefold vertex
-                    if (gi.fivefold_vertices.count (v.second)) {
+                    if (geo.fivefold_vertices.count (v.second)) {
                         // Then v.second is a fivefold vertex, so insert its replacement, k, into ffv
                         // std::cout << "Replace old fivefold vertex index " << v.second << " with new one " << k << std::endl;
                         ffv.insert (k);
@@ -514,51 +677,54 @@ namespace morph {
                     idx_remap[v.second] = k++;
                 }
                 // swap new five fold vertices into gi object
-                std::swap (ffv, gi.fivefold_vertices);
+                std::swap (ffv, geo.fivefold_vertices);
 
                 // faces is in the language of 'badly ordered indices'. We want it to be
                 // expressed with the new ordered indices, inherent in the vertices_map
                 // ordering, as we'll be writing data from vertices_map into vertices with the
                 // correct ordering
-                if constexpr (debug_faces) { std::cout << "before faces loop, faces size " << geo.faces.size() << std::endl; }
+                if constexpr (debug_faces) { std::cout << "before faces loop, faces size " << geo.poly.faces.size() << std::endl; }
 
-                for (auto& _f : geo.faces) {
+                for (auto& _f : geo.poly.faces) {
                     if constexpr (debug_faces) { std::cout << "Remapping face indices " << _f << " to "; }
                     _f[0] = idx_remap[_f[0]]; // remap old money faces index to new money index
                     _f[1] = idx_remap[_f[1]];
                     _f[2] = idx_remap[_f[2]];
                     if constexpr (debug_faces) { std::cout << _f << std::endl; }
                 }
-                if constexpr (debug_faces) { std::cout << "after faces loop, faces size " << geo.faces.size() << std::endl; }
+                if constexpr (debug_faces) { std::cout << "after faces loop, faces size " << geo.poly.faces.size() << std::endl; }
 
                 // Populate vertices
-                geo.vertices.resize (vertices_map.size());
+                geo.poly.vertices.resize (vertices_map.size());
                 int l = 0;
                 for (auto v : vertices_map) {
-                    geo.vertices[l++] = v.first;
+                    geo.poly.vertices[l++] = v.first;
                 }
                 if constexpr (debug_general) {
-                    std::cout << "At end, faces.size() = " << geo.faces.size() << " and vertices.size() = " << geo.vertices.size() << std::endl;
+                    std::cout << "At end, faces.size() = " << geo.poly.faces.size()
+                              << " and vertices.size() = " << geo.poly.vertices.size() << std::endl;
                 }
             }
 
             // Check our structures against n_faces and n_verts
             if constexpr (debug_general) {
-                std::cout << "vertices.size(): " << geo.vertices.size() << " n_verts: " << gi.n_vertices << std::endl;
+                std::cout << "n_verts: " << geo.poly.vertices.size() << std::endl;
             }
-            if (static_cast<int>(geo.vertices.size()) != gi.n_vertices) { throw std::runtime_error ("vertices has wrong size"); }
             if constexpr (debug_general) {
-                std::cout << "faces.size(): " << geo.faces.size() << " n_faces: " << gi.n_faces << std::endl;
+                std::cout << "n_faces: " << geo.poly.faces.size() << std::endl;
             }
-            if (static_cast<int>(geo.faces.size()) != gi.n_faces) { throw std::runtime_error ("faces has wrong size"); }
 
             if constexpr (debug_general) {
-                std::cout << "At end, gi.fivefold_vertices:\n";
-                for (auto ffv : gi.fivefold_vertices) {
+                std::cout << "At end, geo.fivefold_vertices:\n";
+                for (auto ffv : geo.fivefold_vertices) {
                     std::cout << "    vertex " << ffv << "\n";
                 }
             }
-            return gi;
+
+            // Post-creation, compute the neighbour relations
+            geo.poly.populate_neighbours();
+
+            return geo;
         }
 
     } // geometry

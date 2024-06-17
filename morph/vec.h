@@ -1079,7 +1079,16 @@ namespace morph {
         }
 
         /*!
-         * Two dimensional angle in radians (only for N=2)
+         * Return this angle between this vector and the other. Works for any N.
+         */
+        constexpr S angle (const vec<S, N>& other) const
+        {
+            S cos_theta = this->dot(other) / (this->length() * other.length());
+            return std::acos (cos_theta);
+        }
+
+        /*!
+         * Two dimensional angle in radians (only for N=2) wrt to the axes
          */
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
         constexpr S angle() const

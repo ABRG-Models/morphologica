@@ -49,7 +49,7 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
 
-            morph::geometry::geodesic_info gi = morph::geometry::icosahedral_geodesic_numbers (this->iterations);
+            morph::geometry::icosahedral_geodesic_info gi(this->iterations);
             this->n_faces = gi.n_faces;
             this->n_verts = gi.n_vertices;
 
