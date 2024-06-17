@@ -17,9 +17,18 @@
 
 int main()
 {
+    // Choose a colourmap.
+    //
+    // Options include:
+    // Jet, Plasma, Inferno, Twilight, Rainbow, Viridis, Greyscale, MonochromeRed, MonovalRed
+    //
+    // See morph/ColourMap.h for the full list in the definition of ColourMapType
+    constexpr morph::ColourMapType colour_map_type = morph::ColourMapType::Viridis;
+
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
-    morph::Visual v(1600, 1000, "ColourBar");
+    std::string title_str = "ColourBar (" + morph::ColourMap<float>::colourMapTypeToStr (colour_map_type) + ")";
+    morph::Visual v(1600, 1000, title_str);
 
     // A HexGrid to show in the scene.
     morph::HexGrid hg(0.01f, 3.0f, 0.0f);
@@ -36,6 +45,7 @@ int main()
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
     auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
     v.bindmodel (hgv);
+    hgv->cm.setType (colour_map_type); // This is how we set the colour map type in HexGridVisual
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->finalize();
@@ -45,6 +55,7 @@ int main()
     offset = {1.0f, 0.0f, 0.0f};
     auto cbv =  std::make_unique<morph::ColourBarVisual<float>>(offset);
     v.bindmodel (cbv);
+    cbv->cm.setType (colour_map_type); // ColourBarVisual also has a ColourMapType 'cm' member
     cbv->orientation = morph::colourbar_orientation::vertical;
     cbv->tickside = morph::colourbar_tickside::right_or_below;
     // Copy colourmap and scale to colourbar visual
@@ -58,10 +69,13 @@ int main()
     offset = {1.5f, 0.0f, 0.0f};
     cbv =  std::make_unique<morph::ColourBarVisual<float>>(offset);
     v.bindmodel (cbv);
+    cbv->cm.setType (colour_map_type);
     cbv->orientation = morph::colourbar_orientation::horizontal;
     cbv->tickside = morph::colourbar_tickside::left_or_above;
     cbv->cm = hgvp->cm;
     cbv->scale = hgvp->colourScale;
+    std::string lbl = "ColourMapType: " + morph::ColourMap<float>::colourMapTypeToStr (colour_map_type);
+    cbv->addLabel (lbl, morph::vec<float>{ 0.0f, -0.08f, 0.0f }, morph::TextFeatures(0.05f));
     cbv->finalize();
     v.addVisualModel (cbv);
 
