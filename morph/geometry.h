@@ -307,43 +307,89 @@ namespace morph {
             geometry::polyhedron <F> poly;
             std::set<int> fivefold_vertices;
 
-            // Get RGB neighbour vectors. This is icosahedral_geodesic specific.
             morph::vvec<morph::vvec<morph::vec<F, 3>>> get_neighbour_hexdir_vectors() const
             {
                 morph::vvec<morph::vvec<morph::vec<F, 3>>> vneighb_vectors_per_vertex (this->poly.vneighbours.size());
+
+                // Unit vector in x direction
+                constexpr morph::vec<F, 3> ux = { F{1}, F{0}, F{0} };
+
+                /**
+                 * A function to choose the hexagonal basis vectors for a vertex i. This will
+                 * replace the 5 or 6 vectors in vneighb_vectors_per_vertex[i] with 3 'RGB' basis
+                 * vectors.
+                 *
+                 * \param i The vertex index.
+                 *
+                 * \param ref_vec A reference vector. The vector in vneighb_vectors_per_vertex[i]
+                 * which most closely matches ref_vec will be the 'R' vector of the basis.
+                 *
+                 * \param nrm_vec The vector which is normal to vertex[i]
+                 */
+                auto _select_hex_basis_vectors = [&vneighb_vectors_per_vertex](const int i,
+                                                                               const morph::vec<F, 3>& ref_vec,
+                                                                               const morph::vec<F, 3>& nrm_vec)
+                {
+                    constexpr F Fmax = std::numeric_limits<F>::max();
+                    morph::vvec<morph::vec<F, 3>> rgb_vectors (3, morph::vec<F, 3>{ F{0}, F{0}, F{0} });
+
+                    int vnsz = static_cast<int>(vneighb_vectors_per_vertex[i].size());
+                    // Run through the neighbours and choose R as the one best aligned with the x axis.
+                    // Find angles to 'ux'
+                    morph::vvec<F> angles(vnsz, F{0});
+                    morph::vec<F, 3> min_angle = { Fmax, Fmax, Fmax };   // 1st, 2nd and 3rd minimum angles
+                    morph::vec<int, 3> min_angle_index = { -1, -1, -1 }; // indices of min_angle members
+
+                    // First loop simply finds rgb_vector[0], the closest to ux.
+                    for (int j = 0; j < vnsz; ++j) {
+                        // Compute each angle wrt to the reference (ref_vec)
+                        angles[j] = vneighb_vectors_per_vertex[i][j].angle (ref_vec);
+                        if (angles[j] < min_angle[0]) {
+                            min_angle_index[0] = j;
+                            min_angle[0] = angles[j];
+                        }
+                    }
+                    int r_index = min_angle_index[0];
+                    rgb_vectors[0] = vneighb_vectors_per_vertex[i][r_index];
+
+                    // Now find the next two, in anticlockwise order.
+                    angles.zero();
+                    std::map<F, morph::vec<F, 3>> vec_map; // key is angle.
+                    //std::cout << "----\n";
+                    for (int j = 0; j < vnsz; ++j) {
+                        if (j != r_index) {
+                            // Compute each angle wrt to the reference (rgb_vectors[0])
+                            angles[j] = vneighb_vectors_per_vertex[i][j].angle (rgb_vectors[0]);
+                            // The angle to the normal of the cross product should be nearly 0 or nearly pi
+                            morph::vec<F, 3> cross_prod = vneighb_vectors_per_vertex[i][j].cross (rgb_vectors[0]);
+                            bool in_line = cross_prod.angle (nrm_vec) < morph::mathconst<F>::pi_over_2;
+                            // This assumes vectors lie on a plane (which is nearly true)
+                            angles[j] = in_line == false ? angles[j] : morph::mathconst<F>::two_pi - angles[j];
+                        } // else angle[j] == 0
+
+                        // Populate the map, using the angle as key
+                        vec_map[angles[j]] = vneighb_vectors_per_vertex[i][j];
+                    }
+
+                    // Copy from vec_map into rgb_vectors[1] and [2]
+                    auto vec_map_iter = vec_map.begin();
+                    rgb_vectors[1] = (++vec_map_iter)->second; // Skip rgb_vectors[0]
+                    rgb_vectors[2] = (++vec_map_iter)->second;
+                    std::swap (vneighb_vectors_per_vertex[i], rgb_vectors);
+                };
+
                 for (int i = 0; i < static_cast<int>(this->poly.vneighbours.size()); ++i) {
+
+                    // Compute the neighbour vectors
                     for (auto n : this->poly.vneighbours[i]) { // vneighbour[i] is a set<int>
                         morph::vec<F, 3> _v = this->poly.vertices[n] - this->poly.vertices[i];
                         vneighb_vectors_per_vertex[i].push_back (_v);
                     }
-                    // Now select which 3 to keep.
 
-                    // First, order the vectors about the normal.
-                    morph::vec<F, 3> nrm = this->poly.vertices[i];
-                    nrm.renormalize();
-                    // Vector to the zero vertex
-                    morph::vec<F, 3> tozero = this->poly.vertices[0] - this->poly.vertices[i];
-                    // Find angles to 'tozero'
-                    int vnsz = static_cast<int>(vneighb_vectors_per_vertex[i].size());
-                    morph::vvec<F> angles(vnsz, F{0});
-                    F min_angle = std::numeric_limits<F>::max();
-                    int min_angle_index = -1;
-                    for (int j = 0; j < vnsz; ++j) {
-                        angles[j] = vneighb_vectors_per_vertex[i][j].angle (tozero);
-                        min_angle_index = (angles[j] < min_angle) ? j : min_angle_index;
-                        min_angle = (angles[j] < min_angle) ? angles[j] : min_angle;
-                    }
-                    // we have min angle index. This vector is first/the one for our inplace stuff
-                    morph::vec<F> first_vec = vneighb_vectors_per_vertex[i][min_angle_index];
+                    morph::vec<F, 3> nrm = this->poly.vertices[i]; // no need to renormalize
 
-                    // For each of the others, if the first_vec cross the other is in the normal direction then we have the rotation.
-
-                    //morph::vec<F> inplane = first_vec.cross (nrm);
-                    //inplane.renormalize();
-                    //morph::vec<F> v_x_inplane = v.cross (inplane);
-
-                    // etc FINISHME
-
+                    // For each vertex, our reference is ux.
+                    _select_hex_basis_vectors (i, ux, nrm);
                 }
                 return vneighb_vectors_per_vertex;
             }

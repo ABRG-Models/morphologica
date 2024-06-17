@@ -1081,7 +1081,7 @@ namespace morph {
         /*!
          * Return this angle between this vector and the other. Works for any N.
          */
-        constexpr S angle (const vec<S, N>& other)
+        constexpr S angle (const vec<S, N>& other) const
         {
             S cos_theta = this->dot(other) / (this->length() * other.length());
             return std::acos (cos_theta);
