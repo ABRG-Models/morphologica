@@ -221,6 +221,12 @@ if(USE_GLEW)
   target_link_libraries(scatter_geodesic GLEW::GLEW)
 endif()
 
+add_executable(scatter_hex_mercator scatter_hex_mercator.cpp)
+target_link_libraries(scatter_hex_mercator OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(scatter_hex_mercator GLEW::GLEW)
+endif()
+
 add_executable(scatter_dynamic scatter_dynamic.cpp)
 target_link_libraries(scatter_dynamic OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)

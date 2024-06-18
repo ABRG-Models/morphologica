@@ -54,6 +54,7 @@ int main()
     constexpr bool show_vertices = true;
     constexpr bool show_vertex_labels = true;
     constexpr bool show_face_centres = false;
+    constexpr float face_alpha = 0.95f; // How much see-throughness? 1 for none.
     constexpr bool show_face_centre_labels = false;
     constexpr bool show_faces = true;
     constexpr bool show_neighbour_vectors = true;
@@ -98,7 +99,7 @@ int main()
 
         if constexpr (show_faces == true) {
             // Triangle visuals for the faces
-            morph::ColourMap<float> cm(morph::ColourMapType::Jet);
+            morph::ColourMap<float> cm(morph::ColourMapType::Greyscale);
             for (unsigned int i = 0; i < geo.poly.faces.size(); ++i) {
                 std::array<float, 3> colr = cm.convert (i/static_cast<float>(geo.poly.faces.size()));
                 //std::cout << "Draw triangle with vertices: " << geo.faces[i] << std::endl;
@@ -108,7 +109,7 @@ int main()
                                                                      geo.poly.vertices[geo.poly.faces[i][2]],
                                                                      colr);
                 v.bindmodel (tv);
-                tv->setAlpha (0.6f);
+                tv->setAlpha (face_alpha);
                 tv->finalize();
                 v.addVisualModel (tv);
             }
