@@ -15,8 +15,6 @@ int main()
 {
     using mc = morph::mathconst<float>;
 
-    int rtn = -1;
-
     morph::Visual v(1024, 768, "Inverse Mercator HexGrid");
     v.showCoordArrows = true;
     v.lightingEffects();
@@ -63,5 +61,5 @@ int main()
 
     v.keepOpen();
 
-    return rtn;
+    return 0;
 }
