@@ -6,6 +6,7 @@
 
 #include <map>
 #include <set>
+#include <tuple>
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
@@ -314,10 +315,20 @@ namespace morph {
              * Get a vvec of vvecs of vecs. There are as many vvecs of vecs as there are vertices in
              * the geodesic. For each one, there will be 3 vecs, the 'R, G and B' basis vectors for
              * the hexagonal-like mesh.
+             *
+             * Note: In this function I use the default number of elements, N, for a morph::vec<F,
+             * N> which is N=3. vec<F> is equivalent to vec<F, 3>. I also have some function-wide
+             * using statements to keep the code a bit shorter.
              */
-            morph::vvec<morph::vvec<morph::vec<F, 3>>> get_neighbour_hexdir_vectors() const
+            morph::vvec< morph::vvec<std::tuple<morph::vec<F>,int>> > get_neighbour_hexdir_vectors() const
             {
-                morph::vvec<morph::vvec<morph::vec<F, 3>>> vneighb_vectors_per_vertex (this->poly.vneighbours.size());
+                using morph::vec;
+                using morph::vvec;
+                using std::tuple;
+                using mc = morph::mathconst<F>;
+
+                vvec<vvec<tuple<vec<F>,int>>> vneighb_vectors_per_vertex (this->poly.vneighbours.size());
+                for (auto& vn : vneighb_vectors_per_vertex) { vn.reserve (6); } // There can be up to 6 neighbours
 
                 /*!
                  * A function to choose the hexagonal basis vectors for a vertex i. This will
@@ -333,43 +344,47 @@ namespace morph {
                  *
                  * \param nrm_vec The vector which is normal to vertex[i]
                  */
-                auto _select_hex_basis_vectors = [&vneighb_vectors_per_vertex](const int i,
-                                                                               const morph::vec<F, 3>& ref_vec,
-                                                                               const morph::vec<F, 3>& nrm_vec)
+                auto _select_hex_basis_vectors = [&vneighb_vectors_per_vertex] (const int i,
+                                                                                const vec<F>& ref_vec,
+                                                                                const vec<F>& nrm_vec)
                 {
                     constexpr F Fmax = std::numeric_limits<F>::max();
-                    morph::vvec<morph::vec<F, 3>> rgb_vectors (3, morph::vec<F, 3>{ F{0}, F{0}, F{0} });
+                    vvec<tuple<vec<F>, int>> rgb_vectors (3, {vec<F>{ F{0}, F{0}, F{0} }, -1});
 
                     int vnsz = static_cast<int>(vneighb_vectors_per_vertex[i].size()); // 5 or 6 neighbours?
 
-                    morph::vvec<F> angles(vnsz, F{0});
+                    vvec<F> angles(vnsz, F{0});
                     F min_angle = Fmax;                 // Find the minimum angle
-                    int min_angle_index = -1;           // index of min_angle
+                    int min_angle_index = -1;           // index of min_angle *into vneighb_vectors_per_vertex[i]*
+                    int min_angle_vertex_index = -1;    // index of the min_angle vertex *into poly.vertices*
 
                     // First loop simply finds rgb_vector[0], which is the vector most aligned with ref_vec
                     for (int j = 0; j < vnsz; ++j) {
                         // Compute each angle wrt to ref_vec
-                        angles[j] = vneighb_vectors_per_vertex[i][j].angle (ref_vec);
+                        auto vec_ij = std::get<vec<F>>(vneighb_vectors_per_vertex[i][j]);
+                        angles[j] = vec_ij.angle (ref_vec);
                         if (angles[j] < min_angle) {
                             min_angle_index = j;
+                            min_angle_vertex_index = std::get<int>(vneighb_vectors_per_vertex[i][j]);
                             min_angle = angles[j];
                         }
                     }
-                    int r_index = min_angle_index;
-                    rgb_vectors[0] = vneighb_vectors_per_vertex[i][r_index];
+                    //int r_index = min_angle_index; // This is not the original index of the neighbour
+                    rgb_vectors[0] = { std::get<vec<F>>(vneighb_vectors_per_vertex[i][min_angle_index]), min_angle_vertex_index };
 
                     // Now find the next two, in anticlockwise order.
                     angles.zero();
-                    std::map<F, morph::vec<F, 3>> vec_map; // A map with key as angle, to order vectors easily
+                    std::map<F, tuple<vec<F>, int>> vec_map; // A map with key as angle, to order vectors easily
                     for (int j = 0; j < vnsz; ++j) {
-                        if (j != r_index) {
+                        auto vtx_ij = std::get<vec<F>>(vneighb_vectors_per_vertex[i][j]);
+                        if (j != min_angle_index) {
                             // Compute each angle wrt to the reference (rgb_vectors[0])
-                            angles[j] = vneighb_vectors_per_vertex[i][j].angle (rgb_vectors[0]);
+                            angles[j] = vtx_ij.angle (std::get<vec<F>>(rgb_vectors[0]));
                             // The angle to the normal of the cross product should be nearly 0 or nearly pi
-                            morph::vec<F, 3> cross_prod = vneighb_vectors_per_vertex[i][j].cross (rgb_vectors[0]);
-                            bool in_line = cross_prod.angle (nrm_vec) < morph::mathconst<F>::pi_over_2;
+                            vec<F> cross_prod = vtx_ij.cross (std::get<vec<F>>(rgb_vectors[0]));
+                            bool in_line = cross_prod.angle (nrm_vec) < mc::pi_over_2;
                             // This ensures angles will order nicely (as the key in the map). It assumes vectors lie on a plane (which is nearly true)
-                            angles[j] = in_line == false ? angles[j] : morph::mathconst<F>::two_pi - angles[j];
+                            angles[j] = in_line == false ? angles[j] : mc::two_pi - angles[j];
                         } // else angle[j] == 0
 
                         // Populate the map, using the angle as key
@@ -385,7 +400,7 @@ namespace morph {
                 }; // end of _select_hex_basis_vectors()
 
                 // Unit vector in x direction
-                constexpr morph::vec<F, 3> ux = { F{1}, F{0}, F{0} };
+                constexpr vec<F> ux = { F{1}, F{0}, F{0} };
                 // Algorithm choices
                 constexpr bool align_all_R_with_ux = true;
                 constexpr bool align_each_R_with_a_neighbour = !align_all_R_with_ux;
@@ -393,12 +408,12 @@ namespace morph {
                 for (int i = 0; i < static_cast<int>(this->poly.vneighbours.size()); ++i) {
 
                     // Compute the neighbour vectors
-                    for (auto n : this->poly.vneighbours[i]) { // vneighbour[i] is a set<int>
-                        morph::vec<F, 3> _v = this->poly.vertices[n] - this->poly.vertices[i];
-                        vneighb_vectors_per_vertex[i].push_back (_v);
+                    for (int n : this->poly.vneighbours[i]) { // vneighbour[i] is a set<int>
+                        vec<F> _v = this->poly.vertices[n] - this->poly.vertices[i];
+                        vneighb_vectors_per_vertex[i].push_back ({_v,  n}); // n IS index into poly.vertices
                     }
 
-                    morph::vec<F, 3> nrm = this->poly.vertices[i]; // no need to renormalize
+                    vec<F> nrm = this->poly.vertices[i]; // no need to renormalize
 
                     if constexpr (align_all_R_with_ux) {
 
@@ -412,11 +427,11 @@ namespace morph {
                             _select_hex_basis_vectors (i, ux, nrm);
                         } else {
                             // From i and down, see if it's a neighbour. If so, use it.
-                            for (int j = i-1; j >= 0; --j) {
+                            for (int id = i-1; id >= 0; --id) {
                                 // Is vertex j a neighbour?
-                                if (this->poly.vneighbours[i].count(j)) {
+                                if (this->poly.vneighbours[i].count(id)) {
                                     // yes, so use it
-                                    _select_hex_basis_vectors (i, vneighb_vectors_per_vertex[j][0], nrm);
+                                    _select_hex_basis_vectors (i, std::get<vec<F>>(vneighb_vectors_per_vertex[id][0]), nrm);
                                 } // else loop to next j
                             }
                         }

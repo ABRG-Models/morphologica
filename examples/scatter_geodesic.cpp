@@ -15,6 +15,7 @@
 #include <fstream>
 #include <cmath>
 #include <array>
+#include <tuple>
 
 int main()
 {
@@ -34,8 +35,20 @@ int main()
     morph::vvec<morph::vec<float, 3>> fcentres = geo.poly.get_face_centres();
 
     // Compute neighbour vectors from neighbour indices
-    //morph::vvec<morph::vvec<morph::vec<float, 3>>> vneighb_vertices = geo.poly.get_neighbour_vectors();
-    morph::vvec<morph::vvec<morph::vec<float, 3>>> vneighb_vertices = geo.get_neighbour_hexdir_vectors();
+    morph::vvec<morph::vvec<std::tuple<morph::vec<float, 3>, int>>> vneighb_vertices_with_indices = geo.get_neighbour_hexdir_vectors();
+
+    // The tuples can't be passed directly to QuiverVisual
+    morph::vvec<morph::vvec<morph::vec<float, 3>>> vneighb_vertices (vneighb_vertices_with_indices.size());
+    for (unsigned int i = 0; i < vneighb_vertices_with_indices.size(); ++i) {
+        vneighb_vertices[i].resize (3);
+        // Debug/verify the neighbour *vertex indices* with these std::couts:
+        //std::cout << "Vertex " << i << " has RGB neighbour indices: ";
+        for (unsigned int j = 0; j < 3; ++j) {
+            //std::cout << std::get<int>(vneighb_vertices_with_indices[i][j]) << ",";
+            vneighb_vertices[i][j] = std::get<morph::vec<float, 3>>(vneighb_vertices_with_indices[i][j]);
+        }
+        //std::cout << std::endl;
+    }
 
     // Control what's shown
     constexpr bool show_vertices = true;
