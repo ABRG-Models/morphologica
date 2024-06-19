@@ -137,10 +137,11 @@ namespace morph {
          * Construct a new visualiser. The rule is 1 window to one Visual object. So, this creates a
          * new window and a new OpenGL context.
          */
-        Visual (int width, int height, const std::string& _title)
+        Visual (int width, int height, const std::string& _title, const bool _version_stdout = true)
             : window_w(width)
             , window_h(height)
             , title(_title)
+            , version_stdout(_version_stdout)
         {
             this->init_resources();
             this->init_gl();
@@ -152,10 +153,11 @@ namespace morph {
          */
         Visual (int width, int height, const std::string& _title,
                 const morph::vec<float, 2> caOffset, const morph::vec<float, 3> caLength,
-                const float caThickness, const float caEm)
+                const float caThickness, const float caEm, const bool _version_stdout = true)
             : window_w(width)
             , window_h(height)
             , title(_title)
+            , version_stdout(_version_stdout)
             , coordArrowsOffset(caOffset)
             , coordArrowsLength(caLength)
             , coordArrowsThickness(caThickness)
@@ -237,7 +239,7 @@ namespace morph {
             }
             unsigned int error = lodepng::encode (img_filename, rbits.get(), w, h);
             if (error) {
-                std::cout << "encoder error " << error << ": " << lodepng_error_text (error) << std::endl;
+                std::cerr << "encoder error " << error << ": " << lodepng_error_text (error) << std::endl;
             }
         }
 
@@ -674,6 +676,9 @@ namespace morph {
         //! Set to true to show the title text within the scene
         bool showTitle = false;
 
+        //! If true, output some user information to stdout (e.g. user requested quit)
+        bool user_info_stdout = true;
+
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1f;
 
@@ -705,7 +710,7 @@ namespace morph {
         void setZDefault (float f)
         {
             if (f > 0.0f) {
-                std::cout << "WARNING setZDefault(): Normally, the default z value is negative.\n";
+                std::cerr << "WARNING setZDefault(): Normally, the default z value is negative.\n";
             }
             this->zDefault = f;
         }
@@ -727,7 +732,7 @@ namespace morph {
         void setSceneTransZ (float _z)
         {
             if (_z > 0.0f) {
-                std::cout << "WARNING setSceneTransZ(): Normally, the default z value is negative.\n";
+                std::cerr << "WARNING setSceneTransZ(): Normally, the default z value is negative.\n";
             }
             this->setZDefault (_z);
             this->scenetrans[2] = _z;
@@ -736,7 +741,7 @@ namespace morph {
         void setSceneTrans (float _x, float _y, float _z)
         {
             if (_z>0.0f) {
-                std::cout << "WARNING setSceneTrans(): Normally, the default z value is negative.\n";
+                std::cerr << "WARNING setSceneTrans(): Normally, the default z value is negative.\n";
             }
             this->scenetrans[0] = _x;
             this->scenetrans_default[0] = _x;
@@ -749,7 +754,7 @@ namespace morph {
         void setSceneTrans (const morph::vec<float, 3>& _xyz)
         {
             if (_xyz[2] > 0.0f) {
-                std::cout << "WARNING setSceneTrans(vec<>&): Normally, the default z value is negative.\n";
+                std::cerr << "WARNING setSceneTrans(vec<>&): Normally, the default z value is negative.\n";
             }
             this->setZDefault (_xyz[2]);
             this->scenetrans = _xyz;
@@ -948,11 +953,12 @@ namespace morph {
                 std::cerr << "GLEW initialization failed!" << glewGetErrorString(err) << std::endl;
             }
 #endif
-
-            unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
-            std::cout << "This is version " << morph::version_string()
-                      << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)
-                      << "> running on OpenGL Version " << glv << std::endl;
+            if (this->version_stdout == true) {
+                unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
+                std::cout << "This is version " << morph::version_string()
+                          << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)
+                          << "> running on OpenGL Version " << glv << std::endl;
+            }
 
 #ifndef OWNED_MODE
             // Swap as fast as possible (fixes lag of scene with mouse movements)
@@ -1038,6 +1044,10 @@ namespace morph {
 
         //! The title for the Visual. Used in window title and if saving out 3D model or png image.
         std::string title = "morph::Visual";
+
+        //! If true, output some version information (morphologica version, OpenGL version) to
+        //! stdout. Private as this has no effect after init()
+        bool version_stdout = true;
 
         //! The user's 'selected visual model'. For model specific changes to alpha and possibly colour
         unsigned int selectedVisualModel = 0u;
@@ -1530,7 +1540,7 @@ namespace morph {
             if (this->preventWindowCloseWithButton == false) {
                 this->signal_to_quit();
             } else {
-                std::cout << "Ignoring user request to exit (Visual::preventWindowCloseWithButton)\n";
+                std::cerr << "Ignoring user request to exit (Visual::preventWindowCloseWithButton)\n";
             }
         }
 
@@ -1586,7 +1596,7 @@ namespace morph {
         //! and calls an external callback function that you may have set up.
         void signal_to_quit()
         {
-            std::cout << "User requested exit.\n";
+            if (this->user_info_stdout == true) { std::cout << "User requested exit.\n"; }
             // 1. Set our 'readyToFinish' flag to true
             this->readyToFinish = true;
             // 2. Call any external callback that's been set by client code
