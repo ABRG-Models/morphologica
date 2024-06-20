@@ -805,9 +805,35 @@ namespace morph {
                                                        const morph::vec<float, 2> c = {0.0f, 0.0f})
         {
             std::vector<morph::BezCoord<float>> bpoints;
-            std::stringstream ss;
-            ss << "HexGrid::rectangleCompute: Implement me for x: " << x << ", y: " << y << " and c=" << c;
-            throw std::runtime_error (ss.str());
+
+            // Go to bottom left first
+            morph::vec<float, 2> bleft = {-0.5f * x, -0.5f * y};
+            morph::vec<float, 2> tright = {0.5f * x, 0.5f * y};
+            bleft += c;
+            tright += c;
+
+            // 'Draw' bottom, a distance x. Divide up into about this->d/2 steps
+            float step = 0.5f * this->d;
+            for (float x1 = bleft[0]; x1 < tright[0]; x1 += step) {
+                morph::BezCoord<float> b(morph::vec<float, 2>{x1, bleft[1]});
+                bpoints.push_back (b);
+            }
+            // Right
+            for (float y1 = bleft[1]; y1 < tright[1]; y1 += step) {
+                morph::BezCoord<float> b(morph::vec<float, 2>{tright[0], y1});
+                bpoints.push_back (b);
+            }
+            // Top
+            for (float x1 = tright[0]; x1 >= bleft[0]; x1 -= step) {
+                morph::BezCoord<float> b(morph::vec<float, 2>{x1, tright[1]});
+                bpoints.push_back (b);
+            }
+            // Left
+            for (float y1 = tright[1]; y1 >= bleft[1]; y1 -= step) {
+                morph::BezCoord<float> b(morph::vec<float, 2>{bleft[0], y1});
+                bpoints.push_back (b);
+            }
+
             return bpoints;
         }
 
