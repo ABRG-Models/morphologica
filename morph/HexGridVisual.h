@@ -155,7 +155,16 @@ namespace morph {
 
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 std::array<float, 3> clr = this->setColour (hi);
-                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*dcopy[hi], this->vertexPositions);
+                // If dataCoords has been populated, use these for hex positions, allowing for
+                // mapping of the 2D HexGrid onto a 3D manifold.
+                if (this->dataCoords == nullptr) {
+                    this->vertex_push (this->zoom*this->hg->d_x[hi],
+                                       this->zoom*this->hg->d_y[hi],
+                                       this->zoom*dcopy[hi], this->vertexPositions);
+
+                } else { // Otherwise use the positions directly in the HexGrid:
+                    this->vertex_push ((*this->dataCoords)[hi], this->vertexPositions);
+                }
                 if (this->markedHexes.count(hi)) {
                     this->vertex_push (blkclr, this->vertexColors);
                 } else {
@@ -207,6 +216,8 @@ namespace morph {
         // Compute vertices for the patchwork quilt of hexes
         void computeHexes()
         {
+            // Here's a complication. In a transformed grid, we can't rely on these. Should be able
+            // to *compute* them though.
             float sr = this->hg->getSR();
             float vne = this->hg->getVtoNE();
             float lr = this->hg->getLR();
@@ -224,6 +235,9 @@ namespace morph {
                 this->colourScale.transform (*(this->scalarData), dcolour);
             }
 
+            // x and y coords on the HexGrid. May be replaced if dataCoords has been set.
+            float _x = 0.0f;
+            float _y = 0.0f;
             // These Ts are all floats, right?
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
@@ -236,17 +250,50 @@ namespace morph {
             float datum = 0.0f;
             float third = 0.3333333f;
             float half = 0.5f;
-            morph::vec<float> vtx_0, vtx_1, vtx_2;
+            morph::vec<float> vtx_0, vtx_1, vtx_2, vtx_tmp;
+
+            morph::vec<float> coordC = { 0.0f, 0.0f, 0.0f };
+            morph::vec<float> coordNE = coordC;
+            morph::vec<float> coordNNE = coordC;
+            morph::vec<float> coordNNW = coordC;
+            morph::vec<float> coordNW = coordC;
+            morph::vec<float> coordNSW = coordC;
+            morph::vec<float> coordNSE = coordC;
+
             for (unsigned int hi = 0; hi < nhex; ++hi) {
 
-                // Use the linear scaled copy of the data, dcopy.
-                datumC   = dcopy[hi];
-                datumNE  = HAS_NE(hi)  ? dcopy[NE(hi)]  : datumC; // datum Neighbour East
-                datumNNE = HAS_NNE(hi) ? dcopy[NNE(hi)] : datumC; // datum Neighbour North East
-                datumNNW = HAS_NNW(hi) ? dcopy[NNW(hi)] : datumC; // etc
-                datumNW  = HAS_NW(hi)  ? dcopy[NW(hi)]  : datumC;
-                datumNSW = HAS_NSW(hi) ? dcopy[NSW(hi)] : datumC;
-                datumNSE = HAS_NSE(hi) ? dcopy[NSE(hi)] : datumC;
+                if (this->dataCoords == nullptr) {
+                    _x = this->hg->d_x[hi];
+                    _y = this->hg->d_y[hi];
+                    // Use the linear scaled copy of the data, dcopy.
+                    datumC   = dcopy[hi]; // '_z'
+                    datumNE  = HAS_NE(hi)  ? dcopy[NE(hi)]  : datumC; // datum Neighbour East
+                    datumNNE = HAS_NNE(hi) ? dcopy[NNE(hi)] : datumC; // datum Neighbour North East
+                    datumNNW = HAS_NNW(hi) ? dcopy[NNW(hi)] : datumC; // etc
+                    datumNW  = HAS_NW(hi)  ? dcopy[NW(hi)]  : datumC;
+                    datumNSW = HAS_NSW(hi) ? dcopy[NSW(hi)] : datumC;
+                    datumNSE = HAS_NSE(hi) ? dcopy[NSE(hi)] : datumC;
+                } else {
+                    // Get coordinates from dataCoords
+                    _x = (*this->dataCoords)[hi][0];
+                    _y = (*this->dataCoords)[hi][1];
+                    datumC = (*this->dataCoords)[hi][2];
+                    coordC = (*this->dataCoords)[hi];
+
+                    coordNE  = HAS_NE(hi)  ? (*this->dataCoords)[NE(hi)]  : (*this->dataCoords)[hi]; // datum Neighbour East
+                    coordNNE = HAS_NNE(hi) ? (*this->dataCoords)[NNE(hi)] : (*this->dataCoords)[hi]; // datum Neighbour North East
+                    coordNNW = HAS_NNW(hi) ? (*this->dataCoords)[NNW(hi)] : (*this->dataCoords)[hi]; // etc
+                    coordNW  = HAS_NW(hi)  ? (*this->dataCoords)[NW(hi)]  : (*this->dataCoords)[hi];
+                    coordNSW = HAS_NSW(hi) ? (*this->dataCoords)[NSW(hi)] : (*this->dataCoords)[hi];
+                    coordNSE = HAS_NSE(hi) ? (*this->dataCoords)[NSE(hi)] : (*this->dataCoords)[hi];
+
+                    datumNE = coordNE[2];
+                    datumNNE = coordNNE[2];
+                    datumNNW = coordNNW[2];
+                    datumNW = coordNW[2];
+                    datumNSW = coordNSW[2];
+                    datumNSE = coordNSE[2];
+                }
 
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
@@ -254,103 +301,195 @@ namespace morph {
                 if (this->showboundary && (this->hg->vhexen[hi])->boundaryHex() == true) {
                     this->markHex (hi);
                 }
-                if (this->showcentre && this->hg->d_x[hi] == 0.0f && this->hg->d_y[hi] == 0.0f) {
+                if (this->showcentre && _x == 0.0f && _y == 0.0f) {
                     this->markHex (hi);
                 }
                 std::array<float, 3> blkclr = {0,0,0};
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
-                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*datumC, this->vertexPositions);
 
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*datumC}};
+                vtx_0 = this->dataCoords == nullptr ? morph::vec<float>{ _x, _y, datumC } : coordC;
+                this->vertex_push (this->zoom * vtx_0, this->vertexPositions);
 
                 // NE vertex
-                if (HAS_NNE(hi) && HAS_NE(hi)) {
-                    // Compute mean of this->data[hi] and NE and E hexes
-                    datum = third * (datumC + datumNNE + datumNE);
-                } else if (HAS_NNE(hi) || HAS_NE(hi)) {
-                    if (HAS_NNE(hi)) {
-                        datum = half * (datumC + datumNNE);
+                if (this->dataCoords == nullptr) {
+                    if (HAS_NNE(hi) && HAS_NE(hi)) {
+                        // Compute mean of this->data[hi] and NE and E hexes
+                        datum = third * (datumC + datumNNE + datumNE);
+                    } else if (HAS_NNE(hi) || HAS_NE(hi)) {
+                        if (HAS_NNE(hi)) {
+                            datum = half * (datumC + datumNNE);
+                        } else {
+                            datum = half * (datumC + datumNE);
+                        }
                     } else {
-                        datum = half * (datumC + datumNE);
+                        datum = datumC;
                     }
+                    vtx_1 = { (_x+sr), (_y+vne), datum };
                 } else {
-                    datum = datumC;
+                    // Similar logic, but for the coordinate, not just the data value
+                    if (HAS_NNE(hi) && HAS_NE(hi)) {
+                        // Compute mean of coordC and NE and E hexes
+                        vtx_1 = third * (coordC + coordNNE + coordNE);
+                    } else if (HAS_NNE(hi) || HAS_NE(hi)) {
+                        if (HAS_NNE(hi)) {
+                            vtx_1 = half * (coordC + coordNNE);
+                        } else {
+                            vtx_1 = half * (coordC + coordNE);
+                        }
+                    } else {
+                        vtx_1 = coordC;
+                    }
                 }
-                this->vertex_push (this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]+vne), this->zoom*datum, this->vertexPositions);
-                vtx_1 = {{this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]+vne), datum}};
+                this->vertex_push (this->zoom * vtx_1, this->vertexPositions);
+
 
                 // SE vertex
-                if (HAS_NE(hi) && HAS_NSE(hi)) {
-                    datum = third * (datumC + datumNE + datumNSE);
-                } else if (HAS_NE(hi) || HAS_NSE(hi)) {
-                    if (HAS_NE(hi)) {
-                        datum = half * (datumC + datumNE);
+                if (this->dataCoords == nullptr) {
+                    if (HAS_NE(hi) && HAS_NSE(hi)) {
+                        datum = third * (datumC + datumNE + datumNSE);
+                    } else if (HAS_NE(hi) || HAS_NSE(hi)) {
+                        if (HAS_NE(hi)) {
+                            datum = half * (datumC + datumNE);
+                        } else {
+                            datum = half * (datumC + datumNSE);
+                        }
                     } else {
-                        datum = half * (datumC + datumNSE);
+                        datum = datumC;
                     }
+                    vtx_2 = { (_x+sr), (_y-vne), datum };
                 } else {
-                    datum = datumC;
+                    if (HAS_NE(hi) && HAS_NSE(hi)) {
+                        vtx_2 = third * (coordC + coordNE + coordNSE);
+                    } else if (HAS_NE(hi) || HAS_NSE(hi)) {
+                        if (HAS_NE(hi)) {
+                            vtx_2 = half * (coordC + coordNE);
+                        } else {
+                            vtx_2 = half * (coordC + coordNSE);
+                        }
+                    } else {
+                        vtx_2 = coordC;
+                    }
                 }
-                this->vertex_push (this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum, this->vertexPositions);
-                vtx_2 = {{this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum}};
+                this->vertex_push (this->zoom * vtx_2, this->vertexPositions);
+
 
                 // S
-                if (HAS_NSE(hi) && HAS_NSW(hi)) {
-                    datum = third * (datumC + datumNSE + datumNSW);
-                } else if (HAS_NSE(hi) || HAS_NSW(hi)) {
-                    if (HAS_NSE(hi)) {
-                        datum = half * (datumC + datumNSE);
+                if (this->dataCoords == nullptr) {
+                    if (HAS_NSE(hi) && HAS_NSW(hi)) {
+                        datum = third * (datumC + datumNSE + datumNSW);
+                    } else if (HAS_NSE(hi) || HAS_NSW(hi)) {
+                        if (HAS_NSE(hi)) {
+                            datum = half * (datumC + datumNSE);
+                        } else {
+                            datum = half * (datumC + datumNSW);
+                        }
                     } else {
-                        datum = half * (datumC + datumNSW);
+                        datum = datumC;
                     }
+                    vtx_tmp = { _x, (_y-lr), datum };
                 } else {
-                    datum = datumC;
+                    if (HAS_NSE(hi) && HAS_NSW(hi)) {
+                        vtx_tmp = third * (coordC + coordNSE + coordNSW);
+                    } else if (HAS_NSE(hi) || HAS_NSW(hi)) {
+                        if (HAS_NSE(hi)) {
+                            vtx_tmp = half * (coordC + coordNSE);
+                        } else {
+                            vtx_tmp = half * (coordC + coordNSW);
+                        }
+                    } else {
+                        vtx_tmp = coordC;
+                    }
                 }
-                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*(this->hg->d_y[hi]-lr), this->zoom*datum, this->vertexPositions);
+                this->vertex_push (this->zoom * vtx_tmp, this->vertexPositions);
 
                 // SW
-                if (HAS_NW(hi) && HAS_NSW(hi)) {
-                    datum = third * (datumC + datumNW + datumNSW);
-                } else if (HAS_NW(hi) || HAS_NSW(hi)) {
-                    if (HAS_NW(hi)) {
-                        datum = half * (datumC + datumNW);
+                if (this->dataCoords == nullptr) {
+                    if (HAS_NW(hi) && HAS_NSW(hi)) {
+                        datum = third * (datumC + datumNW + datumNSW);
+                    } else if (HAS_NW(hi) || HAS_NSW(hi)) {
+                        if (HAS_NW(hi)) {
+                            datum = half * (datumC + datumNW);
+                        } else {
+                            datum = half * (datumC + datumNSW);
+                        }
                     } else {
-                        datum = half * (datumC + datumNSW);
+                        datum = datumC;
                     }
+                    vtx_tmp = { (_x-sr), (_y-vne), datum };
                 } else {
-                    datum = datumC;
+                    if (HAS_NW(hi) && HAS_NSW(hi)) {
+                        vtx_tmp = third * (coordC + coordNW + coordNSW);
+                    } else if (HAS_NW(hi) || HAS_NSW(hi)) {
+                        if (HAS_NW(hi)) {
+                            vtx_tmp = half * (coordC + coordNW);
+                        } else {
+                            vtx_tmp = half * (coordC + coordNSW);
+                        }
+                    } else {
+                        vtx_tmp = coordC;
+                    }
                 }
-                this->vertex_push (this->zoom*(this->hg->d_x[hi]-sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum, this->vertexPositions);
+                this->vertex_push (this->zoom * vtx_tmp, this->vertexPositions);
 
                 // NW
-                if (HAS_NNW(hi) && HAS_NW(hi)) {
-                    datum = third * (datumC + datumNNW + datumNW);
-                } else if (HAS_NNW(hi) || HAS_NW(hi)) {
-                    if (HAS_NNW(hi)) {
-                        datum = half * (datumC + datumNNW);
+                if (this->dataCoords == nullptr) {
+                    if (HAS_NNW(hi) && HAS_NW(hi)) {
+                        datum = third * (datumC + datumNNW + datumNW);
+                    } else if (HAS_NNW(hi) || HAS_NW(hi)) {
+                        if (HAS_NNW(hi)) {
+                            datum = half * (datumC + datumNNW);
+                        } else {
+                            datum = half * (datumC + datumNW);
+                        }
                     } else {
-                        datum = half * (datumC + datumNW);
+                        datum = datumC;
                     }
+                    vtx_tmp = { (_x-sr), (_y+vne), datum };
                 } else {
-                    datum = datumC;
+                    if (HAS_NNW(hi) && HAS_NW(hi)) {
+                        vtx_tmp = third * (coordC + coordNNW + coordNW);
+                    } else if (HAS_NNW(hi) || HAS_NW(hi)) {
+                        if (HAS_NNW(hi)) {
+                            vtx_tmp = half * (coordC + coordNNW);
+                        } else {
+                            vtx_tmp = half * (coordC + coordNW);
+                        }
+                    } else {
+                        vtx_tmp = coordC;
+                    }
                 }
-                this->vertex_push (this->zoom*(this->hg->d_x[hi]-sr), this->zoom*(this->hg->d_y[hi]+vne), this->zoom*datum, this->vertexPositions);
+                this->vertex_push (this->zoom * vtx_tmp, this->vertexPositions);
 
                 // N
-                if (HAS_NNW(hi) && HAS_NNE(hi)) {
-                    datum = third * (datumC + datumNNW + datumNNE);
-                } else if (HAS_NNW(hi) || HAS_NNE(hi)) {
-                    if (HAS_NNW(hi)) {
-                        datum = half * (datumC + datumNNW);
+                if (this->dataCoords == nullptr) {
+                    if (HAS_NNW(hi) && HAS_NNE(hi)) {
+                        datum = third * (datumC + datumNNW + datumNNE);
+                    } else if (HAS_NNW(hi) || HAS_NNE(hi)) {
+                        if (HAS_NNW(hi)) {
+                            datum = half * (datumC + datumNNW);
+                        } else {
+                            datum = half * (datumC + datumNNE);
+                        }
                     } else {
-                        datum = half * (datumC + datumNNE);
+                        datum = datumC;
                     }
+                    vtx_tmp = { _x, (_y+lr), datum };
                 } else {
-                    datum = datumC;
+                    if (HAS_NNW(hi) && HAS_NNE(hi)) {
+                        vtx_tmp = third * (coordC + coordNNW + coordNNE);
+                    } else if (HAS_NNW(hi) || HAS_NNE(hi)) {
+                        if (HAS_NNW(hi)) {
+                            vtx_tmp = half * (coordC + coordNNW);
+                        } else {
+                            vtx_tmp = half * (coordC + coordNNE);
+                        }
+                    } else {
+                        vtx_tmp = coordC;
+                    }
                 }
-                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*(this->hg->d_y[hi]+lr), this->zoom*datum, this->vertexPositions);
+                this->vertex_push (this->zoom * vtx_tmp, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
@@ -963,7 +1102,7 @@ namespace morph {
        }
 
         //! Initialize as hexes, with a step quad between each
-        //! hex. Might look cool. Writeme.
+        //! hex. Might look cool. Writeme. Have this for morph::GridVisual.
         void initializeVerticesHexesStepped() {}
 
         //! How to render the hexes. Triangles are faster, HexInterp allows you to see

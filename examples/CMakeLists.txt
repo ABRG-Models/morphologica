@@ -463,6 +463,14 @@ if(USE_GLEW)
 endif()
 endif()
 
+if(NOT APPLE)
+add_executable(hexgrid_image_onsphere hexgrid_image_onsphere.cpp)
+target_link_libraries(hexgrid_image_onsphere OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(hexgrid_image_onsphere GLEW::GLEW)
+endif()
+endif()
+
 add_executable(scale scale.cpp)
 
 add_executable(vvec vvec.cpp)
