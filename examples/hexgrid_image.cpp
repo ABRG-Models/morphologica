@@ -22,9 +22,8 @@ int main()
     morph::HexGrid hg(0.01f, 3.0f, 0.0f);
     hg.setCircularBoundary (1.2f);
 
-    // Load an image with the help of OpenCV.
+    // Load an image with the help of morph::loadpng().
     std::string fn = "../examples/bike256.png";
-
     morph::vvec<float> image_data;
     morph::vec<unsigned int, 2> dims = morph::loadpng (fn, image_data);
 
