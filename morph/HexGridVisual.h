@@ -132,8 +132,6 @@ namespace morph {
             }
         }
 
-        unsigned int idx = 0;
-
         // Initialize vertex buffer objects and vertex array object.
 
         //! Initialize as triangled. Gives a smooth surface with much
