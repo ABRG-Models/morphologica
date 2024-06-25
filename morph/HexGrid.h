@@ -1459,9 +1459,14 @@ namespace morph {
         {
             unsigned int csz = image_data.size();
             morph::vec<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
-            // distance per pixel in the image. This defines the Gaussian width (sigma) for the resample:
-            morph::vec<float, 2> dist_per_pix = image_scale / (image_pixelsz-1);
-            morph::vec<float, 2> half_scale = image_scale * 0.5f;
+
+            // Distance per pixel in the image. This defines the Gaussian width (sigma) for the
+            // resample. Assume that the unscaled image pixels are square. Use the image width to
+            // set the distance per pixel (hence divide by image_scale by image_pixelsz[*0*]).
+            morph::vec<float, 2> dist_per_pix = image_scale / (image_pixelsz[0]-1u);
+            // This is an offset to centre the image wrt to the HexGrid
+            morph::vec<float, 2> input_centering_offset = dist_per_pix * image_pixelsz * 0.5f;
+            // Parameters for the Gaussian computation
             morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
             morph::vec<float, 2> threesig = 3.0f * dist_per_pix;
 
@@ -1472,9 +1477,9 @@ namespace morph {
 //#pragma omp parallel for reduction(+:expr)
                 for (unsigned int i = 0; i < csz; ++i) {
                     // Get x/y pixel coords:
-                    morph::vec<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[1]))};
-                    // Get the coordinates of the pixel at index i:
-                    morph::vec<float, 2> posn = (dist_per_pix * idx) - half_scale + image_offset;
+                    morph::vec<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[0]))};
+                    // Get the coordinates of the pixel at index i (in HexGrid units):
+                    morph::vec<float, 2> posn = (dist_per_pix * idx) - input_centering_offset + image_offset;
                     // Distance from input pixel to output hex:
                     float _d_x = this->d_x[xi] - posn[0];
                     float _d_y = this->d_y[xi] - posn[1];

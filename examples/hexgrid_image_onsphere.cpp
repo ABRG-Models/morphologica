@@ -63,7 +63,7 @@ int main()
     morph::vec<float,2> image_offset = {0.0f, 0.0f};
 
     // Here's the HexGrid method that will resample the square pixel grid onto the hex grid
-    morph::vvec<float> hex_image_data = hg.resampleImage (image_data, dims[1], image_scale, image_offset);
+    morph::vvec<float> hex_image_data = hg.resampleImage (image_data, dims[0], image_scale, image_offset);
 
     // hg has d_x and d_y. Can make up a new container of 3D locations for each hex.
     morph::vvec<morph::vec<float, 3>> sphere_coords(hg.num());
