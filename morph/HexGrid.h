@@ -1461,11 +1461,9 @@ namespace morph {
             morph::vec<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
 
             // Distance per pixel in the image. This defines the Gaussian width (sigma) for the
-            // resample: Assume that the unscaled image pixels are square. Use the image width to
-            // set the distance per pixel.
-            morph::vec<float, 2> dist_per_pix;
-            dist_per_pix.set_from (image_scale[0] / (image_pixelsz[0]-1u));
-            dist_per_pix[1] *= (image_scale[1] / image_scale[0]); // Apply additional scaling to y axis
+            // resample. Assume that the unscaled image pixels are square. Use the image width to
+            // set the distance per pixel (hence divide by image_scale by image_pixelsz[*0*]).
+            morph::vec<float, 2> dist_per_pix = image_scale / (image_pixelsz[0]-1u);
             // This is an offset to centre the image wrt to the HexGrid
             morph::vec<float, 2> input_centering_offset = dist_per_pix * image_pixelsz * 0.5f;
             // Parameters for the Gaussian computation
