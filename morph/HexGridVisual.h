@@ -69,6 +69,8 @@ namespace morph {
             this->viewmatrix.translate (this->mv_offset);
             this->zScale.setParams (1, 0);
             this->colourScale.do_autoscale = true;
+            this->colourScale2.do_autoscale = true;
+            this->colourScale3.do_autoscale = true;
             this->hg = _hg;
         }
 
@@ -79,7 +81,10 @@ namespace morph {
         //! something, so that it is visible.
         void markHex (unsigned int hi) { this->markedHexes.insert(hi); }
 
+        //! The length of the data structure that will be visualized. May be length of
+        //! this->scalarData or of this->vectorData.
         unsigned int datasize = 0;
+
         //! Find datasize
         void set_datasize()
         {
@@ -89,6 +94,47 @@ namespace morph {
             } else if (this->scalarData != nullptr && !this->scalarData->empty()) {
                 this->datasize = this->scalarData->size();
             } // else datasize remains 0
+        }
+
+        // Common function for setting up the z and colour scaling
+        void setupScaling()
+        {
+            this->dcopy.resize (this->datasize, 0);
+            this->dcolour.resize (this->datasize);
+
+            if (this->scalarData != nullptr) {
+                // What do these scaling operations do to any NaNs in scalarData? They should remain
+                // NaN. Then in dcopy, might want to make them 0.
+                this->zScale.transform (*(this->scalarData), this->dcopy);
+                dcopy.replace_nan_with (this->zScale.transform_one(0.0f));
+                this->colourScale.transform (*(this->scalarData), this->dcolour);
+
+            } else if (this->vectorData != nullptr) {
+
+                this->dcolour2.resize (this->datasize);
+                this->dcolour3.resize (this->datasize);
+                std::vector<float> veclens(this->dcopy);
+                for (unsigned int i = 0; i < this->datasize; ++i) {
+                    veclens[i] = (*this->vectorData)[i].length();
+                    this->dcolour[i] = (*this->vectorData)[i][0];
+                    this->dcolour2[i] = (*this->vectorData)[i][1];
+                    // Could also extract a third colour for Trichrome vs Duochrome (or for raw RGB signal)
+                    this->dcolour3[i] = (*this->vectorData)[i][2];
+                }
+                this->zScale.transform (veclens, this->dcopy);
+
+                // Handle case where this->cm.getType() == morph::ColourMapType::RGB and there is
+                // exactly one colour. ColourMapType::RGB assumes R/G/B data all in range 0->1
+                // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
+                if (this->cm.getType() != morph::ColourMapType::RGB) {
+                    this->colourScale.transform (this->dcolour, this->dcolour);
+                    // Dual axis colour maps like Duochrome and HSV will need to use colourScale2 to
+                    // transform their second colour/axis,
+                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
+                    // Similarly for Triple axis maps
+                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
+                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
+            }
         }
 
         //! Zoom factor
@@ -140,14 +186,7 @@ namespace morph {
         {
             unsigned int nhex = this->hg->num();
 
-            this->dcopy.resize (this->datasize, 0);
-            this->dcolour.resize (this->datasize);
-
-            // zScale and colourScale transform only for scalarData
-            if (this->scalarData != nullptr) {
-                this->zScale.transform (*(this->scalarData), dcopy);
-                this->colourScale.transform (*(this->scalarData), dcolour);
-            }
+            this->setupScaling();
 
             std::array<float, 3> blkclr = {0,0,0};
 
@@ -222,16 +261,7 @@ namespace morph {
 
             unsigned int nhex = this->hg->num();
 
-            this->dcopy.resize (this->datasize, 0);
-            this->dcolour.resize (this->datasize);
-
-            if (this->scalarData != nullptr) {
-                // What do these scaling operations do to any NaNs in scalarData? They should remain
-                // NaN. Then in dcopy, might want to make them 0.
-                this->zScale.transform (*(this->scalarData), dcopy);
-                dcopy.replace_nan_with (this->zScale.transform_one(0.0f));
-                this->colourScale.transform (*(this->scalarData), dcolour);
-            }
+            this->setupScaling();
 
             // x and y coords on the HexGrid. May be replaced if dataCoords has been set.
             float _x = 0.0f;
@@ -1111,19 +1141,18 @@ namespace morph {
         //! An overridable function to set the colour of hex hi
         virtual std::array<float, 3> setColour (unsigned int hi)
         {
-            std::array<float, 3> clr = {0,0,0};
-            // If vectorData has been set, then use it for the colours; otherwise,
-            // convert this->dcolour using the current colour map.
-            if (this->vectorData != nullptr && !this->vectorData->empty()) {
-                // May need to cast vectorData vec<T,3> to std::array<float, 3>
-                if constexpr (std::is_same<std::decay_t<T>, float>::value == true) { // "if T is float"
-                    clr = (*this->vectorData)[hi];
+            std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
+            if (this->cm.numDatums() == 3) {
+                //if constexpr (std::is_same<std::decay_t<T>, unsigned char>::value == true) {
+                if constexpr (std::is_integral<std::decay_t<T>>::value) {
+                    // Differs from above as we divide by 255 to get value in range 0-1
+                    clr = this->cm.convert (this->dcolour[hi]/255.0f, this->dcolour2[hi]/255.0f, this->dcolour3[hi]/255.0f);
                 } else {
-                    // Need to cast:
-                    for (unsigned int i = 0u; i < 3u; ++i) {
-                        clr[i] = static_cast<float>((*this->vectorData)[hi][i]);
-                    }
+                    clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi], this->dcolour3[hi]);
                 }
+            } else if (this->cm.numDatums() == 2) {
+                // Use vectorData
+                clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi]);
             } else {
                 clr = this->cm.convert (this->dcolour[hi]);
             }
@@ -1137,6 +1166,8 @@ namespace morph {
         morph::vvec<float> dcopy;
         //! A copy of the scalarData, scaled to be a colour value
         std::vector<float> dcolour;
+        std::vector<float> dcolour2;
+        std::vector<float> dcolour3;
     };
 
     //! Extended HexGridVisual class for plotting with individual red, green and blue
