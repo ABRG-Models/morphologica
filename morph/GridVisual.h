@@ -42,6 +42,42 @@ namespace morph {
             // Note: VisualModel::finalize() should be called before rendering
         }
 
+        void setupScaling()
+        {
+            if (this->scalarData != nullptr) {
+                this->dcopy.resize (this->scalarData->size());
+                this->zScale.transform (*(this->scalarData), dcopy);
+                this->dcolour.resize (this->scalarData->size());
+                this->colourScale.transform (*(this->scalarData), dcolour);
+            } else if (this->vectorData != nullptr) {
+                this->dcopy.resize (this->vectorData->size());
+                this->dcolour.resize (this->vectorData->size());
+                this->dcolour2.resize (this->vectorData->size());
+                this->dcolour3.resize (this->vectorData->size());
+                std::vector<float> veclens(dcopy);
+                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                    veclens[i] = (*this->vectorData)[i].length();
+                    this->dcolour[i] = (*this->vectorData)[i][0];
+                    this->dcolour2[i] = (*this->vectorData)[i][1];
+                    // Could also extract a third colour for Trichrome vs Duochrome (or for raw RGB signal)
+                    this->dcolour3[i] = (*this->vectorData)[i][2];
+                }
+                this->zScale.transform (veclens, this->dcopy);
+
+                // Handle case where this->cm.getType() == morph::ColourMapType::RGB and there is
+                // exactly one colour. ColourMapType::RGB assumes R/G/B data all in range 0->1
+                // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
+                if (this->cm.getType() != morph::ColourMapType::RGB) {
+                    this->colourScale.transform (this->dcolour, this->dcolour);
+                    // Dual axis colour maps like Duochrome and HSV will need to use colourScale2 to
+                    // transform their second colour/axis,
+                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
+                    // Similarly for Triple axis maps
+                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
+                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
+            }
+        }
+
         //! Do the computations to initialize the vertices that will represent the HexGrid.
         virtual void initializeVertices()
         {
@@ -100,32 +136,7 @@ namespace morph {
         void initializeVerticesTris()
         {
             this->idx = 0;
-
-            if (this->scalarData != nullptr) {
-                this->dcopy.resize (this->scalarData->size());
-                this->zScale.transform (*(this->scalarData), dcopy);
-                this->dcolour.resize (this->scalarData->size());
-                this->colourScale.transform (*(this->scalarData), dcolour);
-            } else if (this->vectorData != nullptr) {
-                this->dcopy.resize (this->vectorData->size());
-                this->dcolour.resize (this->vectorData->size());
-                this->dcolour2.resize (this->vectorData->size());
-                this->dcolour3.resize (this->vectorData->size());
-                std::vector<float> veclens(dcopy);
-                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
-                    veclens[i] = (*this->vectorData)[i].length();
-                    this->dcolour[i] = (*this->vectorData)[i][0];
-                    this->dcolour2[i] = (*this->vectorData)[i][1];
-                    // Could also extract a third colour for Trichrome vs Duochrome
-                    this->dcolour3[i] = (*this->vectorData)[i][2];
-                }
-                this->zScale.transform (veclens, this->dcopy);
-                if (this->cm.getType() != morph::ColourMapType::RGB) {
-                    this->colourScale.transform (this->dcolour, this->dcolour);
-                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
-                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
-                }
-            }
+            this->setupScaling();
 
             for (I ri = 0; ri < this->grid->n; ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
@@ -211,39 +222,8 @@ namespace morph {
             float vy = 0.5f * dx[1];
 
             this->idx = 0;
+            this->setupScaling();
 
-            if (this->scalarData != nullptr) {
-                this->dcopy.resize (this->scalarData->size());
-                this->zScale.transform (*(this->scalarData), dcopy);
-                this->dcolour.resize (this->scalarData->size());
-                this->colourScale.transform (*(this->scalarData), dcolour);
-            } else if (this->vectorData != nullptr) {
-                this->dcopy.resize (this->vectorData->size());
-                this->dcolour.resize (this->vectorData->size());
-                this->dcolour2.resize (this->vectorData->size());
-                this->dcolour3.resize (this->vectorData->size());
-                std::vector<float> veclens(dcopy);
-                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
-                    veclens[i] = (*this->vectorData)[i].length();
-                    this->dcolour[i] = (*this->vectorData)[i][0];
-                    this->dcolour2[i] = (*this->vectorData)[i][1];
-                    // Could also extract a third colour for Trichrome vs Duochrome (or for raw RGB signal)
-                    this->dcolour3[i] = (*this->vectorData)[i][2];
-                }
-                this->zScale.transform (veclens, this->dcopy);
-
-                // Handle case where this->cm.getType() == morph::ColourMapType::RGB and there is
-                // exactly one colour. ColourMapType::RGB assumes R/G/B data all in range 0->1
-                // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
-                if (this->cm.getType() != morph::ColourMapType::RGB) {
-                    this->colourScale.transform (this->dcolour, this->dcolour);
-                    // Dual axis colour maps like Duochrome and HSV will need to use colourScale2 to
-                    // transform their second colour/axis,
-                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
-                    // Similarly for Triple axis maps
-                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
-                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
-            }
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
             float datumNNE = 0.0f;
@@ -386,39 +366,8 @@ namespace morph {
             float vy = 0.5f * dx[1];
 
             this->idx = 0;
+            this->setupScaling();
 
-            if (this->scalarData != nullptr) {
-                this->dcopy.resize (this->scalarData->size());
-                this->zScale.transform (*(this->scalarData), dcopy);
-                this->dcolour.resize (this->scalarData->size());
-                this->colourScale.transform (*(this->scalarData), dcolour);
-            } else if (this->vectorData != nullptr) {
-                this->dcopy.resize (this->vectorData->size());
-                this->dcolour.resize (this->vectorData->size());
-                this->dcolour2.resize (this->vectorData->size());
-                this->dcolour3.resize (this->vectorData->size());
-                std::vector<float> veclens(dcopy);
-                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
-                    veclens[i] = (*this->vectorData)[i].length();
-                    this->dcolour[i] = (*this->vectorData)[i][0];
-                    this->dcolour2[i] = (*this->vectorData)[i][1];
-                    // Could also extract a third colour for Trichrome vs Duochrome (or for raw RGB signal)
-                    this->dcolour3[i] = (*this->vectorData)[i][2];
-                }
-                this->zScale.transform (veclens, this->dcopy);
-
-                // Handle case where this->cm.getType() == morph::ColourMapType::RGB and there is
-                // exactly one colour. ColourMapType::RGB assumes R/G/B data all in range 0->1
-                // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
-                if (this->cm.getType() != morph::ColourMapType::RGB) {
-                    this->colourScale.transform (this->dcolour, this->dcolour);
-                    // Dual axis colour maps like Duochrome and HSV will need to use colourScale2 to
-                    // transform their second colour/axis,
-                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
-                    // Similarly for Triple axis maps
-                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
-                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
-            }
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
             float datumNN = 0.0f;
@@ -595,39 +544,8 @@ namespace morph {
             float vy = 0.5f * dx[1];
 
             this->idx = 0;
+            this->setupScaling();
 
-            if (this->scalarData != nullptr) {
-                this->dcopy.resize (this->scalarData->size());
-                this->zScale.transform (*(this->scalarData), dcopy);
-                this->dcolour.resize (this->scalarData->size());
-                this->colourScale.transform (*(this->scalarData), dcolour);
-            } else if (this->vectorData != nullptr) {
-                this->dcopy.resize (this->vectorData->size());
-                this->dcolour.resize (this->vectorData->size());
-                this->dcolour2.resize (this->vectorData->size());
-                this->dcolour3.resize (this->vectorData->size());
-                std::vector<float> veclens(dcopy);
-                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
-                    veclens[i] = (*this->vectorData)[i].length();
-                    this->dcolour[i] = (*this->vectorData)[i][0];
-                    this->dcolour2[i] = (*this->vectorData)[i][1];
-                    // Could also extract a third colour for Trichrome vs Duochrome (or for raw RGB signal)
-                    this->dcolour3[i] = (*this->vectorData)[i][2];
-                }
-                this->zScale.transform (veclens, this->dcopy);
-
-                // Handle case where this->cm.getType() == morph::ColourMapType::RGB and there is
-                // exactly one colour. ColourMapType::RGB assumes R/G/B data all in range 0->1
-                // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
-                if (this->cm.getType() != morph::ColourMapType::RGB) {
-                    this->colourScale.transform (this->dcolour, this->dcolour);
-                    // Dual axis colour maps like Duochrome and HSV will need to use colourScale2 to
-                    // transform their second colour/axis,
-                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
-                    // Similarly for Triple axis maps
-                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
-                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
-            }
             float datumC = 0.0f;   // datum at the centre
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
@@ -736,7 +654,6 @@ namespace morph {
         {
             std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
             if (this->cm.numDatums() == 3) {
-                //if constexpr (std::is_same<std::decay_t<T>, unsigned char>::value == true) {
                 if constexpr (std::is_integral<std::decay_t<T>>::value) {
                     // Differs from above as we divide by 255 to get value in range 0-1
                     clr = this->cm.convert (this->dcolour[ri]/255.0f, this->dcolour2[ri]/255.0f, this->dcolour3[ri]/255.0f);
