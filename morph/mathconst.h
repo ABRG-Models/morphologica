@@ -11,6 +11,9 @@ namespace morph {
     template <typename T=double>
     struct mathconst
     {
+        static constexpr T zero = T{0};
+        static constexpr T one = T{1};
+
         static constexpr T root_2 = T{1.414213562373095048801688724209698078569671875376948};
         static constexpr T sqrt_of_2 = root_2;
         static constexpr T one_over_root_2 = T{1}/root_2;
