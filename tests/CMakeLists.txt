@@ -506,3 +506,6 @@ add_test(testGridNeighbours testGridNeighbours)
 
 add_executable(testGrid_getabscissae testGrid_getabscissae.cpp)
 add_test(testGrid_getabscissae testGrid_getabscissae)
+
+add_executable(testloadpng testloadpng.cpp)
+add_test(testloadpng testloadpng)
