@@ -706,6 +706,22 @@ namespace morph {
             for (auto& i : *this) { if (std::isnan(i) || std::isinf(i)) { i = replacement; } }
         }
 
+        /*!
+         * Considering the 3 element vec as RGB pixels, convert to greyscale using the
+         * technique described in
+         * https://docs.opencv.org/3.4/de/d25/imgproc_color_conversions.html
+         *
+         * Only enabled for arrays of size 3 (for now, RGBA vecs could also be considered)
+         *
+         * Only really makes sense for real types S/_S.
+         */
+        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
+        constexpr _S rgb_to_grey() const
+        {
+            const _S grey = _S{0.299} * (*this)[0] + _S{0.587} * (*this)[1] + _S{0.114} * (*this)[2];
+            return grey;
+        }
+
         //! Return the arithmetic mean of the elements
         template<typename _S=S>
         constexpr _S mean() const
