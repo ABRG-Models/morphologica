@@ -1170,8 +1170,8 @@ namespace morph {
         std::array<float,3> rgb_to_monochrome (float datum1, float datum2, float datum3) const
         {
             ColourMap::bounds_check_3 (datum1, datum2, datum3);
-            // Get monochrome colour for the mean datum
-            float datum = (datum1 + datum2 + datum3) / 3.0f;
+            // Get monochrome colour for the greyscale datum
+            float datum = 0.299f * datum1 + 0.587f * datum2 + 0.114 * datum3;
             return this->monochrome (datum);
         }
 
@@ -1179,8 +1179,9 @@ namespace morph {
         std::array<float,3> rgb_to_greyscale (float datum1, float datum2, float datum3) const
         {
             ColourMap::bounds_check_3 (datum1, datum2, datum3);
-            // Get greyscale colour for the mean datum
-            float datum = (datum1 + datum2 + datum3) / 3.0f;
+            // Get greyscale colour for the mean datum according to
+            // https://docs.opencv.org/3.4/de/d25/imgproc_color_conversions.html
+            float datum = 0.299f * datum1 + 0.587f * datum2 + 0.114 * datum3;
             return greyscale (datum);
         }
 
