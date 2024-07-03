@@ -91,7 +91,8 @@ namespace morph {
             }
 
             // Transform data lengths into "nrmlzedlengths"
-            vvec<float> nrmlzedlengths (dlengths);
+            vvec<float> nrmlzedlengths (dlengths.size());
+            std::copy (dlengths.begin(), dlengths.end(), nrmlzedlengths.begin());
             if (this->fixed_length != 0.0f) {
                 nrmlzedlengths.set_from (this->fixed_length);
             } else if (this->do_quiver_length_scaling == true) {
