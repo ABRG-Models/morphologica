@@ -329,6 +329,12 @@ if(USE_GLEW)
   target_link_libraries(rod GLEW::GLEW)
 endif()
 
+add_executable(grating grating.cpp)
+target_link_libraries(grating OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grating GLEW::GLEW)
+endif()
+
 add_executable(cone cone.cpp)
 target_link_libraries(cone OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
