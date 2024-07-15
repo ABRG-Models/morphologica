@@ -12,20 +12,36 @@
 #include <stdexcept>
 #include <string>
 
-int main()
+int main (int ac, char** av)
 {
     int rtn = -1;
     morph::Visual v(1024, 768, "Grating");
+
+    int t0 = 0; // start time
+    if (ac > 1) { t0 = std::atoi (av[1]); }
+
+    constexpr bool move_stuff = true;
 
     try {
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
 
         auto rvm = std::make_unique<morph::GratingVisual<>> (offset);
         v.bindmodel (rvm);
+        rvm->v_front = { 0.02f, 0.0f };
+        rvm->t = t0;
         rvm->finalize();
-        v.addVisualModel (rvm);
+        auto rvmp = v.addVisualModel (rvm);
 
-        v.keepOpen();
+        if constexpr (move_stuff == true) {
+            while (!v.readyToFinish) {
+                v.wait (0.5);
+                v.render();
+                rvmp->t += 1;
+                rvmp->reinit();
+            }
+        } else {
+            v.keepOpen();
+        }
 
     } catch (const std::exception& e) {
         std::cerr << "Caught exception: " << e.what() << std::endl;
