@@ -97,9 +97,6 @@ namespace morph {
             // rectangle window centre
             //vec<float, 2> r_centre = this->mv_offset.less_one_dim() + dims * 0.5f;
 
-            // length of diagonal across window
-            //float diag_length = dims.length();
-
             // unit vector in x dirn
             vec<float, 2> u_x = { 1.0f, 0.0f };
 
@@ -130,13 +127,23 @@ namespace morph {
 
             // Consider a point on wave 0. (x0, y0). It is now at (x', y') = (x0, y0) + t * v;
             vec<float, 2> num_lambdas = v_offset / this->lambda;
-            //std::cout << "num_lambdas: " << num_lambdas << std::endl;
-            float dp = num_lambdas.dot (u_x);
+            std::cout << "num_lambdas moved: " << num_lambdas << std::endl;
+            std::cout << "num_lambdas moved effectively: " << num_lambdas.dot (u_alpha) << std::endl;
+
+            float x_lambdas_f = num_lambdas.dot (u_alpha);
             //std::cout << "num_lambdas . u_x: " << dp << ", trunc("<<dp<<") = " << std::trunc (dp) << std::endl;
-            float lambdas_x = std::trunc (dp); // Number of wavelengths that the point that was at origin at t0 has moved
-            lambdas_x *= this->lambda; // in terms of the wavelength distance
-            float x_0 = v_offset[0] - lambdas_x;
-            std::cout << "x_0 = v_offset[0] - lambdas_x = " <<  v_offset[0] << " - " << lambdas_x << " = " << x_0 << std::endl;
+            float lambdas_x = std::trunc (x_lambdas_f); // Number of wavelengths that the point that was at origin at t0 has moved
+            std::cout << "That's: " << lambdas_x << " bands along the x axis" << std::endl;
+
+            float length_of_lambda_in_x = this->lambda / std::cos(morph::mathconst<float>::deg2rad * this->alpha);
+            float lambdas_x_offset = lambdas_x * length_of_lambda_in_x;
+            std::cout << "length_of_lambda_in_x = " << length_of_lambda_in_x << " so  lambdas_x_offset = " <<  lambdas_x_offset  << std::endl;
+
+            float x_0 = v_offset[0] - lambdas_x_offset;
+
+            std::cout << "x_0 = v_offset[0] - lambdas_x_offset = " <<  v_offset[0]
+                      << " - " << lambdas_x_offset << " = " << x_0 << std::endl;
+
             vec<float, 2> p_0 = { x_0, 0.0f };
 
             auto dx = dims.length() * u_alpha_perp;
@@ -152,6 +159,8 @@ namespace morph {
 
             unsigned int i = 0;
             for (vec<float, 2> p = p_0; ; p += 0.5f * lambda * u_alpha) { // Steps fwd and back along u_alpha until all fronts were drawn
+
+                auto col = i%2==0 ? colour1 : colour2;
 
                 // Make test lines for start of field
                 p1 = p + dx;
@@ -169,11 +178,10 @@ namespace morph {
 
                 if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
                     // We're off the rectangle
-                    std::cout << "break on loop " << i << std::endl;
+                    //std::cout << "break on loop " << i << std::endl;
                     break;
                 }
 
-                std::cout << "----------\n";
                 if (bi.test(0)) { // bottom
                     fp1 = crossing_point (p1, q1, bot_p, bot_q);
                     fp1_id = border_id::bottom;
@@ -294,12 +302,13 @@ namespace morph {
                     }
                 }
 
+#if 0
                 std::cout << "Borders crossed: fp1: "
                           << border_id_str(fp1_id) << ", fp2: "
                           << border_id_str(fp2_id) << ", fq1: "
                           << border_id_str(fq1_id) << ", fq2: "
                           << border_id_str(fq2_id) << "\n";
-
+#endif
                 // sanity check
                 if (fp1_id == border_id::unknown
                     || fq1_id == border_id::unknown
@@ -312,7 +321,7 @@ namespace morph {
                 // switch one pair:
                 if (fp2_id == fq1_id && fp1_id != fp2_id) {
                     // Swap p2 and q2 order
-                    std::cout << "Swapping fp2/fq2 order\n";
+                    //std::cout << "Swapping fp2/fq2 order\n";
                     auto tmp = fq2;
                     auto tmp_id = fq2_id;
                     fq2 = fp2;
@@ -322,7 +331,7 @@ namespace morph {
 
                 } else if (fq2_id == fp1_id && fq1_id != fq2_id) {
                     // Swap p1 and q1 order
-                    std::cout << "Swapping fp1/fq1 order\n";
+                    //std::cout << "Swapping fp1/fq1 order\n";
                     auto tmp = fq1;
                     auto tmp_id = fq1_id;
                     fq1 = fp1;
@@ -357,9 +366,9 @@ namespace morph {
                         this->vertex_push (fp1.plus_one_dim(), this->vertexPositions);
                         this->vertex_push (fp2.plus_one_dim(), this->vertexPositions);
                         this->vertex_push (corner1.plus_one_dim(), this->vertexPositions);
-                        this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
-                        this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
-                        this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
+                        this->vertex_push (col, this->vertexColors);
+                        this->vertex_push (col, this->vertexColors);
+                        this->vertex_push (col, this->vertexColors);
                         this->vertex_push (this->uz, this->vertexNormals);
                         this->vertex_push (this->uz, this->vertexNormals);
                         this->vertex_push (this->uz, this->vertexNormals);
@@ -393,9 +402,9 @@ namespace morph {
                     this->vertex_push (fq1.plus_one_dim(), this->vertexPositions);
                     this->vertex_push (fq2.plus_one_dim(), this->vertexPositions);
                     this->vertex_push (corner2.plus_one_dim(), this->vertexPositions);
-                    this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
-                    this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
-                    this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
+                    this->vertex_push (col, this->vertexColors);
+                    this->vertex_push (col, this->vertexColors);
+                    this->vertex_push (col, this->vertexColors);
                     this->vertex_push (this->uz, this->vertexNormals);
                     this->vertex_push (this->uz, this->vertexNormals);
                     this->vertex_push (this->uz, this->vertexNormals);
@@ -410,10 +419,10 @@ namespace morph {
                 this->vertex_push (fq1.plus_one_dim(), this->vertexPositions);
                 this->vertex_push (fp2.plus_one_dim(), this->vertexPositions);
                 this->vertex_push (fq2.plus_one_dim(), this->vertexPositions);
-                this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
-                this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
-                this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
-                this->vertex_push (i%2==0 ? colour1 : colour2, this->vertexColors);
+                this->vertex_push (col, this->vertexColors);
+                this->vertex_push (col, this->vertexColors);
+                this->vertex_push (col, this->vertexColors);
+                this->vertex_push (col, this->vertexColors);
                 this->vertex_push (this->uz, this->vertexNormals);
                 this->vertex_push (this->uz, this->vertexNormals);
                 this->vertex_push (this->uz, this->vertexNormals);

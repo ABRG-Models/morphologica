@@ -33,12 +33,14 @@ int main (int ac, char** av)
         auto rvmp = v.addVisualModel (rvm);
 
         if constexpr (move_stuff == true) {
-            while (!v.readyToFinish) {
-                v.wait (0.5);
+            int count = 0;
+            while (count++ < 7000) {
+                v.wait (0.04);
                 v.render();
                 rvmp->t += 1;
                 rvmp->reinit();
             }
+            v.keepOpen();
         } else {
             v.keepOpen();
         }
