@@ -11,41 +11,6 @@
 
 namespace morph {
 
-    // Do the line segments p1-q1 and p2-q2 intersect? Are they instead colinear? Return
-    // these booleans in a bitset (bit0: intersection, bit1: colinear)
-    std::bitset<2> segments_intersect (vec<float, 2>& p1, vec<float, 2> q1,
-                                       vec<float, 2>& p2, vec<float, 2> q2)
-    {
-        //std::cout << "Line " << p1 << " to " << q1 << " intersects with " << p2 << " to " << q2 << "??" << std::endl;
-        std::bitset<2> rtn;
-        morph::rotation_sense p1q1p2 = morph::MathAlgo::orientation (p1,q1,p2);
-        morph::rotation_sense p1q1q2 = morph::MathAlgo::orientation (p1,q1,q2);
-        morph::rotation_sense p2q2p1 = morph::MathAlgo::orientation (p2,q2,p1);
-        morph::rotation_sense p2q2q1 = morph::MathAlgo::orientation (p2,q2,q1);
-        if (p1q1p2 != p1q1q2 && p2q2p1 != p2q2q1) { // They intersect
-             rtn.set(0, true);
-        } else { // Are they colinear?
-            if (p1q1p2 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p1, p2, q1)) { rtn.set(1, true); }
-            else if (p1q1q2 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p1, q2, q1)) { rtn.set(1, true); }
-            else if (p2q2p1 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p2, p1, q2)) { rtn.set(1, true); }
-            else if (p2q2q1 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p2, q1, q2)) { rtn.set(1, true); }
-        }
-        return rtn;
-    }
-
-    // Find crossing point assuming segments intersect
-    vec<float, 2> crossing_point (vec<float, 2>& p1, vec<float, 2>& q1, vec<float, 2>& p2, vec<float, 2>& q2)
-    {
-        vec<float, 2> p = p1;
-        vec<float, 2> r = p1 - q1;
-        vec<float, 2> q = p2;
-        vec<float, 2> s = p2 - q2;
-        auto t = (q - p).cross(s / r.cross(s));
-        // auto u = (q - p).cross(r / r.cross(s)); // 2D cross products
-        vec<float, 2> cross_point = p + t * r;
-        return cross_point;
-    }
-
     enum class border_id {
         top,
         bottom,
@@ -166,10 +131,10 @@ namespace morph {
                 p1 = p + dx;
                 q1 = p - dx;
 
-                auto bi = segments_intersect (p1, q1, bot_p, bot_q);
-                auto ti = segments_intersect (p1, q1, top_p, top_q);
-                auto li = segments_intersect (p1, q1, left_p, left_q);
-                auto ri = segments_intersect (p1, q1, right_p, right_q);
+                auto bi = morph::MathAlgo::segments_intersect (p1, q1, bot_p, bot_q);
+                auto ti = morph::MathAlgo::segments_intersect (p1, q1, top_p, top_q);
+                auto li = morph::MathAlgo::segments_intersect (p1, q1, left_p, left_q);
+                auto ri = morph::MathAlgo::segments_intersect (p1, q1, right_p, right_q);
 
                 if (bi.test(1) || ti.test(1) || li.test(1) || ri.test(1)) {
                     // Use the relevant edge.
@@ -183,50 +148,50 @@ namespace morph {
                 }
 
                 if (bi.test(0)) { // bottom
-                    fp1 = crossing_point (p1, q1, bot_p, bot_q);
+                    fp1 = morph::MathAlgo::crossing_point (p1, q1, bot_p, bot_q);
                     fp1_id = border_id::bottom;
                     if (ti.test(0)) {
                         // bottom and top edges
-                        fq1 = crossing_point (p1, q1, top_p, top_q);
+                        fq1 = morph::MathAlgo::crossing_point (p1, q1, top_p, top_q);
                         fq1_id = border_id::top;
 
                     } else if (li.test(0)) {
                         // bottom and left edges
-                        fq1 = crossing_point (p1, q1, left_p, left_q);
+                        fq1 = morph::MathAlgo::crossing_point (p1, q1, left_p, left_q);
                         fq1_id = border_id::left;
 
                     } else if (ri.test(0)) {
                         // bottom and right edges
-                        fq1 = crossing_point (p1, q1, right_p, right_q);
+                        fq1 = morph::MathAlgo::crossing_point (p1, q1, right_p, right_q);
                         fq1_id = border_id::right;
 
                     } else {
                         throw std::runtime_error ("unexpected1");
                     }
                 } else if (ti.test(0)) {
-                    fp1 = crossing_point (p1, q1, top_p, top_q);
+                    fp1 = morph::MathAlgo::crossing_point (p1, q1, top_p, top_q);
                     fp1_id = border_id::top;
 
                     if (li.test(0)) {
                         // top and left
-                        fq1 = crossing_point (p1, q1, left_p, left_q);
+                        fq1 = morph::MathAlgo::crossing_point (p1, q1, left_p, left_q);
                         fq1_id = border_id::left;
 
                     } else if (ri.test(0)) {
                         // top and right
-                        fq1 = crossing_point (p1, q1, right_p, right_q);
+                        fq1 = morph::MathAlgo::crossing_point (p1, q1, right_p, right_q);
                         fq1_id = border_id::right;
 
                     } else {
                         throw std::runtime_error ("unexpected2");
                     }
                 } else if (li.test(0)) {
-                    fp1 = crossing_point (p1, q1, left_p, left_q);
+                    fp1 = morph::MathAlgo::crossing_point (p1, q1, left_p, left_q);
                     fp1_id = border_id::left;
 
                     if (ri.test(0)) {
                         // left and right
-                        fq1 = crossing_point (p1, q1, right_p, right_q);
+                        fq1 = morph::MathAlgo::crossing_point (p1, q1, right_p, right_q);
                         fq1_id = border_id::right;
 
                     } else {
@@ -239,10 +204,10 @@ namespace morph {
                 q2 = p + 0.5f * lambda * u_alpha - dx;
 
                 // repeat for setting fp2, fq2
-                bi = segments_intersect (p2, q2, bot_p, bot_q);
-                ti = segments_intersect (p2, q2, top_p, top_q);
-                li = segments_intersect (p2, q2, left_p, left_q);
-                ri = segments_intersect (p2, q2, right_p, right_q);
+                bi = morph::MathAlgo::segments_intersect (p2, q2, bot_p, bot_q);
+                ti = morph::MathAlgo::segments_intersect (p2, q2, top_p, top_q);
+                li = morph::MathAlgo::segments_intersect (p2, q2, left_p, left_q);
+                ri = morph::MathAlgo::segments_intersect (p2, q2, right_p, right_q);
 
                 if (bi.test(1) || ti.test(1) || li.test(1) || ri.test(1)) {
                     // Use the relevant edge.
@@ -250,51 +215,51 @@ namespace morph {
                 }
 
                 if (bi.test(0)) { // bottom
-                    fp2 = crossing_point (p2, q2, bot_p, bot_q);
+                    fp2 = morph::MathAlgo::crossing_point (p2, q2, bot_p, bot_q);
                     fp2_id = border_id::bottom;
 
                     if (ti.test(0)) {
                         // bottom and top edges
-                        fq2 = crossing_point (p2, q2, top_p, top_q);
+                        fq2 = morph::MathAlgo::crossing_point (p2, q2, top_p, top_q);
                         fq2_id = border_id::top;
 
                     } else if (li.test(0)) {
                         // bottom and left edges
-                        fq2 = crossing_point (p2, q2, left_p, left_q);
+                        fq2 = morph::MathAlgo::crossing_point (p2, q2, left_p, left_q);
                         fq2_id = border_id::left;
 
                     } else if (ri.test(0)) {
                         // bottom and right edges
-                        fq2 = crossing_point (p2, q2, right_p, right_q);
+                        fq2 = morph::MathAlgo::crossing_point (p2, q2, right_p, right_q);
                         fq2_id = border_id::right;
 
                     } else {
                         throw std::runtime_error ("unexpected1");
                     }
                 } else if (ti.test(0)) {
-                    fp2 = crossing_point (p2, q2, top_p, top_q);
+                    fp2 = morph::MathAlgo::crossing_point (p2, q2, top_p, top_q);
                     fp2_id = border_id::top;
 
                     if (li.test(0)) {
                         // top and left
-                        fq2 = crossing_point (p2, q2, left_p, left_q);
+                        fq2 = morph::MathAlgo::crossing_point (p2, q2, left_p, left_q);
                         fq2_id = border_id::left;
 
                     } else if (ri.test(0)) {
                         // top and right
-                        fq2 = crossing_point (p2, q2, right_p, right_q);
+                        fq2 = morph::MathAlgo::crossing_point (p2, q2, right_p, right_q);
                         fq2_id = border_id::right;
 
                     } else {
                         throw std::runtime_error ("unexpected2");
                     }
                 } else if (li.test(0)) {
-                    fp2 = crossing_point (p2, q2, left_p, left_q);
+                    fp2 = morph::MathAlgo::crossing_point (p2, q2, left_p, left_q);
                     fp2_id = border_id::left;
 
                     if (ri.test(0)) {
                         // left and right
-                        fq2 = crossing_point (p2, q2, right_p, right_q);
+                        fq2 = morph::MathAlgo::crossing_point (p2, q2, right_p, right_q);
                         fq2_id = border_id::right;
 
                     } else {
