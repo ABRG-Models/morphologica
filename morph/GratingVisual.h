@@ -228,8 +228,8 @@ namespace morph {
                     float d_to_left = (_p - bot_left).length();
                     float d_to_right = (_p - bot_right).length();
                     corner = d_to_left < d_to_right ? bot_left : bot_right;
-                    //corner_2 = d_to_left < d_to_right ? top_left : top_right;
-                    return;
+                    corner_2 = d_to_left < d_to_right ? top_left : top_right;
+
                 } else if ((fp_id == border_id::left && fq_id == border_id::right)
                            || (fq_id == border_id::left && fp_id == border_id::right)) {
                     // horz bands. Top or bottom? As long as bands are smaller than the height
@@ -238,8 +238,8 @@ namespace morph {
                     float d_to_top = (_p - top_left).length();
                     float d_to_bottom = (_p - bot_left).length();
                     corner = d_to_top < d_to_bottom ? top_left : bot_left;
-                    //corner_2 = d_to_top < d_to_bottom ? top_right : bot_right;
-                    return;
+                    corner_2 = d_to_top < d_to_bottom ? top_right : bot_right;
+
                 } else {
                     throw std::runtime_error ("unexpected corner");
                 }
