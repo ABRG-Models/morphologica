@@ -394,7 +394,7 @@ namespace morph {
 
                 std::cout << "loop 2 i=" << i << "\n";
 
-                std::array<float, 3> col = i%2==0 ? colour1 : colour2;
+                std::array<float, 3> col = i%2==0 ? morph::colour::skyblue : morph::colour::lightblue3;
 
                 // First line of a 'band' p1-q1
                 p1 = p + dx;
