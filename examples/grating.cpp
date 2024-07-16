@@ -38,10 +38,10 @@ protected:
             } else if (key == morph::key::s) {
                 this->angle -= 1.0f;
                 this->needs_reinit = true;
-            } else if (key == morph::key::d) {
+            } else if (key == morph::key::a) {
                 this->t = this->t > 0 ? this->t - 1 : 0;
                 this->needs_reinit = true;
-            } else if (key == morph::key::a) {
+            } else if (key == morph::key::d) {
                 this->t = this->t + 1;
                 this->needs_reinit = true;
             }

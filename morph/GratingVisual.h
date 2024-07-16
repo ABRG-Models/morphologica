@@ -57,6 +57,38 @@ namespace morph {
             this->viewmatrix.translate (this->mv_offset);
         }
 
+        void draw_band (const vec<float, 2>& fp1, const vec<float, 2>& fq1,
+                        const vec<float, 2>& fp2, const vec<float, 2>& fq2,
+                        const std::array<float, 3>& _col)
+        {
+            this->vertex_push (fp1.plus_one_dim(), this->vertexPositions);
+            this->vertex_push (fq1.plus_one_dim(), this->vertexPositions);
+            this->vertex_push (fp2.plus_one_dim(), this->vertexPositions);
+            this->vertex_push (fq2.plus_one_dim(), this->vertexPositions);
+            for (unsigned int vi = 0; vi < 4; ++vi) {
+                this->vertex_push (_col, this->vertexColors);
+                this->vertex_push (this->uz, this->vertexNormals);
+            }
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+1);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx+1);
+            this->indices.push_back (this->idx+3);
+            this->idx += 4;
+        }
+
+        // Swap _p1 and _p2 along with their border ids
+        void swap_pair (vec<float, 2>& _p1, vec<float, 2>& _p2, border_id& _p1_id, border_id& _p2_id)
+        {
+            auto tmp = _p2;
+            auto tmp_id = _p2_id;
+            _p2 = _p1;
+            _p2_id = _p1_id;
+            _p1 = tmp;
+            _p1_id = tmp_id;
+        }
+
         void initializeVertices()
         {
             this->vertexPositions.clear();
@@ -164,16 +196,13 @@ namespace morph {
                 } else if (_ri.test(0)) {
                     std::cout << "We have ri first\n";
                 }
-
-                std::cout << "find_border_points: We have fp " << fp << " crossing " << border_id_str(fp_id)
-                          << " and fq " << fq << " crossing " << border_id_str(fq_id) << std::endl;
             }; // end of find_border_points()
 
             /**
              * Lambda to draw triangle/quadrilateral fill in shape given two points and their
              * border intersection identifications.
              */
-            auto fill_in_shape = [this, top_left, bot_left, bot_right, top_right]
+            auto draw_fill_in_shape = [this, top_left, bot_left, bot_right, top_right]
             (const vec<float, 2>& _p, const vec<float, 2>& fp, const vec<float, 2>& fq,
              const border_id& fp_id, const border_id& fq_id, const std::array<float, 3>& _col)
             {
@@ -243,8 +272,7 @@ namespace morph {
                     this->indices.push_back (this->idx+3);
                     this->idx += 4;
                 }
-            }; // end of fill_in_shape()
-
+            }; // end of draw_fill_in_shape()
 
             // How does one band wavelength project onto the x and y axes?
             float length_of_lambda_in_x = this->lambda / std::cos (morph::mathconst<float>::deg2rad * this->alpha);
@@ -280,13 +308,13 @@ namespace morph {
             unsigned int i = 0;
             for (vec<float, 2> p = p_0; ; p += 0.5f * lambda * u_alpha) {
 
-                std::cout << "\n\n";
                 std::array<float, 3> col = i%2==0 ? colour1 : colour2;
 
-                // Make test lines for start of field
+                // First line of a 'band' p1-q1
                 p1 = p + dx;
                 q1 = p - dx;
 
+                // Compute intersections for p1, q1
                 std::bitset<2> bi = morph::MathAlgo::segments_intersect (p1, q1, bot_p, bot_q);
                 std::bitset<2> ti = morph::MathAlgo::segments_intersect (p1, q1, top_p, top_q);
                 std::bitset<2> li = morph::MathAlgo::segments_intersect (p1, q1, left_p, left_q);
@@ -300,14 +328,13 @@ namespace morph {
                 if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) { break; }
 
                 // From p1, q1 find fp1 and fp1_id
-                std::cout << "find_border_points for p1/q1\n";
                 find_border_points (p1, q1,  fp1, fq1, fp1_id, fq1_id, bi, ti, li, ri);
 
-                // Second line
+                // Second line (p2-q2)
                 p2 = p + 0.5f * lambda * u_alpha + dx;
                 q2 = p + 0.5f * lambda * u_alpha - dx;
 
-                // repeat for setting fp2, fq2
+                // repeat computation of intersections for p2, q2.
                 bi = morph::MathAlgo::segments_intersect (p2, q2, bot_p, bot_q);
                 ti = morph::MathAlgo::segments_intersect (p2, q2, top_p, top_q);
                 li = morph::MathAlgo::segments_intersect (p2, q2, left_p, left_q);
@@ -320,72 +347,41 @@ namespace morph {
 
                 // Test if the *second* line of a band is off the rectangle
                 if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
-                    std::cout << "Fill-in shape for fp1/fq1\n";
-                    fill_in_shape (p, fp1, fq1, fp1_id, fq1_id, morph::colour::crimson);
+                    //std::cout << "Fill-in shape for fp1/fq1\n";
+                    draw_fill_in_shape (p, fp1, fq1, fp1_id, fq1_id, morph::colour::crimson);
                     break; // we're done (return true if break?
                 }
 
-                std::cout << "find_border_points for p2/q2 " << p2 << "/" << q2 << "\n";
                 find_border_points (p2, q2,  fp2, fq2, fp2_id, fq2_id, bi, ti, li, ri);
 
-                // sanity check
+                // We now have all 4 band vertex points. Do a sanity check
                 if (fp1_id == border_id::unknown || fq1_id == border_id::unknown
                     || fp2_id == border_id::unknown || fq2_id == border_id::unknown) {
                     throw std::runtime_error ("unexpected border_id");
                 }
 
-                // We have our band points.
-                std::cout << "fp1 to fq1 cross " << border_id_str (fp1_id) << " and " << border_id_str (fq1_id) << " resp.\n";
-                std::cout << "fp2 to fq2 cross " << border_id_str (fp2_id) << " and " << border_id_str (fq2_id) << " resp.\n";
-
                 // Does fp1-fp2 intersect with fq1-fq2? (if so triangles will draw badly so swap a pair)
                 std::bitset<2> fpi = morph::MathAlgo::segments_intersect (fp1, fp2, fq1, fq2);
-                if (fpi.test(0)) {
-                    // swap one pair
-                    std::cout << "Swapping fp2/fq2 order\n";
-                    auto tmp = fq2;
-                    auto tmp_id = fq2_id;
-                    fq2 = fp2;
-                    fq2_id = fp2_id;
-                    fp2 = tmp;
-                    fp2_id = tmp_id;
-                }
+                if (fpi.test(0)) { this->swap_pair (fp2, fq2, fp2_id, fq2_id); }
 
                 // Determine if fill-in triangles should be drawn
                 if (fp1_id != fp2_id) {
-                    std::cout << "Fill-in shape for fp1/fp2 (blue)\n";
-                    fill_in_shape (p, fp1, fp2, fp1_id, fp2_id, morph::colour::royalblue);
+                    //std::cout << "Fill-in shape for fp1/fp2 (blue)\n";
+                    draw_fill_in_shape (p, fp1, fp2, fp1_id, fp2_id, morph::colour::royalblue);
                 }
 
                 if (fq1_id != fq2_id) {
-                    std::cout << "Fill-in shape for fq1/fq2 (yellow)\n";
-                    fill_in_shape (p, fq1, fq2, fq1_id, fq2_id, morph::colour::yellow);
+                    //std::cout << "Fill-in shape for fq1/fq2 (yellow)\n";
+                    draw_fill_in_shape (p, fq1, fq2, fq1_id, fq2_id, morph::colour::yellow);
                 }
 
-                // Now draw the band
-                this->vertex_push (fp1.plus_one_dim(), this->vertexPositions);
-                this->vertex_push (fq1.plus_one_dim(), this->vertexPositions);
-                this->vertex_push (fp2.plus_one_dim(), this->vertexPositions);
-                this->vertex_push (fq2.plus_one_dim(), this->vertexPositions);
-                for (unsigned int vi = 0; vi < 4; ++vi) {
-                    this->vertex_push (col, this->vertexColors);
-                    this->vertex_push (this->uz, this->vertexNormals);
-                }
-                this->indices.push_back (this->idx);
-                this->indices.push_back (this->idx+1);
-                this->indices.push_back (this->idx+2);
-                this->indices.push_back (this->idx+2);
-                this->indices.push_back (this->idx+1);
-                this->indices.push_back (this->idx+3);
-                this->idx += 4;
+                this->draw_band (fp1, fq1, fp2, fq2, col);
 
                 if constexpr (debug_line_points) {
                     this->computeSphere (this->idx, p1.plus_one_dim(), colour1, 0.02f, 16, 20);
                     this->computeSphere (this->idx, q1.plus_one_dim(), colour1, 0.02f, 16, 20);
                     this->computeSphere (this->idx, p2.plus_one_dim(), colour2, 0.02f, 16, 20);
                     this->computeSphere (this->idx, q2.plus_one_dim(), colour2, 0.02f, 16, 20);
-                    //std::cout << "showing black spheres at fp1, fq1, fp2, fq2:\n"
-                    //          <<  fp1 << " - " << fq1 << "\n" << fp2 << " - " << fq2 << std::endl;
                     this->computeSphere (this->idx, fp1.plus_one_dim(), morph::colour::crimson, 0.01f, 16, 20);
                     this->computeSphere (this->idx, fq1.plus_one_dim(), morph::colour::violetred2, 0.01f, 16, 20);
                     this->computeSphere (this->idx, fp2.plus_one_dim(), morph::colour::royalblue, 0.01f, 16, 20);
