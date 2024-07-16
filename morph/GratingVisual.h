@@ -1,3 +1,11 @@
+/*
+ * A VisualModel to show a grating of straight bars at any angle and in any two colours. A time can
+ * be set so that the grating can be moved in time according to a 'front velocity'
+ *
+ * Author: Seb James
+ * Date: July 2024
+ */
+
 #pragma once
 
 #include <array>
@@ -141,11 +149,8 @@ namespace morph {
                     throw std::runtime_error ("Implement me");
                 }
 
-                if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
-                    // We're off the rectangle
-                    //std::cout << "break on loop " << i << std::endl;
-                    break;
-                }
+                // Test if we're off the rectangle
+                if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) { break; }
 
                 if (bi.test(0)) { // bottom
                     fp1 = morph::MathAlgo::crossing_point (p1, q1, bot_p, bot_q);
@@ -212,6 +217,41 @@ namespace morph {
                 if (bi.test(1) || ti.test(1) || li.test(1) || ri.test(1)) {
                     // Use the relevant edge.
                     throw std::runtime_error ("Implement me");
+                }
+
+                // Test if this line is off the rectangle
+                if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
+                    // We have a first line, but not a second. That means draw a corner triangle for
+                    // the points fp1, fq1 and whichever corner
+                    vec<float, 2> corner = { 0, 0 };
+                    if ((fp1_id == border_id::left && fq1_id == border_id::top)
+                        || (fq1_id == border_id::left && fp1_id == border_id::top)) {
+                        corner = top_left;
+                    } else if ((fp1_id == border_id::left && fq1_id == border_id::bottom)
+                               || (fq1_id == border_id::left && fp1_id == border_id::bottom)) {
+                        corner = bot_left;
+                    } else if ((fp1_id == border_id::right && fq1_id == border_id::bottom)
+                               || (fq1_id == border_id::right && fp1_id == border_id::bottom)) {
+                        corner = bot_right;
+                    } else if ((fp1_id == border_id::right && fq1_id == border_id::top)
+                               || (fq1_id == border_id::right && fp1_id == border_id::top)) {
+                        corner = top_right;
+                    } else {
+                        throw std::runtime_error ("unexpected corner");
+                    }
+
+                    this->vertex_push (fp1.plus_one_dim(), this->vertexPositions);
+                    this->vertex_push (fq1.plus_one_dim(), this->vertexPositions);
+                    this->vertex_push (corner.plus_one_dim(), this->vertexPositions);
+                    for (unsigned int vi = 0; vi < 3; ++vi) {
+                        this->vertex_push (col, this->vertexColors);
+                        this->vertex_push (this->uz, this->vertexNormals);
+                        this->indices.push_back (this->idx + vi);
+                    }
+                    this->idx += 3;
+
+                    // Now break.
+                    break;
                 }
 
                 if (bi.test(0)) { // bottom
@@ -323,25 +363,22 @@ namespace morph {
                         corner1 = top_right;
                     } else {
                         throw std::runtime_error ("unexpected corner1");
-                        corner1 = {-100.0f,-100.0f};
                     }
 
-                    if (corner1[0] != -100.0f) {
-                        // Draw triangle points fp1_id, fp2_id and corner1
-                        this->vertex_push (fp1.plus_one_dim(), this->vertexPositions);
-                        this->vertex_push (fp2.plus_one_dim(), this->vertexPositions);
-                        this->vertex_push (corner1.plus_one_dim(), this->vertexPositions);
-                        this->vertex_push (col, this->vertexColors);
-                        this->vertex_push (col, this->vertexColors);
-                        this->vertex_push (col, this->vertexColors);
-                        this->vertex_push (this->uz, this->vertexNormals);
-                        this->vertex_push (this->uz, this->vertexNormals);
-                        this->vertex_push (this->uz, this->vertexNormals);
-                        this->indices.push_back (this->idx);
-                        this->indices.push_back (this->idx+1);
-                        this->indices.push_back (this->idx+2);
-                        this->idx += 3;
-                    }
+                    // Draw triangle points fp1_id, fp2_id and corner1
+                    this->vertex_push (fp1.plus_one_dim(), this->vertexPositions);
+                    this->vertex_push (fp2.plus_one_dim(), this->vertexPositions);
+                    this->vertex_push (corner1.plus_one_dim(), this->vertexPositions);
+                    this->vertex_push (col, this->vertexColors);
+                    this->vertex_push (col, this->vertexColors);
+                    this->vertex_push (col, this->vertexColors);
+                    this->vertex_push (this->uz, this->vertexNormals);
+                    this->vertex_push (this->uz, this->vertexNormals);
+                    this->vertex_push (this->uz, this->vertexNormals);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+1);
+                    this->indices.push_back (this->idx+2);
+                    this->idx += 3;
                 }
 
                 if (fq1_id != fq2_id) {
