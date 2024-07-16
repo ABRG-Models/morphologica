@@ -341,15 +341,13 @@ namespace morph {
                 ri = morph::MathAlgo::segments_intersect (p2, q2, right_p, right_q);
 
                 if (bi.test(1) || ti.test(1) || li.test(1) || ri.test(1)) {
-                    // Use the relevant edge.
-                    throw std::runtime_error ("Implement me");
+                    throw std::runtime_error ("Implement me for co-linear");
                 }
 
                 // Test if the *second* line of a band is off the rectangle
                 if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
-                    //std::cout << "Fill-in shape for fp1/fq1\n";
                     draw_fill_in_shape (p, fp1, fq1, fp1_id, fq1_id, morph::colour::crimson);
-                    break; // we're done (return true if break?
+                    break;
                 }
 
                 find_border_points (p2, q2,  fp2, fq2, fp2_id, fq2_id, bi, ti, li, ri);
@@ -366,12 +364,10 @@ namespace morph {
 
                 // Determine if fill-in triangles should be drawn
                 if (fp1_id != fp2_id) {
-                    //std::cout << "Fill-in shape for fp1/fp2 (blue)\n";
                     draw_fill_in_shape (p, fp1, fp2, fp1_id, fp2_id, morph::colour::royalblue);
                 }
 
                 if (fq1_id != fq2_id) {
-                    //std::cout << "Fill-in shape for fq1/fq2 (yellow)\n";
                     draw_fill_in_shape (p, fq1, fq2, fq1_id, fq2_id, morph::colour::yellow);
                 }
 
@@ -390,6 +386,94 @@ namespace morph {
 
                 ++i;
             }
+
+#if 1 // Would be nice to do it in 1 loop
+            // Same loop, p -= ...
+            i = 1;
+            for (vec<float, 2> p = p_0; ; p -= 0.5f * lambda * u_alpha) {
+
+                std::cout << "loop 2 i=" << i << "\n";
+
+                std::array<float, 3> col = i%2==0 ? colour1 : colour2;
+
+                // First line of a 'band' p1-q1
+                p1 = p + dx;
+                q1 = p - dx;
+
+                // Compute intersections for p1, q1
+                std::bitset<2> bi = morph::MathAlgo::segments_intersect (p1, q1, bot_p, bot_q);
+                std::bitset<2> ti = morph::MathAlgo::segments_intersect (p1, q1, top_p, top_q);
+                std::bitset<2> li = morph::MathAlgo::segments_intersect (p1, q1, left_p, left_q);
+                std::bitset<2> ri = morph::MathAlgo::segments_intersect (p1, q1, right_p, right_q);
+
+                if (bi.test(1) || ti.test(1) || li.test(1) || ri.test(1)) {
+                    throw std::runtime_error ("Implement me for colinear");
+                }
+
+                // Test if we're off the rectangle
+                if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) { break; }
+
+                // From p1, q1 find fp1 and fp1_id
+                find_border_points (p1, q1,  fp1, fq1, fp1_id, fq1_id, bi, ti, li, ri);
+
+                // Second line (p2-q2)
+                p2 = p - 0.5f * lambda * u_alpha + dx;
+                q2 = p - 0.5f * lambda * u_alpha - dx;
+
+                // repeat computation of intersections for p2, q2.
+                bi = morph::MathAlgo::segments_intersect (p2, q2, bot_p, bot_q);
+                ti = morph::MathAlgo::segments_intersect (p2, q2, top_p, top_q);
+                li = morph::MathAlgo::segments_intersect (p2, q2, left_p, left_q);
+                ri = morph::MathAlgo::segments_intersect (p2, q2, right_p, right_q);
+
+                if (bi.test(1) || ti.test(1) || li.test(1) || ri.test(1)) {
+                    throw std::runtime_error ("Implement me for co-linear");
+                }
+
+                // Test if the *second* line of a band is off the rectangle
+                if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
+                    // Draw fill in shape using the first line
+                    draw_fill_in_shape (p, fp1, fq1, fp1_id, fq1_id, morph::colour::deeppink);
+                    break;
+                }
+
+                find_border_points (p2, q2,  fp2, fq2, fp2_id, fq2_id, bi, ti, li, ri);
+
+                // We now have all 4 band vertex points. Do a sanity check
+                if (fp1_id == border_id::unknown || fq1_id == border_id::unknown
+                    || fp2_id == border_id::unknown || fq2_id == border_id::unknown) {
+                    throw std::runtime_error ("unexpected border_id");
+                }
+
+                // Does fp1-fp2 intersect with fq1-fq2? (if so triangles will draw badly so swap a pair)
+                std::bitset<2> fpi = morph::MathAlgo::segments_intersect (fp1, fp2, fq1, fq2);
+                if (fpi.test(0)) { this->swap_pair (fp2, fq2, fp2_id, fq2_id); }
+
+                // Determine if fill-in triangles should be drawn
+                if (fp1_id != fp2_id) {
+                    draw_fill_in_shape (p, fp1, fp2, fp1_id, fp2_id, morph::colour::royalblue);
+                }
+
+                if (fq1_id != fq2_id) {
+                    draw_fill_in_shape (p, fq1, fq2, fq1_id, fq2_id, morph::colour::yellow);
+                }
+
+                this->draw_band (fp1, fq1, fp2, fq2, col);
+
+                if constexpr (debug_line_points2) {
+                    this->computeSphere (this->idx, p1.plus_one_dim(), colour1, 0.02f, 16, 20);
+                    this->computeSphere (this->idx, q1.plus_one_dim(), colour1, 0.02f, 16, 20);
+                    this->computeSphere (this->idx, p2.plus_one_dim(), colour2, 0.02f, 16, 20);
+                    this->computeSphere (this->idx, q2.plus_one_dim(), colour2, 0.02f, 16, 20);
+                    this->computeSphere (this->idx, fp1.plus_one_dim(), morph::colour::springgreen, 0.01f, 16, 20);
+                    this->computeSphere (this->idx, fq1.plus_one_dim(), morph::colour::seagreen3, 0.01f, 16, 20);
+                    this->computeSphere (this->idx, fp2.plus_one_dim(), morph::colour::gray86, 0.01f, 16, 20);
+                    this->computeSphere (this->idx, fq2.plus_one_dim(), morph::colour::black, 0.01f, 16, 20);
+                }
+
+                ++i;
+            }
+#endif
 
             if constexpr (draw_border) { // Seeing boundary useful for debugging
                 this->computeFlatLine (this->idx, bot_p.plus_one_dim(), bot_q.plus_one_dim(),
@@ -421,7 +505,8 @@ namespace morph {
         //! Draw boundary for debugging?
         static constexpr bool draw_border = true;
         //! Spheres for line points for debugging?
-        static constexpr bool debug_line_points = true;
+        static constexpr bool debug_line_points = false;
+        static constexpr bool debug_line_points2 = true;
     };
 
 } // namespace morph
