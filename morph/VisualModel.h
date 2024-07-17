@@ -951,6 +951,48 @@ namespace morph {
         } // end computeTube with ux/uy vectors for faces
 
         /*!
+         * A 'draw an arrow' primitive. This is a 3D, tubular arrow made of a tube and a cone.
+         *
+         * \param start Start coordinate of the arrow
+         *
+         * \param end End coordinate of the arrow
+         *
+         * \param clr The colour for the arrow
+         *
+         * \param tube_radius Radius of arrow shaft. If < 0, then set from (end-start).length()
+         *
+         * \param arrowhead_prop The proportion of the arrow length that the head should take up
+         *
+         * \param cone_radius Radisu of cone that make the arrow head. If < 0, then set from
+         * tube_radius
+         *
+         * \param shapesides How many facets to draw tube/cone with
+         */
+        void computeArrow (const vec<float>& start, const vec<float>& end,
+                           const std::array<float, 3> clr,
+                           float tube_radius = -1.0f,
+                           float arrowhead_prop = -1.0f,
+                           float cone_radius = -1.0f,
+                           const int shapesides = 18)
+        {
+            // The right way to draw an arrow.
+            vec<float> arrow_line = end - start;
+            float len = arrow_line.length();
+            // Unless client code specifies, compute tube radius from length of arrow
+            if (tube_radius < 0.0f) { tube_radius = len / 40.0f; }
+            if (arrowhead_prop < 0.0f) { arrowhead_prop = 0.15f; }
+            if (cone_radius < 0.0f) { cone_radius = 1.75f * tube_radius; }
+            // We don't draw the full tube
+            vec<float> cone_start = arrow_line.shorten (len * arrowhead_prop);
+            cone_start += start;
+            this->computeTube (this->idx, start, cone_start, clr, clr, tube_radius, shapesides);
+            float conelen = (end-cone_start).length();
+            if (arrow_line.length() > conelen) {
+                this->computeCone (this->idx, cone_start, end, 0.0f, clr, cone_radius, shapesides);
+            }
+        }
+
+        /*!
          * Create a flared tube from \a start to \a end, with radius \a r at the start and a colour
          * which transitions from the colour \a colStart to \a colEnd. The radius of the end is
          * determined by the given angle, flare, in radians.
