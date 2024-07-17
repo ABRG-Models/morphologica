@@ -65,7 +65,7 @@ int main (int ac, char** av)
     constexpr bool interactive = true;
 
     try {
-        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
 
         auto rvm = std::make_unique<morph::GratingVisual<>> (offset);
         v.bindmodel (rvm);
