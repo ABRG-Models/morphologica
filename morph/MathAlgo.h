@@ -205,9 +205,12 @@ namespace morph {
                                            const morph::vec<T, 2>& q,
                                            const morph::vec<T, 2>& r)
         {
+            constexpr T thresh = T{3} * std::numeric_limits<T>::epsilon();
             T val = (q[1] - p[1]) * (r[0] - q[0])  -  (q[0] - p[0]) * (r[1] - q[1]);
-            if (val == T{0}) { return rotation_sense::colinear; }
-            return (val > 0) ? rotation_sense::clockwise : rotation_sense::anticlockwise;
+            // Mathematically, this would be if (val == T{0}) {...} but we have to consider
+            // numerical precision, hence the comparison with thresh (3 epsilons)
+            if (std::abs(val - T{0}) < thresh) { return rotation_sense::colinear; }
+            return (val > T{0}) ? rotation_sense::clockwise : rotation_sense::anticlockwise;
         }
 
         // Given three colinear points p, q, r, the function checks if
@@ -241,6 +244,11 @@ namespace morph {
         static std::bitset<2> segments_intersect (const morph::vec<T, 2>& p1, const morph::vec<T, 2> q1,
                                                   const morph::vec<T, 2>& p2, const morph::vec<T, 2> q2)
         {
+            constexpr bool debug_this = false;
+            if constexpr (debug_this) {
+                std::cout << "Testing intersection for " << p1 << "->" << q1
+                          << " and " << p2 << "->" << q2 << std::endl;
+            }
             std::bitset<2> rtn;
             morph::rotation_sense p1q1p2 = morph::MathAlgo::orientation (p1, q1, p2);
             morph::rotation_sense p1q1q2 = morph::MathAlgo::orientation (p1, q1, q2);
@@ -249,11 +257,30 @@ namespace morph {
             if (p1q1p2 != p1q1q2 && p2q2p1 != p2q2q1) { // They intersect
                 rtn.set(0, true);
             } else { // Are they colinear?
+                if constexpr (debug_this) {
+                    std::cout << "Test colinearity... epsilon is " << std::numeric_limits<T>::epsilon() << "\n";
+                    if (p1q1p2 == morph::rotation_sense::colinear) {
+                        std::cout << "p1q1p2 rotn sense is colinear. On segment? "
+                                  << (morph::MathAlgo::onsegment (p1, p2, q1) ? "T" : "F") << std::endl;
+                    } else if (p1q1q2 == morph::rotation_sense::colinear) {
+                        std::cout << "p1q1q2 rotn sense is colinear On segment? "
+                                  << (morph::MathAlgo::onsegment (p1, q2, q1) ? "T" : "F") << std::endl;
+                    } else if (p2q2p1 == morph::rotation_sense::colinear) {
+                        std::cout << "p2q2p1 rotn sense is colinear On segment? "
+                                  << (morph::MathAlgo::onsegment (p2, p1, q2) ? "T" : "F") << std::endl;
+                    } else if (p2q2q1 == morph::rotation_sense::colinear) {
+                        std::cout << "p2q2q1 rotn sense is colinear On segment? "
+                                  << (morph::MathAlgo::onsegment (p2, q1, q2) ? "T" : "F") << std::endl;
+                    } else {
+                        std::cout << "NO rotn sense is colinear\n";
+                    }
+                }
                 if (p1q1p2 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p1, p2, q1)) { rtn.set(1, true); }
                 else if (p1q1q2 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p1, q2, q1)) { rtn.set(1, true); }
                 else if (p2q2p1 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p2, p1, q2)) { rtn.set(1, true); }
                 else if (p2q2q1 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p2, q1, q2)) { rtn.set(1, true); }
             }
+            if constexpr (debug_this) { std::cout << "return " << rtn << std::endl; }
             return rtn;
         }
 

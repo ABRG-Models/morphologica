@@ -22,7 +22,7 @@ struct myvisual final : public morph::Visual<>
         : morph::Visual<> (width, height, title, caOffset, caLength, caThickness, caEm) {}
 
     // Angle of the bands
-    float angle = 45.0f;
+    float angle = 0.0f;
     // Time
     unsigned long long int t = 0;
     // Flag if we should reinit the model
@@ -57,8 +57,8 @@ int main (int ac, char** av)
     myvisual v(1024, 768, "Grating");
     v.setSceneTrans (morph::vec<float,3>({-0.990124f, -0.452241f, -3.6f}));
 
-    if (ac > 1) { v.t = std::atoi (av[1]); }
-    if (ac > 2) { v.angle = std::atoi (av[2]); }
+    if (ac > 1) { v.t = std::atoi (av[1]); } // First arg is time
+    if (ac > 2) { v.angle = std::atoi (av[2]); } // second is angle
 
     constexpr bool interactive = true;
 
