@@ -8,6 +8,7 @@
 #include <array>
 #include <iostream>
 #include <algorithm>
+#include <bitset>
 #include <memory>
 #include <cuchar>
 #include <morph/vec.h>
