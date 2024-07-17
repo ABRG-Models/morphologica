@@ -45,7 +45,9 @@ protected:
                 this->t = this->t + 1;
                 this->needs_reinit = true;
             }
-            std::cout << "Keyboard update: Angle: " << angle << " time: " << this->t << std::endl;
+            if (this->needs_reinit) {
+                std::cout << "Keyboard update: Angle: " << angle << " time: " << this->t << std::endl;
+            }
         }
     }
 };
