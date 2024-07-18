@@ -212,35 +212,40 @@ namespace morph {
             morph::VisualResources<glver>::i().freetype_init (this);
         }
 
-        //! Take a screenshot of the window
-        void saveImage (const std::string& img_filename)
+        //! Take a screenshot of the window. Return vec containing width * height or {-1, -1} on
+        //! failure.
+        morph::vec<int, 2> saveImage (const std::string& img_filename)
         {
 #ifndef OWNED_MODE
             this->setContext();
 #endif
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
-            int w = viewport[2];
-            int h = viewport[3];
-            auto bits = std::make_unique<GLubyte[]>(w*h*4);
-            auto rbits = std::make_unique<GLubyte[]>(w*h*4);
+            morph::vec<int, 2> dims;
+            dims[0] = viewport[2];
+            dims[1] = viewport[3];
+            auto bits = std::make_unique<GLubyte[]>(dims.product() * 4);
+            auto rbits = std::make_unique<GLubyte[]>(dims.product() * 4);
             glFinish(); // finish all commands of OpenGL
             glPixelStorei (GL_PACK_ALIGNMENT, 1);
             glPixelStorei (GL_PACK_ROW_LENGTH, 0);
             glPixelStorei (GL_PACK_SKIP_ROWS, 0);
             glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
-            glReadPixels (0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, bits.get());
-            for (int i = 0; i < h; ++i) {
-                int rev_line = (h-i-1)*4*w;
-                int for_line = i*4*w;
-                for (int j = 0; j < 4*w; ++j) {
+            glReadPixels (0, 0, dims[0], dims[1], GL_RGBA, GL_UNSIGNED_BYTE, bits.get());
+            for (int i = 0; i < dims[1]; ++i) {
+                int rev_line = (dims[1] - i - 1) * 4 * dims[0];
+                int for_line = i * 4 * dims[0];
+                for (int j = 0; j < 4 * dims[0]; ++j) {
                     rbits[rev_line+j] = bits[for_line+j];
                 }
             }
-            unsigned int error = lodepng::encode (img_filename, rbits.get(), w, h);
+            unsigned int error = lodepng::encode (img_filename, rbits.get(), dims[0], dims[1]);
             if (error) {
                 std::cerr << "encoder error " << error << ": " << lodepng_error_text (error) << std::endl;
+                dims.set_from (-1);
+                return dims;
             }
+            return dims;
         }
 
 #ifndef OWNED_MODE
