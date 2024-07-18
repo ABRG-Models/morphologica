@@ -1448,7 +1448,6 @@ namespace morph {
          * \param image_pixelwidth (input) The number of pixels that the image is wide
          * \param image_scale (input) The size that the image should be resampled to (same units as HexGrid)
          * \param image_offset (input) An offset in HexGrid units to shift the image wrt to the HexGrid's origin
-         * \param sigma (input) The sigma for the 2D resampling Gaussian
          *
          * \return A new data vvec containing the resampled (and renormalised) hex pixel values
          */
