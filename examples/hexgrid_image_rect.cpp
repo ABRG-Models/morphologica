@@ -21,7 +21,7 @@ int main()
     morph::Visual v(1600, 1000, "Demo of HexGrid::resampleImage");
 
     morph::HexGrid hg(0.01f, 3.0f, 0.0f);
-    hg.setCircularBoundary (1.2f);
+    hg.setRectangularBoundary (2.0f, 0.5f);
 
     // Load a rectangular image with the help of morph::loadpng().
     std::string fn = "../examples/bike256_65.png";
