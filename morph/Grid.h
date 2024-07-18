@@ -587,6 +587,65 @@ namespace morph {
             return index < n ? index / h : std::numeric_limits<I>::max();
         }
 
+        /*!
+         * Resampling function (monochrome).
+         *
+         * \param image_data (input) The monochrome image as a vvec of floats.
+         * \param image_pixelwidth (input) The number of pixels that the image is wide
+         * \param image_scale (input) The size that the image should be resampled to (same units as Grid)
+         * \param image_offset (input) An offset in Grid units to shift the image wrt to the Grid's origin
+         * \param sigma (input) The sigma for the 2D resampling Gaussian
+         *
+         * \return A new data vvec containing the resampled (and renormalised) hex pixel values
+         */
+        morph::vvec<float> resample_image (const morph::vvec<float>& image_data,
+                                           const unsigned int image_pixelwidth,
+                                           const morph::vec<float, 2>& image_scale,
+                                           const morph::vec<float, 2>& image_offset) const
+        {
+            unsigned int csz = image_data.size();
+            morph::vec<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
+            std::cout << "image_pixelsz = " << image_pixelsz << " csz: " << csz << std::endl;
+            // Distance per pixel in the image. This defines the Gaussian width (sigma) for the
+            // resample. Assume that the unscaled image pixels are square. Use the image width to
+            // set the distance per pixel (hence divide by image_scale by image_pixelsz[*0*]).
+            morph::vec<float, 2> dist_per_pix = image_scale / (image_pixelsz[0]-1u);
+            std::cout << "dist_per_pix = " << dist_per_pix << std::endl;
+            // This is an offset to centre the image wrt to the Grid
+            morph::vec<float, 2> input_centering_offset = dist_per_pix * image_pixelsz * morph::vec<float, 2>{1, 1};
+            std::cout << "input_centering_offset = " << input_centering_offset << std::endl;
+            // Parameters for the Gaussian computation
+            morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+            morph::vec<float, 2> threesig = 3.0f * dist_per_pix;
+
+            morph::vvec<float> expr_resampled(this->w * this->h, 0.0f);
+#pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
+            for (typename std::vector<float>::size_type xi = 0u; xi < this->v_x.size(); ++xi) {
+                float expr = 0.0f;
+                for (unsigned int i = 0; i < csz; ++i) {
+                    // Get x/y pixel coords:
+                    morph::vec<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[0]))};
+                    // Get the coordinates of the input pixel at index idx (in Grid units):
+                    morph::vec<float, 2> posn = (dist_per_pix * idx) + input_centering_offset + image_offset;
+                    // Distance from input pixel to output pixel:
+                    float _v_x = this->v_x[xi] - posn[0];
+                    float _v_y = this->v_y[xi] - posn[1];
+                    if (xi == 0) {
+                        std::cout << "Pixel " << i << " has idx : " << idx << " and position "
+                                  << posn << " v_x/y: (" << _v_x << "," << _v_y << ")\n";
+                    }
+                    // Compute contributions to each Grid pixel, using 2D (elliptical) Gaussian
+                    if (_v_x < threesig[0] && _v_y < threesig[1]) { // Testing for distance gives slight speedup
+                        expr += std::exp ( - ( (params[0] * _v_x * _v_x) + (params[1] * _v_y * _v_y) ) ) * image_data[i];
+                    }
+                }
+                expr_resampled[xi] = expr;
+            }
+
+            expr_resampled /= expr_resampled.max(); // renormalise result
+            return expr_resampled;
+        }
+
         //! Two vector structures that contains the coords for this grid. v_x is a vector of the x coordinates
         morph::vvec<C> v_x;
         //! v_y is a vector of the y coordinates
