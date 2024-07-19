@@ -18,19 +18,21 @@ int main()
     morph::Visual v(1400, 1300, "Demo of Grid showing a resampled image");
     v.setSceneTrans (morph::vec<float,3>({-2.60691f, 1.39885f, -11.1f}));
 
+    unsigned int scaledown = 2U;
+
     morph::vec<float, 2> dx = { 0.02f, 0.02f };
-    morph::vec<float, 2> dx2 = { 0.04f, 0.04f };
+    morph::vec<float, 2> dx2 = dx * scaledown;
     // Top left to bottom right order matches image loaded by loadpng and avoids the need for a
     // vec<bool, 2> flip arg to morph::loadpng.
-    morph::Grid g1(256U, 65U, dx);
+    morph::Grid g1(256U, 64U, dx);
     std::cout << "g1 extents: (xmin,xmax,ymin,ymax): " << g1.extents() << std::endl;
 
     // Resample onto a lower res grid
-    morph::Grid g2(128U, 32U, dx2);
+    morph::Grid g2(256U/scaledown, 64U/scaledown, dx2);
     std::cout << "g2 extents: (xmin,xmax,ymin,ymax): " << g2.extents() << std::endl;
 
     // Load an image
-    std::string fn = "../examples/bike256_65.png";
+    std::string fn = "../examples/bike256_64.png";
 
     morph::vvec<float> image_data; // image loaded BLTR by default
     morph::vec<unsigned int, 2> dims = morph::loadpng (fn, image_data);
