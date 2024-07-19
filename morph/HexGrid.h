@@ -130,7 +130,7 @@ namespace morph {
          * bottom? Set this to a larger number if the boundary is expected to grow
          * during a simulation.
          */
-        unsigned int d_growthbuffer_horz = 5;
+        unsigned int d_growthbuffer_horz = 0;
         unsigned int d_growthbuffer_vert = 0;
 
         //! Add entries to all the d_ vectors for the Hex pointed to by hi.
@@ -3939,12 +3939,13 @@ namespace morph {
             rtn[2] = (int)(limits[2] / d_gi);
             rtn[3] = (int)(limits[3] / d_gi);
 
-            // Add 'growth buffer'
+#if 0
+            // Add any 'growth buffer', in case boundary expected to change? I think this is old thinking and maybe not relevant?
             rtn[0] -= this->d_growthbuffer_horz;
             rtn[1] += this->d_growthbuffer_horz;
             rtn[2] -= this->d_growthbuffer_vert;
             rtn[3] += this->d_growthbuffer_vert;
-
+#endif
             return rtn;
         }
 
