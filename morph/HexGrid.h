@@ -1444,7 +1444,10 @@ namespace morph {
         /*!
          * Resampling function (monochrome).
          *
-         * \param image_data (input) The monochrome image as a vvec of floats.
+         * \param image_data (input) The monochrome image as a vvec of floats.  The
+         * image is interpreted as running from bottom left to top right. Thus, the very
+         * first float in the vvec is at x=0, y=0.
+         *
          * \param image_pixelwidth (input) The number of pixels that the image is wide
          * \param image_scale (input) The size that the image should be resampled to (same units as HexGrid)
          * \param image_offset (input) An offset in HexGrid units to shift the image wrt to the HexGrid's origin
@@ -1462,7 +1465,7 @@ namespace morph {
             // Distance per pixel in the image. This defines the Gaussian width (sigma) for the
             // resample. Assume that the unscaled image pixels are square. Use the image width to
             // set the distance per pixel (hence divide by image_scale by image_pixelsz[*0*]).
-            morph::vec<float, 2> dist_per_pix = image_scale / (image_pixelsz[0]-1u);
+            morph::vec<float, 2> dist_per_pix = image_scale / (image_pixelsz[0] - 1u);
             // This is an offset to centre the image wrt to the HexGrid
             morph::vec<float, 2> input_centering_offset = dist_per_pix * image_pixelsz * 0.5f;
             // Parameters for the Gaussian computation
@@ -1473,10 +1476,9 @@ namespace morph {
 #pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
             for (typename std::vector<float>::size_type xi = 0u; xi < this->d_x.size(); ++xi) {
                 float expr = 0.0f;
-//#pragma omp parallel for reduction(+:expr)
                 for (unsigned int i = 0; i < csz; ++i) {
                     // Get x/y pixel coords:
-                    morph::vec<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[0]))};
+                    morph::vec<unsigned int, 2> idx = {(i % image_pixelsz[0]), (i / image_pixelsz[0])};
                     // Get the coordinates of the pixel at index i (in HexGrid units):
                     morph::vec<float, 2> posn = (dist_per_pix * idx) - input_centering_offset + image_offset;
                     // Distance from input pixel to output hex:
