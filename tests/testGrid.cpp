@@ -18,6 +18,24 @@ int main()
     std::cout << "Grid g_bltr extents: " << g_bltr.extents() << std::endl;
     std::cout << "Grid g_bltrc extents: " << g_bltrc.extents() << std::endl;
 
+    auto ext = g_bltr.extents();
+    // Test extents are as wide as width:
+    if (ext[1] - ext[0] != g_bltr.width()) {
+        --rtn;
+    }
+    // And as high as height
+    if (ext[3] - ext[2] != g_bltr.height()) {
+        --rtn;
+    }
+    // Area of pixels should be 8
+    if (g_bltr.area_of_pixels() != 8.0f) {
+        --rtn;
+    }
+    // Area should be 3
+    if (g_bltr.area() != 3.0f) {
+        --rtn;
+    }
+
     std::cout << "Grid g_tlbr extents: " << g_tlbr.extents() << std::endl;
     std::cout << "Grid g_tlbrc extents: " << g_tlbrc.extents() << std::endl;
 

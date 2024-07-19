@@ -327,18 +327,18 @@ namespace morph {
          * left-most pixel to the right edge of the right-most pixel? It could be either, so I
          * provide width() and width_of_pixels() as well as height() and height_of_pixels().
          */
-        constexpr C width() const { return dx[0] * w; }
+        constexpr C width() const { return dx[0] * (w - I{1}); }
 
         //! Return the width of the grid if drawn as pixels
-        constexpr C width_of_pixels() const { return dx[0] * w + dx[0]; }
+        constexpr C width_of_pixels() const { return dx[0] * w; }
 
         //! Return the distance from the centre of the bottom row to the centre of the top row
-        constexpr C height() const { return dx[1] * h; }
+        constexpr C height() const { return dx[1] * (h - I{1}); }
 
         constexpr C area() const { return this->width() * this->height(); }
 
         //! Return the height of the grid if drawn as pixels
-        constexpr C height_of_pixels() const { return dx[1] * h + dx[1]; }
+        constexpr C height_of_pixels() const { return dx[1] * h; }
 
         //! Return the area of the grid, if drawn as pixels
         constexpr C area_of_pixels() const { return this->width_of_pixels() * this->height_of_pixels(); }

@@ -501,18 +501,18 @@ namespace morph {
          * left-most pixel to the right edge of the right-most pixel? It could be either, so I
          * provide width() and width_of_pixels() as well as height() and height_of_pixels().
          */
-        C width() const { return dx[I{0}] * w; }
+        C width() const { return dx[I{0}] * (w - I{1}); }
 
         //! Return the width of the grid if drawn as pixels
-        C width_of_pixels() const { return dx[I{0}] * w + dx[I{0}]; }
+        C width_of_pixels() const { return dx[I{0}] * w; }
 
         //! Return the distance from the centre of the bottom row to the centre of the top row
-        C height() const { return dx[I{1}] * h; }
+        C height() const { return dx[I{1}] * (h - I{1}); }
 
         C area() const { return this->width() * this->height(); }
 
         //! Return the height of the grid if drawn as pixels
-        C height_of_pixels() const { return dx[I{1}] * h + dx[I{1}]; }
+        C height_of_pixels() const { return dx[I{1}] * h; }
 
         //! Return the area of the grid, if drawn as pixels
         C area_of_pixels() const { return this->width_of_pixels() * this->height_of_pixels(); }
@@ -590,7 +590,12 @@ namespace morph {
         /*!
          * Resampling function (monochrome).
          *
-         * \param image_data (input) The monochrome image as a vvec of floats.
+         * \param image_data (input) The monochrome image as a vvec of floats. The image
+         * is interpreted as running from bottom left to top right (matching the default
+         * value of Grid::order). Thus, the very first float in the vvec is at x=0,
+         * y=0. The image width is normalized to 1.0. The height of the image is
+         * computed from this assumption and on the assumption that pixels are square.
+         *
          * \param image_pixelwidth (input) The number of pixels that the image is wide
          * \param image_scale (input) The size that the image should be resampled to (same units as Grid)
          * \param image_offset (input) An offset in Grid units to shift the image wrt to the Grid's origin
@@ -603,17 +608,26 @@ namespace morph {
                                            const morph::vec<float, 2>& image_scale,
                                            const morph::vec<float, 2>& image_offset) const
         {
+            if (this->order != morph::GridOrder::bottomleft_to_topright) {
+                throw std::runtime_error ("Grid::resample_image: resampling assumes image has morph::GridOrder::bottomleft_to_topright, so your Grid should, too.");
+            }
+
             unsigned int csz = image_data.size();
             morph::vec<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
             std::cout << "image_pixelsz = " << image_pixelsz << " csz: " << csz << std::endl;
+
+            // Before scaling, image assumed to have width 1, height whatever
+            morph::vec<float, 2> image_dims = { 1.0f, 0.0f };
+            image_dims[1] = 1.0f / (image_pixelsz[0] - 1u) * (image_pixelsz[1] - 1u);
+            // Now scale the image dims to have the same width as *this:
+            image_dims *= this->width();
+            // Then apply any manual scaling requested:
+            image_dims *= image_scale;
+
             // Distance per pixel in the image. This defines the Gaussian width (sigma) for the
-            // resample. Assume that the unscaled image pixels are square. Use the image width to
-            // set the distance per pixel (hence divide by image_scale by image_pixelsz[*0*]).
-            morph::vec<float, 2> dist_per_pix = image_scale / (image_pixelsz[0]-1u);
-            std::cout << "dist_per_pix = " << dist_per_pix << std::endl;
-            // This is an offset to centre the image wrt to the Grid
-            morph::vec<float, 2> input_centering_offset = dist_per_pix * image_pixelsz * morph::vec<float, 2>{1, 1};
-            std::cout << "input_centering_offset = " << input_centering_offset << std::endl;
+            // resample. Compute this from the image dimensions, assuming pixels are square
+            morph::vec<float, 2> dist_per_pix = image_dims / (image_pixelsz - 1u);
+
             // Parameters for the Gaussian computation
             morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
             morph::vec<float, 2> threesig = 3.0f * dist_per_pix;
@@ -624,16 +638,12 @@ namespace morph {
                 float expr = 0.0f;
                 for (unsigned int i = 0; i < csz; ++i) {
                     // Get x/y pixel coords:
-                    morph::vec<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[0]))};
-                    // Get the coordinates of the input pixel at index idx (in Grid units):
-                    morph::vec<float, 2> posn = (dist_per_pix * idx) + input_centering_offset + image_offset;
+                    morph::vec<unsigned int, 2> idx = {(i % image_pixelsz[0]), (i / image_pixelsz[0])};
+                    // Get the coordinates of the input pixel at index idx (in target units):
+                    morph::vec<float, 2> posn = (dist_per_pix * idx) + image_offset;
                     // Distance from input pixel to output pixel:
                     float _v_x = this->v_x[xi] - posn[0];
                     float _v_y = this->v_y[xi] - posn[1];
-                    if (xi == 0) {
-                        std::cout << "Pixel " << i << " has idx : " << idx << " and position "
-                                  << posn << " v_x/y: (" << _v_x << "," << _v_y << ")\n";
-                    }
                     // Compute contributions to each Grid pixel, using 2D (elliptical) Gaussian
                     if (_v_x < threesig[0] && _v_y < threesig[1]) { // Testing for distance gives slight speedup
                         expr += std::exp ( - ( (params[0] * _v_x * _v_x) + (params[1] * _v_y * _v_y) ) ) * image_data[i];
