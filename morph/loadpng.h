@@ -29,10 +29,13 @@ namespace morph {
      *
      * If flip[1] is true, then flip the order of the rows to do an up/down flip of the
      * image during loading.
+     *
+     * Note: The default for flip is {false, true}, which means that by default,
+     * image_data will be filled in a bottom-left to top-right order.
      */
     template <typename T>
     static morph::vec<unsigned int, 2> loadpng (const std::string& filename, morph::vvec<T>& image_data,
-                                                const morph::vec<bool,2> flip = {false, false})
+                                                const morph::vec<bool,2> flip = {false, true})
     {
         std::vector<unsigned char> png;
         unsigned int w = 0;
@@ -114,7 +117,7 @@ namespace morph {
     template <typename T, std::size_t N>
     static morph::vec<unsigned int, 2> loadpng (const std::string& filename,
                                                 morph::vvec<morph::vec<T, N>>& image_data,
-                                                const morph::vec<bool,2> flip = {false, false})
+                                                const morph::vec<bool,2> flip = {false, true})
     {
         std::vector<unsigned char> png;
         unsigned int w = 0;
@@ -196,7 +199,7 @@ namespace morph {
     // Load a colour PNG and return a vector of type T with elements ordered as RGBRGBRGB...
     template <typename T>
     static morph::vec<unsigned int, 2> loadpng_rgb (const std::string& filename, morph::vvec<T>& image_data,
-                                                    const morph::vec<bool,2> flip = {false, false})
+                                                    const morph::vec<bool,2> flip = {false, true})
     {
         std::vector<unsigned char> png;
         unsigned int w = 0;
@@ -261,7 +264,7 @@ namespace morph {
     // Load a colour PNG and return a vector of type T with elements ordered as RGBARGBARGBA...
     template <typename T>
     static morph::vec<unsigned int, 2> loadpng_rgba (const std::string& filename, morph::vvec<T>& image_data,
-                                                     const morph::vec<bool,2> flip = {false, false})
+                                                     const morph::vec<bool,2> flip = {false, true})
     {
         std::vector<unsigned char> png;
         unsigned int w = 0;
@@ -329,7 +332,7 @@ namespace morph {
     // Load a colour PNG and return a vector of type T with elements ordered as RGBARGBARGBA...
     template <typename T, unsigned int im_w, unsigned int im_h>
     static morph::vec<unsigned int, 2> loadpng_rgba (const std::string& filename, morph::vec<T, 4*im_w*im_h>& image_data,
-                                                     const morph::vec<bool,2> flip = {false, false})
+                                                     const morph::vec<bool,2> flip = {false, true})
     {
         std::vector<unsigned char> png;
         unsigned int w = 0;

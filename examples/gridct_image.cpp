@@ -31,9 +31,9 @@ int main()
     // Load an image
     std::string fn = "../examples/bike256_65.png";
     morph::vvec<float> image_data_tlbr;
-    morph::vec<unsigned int, 2> dims = morph::loadpng (fn, image_data_tlbr);
+    morph::vec<unsigned int, 2> dims = morph::loadpng (fn, image_data_tlbr, morph::vec<bool, 2>{false,false});
     morph::vvec<float> image_data_bltr;
-    dims = morph::loadpng (fn, image_data_bltr, morph::vec<bool, 2>({false,true}));
+    dims = morph::loadpng (fn, image_data_bltr);
     std::cout << "Image dims: " << dims << std::endl;
 
     // Now visualise with a GridVisual
