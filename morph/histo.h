@@ -32,6 +32,7 @@ namespace morph {
             this->max = maximini.max;
             this->min = maximini.min;
             this->range = max - min;
+            if (this->range == H{0}) { throw std::runtime_error ("morph::histo: range == 0, can't make a histogram"); }
             this->binwidth = static_cast<T>(this->range) / static_cast<T>(n);
             for (std::size_t i = 0; i < n; ++i) {
                 // bins[i] = min + i*bw + bw/2 but do the additions after the loop
@@ -43,7 +44,7 @@ namespace morph {
 
             // Compute counts
             for (auto datum : data) {
-                T bin_proportion = (datum - this->min)/this->range;
+                T bin_proportion = static_cast<T>(datum - this->min) / static_cast<T>(this->range);
                 if (std::abs(bin_proportion - T{1}) < std::numeric_limits<T>::epsilon()) {
                     // Edge case, right on t'limit. Place in last bin.
                     this->counts[n-1] += 1u;
