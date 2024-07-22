@@ -5,6 +5,10 @@
 
 namespace morph {
 
+#pragma GCC diagnostic push
+// We allow narrowing, say 3.1415... to 3 if we want mathconst as T=int.
+#pragma GCC diagnostic ignored "-Wnarrowing"
+
     //! Templated mathematical constants.
     //! Usage example: morph::mathconst<float>::pi_over_2
     //! T defaults to double, so morph::mathconst::pi gives pi in double precision.
@@ -74,4 +78,5 @@ namespace morph {
         static constexpr T pi_over_360 = pi/T{360};
         static constexpr T two_pi_over_360 = two_pi/T{360};
     };
+#pragma GCC diagnostic pop
 }

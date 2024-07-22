@@ -156,13 +156,17 @@ namespace morph {
             return rtn;
         }
 
-        //! \return this vvec in single precision, float format
-        vvec<float> as_float() const
+        //! \return this vvec as a vvec<T>
+        template<typename T>
+        vvec<T> as() const
         {
-            vvec<float> vv(this->size(), 0.0f);
+            vvec<T> vv(this->size(), T{0});
             vv += *this;
             return vv;
         }
+
+        //! \return this vvec in single precision, float format
+        vvec<float> as_float() const { return this->as<float>(); }
 
         //! \return this vvec in double precision format
         vvec<double> as_double() const

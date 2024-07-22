@@ -422,7 +422,8 @@ namespace morph {
         }
 
         //! Special setdata for a morph::histo object
-        void setdata (const morph::histo<Flt>& h, const std::string name = "")
+        template<typename T>
+        void setdata (const morph::histo<T>& h, const std::string name = "")
         {
             DatasetStyle ds(this->policy);
             if (!name.empty()) { ds.datalabel = name; }
