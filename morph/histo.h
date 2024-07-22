@@ -23,7 +23,6 @@ namespace morph {
             this->counts.resize (n, T{0});
             this->proportions.resize (n, T{0});
             this->datacount = static_cast<T>(data.size());
-
             // Compute bin widths from range of data and n.
             morph::range<T> maximini = morph::MathAlgo::maxmin (data);
             this->max = maximini.max;
@@ -40,9 +39,17 @@ namespace morph {
 
             // Compute counts
             for (auto datum : data) {
-                int idx = static_cast<int>(std::floor(((datum - this->min)/this->range)*n));
-                if (idx > -1) {
-                    counts[idx] += T{1};
+                T bin_proportion = (datum - this->min)/this->range;
+                if (std::abs(bin_proportion - T{1}) < std::numeric_limits<T>::epsilon()) {
+                    // Edge case, right on t'limit. Place in last bin.
+                    this->counts[n-1] += T{1};
+
+                } else if (bin_proportion > T{1}) {
+                    throw std::runtime_error ("morph::histo: shouldn't see proportion > 1");
+
+                } else {
+                    std::size_t idx = static_cast<std::size_t>(std::floor(bin_proportion * n));
+                    this->counts[idx] += T{1};
                 }
             }
             this->proportions = counts/this->datacount;
