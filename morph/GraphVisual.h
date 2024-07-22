@@ -433,7 +433,7 @@ namespace morph {
             ds.markerstyle = morph::markerstyle::bar;
             // How to choose? User sets afterwards?
             ds.showlines = true;
-            ds.markersize = (this->width - this->width*2*this->dataaxisdist) * (h.binwidth / h.range);
+            ds.markersize = (this->width - this->width*2*this->dataaxisdist) * (h.binwidth / static_cast<Flt>(h.datarange.span()));
             ds.linewidth = ds.markersize/10.0;
 
             unsigned int data_index = this->graphDataCoords.size();
