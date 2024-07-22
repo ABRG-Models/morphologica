@@ -293,6 +293,12 @@ if(USE_GLEW)
   target_link_libraries(graph_bar GLEW::GLEW)
 endif()
 
+add_executable(graph_histo graph_histo.cpp)
+target_link_libraries(graph_histo OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph_histo GLEW::GLEW)
+endif()
+
 add_executable(graph_logist graph_logist.cpp)
 target_link_libraries(graph_logist OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
