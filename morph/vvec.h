@@ -169,28 +169,13 @@ namespace morph {
         vvec<float> as_float() const { return this->as<float>(); }
 
         //! \return this vvec in double precision format
-        vvec<double> as_double() const
-        {
-            vvec<double> vv(this->size(), 0.0);
-            vv += *this;
-            return vv;
-        }
+        vvec<double> as_double() const { return this->as<double>(); }
 
         //! \return this vvec in single precision, int format
-        vvec<int> as_int() const
-        {
-            vvec<int> vv(this->size(), 0);
-            vv += *this;
-            return vv;
-        }
+        vvec<int> as_int() const { return this->as<int>(); }
 
         //! \return this vvec in single precision, unsigned int format
-        vvec<unsigned int> as_uint() const
-        {
-            vvec<unsigned int> vv(this->size(), 0);
-            vv += *this;
-            return vv;
-        }
+        vvec<unsigned int> as_uint() const { return this->as<unsigned int>(); }
 
         /*!
          * Set an N-D vvec from an N+1 D vvec. Intended to convert 4D vectors (that

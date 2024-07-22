@@ -204,41 +204,26 @@ namespace morph {
             return rtn;
         }
 
-        //! Return this vec in single precision, float format
-        constexpr vec<float, N> as_float() const
+        //! Return a vec that contains the elements of this vec in type \tparam T
+        template<typename T>
+        constexpr vec<T, N> as() const
         {
-            vec<float, N> v;
-            v.zero();
+            vec<T, N> v = { T{0} };
             v += *this;
             return v;
         }
+
+        //! Return this vec in single precision, float format
+        constexpr vec<float, N> as_float() const { return this->as<float>(); }
 
         //! Return this vec in double precision, float format
-        constexpr vec<double, N> as_double() const
-        {
-            vec<double, N> v;
-            v.zero();
-            v += *this;
-            return v;
-        }
+        constexpr vec<double, N> as_double() const { return this->as<double>(); }
 
         //! Return this vec in single precision, int format
-        constexpr vec<int, N> as_int() const
-        {
-            vec<int, N> v;
-            v.zero();
-            v += *this;
-            return v;
-        }
+        constexpr vec<int, N> as_int() const { return this->as<int>(); }
 
         //! Return this vec in single precision, unsigned int format
-        constexpr vec<unsigned int, N> as_uint() const
-        {
-            vec<unsigned int, N> v;
-            v.zero();
-            v += *this;
-            return v;
-        }
+        constexpr vec<unsigned int, N> as_uint() const { return this->as<unsigned int>(); }
 
         //! Stream the elements of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss, const char sep = ',') const
