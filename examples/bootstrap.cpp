@@ -39,8 +39,11 @@ int main()
 
     // Graph the distribution, with labels
     morph::Visual v(1400, 768, "Bootstrap");
-    morph::histo h(dist, 100);
-    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({-2,0,0}));
+    // You can leave the second 'float' template argument out, as it's the default, but
+    // being explicit demonstrates the link to the GraphVisual, which must be
+    // GraphVisual<float> to display histo<T, float>
+    morph::histo<double, float> h(dist, 100);
+    auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({-2,0,0}));
     v.bindmodel (gv);
     gv->setdata (h);
     gv->xlabel = "Value";
@@ -75,8 +78,8 @@ int main()
     morph::vec<double,2> asl = morph::bootstrap<double>::ttest_equalityofmeans (dist, dist2, num_resamples);
     std::cout << "Achieved significance level: " << asl[0] << " (with minasl: " << asl[1] << ")\n";
 
-    morph::histo h2(dist2, 100);
-    auto gv2 = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+    morph::histo<double, float> h2(dist2, 100);
+    auto gv2 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
     v.bindmodel (gv2);
     gv2->setdata(h); // Add both to second graph
     gv2->setdata (h2);

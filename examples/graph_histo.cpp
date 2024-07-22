@@ -11,21 +11,29 @@
 
 int main()
 {
-    using F = int;
+    //using F = int;
     // Find the distribution of the values of 1000 * sin(x) for 0 <= x <= 2pi (in 1000 steps)
-    morph::vvec<F> numbers (1000);
-    numbers.linspace (0.0f, morph::mathconst<F>::two_pi);
+    morph::vvec<float> numbers (1000);
+    numbers.linspace (0.0f, morph::mathconst<float>::two_pi);
     for (auto& num : numbers) { num = 1000.0f * std::sin (num); }
 
-    // Make a histogram of the values of sin(x) with 30 bins
-    morph::histo h(numbers, 54);
+    // Convert our numbers into a vvec of ints, to show that histogram can count up
+    // ints, floats, doubles and so on.
+    morph::vvec<int> inumbers = numbers.as<int>();
 
-#if 0
+    // Make a histogram of the values of 1000 sin(x) with 30 bins. The first template
+    // argument is for the type of the elmeents that will be counted up. The second
+    // template arg is the floating point type to use to compute proportions (bin
+    // positions, width, etc). This is float by default, but is left explicit in this
+    // example.
+    morph::histo<int, float> h(inumbers, 30);
+
     // Set up a morph::Visual for a graph
     morph::Visual v(1024, 768, "Histogram");
     v.setSceneTrans (morph::vec<float,3>({-0.539211f, -0.401911f, -2.8f}));
 
-    // Create a new GraphVisual with offset within the scene of 0,0,0
+    // Create a new GraphVisual with offset within the scene of 0,0,0. Note the type for
+    // the GraphVisual has to match the *second* template type for the histo.
     auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
     v.bindmodel (gv);
     gv->setdata (h); // to become gv->add_bargraph (h [,morph::colour::darkorchid1] [,morph::colour::orchid2])
@@ -36,6 +44,6 @@ int main()
 
     // Render the graph until user exits
     v.keepOpen();
-#endif
+
     return 0;
 }
