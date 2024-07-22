@@ -57,6 +57,9 @@ namespace morph {
         // Does the range include v?
         constexpr bool includes (const T& v) { return (v <= this->max && v >= this->min); }
 
+        // What's the 'span of the range'?
+        constexpr T span() const { return this->max - this->min; }
+
         // Overload the stream output operator
         friend std::ostream& operator<< <T> (std::ostream& os, const range<T>& r);
     };

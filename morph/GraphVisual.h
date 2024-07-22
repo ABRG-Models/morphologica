@@ -422,7 +422,8 @@ namespace morph {
         }
 
         //! Special setdata for a morph::histo object
-        void setdata (const morph::histo<Flt>& h, const std::string name = "")
+        template<typename H>
+        void setdata (const morph::histo<H, Flt>& h, const std::string name = "")
         {
             DatasetStyle ds(this->policy);
             if (!name.empty()) { ds.datalabel = name; }
@@ -432,7 +433,7 @@ namespace morph {
             ds.markerstyle = morph::markerstyle::bar;
             // How to choose? User sets afterwards?
             ds.showlines = true;
-            ds.markersize = (this->width - this->width*2*this->dataaxisdist) * (h.binwidth / h.range);
+            ds.markersize = (this->width - this->width*2*this->dataaxisdist) * (h.binwidth / static_cast<Flt>(h.datarange.span()));
             ds.linewidth = ds.markersize/10.0;
 
             unsigned int data_index = this->graphDataCoords.size();
@@ -447,7 +448,8 @@ namespace morph {
         }
 
         //! Set graph from histogram with pre-configured datasetstyle
-        void setdata (const morph::histo<Flt>& h, const DatasetStyle& ds)
+        template<typename H>
+        void setdata (const morph::histo<H, Flt>& h, const DatasetStyle& ds)
         {
             // Because this is bar graph data, make sure to compute the ord1_scale now from
             // 0 -> max and NOT from min -> max.
