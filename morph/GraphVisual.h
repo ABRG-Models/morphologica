@@ -422,8 +422,8 @@ namespace morph {
         }
 
         //! Special setdata for a morph::histo object
-        template<typename T>
-        void setdata (const morph::histo<T>& h, const std::string name = "")
+        template<typename H>
+        void setdata (const morph::histo<H, Flt>& h, const std::string name = "")
         {
             DatasetStyle ds(this->policy);
             if (!name.empty()) { ds.datalabel = name; }
@@ -448,7 +448,8 @@ namespace morph {
         }
 
         //! Set graph from histogram with pre-configured datasetstyle
-        void setdata (const morph::histo<Flt>& h, const DatasetStyle& ds)
+        template<typename H>
+        void setdata (const morph::histo<H, Flt>& h, const DatasetStyle& ds)
         {
             // Because this is bar graph data, make sure to compute the ord1_scale now from
             // 0 -> max and NOT from min -> max.
