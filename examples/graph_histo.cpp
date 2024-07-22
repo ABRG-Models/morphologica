@@ -11,7 +11,6 @@
 
 int main()
 {
-    //using F = int;
     // Find the distribution of the values of 1000 * sin(x) for 0 <= x <= 2pi (in 1000 steps)
     morph::vvec<float> numbers (1000);
     numbers.linspace (0.0f, morph::mathconst<float>::two_pi);
@@ -22,10 +21,10 @@ int main()
     morph::vvec<int> inumbers = numbers.as<int>();
 
     // Make a histogram of the values of 1000 sin(x) with 30 bins. The first template
-    // argument is for the type of the elmeents that will be counted up. The second
+    // argument is for the type of the elements that will be counted up. The second
     // template arg is the floating point type to use to compute proportions (bin
-    // positions, width, etc). This is float by default, but is left explicit in this
-    // example.
+    // positions, width, etc). This is float by default (which should be fine in most
+    // cases), but is left explicit in this example.
     morph::histo<int, float> h(inumbers, 30);
 
     // Set up a morph::Visual for a graph
