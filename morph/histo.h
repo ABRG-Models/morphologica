@@ -30,9 +30,10 @@ namespace morph {
             // Compute bin widths from range of data and n.
             this->datarange = morph::MathAlgo::maxmin (data);
             if (this->datarange.span() == H{0}) {
-                throw std::runtime_error ("morph::histo: range == 0, can't make a histogram");
+                throw std::runtime_error ("morph::histo: range span is 0, can't make a histogram");
             }
-            this->binwidth = static_cast<T>(this->datarange.span()) / static_cast<T>(n);
+            T d_span = static_cast<T>(this->datarange.span());
+            this->binwidth = d_span / static_cast<T>(n);
             for (std::size_t i = 0; i < n; ++i) {
                 // bins[i] = min + i*bw + bw/2 but do the additions after the loop
                 this->bins[i] = i * this->binwidth;
@@ -42,7 +43,6 @@ namespace morph {
             this->binedges += this->datarange.min;
 
             // Compute counts
-            T d_span = static_cast<T>(this->datarange.span());
             for (auto datum : data) {
                 T bin_proportion = static_cast<T>(datum - this->datarange.min) / d_span;
                 if (std::abs(bin_proportion - T{1}) < std::numeric_limits<T>::epsilon()) {
