@@ -509,3 +509,6 @@ add_test(testGrid_getabscissae testGrid_getabscissae)
 
 add_executable(testloadpng testloadpng.cpp)
 add_test(testloadpng testloadpng)
+
+add_executable(test_histo test_histo.cpp)
+add_test(test_histo test_histo)

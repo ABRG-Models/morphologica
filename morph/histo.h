@@ -12,12 +12,32 @@
 namespace morph {
 
     /*!
-     * \tparam H The type of the data from which to make the histogram
-     * \tparam T The floating point type for proportions, etc
+     * A histogram class. Construct with data of type H and access bin locations
+     *
+     * \tparam H The type of the data from which to make the histogram. May be a floating point or
+     * integer type.
+     *
+     * \tparam T The floating point type for proportions, etc. Must be a floating point type.
      */
     template <typename H=float, typename T=float>
     struct histo
     {
+        /*!
+         * Histogram constructor
+         *
+         * The constructor does all of the computation of the histogram. The workflow is Construct
+         * -> access results in histo::bins histo::binwidth histo::proportions and histo::counts
+         *
+         * \param data The histogram data
+         *
+         * \param n The number of bins to sort the data values into
+         *
+         * \tparam Container A container (std::vector, std::array, morph::vvec, etc) of data values
+         * of type H
+         *
+         * \tparam Allocator The memory allocator for the container. You don't usually need to
+         * specify this.
+         */
         template < template <typename, typename> typename Container,
                    typename Allocator=std::allocator<H> >
         histo (const Container<H, Allocator>& data, std::size_t n)
@@ -60,13 +80,21 @@ namespace morph {
             this->proportions = counts.as<T>()/this->datacount;
         }
 
-        // The max and min of the histogram data
+        //! The max and min of the histogram data. Computed in constructor.
         morph::range<H> datarange;
-        std::size_t datacount = 0u; // how many elements were there in data?
-        T binwidth = T{0}; // Width of each bin
-        morph::vvec<T> bins; // centres of bins
+        //! how many elements were there in data?
+        std::size_t datacount = 0u;
+        //! A computed width for each bin. Computed from the values that appear in the data
+        //! (i.e. from the datarange)
+        T binwidth = T{0};
+        //! The location of the centres of the bins. Computed in terms of the binwidth. n elements
+        //! (where n is a site_t passed to the constructor).
+        morph::vvec<T> bins;
+        //! The location of the edges of the bins. Computed in terms of the binwidth. n+1 elements.
         morph::vvec<T> binedges;
+        //! The counts for each bin. n elements.
         morph::vvec<std::size_t> counts;
+        //! The counts as proportions for each bin. n elements.
         morph::vvec<T> proportions;
     };
 }
