@@ -446,7 +446,12 @@ namespace morph {
                     } else {
                         first_colin = false;
                         // Test if we're off the rectangle
-                        if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) { break; }
+                        if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
+                            if constexpr (this->debug_text) {
+                                std::cout << "Off rectangle for p1=" << p1 << ", q1=" << q1 << "; will break\n";
+                            }
+                            break;
+                        }
                         // From p1, q1 find fp1 and fp1_id
                         find_border_points (p1, q1,  fp1, fq1, fp1_id, fq1_id, bi, ti, li, ri);
                         //std::cout << "Determine fp1 fq1 from find_border_points: " << fp1 << "," << fq1 << std::endl;
