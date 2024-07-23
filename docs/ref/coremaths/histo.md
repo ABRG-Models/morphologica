@@ -14,14 +14,23 @@ Header file: [morph/histo.h](https://github.com/ABRG-Models/morphologica/blob/ma
 `morph::histo` is a simple histogram class. You pass in a container of
 data values and the number of bins you want to sort it into.
 
-`morph::histo` takes two template arguments. The first is the type of
-the data that will be sorted. This could be any numeric type (`int`,
-`float`, `double`, etc). The second is the floating point type for bin
-locations, bin edges, proportions and the bin width.
+`morph::histo` takes two template arguments:
 
-You simply construct a histo object passing in a const reference to
-your data, along with the number of bins you want to place it into,
-then access histo member attributes for the results. Here's an example:
+```c++
+namespace morph {
+    template <typename H=float, typename T=float>
+    struct histo
+```
+
+`H` is the type of the data that will be sorted. This could be any
+numeric type (`int`, `float`, `double`, etc). The second, `T`, is the
+floating point type for bin locations, bin edges, proportions and the
+bin width.
+
+You simply construct a `histo` object, passing in a const reference to
+your data, along with the number of bins you want to place it
+into. Once constructed, you access histo member attributes for the
+results. Here's an example:
 
 ```c++
 #include <morph/histo.h>
@@ -46,7 +55,6 @@ int main()
     std::cout << "bin edges are: " << _binedges << std::endl;
     morph::vvec<std::size_t> _counts = h.counts;
     std::cout << "Counts are: " << _counts << std::endl;
-    std::size_t csum = (_counts - morph::vvec<std::size_t>{ 2, 1, 4 }).sum();
     morph::vvec<float> _proportions = h.proportions;
     std::cout << "Proportions are: " << _proportions << std::endl;
 
