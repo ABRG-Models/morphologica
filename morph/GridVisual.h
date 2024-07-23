@@ -42,14 +42,31 @@ namespace morph {
             // Note: VisualModel::finalize() should be called before rendering
         }
 
+        // Common function to setup scaling. Called by all initializeVertices subroutines. Also
+        // checks size of scalar/vectorData and the Grid match.
         void setupScaling()
         {
+            if (this->grid == nullptr) {
+                throw std::runtime_error ("GridVisual error: grid is a nullptr");
+            }
             if (this->scalarData != nullptr) {
+                // Check scalar data has same size as Grid
+                if (this->scalarData->size() != this->grid->n) {
+                    throw std::runtime_error ("GridVisual error: grid size does not match scalarData size");
+                }
+
                 this->dcopy.resize (this->scalarData->size());
                 this->zScale.transform (*(this->scalarData), dcopy);
                 this->dcolour.resize (this->scalarData->size());
                 this->colourScale.transform (*(this->scalarData), dcolour);
+
             } else if (this->vectorData != nullptr) {
+
+                // Check vector data
+                if (this->vectorData->size() != this->grid->n) {
+                    throw std::runtime_error ("GridVisual error: grid size does not match vectorData size");
+                }
+
                 this->dcopy.resize (this->vectorData->size());
                 this->dcolour.resize (this->vectorData->size());
                 this->dcolour2.resize (this->vectorData->size());
