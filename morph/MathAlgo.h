@@ -206,11 +206,12 @@ namespace morph {
                                            const morph::vec<T, 2>& q,
                                            const morph::vec<T, 2>& r)
         {
-            constexpr T thresh = T{3} * std::numeric_limits<T>::epsilon();
+            constexpr T thresh = T{10} * std::numeric_limits<T>::epsilon();
             T val = (q[1] - p[1]) * (r[0] - q[0])  -  (q[0] - p[0]) * (r[1] - q[1]);
+
             // Mathematically, this would be if (val == T{0}) {...} but we have to consider
             // numerical precision, hence the comparison with thresh (3 epsilons)
-            if (std::abs(val - T{0}) < thresh) { return rotation_sense::colinear; }
+            if (std::abs(val) < thresh) { return rotation_sense::colinear; }
             return (val > T{0}) ? rotation_sense::clockwise : rotation_sense::anticlockwise;
         }
 
