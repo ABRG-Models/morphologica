@@ -612,9 +612,26 @@ namespace morph {
                 throw std::runtime_error ("Grid::resample_image: resampling assumes image has morph::GridOrder::bottomleft_to_topright, so your Grid should, too.");
             }
 
+            morph::vvec<float> expr_resampled(this->w * this->h, 0.0f);
+
+            // Before resampling, check if all the values in image_data are identical. In this case,
+            // we can short-cut the resampling process.
+            float i0 = image_data[0];
+            bool all_same = true;
+            for (auto id : image_data) {
+                if (id != i0) {
+                    all_same = false;
+                    break;
+                }
+            }
+            if (all_same) {
+                // Short-cut - just set all values in the resampled data to the same as in the input data
+                expr_resampled.set_from (i0);
+                return expr_resampled;
+            }
+
             unsigned int csz = image_data.size();
             morph::vec<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
-            std::cout << "image_pixelsz = " << image_pixelsz << " csz: " << csz << std::endl;
 
             // Before scaling, image assumed to have width 1, height whatever
             morph::vec<float, 2> image_dims = { 1.0f, 0.0f };
@@ -632,7 +649,6 @@ namespace morph {
             morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
             morph::vec<float, 2> threesig = 3.0f * dist_per_pix;
 
-            morph::vvec<float> expr_resampled(this->w * this->h, 0.0f);
 #pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
             for (typename std::vector<float>::size_type xi = 0u; xi < this->v_x.size(); ++xi) {
                 float expr = 0.0f;

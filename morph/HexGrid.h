@@ -1462,6 +1462,25 @@ namespace morph {
             unsigned int csz = image_data.size();
             morph::vec<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
 
+            // Return data object for the resampled result
+            morph::vvec<float> expr_resampled(this->num(), 0.0f);
+
+            // Before resampling, check if all the values in image_data are identical. In this case,
+            // we can short-cut the resampling process.
+            float i0 = image_data[0];
+            bool all_same = true;
+            for (auto id : image_data) {
+                if (id != i0) {
+                    all_same = false;
+                    break;
+                }
+            }
+            if (all_same) {
+                // Short-cut - just set all values in the resampled data to the same as in the input data
+                expr_resampled.set_from (i0);
+                return expr_resampled;
+            }
+
             // Distance per pixel in the image. This defines the Gaussian width (sigma) for the
             // resample. Assume that the unscaled image pixels are square. Use the image width to
             // set the distance per pixel (hence divide by image_scale by image_pixelsz[*0*]).
@@ -1472,7 +1491,6 @@ namespace morph {
             morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
             morph::vec<float, 2> threesig = 3.0f * dist_per_pix;
 
-            morph::vvec<float> expr_resampled(this->num(), 0.0f);
 #pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
             for (typename std::vector<float>::size_type xi = 0u; xi < this->d_x.size(); ++xi) {
                 float expr = 0.0f;
