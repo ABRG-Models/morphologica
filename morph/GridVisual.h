@@ -51,7 +51,7 @@ namespace morph {
             }
             if (this->scalarData != nullptr) {
                 // Check scalar data has same size as Grid
-                if (this->scalarData->size() != this->grid->n) {
+                if (this->scalarData->size() != static_cast<std::size_t>(this->grid->n)) {
                     throw std::runtime_error ("GridVisual error: grid size does not match scalarData size");
                 }
 
@@ -63,7 +63,7 @@ namespace morph {
             } else if (this->vectorData != nullptr) {
 
                 // Check vector data
-                if (this->vectorData->size() != this->grid->n) {
+                if (this->vectorData->size() != static_cast<std::size_t>(this->grid->n)) {
                     throw std::runtime_error ("GridVisual error: grid size does not match vectorData size");
                 }
 
