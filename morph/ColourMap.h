@@ -41,6 +41,9 @@ namespace morph {
         RGBMono,      // Takes RGB input and outputs a coloured monochrome version (datum varies value)
         RGBGrey,      // Takes RGB input and outputs a greyscale version
         HSV,          // A special map in which two input numbers are used to compute a hue and a saturation.
+        HSV1D,        // A 1D version of HSV, traverses a line across the HSV circle for a set value of hue,
+                      // which determines what colour the value 1 will return. Unlike all the rest of the colour
+                      // maps, this maps the values [-1,1] to colour output.
         Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
 
@@ -135,6 +138,8 @@ namespace morph {
                 cmt = morph::ColourMapType::RGBGrey;
             } else if (_s == "hsv") {
                 cmt = morph::ColourMapType::HSV;
+            } else if (_s == "hsv1d") {
+                cmt = morph::ColourMapType::HSV1D;
             } else if (_s == "monochromegreen") {
                 cmt = morph::ColourMapType::MonochromeGreen;
             } else if (_s == "monochromeblue") {
@@ -217,6 +222,11 @@ namespace morph {
             case morph::ColourMapType::HSV:
             {
                 s = "hsv";
+                break;
+            }
+            case morph::ColourMapType::HSV1D:
+            {
+                s = "hsv1d";
                 break;
             }
             case morph::ColourMapType::MonochromeGreen:
@@ -544,12 +554,20 @@ namespace morph {
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
                 // Copy, enforce range
                 datum = _datum > T{1} ? 1.0f : static_cast<float>(_datum);
-                datum = datum < 0.0f ? 0.0f : datum;
+                if (this->type == ColourMapType::HSV1D) {
+                    datum = datum < T{-1} ? -1.0f : datum;
+                } else {
+                    datum = datum < T{0} ? 0.0f : datum;
+                }
 
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
                 // Copy, and enforce range of datum
-                datum = _datum > 1.0f ? 1.0f : _datum;
-                datum = datum < 0.0f ? 0.0f : datum;
+                datum = _datum > T{1} ? 1.0f : _datum;
+                if (this->type == ColourMapType::HSV1D) {
+                    datum = datum < T{-1} ? -1.0f : datum;
+                } else {
+                    datum = datum < T{0} ? 0.0f : datum;
+                }
 
             } else if constexpr (std::is_same<std::decay_t<T>, bool>::value == true) {
                 datum = _datum ? 1.0f : 0.0f;
@@ -670,6 +688,17 @@ namespace morph {
                 c = { T{0}, datum, T{0} };
                 break;
             }
+            case ColourMapType::HSV1D:
+            {
+                // HSV1D allows val e
+                if (datum >= 0.0f) {
+                    c = ColourMap::hsv2rgb (this->hue, datum, 1.0f);
+                } else {
+                    // hue2 should be set to the 'opposite' of hue.
+                    c = ColourMap::hsv2rgb (this->hue2, -datum, 1.0f);
+                }
+                break;
+            }
             case ColourMapType::Fixed:
             {
                 c = ColourMap::hsv2rgb (this->hue, this->sat, this->val);
@@ -716,6 +745,11 @@ namespace morph {
             case ColourMapType::MonovalGreen:
             {
                 this->hue = 0.333f;
+                break;
+            }
+            case ColourMapType::HSV1D:
+            {
+                this->setHue (0.0f); // sets hue and hue2 (the 'anti' or 'opposite' hue)
                 break;
             }
             default:
@@ -854,6 +888,13 @@ namespace morph {
                 if (this->hue2 > 1.0f) { this->hue2 -= 1.0f; }
                 this->hue3 = h + 0.6667f;
                 if (this->hue3 > 1.0f) { this->hue3 -= 1.0f; }
+                break;
+            }
+            case ColourMapType::HSV1D:
+            {
+                this->hue = h;
+                float antihue = this->hue + 0.5f;
+                this->hue2 = antihue > 1.0f ? antihue - 1.0f : antihue;
                 break;
             }
             default:
