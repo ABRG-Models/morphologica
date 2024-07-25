@@ -14,6 +14,6 @@ You'll find tutorial content and class reference material for the library on the
 
 ## Quick links to Reference sections
 
-* [Core maths reference](/ref/coremaths)
-* [Visualization reference](/ref/visual)
-* [Data/Config reference](/ref/simsupport)
+* [Core maths reference](/morphologica/ref/coremaths)
+* [Visualization reference](/morphologica/ref/visual)
+* [Data/Config reference](/morphologica/ref/simsupport)
