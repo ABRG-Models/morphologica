@@ -59,8 +59,8 @@ int main (int ac, char** av)
     myvisual v(1024, 768, "Grating");
     v.setSceneTrans (morph::vec<float,3>({-0.990124f, -0.452241f, -3.6f}));
 
-    if (ac > 1) { v.t = std::atoi (av[1]); } // First arg is time
-    if (ac > 2) { v.angle = std::atoi (av[2]); } // second is angle
+    if (ac > 1) { v.angle = std::atoi (av[1]); } // First arg is angle
+    if (ac > 2) { v.t = std::atoi (av[2]); } // second is time
 
     constexpr bool interactive = true;
 
@@ -69,9 +69,9 @@ int main (int ac, char** av)
 
         auto rvm = std::make_unique<morph::GratingVisual<>> (offset);
         v.bindmodel (rvm);
-        rvm->v_front = { 0.02f, 0.02f };
+        rvm->v_front = { -0.01f, 0.0173f };
         rvm->t = v.t;
-        rvm->lambda = .1;
+        rvm->lambda = 1.0;
         rvm->alpha = v.angle;
         rvm->finalize();
         auto rvmp = v.addVisualModel (rvm);
