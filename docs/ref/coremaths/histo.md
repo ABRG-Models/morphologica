@@ -75,4 +75,4 @@ Counts are: (2,1,4)
 Proportions are: (0.285714298,0.142857149,0.571428597)
 ```
 
-You can graph your histograms with [`morph::GraphVisual`](/ref/visual/graphvisual). See any of the examples [graph_histo.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph_histo.cpp), [randvec.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/randvec.cpp) or [bootstrap.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/bootstrap.cpp).
+You can graph your histograms with [`morph::GraphVisual`](/morphologica/ref/visual/graphvisual). See any of the examples [graph_histo.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph_histo.cpp), [randvec.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/randvec.cpp) or [bootstrap.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/bootstrap.cpp).
