@@ -134,7 +134,7 @@ namespace morph {
          * Construct a new visualiser. The rule is 1 window to one Visual object. So, this creates a
          * new window and a new OpenGL context.
          */
-        Visual (int width, int height, const std::string& _title, const bool _version_stdout = true)
+        Visual (const int width, const int height, const std::string& _title, const bool _version_stdout = true)
             : window_w(width)
             , window_h(height)
             , title(_title)
@@ -148,7 +148,7 @@ namespace morph {
          * Construct with specified coordinate arrows offset (caOffset) lengths (caLength),
          * thickness scaling factor (caThickness) and coordinate arrow 'm' size, caEm.
          */
-        Visual (int width, int height, const std::string& _title,
+        Visual (const int width, const int height, const std::string& _title,
                 const morph::vec<float, 2> caOffset, const morph::vec<float, 3> caLength,
                 const float caThickness, const float caEm, const bool _version_stdout = true)
             : window_w(width)
@@ -556,7 +556,7 @@ namespace morph {
         }
 
         //! Compute a translation vector for text position, using Visual::text_z.
-        morph::vec<float, 3> textPosition (morph::vec<float, 2> p0_coord)
+        morph::vec<float, 3> textPosition (const morph::vec<float, 2> p0_coord)
         {
             // For the depth at which a text object lies, use this->text_z.  Use forward
             // projection to determine the correct z coordinate for the inverse
@@ -751,10 +751,10 @@ namespace morph {
             this->scenetrans_default = _xyz;
         }
 
-        void lightingEffects (bool effects_on = true)
+        void lightingEffects (const bool effects_on = true)
         {
-            ambient_intensity = effects_on ? 0.4f : 1.0f;
-            diffuse_intensity = effects_on ? 0.6f : 0.0f;
+            this->ambient_intensity = effects_on ? 0.4f : 1.0f;
+            this->diffuse_intensity = effects_on ? 0.6f : 0.0f;
         }
 
         //! Save all the VisualModels in this Visual out to a GLTF format file
