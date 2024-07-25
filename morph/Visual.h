@@ -747,7 +747,6 @@ namespace morph {
             if (_xyz[2] > 0.0f) {
                 std::cerr << "WARNING setSceneTrans(vec<>&): Normally, the default z value is negative.\n";
             }
-            this->setZDefault (_xyz[2]);
             this->scenetrans = _xyz;
             this->scenetrans_default = _xyz;
         }
