@@ -23,10 +23,6 @@ int main()
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
     v.sceneLocked = false;
-    // Whole-scene offsetting uses two methods - this one to set the depth at which the object is drawn
-    v.setZDefault (-5.0f);
-    // ...and this one to set the x/y offset. Try pressing 'z' in the app window to see what the current sceneTrans is
-    v.setSceneTransXY (0.0f, 0.0f);
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
     // The coordinate arrows can be hidden

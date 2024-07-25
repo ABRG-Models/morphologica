@@ -85,9 +85,6 @@
 #define LODEPNG_NO_COMPILE_ANCILLARY_CHUNKS 1
 #include <morph/lodepng.h>
 
-//! The default z=0 position for VisualModels
-#define Z_DEFAULT -5
-
 namespace morph {
 
     //! Whether to render with perspective or orthographic (or even a cylindrical projection)
@@ -711,17 +708,8 @@ namespace morph {
         //! Set a black background colour for the Visual scene
         void backgroundBlack() { this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f }; }
 
-        //! Setter for zDefault. Sub called by Visual::setSceneTransZ().
-        void setZDefault (float f)
-        {
-            if (f > 0.0f) {
-                std::cerr << "WARNING setZDefault(): Normally, the default z value is negative.\n";
-            }
-            this->zDefault = f;
-        }
-
         //! Set the scene's x and y values at the same time.
-        void setSceneTransXY (float _x, float _y)
+        void setSceneTransXY (const float _x, const float _y)
         {
             this->scenetrans[0] = _x;
             this->scenetrans[1] = _y;
@@ -729,30 +717,28 @@ namespace morph {
             this->scenetrans_default[1] = _y;
         }
         //! Set the scene's y value. Use this to shift your scene objects left or right
-        void setSceneTransX (float _x) { this->scenetrans[0] = _x; this->scenetrans_default[0] = _x; }
+        void setSceneTransX (const float _x) { this->scenetrans[0] = _x; this->scenetrans_default[0] = _x; }
         //! Set the scene's y value. Use this to shift your scene objects up and down
-        void setSceneTransY (float _y) { this->scenetrans[1] = _y; this->scenetrans_default[1] = _y; }
+        void setSceneTransY (const float _y) { this->scenetrans[1] = _y; this->scenetrans_default[1] = _y; }
         //! Set the scene's z value. Use this to bring the 'camera' closer to your scene
         //! objects (that is, your morph::VisualModel objects).
-        void setSceneTransZ (float _z)
+        void setSceneTransZ (const float _z)
         {
             if (_z > 0.0f) {
                 std::cerr << "WARNING setSceneTransZ(): Normally, the default z value is negative.\n";
             }
-            this->setZDefault (_z);
             this->scenetrans[2] = _z;
             this->scenetrans_default[2] = _z;
         }
         void setSceneTrans (float _x, float _y, float _z)
         {
-            if (_z>0.0f) {
+            if (_z > 0.0f) {
                 std::cerr << "WARNING setSceneTrans(): Normally, the default z value is negative.\n";
             }
             this->scenetrans[0] = _x;
             this->scenetrans_default[0] = _x;
             this->scenetrans[1] = _y;
             this->scenetrans_default[1] = _y;
-            this->setZDefault (_z);
             this->scenetrans[2] = _z;
             this->scenetrans_default[2] = _z;
         }
@@ -1035,9 +1021,6 @@ namespace morph {
                                                                                this->title);
         }
 
-        //! The default z=0 position for HexGridVisual models
-        float zDefault = Z_DEFAULT;
-
     private:
         //! The window (and OpenGL context) for this Visual
         morph::win_t* window = nullptr;
@@ -1083,11 +1066,15 @@ namespace morph {
         //! Current cursor position
         morph::vec<float,2> cursorpos = { 0.0f, 0.0f };
 
-        //! Holds the translation coordinates for the current location of the entire scene
-        morph::vec<float, 3> scenetrans = {0.0f, 0.0f, Z_DEFAULT};
+        //! The default z position for VisualModels should be 'away from the screen' (negative) so we can see them!
+        constexpr static float zDefault = -5.0f;
 
-        //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
-        morph::vec<float, 3> scenetrans_default = { 0.0f, 0.0f, Z_DEFAULT };
+        //! Holds the translation coordinates for the current location of the entire scene
+        morph::vec<float, 3> scenetrans = {0.0f, 0.0f, zDefault};
+
+        //! Default for scenetrans. This is a scene position that can be reverted to, to
+        //! 'reset the view'. This is copied into scenetrans when user presses Ctrl-a.
+        morph::vec<float, 3> scenetrans_default = { 0.0f, 0.0f, zDefault };
 
         //! The world depth at which text objects should be rendered
         float text_z = -1.0f;
