@@ -27,6 +27,7 @@ struct myvisual final : public morph::Visual<>
     unsigned long long int t = 0;
     // Flag if we should reinit the model
     bool needs_reinit = false;
+    bool do_loop2 = true;
 
 protected:
     void key_callback_extra (int key, [[maybe_unused]]int scancode, int action, [[maybe_unused]]int mods) override
@@ -61,7 +62,7 @@ int main (int ac, char** av)
 
     if (ac > 1) { v.angle = std::atoi (av[1]); } // First arg is angle
     if (ac > 2) { v.t = std::atoi (av[2]); } // second is time
-
+    if (ac > 3) { v.do_loop2 = (std::atoi (av[3]) == 0) ? false : true; }
     constexpr bool interactive = true;
 
     try {
@@ -71,6 +72,7 @@ int main (int ac, char** av)
         v.bindmodel (rvm);
         rvm->v_front = { -0.01f, 0.0173f };
         rvm->t = v.t;
+        rvm->do_loop2 = v.do_loop2;
         rvm->lambda = 1.0;
         rvm->alpha = v.angle;
         rvm->finalize();
