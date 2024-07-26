@@ -329,11 +329,18 @@ namespace morph {
              * border intersection identifications.
              */
             auto draw_fill_in_shape = [this, top_left, bot_left, bot_right, top_right]
-            (const vec<float, 2>& _p_step, const vec<float, 2>& fp, const vec<float, 2>& fq,
-             const border_id& fp_id, const border_id& fq_id, const std::array<float, 3>& _col)
+            (const vec<float, 2>& _p, const vec<float, 2>& _p_step,
+             const vec<float, 2>& fp, const vec<float, 2>& fq,
+             const border_id& fp_id, const border_id& fq_id, const std::array<float, 3>& _col,
+             const std::set<border_id>& _border_id_set)
             {
                 std::cout << "Called with fp/fq: " << fp << "/" << fq << " and border ids (fp/fq): "
                           << border_id_str(fp_id) << "-" << border_id_str(fq_id) << "\n";
+
+                // Idea is to use this set of ids to help figure out how to choose the right corner
+                std::cout << "_border_id_set size: " << _border_id_set.size() << std::endl;
+                for (auto bid : _border_id_set) { std::cout << border_id_str (bid) << ","; }
+                std::cout <<std::endl;
 
                 vec<float, 2> corner = { 0, 0 };
                 vec<float, 2> corner_2 = { -100, -100 };
@@ -353,56 +360,71 @@ namespace morph {
 
                 } else if ((fp_id == border_id::bottom && fq_id == border_id::top)
                            || (fq_id == border_id::bottom && fp_id == border_id::top)) {
-                    // vertical bands
-                    if (fp_id == border_id::top) {
-                        if (_p_step[0] > 0.0f) {
-                            corner = top_right;
-                        } else {
-                            corner = top_left;
-                        }
-                    } else { // fp_id == border_id::bottom
-                        if (_p_step[0] > 0.0f) {
-                            corner = bot_right;
-                        } else {
-                            corner = bot_left;
-                        }
-                    }
-                    if (corner == top_right) {
-                        corner_2 = bot_right;
-                    } else if (corner == top_left) {
-                        corner_2 = bot_left;
-                    } else if (corner == bot_left) {
-                        corner_2 = top_left;
+                    if (_border_id_set.size() == 3) {
+                        float d_to_left = (_p - bot_left).length();
+                        float d_to_right = (_p - bot_right).length();
+                        corner = d_to_left < d_to_right ? bot_left : bot_right;
+                        corner_2 = d_to_left < d_to_right ? top_left : top_right;
                     } else {
-                        corner_2 = top_right;
+                        // vertical bands
+                        if (fp_id == border_id::top) {
+                            if (_p_step[0] > 0.0f) {
+                                corner = top_right;
+                            } else {
+                                corner = top_left;
+                            }
+                        } else { // fp_id == border_id::bottom
+                            if (_p_step[0] > 0.0f) {
+                                corner = bot_right;
+                            } else {
+                                corner = bot_left;
+                            }
+                        }
+                        if (corner == top_right) {
+                            corner_2 = bot_right;
+                        } else if (corner == top_left) {
+                            corner_2 = bot_left;
+                        } else if (corner == bot_left) {
+                            corner_2 = top_left;
+                        } else {
+                            corner_2 = top_right;
+                        }
                     }
 
                 } else if ((fp_id == border_id::left && fq_id == border_id::right)
                            || (fq_id == border_id::left && fp_id == border_id::right)) {
-                    // horz bands. Top or bottom? Use p_step to indicate the direction towards the edge
-                    if (fp_id == border_id::left) {
-                        if (_p_step[1] > 0.0f) { // drawing towards top
-                            corner = top_left;
-                        } else {
-                            corner = bot_left;
-                        }
-                    } else { // fp_id == border_id::right
-                        if (_p_step[1] > 0.0f) {
-                            corner = top_right;
-                        } else {
-                            corner = bot_right;
-                        }
-                    }
-                    if (corner == top_right) {
-                        corner_2 = top_left;
-                    } else if (corner == top_left) {
-                        corner_2 = top_right;
-                    } else if (corner == bot_left) {
-                        corner_2 = bot_right;
+                    if (_border_id_set.size() == 3) {
+                        // Use fp or fq?
+                        float d_to_top = (_p - top_left).length(); // surely not _p? Or actually, that was *current* p.
+                        float d_to_bottom = (_p - bot_left).length();
+                        corner = d_to_top < d_to_bottom ? top_left : bot_left;
+                        corner_2 = d_to_top < d_to_bottom ? top_right : bot_right;
                     } else {
-                        corner_2 = bot_left;
-                    }
+                        // horz bands. Top or bottom? Use p_step to indicate the direction towards the edge
 
+                        if (fp_id == border_id::left) {
+                            if (_p_step[1] > 0.0f) { // drawing towards top
+                                corner = top_left;
+                            } else {
+                                corner = bot_left;
+                            }
+                        } else { // fp_id == border_id::right
+                            if (_p_step[1] > 0.0f) {
+                                corner = top_right;
+                            } else {
+                                corner = bot_right;
+                            }
+                        }
+                        if (corner == top_right) {
+                            corner_2 = top_left;
+                        } else if (corner == top_left) {
+                            corner_2 = top_right;
+                        } else if (corner == bot_left) {
+                            corner_2 = bot_right;
+                        } else {
+                            corner_2 = bot_left;
+                        }
+                    }
                 } else {
                     throw std::runtime_error ("unexpected corner");
                 }
@@ -541,6 +563,8 @@ namespace morph {
                     fp2_id = border_id::unknown;
                     fq2_id = border_id::unknown;
 
+                    std::set<border_id> border_id_set;
+
                     // Is the first edge off the rectangle?
                     bool first_off = false;
                     // Is the second edge off the rectangle?
@@ -604,6 +628,8 @@ namespace morph {
                             find_border_points (p1, q1,  fp1, fq1, fp1_id, fq1_id, bi, ti, li, ri);
                         }
                     }
+                    border_id_set.insert (fp1_id);
+                    border_id_set.insert (fq1_id);
 
                     // Second line (p2-q2)
                     p2 = p + p_step + half_wave;
@@ -650,7 +676,7 @@ namespace morph {
                                 // Draw fill in shape using the first line
                                 std::cout << "** DRAW band-replacement fill-in for p="<<p<<",fp1="<<fp1<<"/fq1="<<fq1<<"!\n";
                                 std::cout << "...border_ids: " << border_id_str(fp1_id) << "-" << border_id_str(fq1_id) << "\n";
-                                draw_fill_in_shape (p_step, fp1, fq1, fp1_id, fq1_id, band_repl_col);
+                                draw_fill_in_shape (p, p_step, fp1, fq1, fp1_id, fq1_id, band_repl_col, border_id_set);
                             }
 #if 0
                             // Set fp2, fq2 to the closest corner?
@@ -661,12 +687,16 @@ namespace morph {
                         } else {
                             if constexpr (this->debug_text) { std::cout << "Second band-edge was ON; find fp2 and fq2...\n"; }
                             find_border_points (p2, q2,  fp2, fq2, fp2_id, fq2_id, bi, ti, li, ri);
+                            border_id_set.insert (fp2_id);
+                            border_id_set.insert (fq2_id);
                             if (first_off) {
                                 std::cout << "** DRAW band-replacement fill-in (second on/first off)\n";
-                                draw_fill_in_shape (p_step, fp2, fq2, fp2_id, fq2_id, band_repl_col);
+                                draw_fill_in_shape (p, p_step, fp2, fq2, fp2_id, fq2_id, band_repl_col, border_id_set);
                             }
                         }
                     }
+                    border_id_set.insert (fp2_id);
+                    border_id_set.insert (fq2_id);
 
                     // Check to see if we're ready to finish
                     if (first_off && second_off && first_loop) {
@@ -705,29 +735,31 @@ namespace morph {
                             if (fq1_id != border_id::unknown && fq2_id != border_id::unknown && fq1_id != fq2_id) {
                                 std::cout << "** DRAW 'q' band-completion fill-in for p,fq1/fq2!\n";
                                 std::cout << "...border_ids: " << border_id_str(fq1_id) << "-" << border_id_str(fq2_id) << "\n";
-                                draw_fill_in_shape (p_step, fq1, fq2, fq1_id, fq2_id, band_compl_col1);
+                                std::cout << "(other border ids are fp1/fp2: " << border_id_str(fp1_id) << " and " << border_id_str(fp2_id) << ")\n";
+                                // Could make a set<border_id> and its size (2 or 3 or 4) is useful.
+                                draw_fill_in_shape (p, p_step, fq1, fq2, fq1_id, fq2_id, band_compl_col1, border_id_set);
                             }
                             if (fp1_id != border_id::unknown && fp2_id != border_id::unknown && fp1_id != fp2_id) {
                                 std::cout << "** DRAW 'p' band-completion fill-in for p/fp1/fp2!\n";
                                 std::cout << "...border_ids: " << border_id_str(fp1_id) << "-" << border_id_str(fp2_id) << "\n";
-                                draw_fill_in_shape (p_step, fp1, fp2, fp1_id, fp2_id, band_compl_col2);
+                                draw_fill_in_shape (p, p_step, fp1, fp2, fp1_id, fp2_id, band_compl_col2, border_id_set);
                             }
 
                         } else if (!first_off || !second_off) {
                             // At least one of the band edges was on the rectangle, do a fill-in in this case?
-#if 1
+#if 0
                             std::cout << "ONE ON, border_ids: "
                                       << border_id_str(fp1_id) << "-" << border_id_str(fq1_id) << ":"
                                       << border_id_str(fp2_id) << "-" << border_id_str(fq2_id) <<  "\n";
                             if (fq1_id != border_id::unknown && fq2_id != border_id::unknown && fq1_id != fq2_id) {
                                 std::cout << "** DRAW 'q' extra fill-in for p,fq1/fq2!\n";
                                 std::cout << "...border_ids: " << border_id_str(fq1_id) << "-" << border_id_str(fq2_id) << "\n";
-                                draw_fill_in_shape (p_step, fq1, fq2, fq1_id, fq2_id, band_compl_col1);
+                                draw_fill_in_shape (p, p_step, fq1, fq2, fq1_id, fq2_id, band_compl_col1, border_id_set);
                             }
                             if (fp1_id != border_id::unknown && fp2_id != border_id::unknown && fp1_id != fp2_id) {
                                 std::cout << "** DRAW 'p' extra fill-in for p/fp1/fp2!\n";
                                 std::cout << "...border_ids: " << border_id_str(fp1_id) << "-" << border_id_str(fp2_id) << "\n";
-                                draw_fill_in_shape (p_step, fp1, fp2, fp1_id, fp2_id, band_compl_col2);
+                                draw_fill_in_shape (p, p_step, fp1, fp2, fp1_id, fp2_id, band_compl_col2, border_id_set);
                             }
 #endif
                         } else {
