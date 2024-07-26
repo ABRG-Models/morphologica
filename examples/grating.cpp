@@ -25,18 +25,22 @@ struct myvisual final : public morph::Visual<>
     float angle = 0.0f;
     // Time
     unsigned long long int t = 0;
+    // band 'wavelength'
+    float lambda = 0.5f;
+
     // Flag if we should reinit the model
     bool needs_reinit = false;
+    bool do_loop2 = true;
 
 protected:
     void key_callback_extra (int key, [[maybe_unused]]int scancode, int action, [[maybe_unused]]int mods) override
     {
         if (action == morph::keyaction::press || action == morph::keyaction::repeat) {
             if (key == morph::key::w) {
-                this->angle += 1.0f;
+                this->angle += this->angle <= 179.0f ? 1.0f : 0.0f;
                 this->needs_reinit = true;
             } else if (key == morph::key::s) {
-                this->angle -= 1.0f;
+                this->angle -= this->angle >= 1.0f ? 1.0f : 0.0f;
                 this->needs_reinit = true;
             } else if (key == morph::key::a) {
                 this->t = this->t > 0 ? this->t - 1 : 0;
@@ -44,9 +48,18 @@ protected:
             } else if (key == morph::key::d) {
                 this->t = this->t + 1;
                 this->needs_reinit = true;
+            } else if (key == morph::key::p) {
+                this->lambda += 0.05f;
+                this->needs_reinit = true;
+            } else if (key == morph::key::l) {
+                this->lambda -= 0.05f;
+                this->lambda = this->lambda < 0.05f ? 0.05f : this->lambda;
+                this->needs_reinit = true;
             }
             if (this->needs_reinit) {
-                std::cout << "Keyboard update: Angle: " << angle << " time: " << this->t << std::endl;
+                std::cout << "\nKeyboard update: " << morph::unicode::toUtf8(morph::unicode::alpha) <<  " = " << angle
+                          << ", time point is " << this->t
+                          << ", " << morph::unicode::toUtf8(morph::unicode::lambda) << " = " << lambda << std::endl;
             }
         }
     }
@@ -59,9 +72,9 @@ int main (int ac, char** av)
     myvisual v(1024, 768, "Grating");
     v.setSceneTrans (morph::vec<float,3>({-0.990124f, -0.452241f, -3.6f}));
 
-    if (ac > 1) { v.t = std::atoi (av[1]); } // First arg is time
-    if (ac > 2) { v.angle = std::atoi (av[2]); } // second is angle
-
+    if (ac > 1) { v.angle = std::atoi (av[1]); } // First arg is angle
+    if (ac > 2) { v.t = std::atoi (av[2]); } // second is time
+    if (ac > 3) { v.do_loop2 = (std::atoi (av[3]) == 0) ? false : true; }
     constexpr bool interactive = true;
 
     try {
@@ -69,9 +82,10 @@ int main (int ac, char** av)
 
         auto rvm = std::make_unique<morph::GratingVisual<>> (offset);
         v.bindmodel (rvm);
-        rvm->v_front = { 0.02f, 0.02f };
+        rvm->v_front = { -0.01f, 0.0173f };
         rvm->t = v.t;
-        rvm->lambda = .1;
+        rvm->do_loop2 = v.do_loop2;
+        rvm->lambda = v.lambda;
         rvm->alpha = v.angle;
         rvm->finalize();
         auto rvmp = v.addVisualModel (rvm);
@@ -83,6 +97,7 @@ int main (int ac, char** av)
                 if (v.needs_reinit == true) {
                     rvmp->t = v.t;
                     rvmp->alpha = v.angle;
+                    rvmp->lambda = v.lambda;
                     rvmp->reinit();
                     v.needs_reinit = false;
                 }
