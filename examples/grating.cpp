@@ -25,6 +25,9 @@ struct myvisual final : public morph::Visual<>
     float angle = 0.0f;
     // Time
     unsigned long long int t = 0;
+    // band 'wavelength'
+    float lambda = 0.5f;
+
     // Flag if we should reinit the model
     bool needs_reinit = false;
     bool do_loop2 = true;
@@ -45,9 +48,18 @@ protected:
             } else if (key == morph::key::d) {
                 this->t = this->t + 1;
                 this->needs_reinit = true;
+            } else if (key == morph::key::p) {
+                this->lambda += 0.05f;
+                this->needs_reinit = true;
+            } else if (key == morph::key::l) {
+                this->lambda -= 0.05f;
+                this->lambda = this->lambda < 0.05f ? 0.05f : this->lambda;
+                this->needs_reinit = true;
             }
             if (this->needs_reinit) {
-                std::cout << "\nKeyboard update: Angle: " << angle << " time: " << this->t << std::endl;
+                std::cout << "\nKeyboard update: " << morph::unicode::toUtf8(morph::unicode::alpha) <<  " = " << angle
+                          << ", time point is " << this->t
+                          << ", " << morph::unicode::toUtf8(morph::unicode::lambda) << " = " << lambda << std::endl;
             }
         }
     }
@@ -73,7 +85,7 @@ int main (int ac, char** av)
         rvm->v_front = { -0.01f, 0.0173f };
         rvm->t = v.t;
         rvm->do_loop2 = v.do_loop2;
-        rvm->lambda = 1.0;
+        rvm->lambda = v.lambda;
         rvm->alpha = v.angle;
         rvm->finalize();
         auto rvmp = v.addVisualModel (rvm);
@@ -85,6 +97,7 @@ int main (int ac, char** av)
                 if (v.needs_reinit == true) {
                     rvmp->t = v.t;
                     rvmp->alpha = v.angle;
+                    rvmp->lambda = v.lambda;
                     rvmp->reinit();
                     v.needs_reinit = false;
                 }
