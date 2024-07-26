@@ -599,7 +599,7 @@ namespace morph {
                             if (!first_colin && !first_off) {
                                 // Draw fill in shape using the first line
                                 if constexpr (debug_text) {
-                                    std::cout << "** DRAW band-replacement fill-in for p="<<p<<",fp1="<<fp1<<"/fq1="<<fq1<<"!\n";
+                                    std::cout << "** DRAW " << (i%2==0?"G":"B") << " band-replacement fill-in for p="<<p<<",fp1="<<fp1<<"/fq1="<<fq1<<"!\n";
                                     std::cout << "...border_ids: " << border_id_str(fp1_id) << "-" << border_id_str(fq1_id) << "\n";
                                 }
                                 draw_fill_in_shape (p, p_step, fp1, fq1, fp1_id, fq1_id, band_repl_col, border_id_set);
@@ -612,7 +612,7 @@ namespace morph {
                             border_id_set.insert (fp2_id);
                             border_id_set.insert (fq2_id);
                             if (first_off) {
-                                if constexpr (debug_text) { std::cout << "** DRAW band-replacement fill-in (second on/first off)\n"; }
+                                if constexpr (debug_text) { std::cout << "** DRAW " << (i%2==0?"G":"B") << " band-replacement fill-in (second on/first off)\n"; }
                                 draw_fill_in_shape (p, p_step, fp2, fq2, fp2_id, fq2_id, band_repl_col, border_id_set);
                             }
                         }
@@ -626,6 +626,7 @@ namespace morph {
                         // on to the next band and try again before breaking.
                         if constexpr (debug_text) { std::cout << "Both OFF; first loop; continue\n"; }
                         first_loop = false;
+                        i++; // Keeps colours right?
                         continue; // with no i++?
                     } else if (first_off && second_off) {
                         // Both band edges are off the rectangle; time to break out.
@@ -639,17 +640,17 @@ namespace morph {
                             // Does fp1-fp2 intersect with fq1-fq2? (if so triangles for the band will draw badly so swap a pair)
                             std::bitset<2> fpi = morph::MathAlgo::segments_intersect (fp1, fp2, fq1, fq2);
                             if (fpi.test(0)) { this->swap_pair (fp2, fq2, fp2_id, fq2_id); }
-                            if constexpr (debug_text) { std::cout << "** DRAW " << (i%2==0?"GREEN":"BLUE") << " band\n"; }
+                            if constexpr (debug_text) { std::cout << "** DRAW " << (i%2==0?"G":"B") << " band\n"; }
                             this->draw_band (fp1, fq1, fp2, fq2, col);
 
                             // Complete the band
                             if (fq1_id != border_id::unknown && fq2_id != border_id::unknown && fq1_id != fq2_id) {
-                                if constexpr (debug_text) { std::cout << "** DRAW 'q' band-completion fill-in for p,fq1/fq2!\n"; }
+                                if constexpr (debug_text) { std::cout << "** DRAW " << (i%2==0?"G":"B") << " 'q' band-completion fill-in for p,fq1/fq2!\n"; }
                                 // Could make a set<border_id> and its size (2 or 3 or 4) is useful.
                                 draw_fill_in_shape (p, p_step, fq1, fq2, fq1_id, fq2_id, band_compl_col1, border_id_set);
                             }
                             if (fp1_id != border_id::unknown && fp2_id != border_id::unknown && fp1_id != fp2_id) {
-                                if constexpr (debug_text) { std::cout << "** DRAW 'p' band-completion fill-in for p/fp1/fp2!\n"; }
+                                if constexpr (debug_text) { std::cout << "** DRAW " << (i%2==0?"G":"B") << " 'p' band-completion fill-in for p/fp1/fp2!\n"; }
                                 draw_fill_in_shape (p, p_step, fp1, fp2, fp1_id, fp2_id, band_compl_col2, border_id_set);
                             }
 
@@ -658,7 +659,6 @@ namespace morph {
                         } else {
                             // No drawing; nothing on rectangle
                         }
-
 
                         if constexpr (debug_geometry) {
                             this->computeSphere (this->idx, fp1.plus_one_dim(), morph::colour::crimson, 0.01f, 16, 20);
@@ -716,8 +716,8 @@ namespace morph {
         unsigned long long int t = 0;
         bool do_loop2 = true;
         //! Draw in colours that are helpful for debugging?
-        static constexpr bool debug_geometry = true;
-        static constexpr bool debug_text = true;
+        static constexpr bool debug_geometry = false;
+        static constexpr bool debug_text = false;
     };
 
 } // namespace morph
