@@ -33,10 +33,10 @@ protected:
     {
         if (action == morph::keyaction::press || action == morph::keyaction::repeat) {
             if (key == morph::key::w) {
-                this->angle += 1.0f;
+                this->angle += this->angle <= 179.0f ? 1.0f : 0.0f;
                 this->needs_reinit = true;
             } else if (key == morph::key::s) {
-                this->angle -= 1.0f;
+                this->angle -= this->angle >= 1.0f ? 1.0f : 0.0f;
                 this->needs_reinit = true;
             } else if (key == morph::key::a) {
                 this->t = this->t > 0 ? this->t - 1 : 0;
@@ -46,7 +46,7 @@ protected:
                 this->needs_reinit = true;
             }
             if (this->needs_reinit) {
-                std::cout << "Keyboard update: Angle: " << angle << " time: " << this->t << std::endl;
+                std::cout << "\nKeyboard update: Angle: " << angle << " time: " << this->t << std::endl;
             }
         }
     }

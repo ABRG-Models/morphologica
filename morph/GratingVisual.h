@@ -146,7 +146,7 @@ namespace morph {
              const std::bitset<2>& _li,
              const std::bitset<2>& _ri)
             {
-                constexpr bool debug_this = true;
+                constexpr bool debug_this = false;
 
                 // How close do intersection points need to be to be considered to be the same?
                 constexpr float thresh = 10.0f * std::numeric_limits<float>::epsilon();
@@ -368,7 +368,7 @@ namespace morph {
                     throw std::runtime_error ("unexpected corner");
                 }
 
-                if (corner_2 == morph::vec<float, 2>{-100, -100 }) {
+                if (corner_2 == morph::vec<float, 2>{-100, -100}) {
                     // Draw triangle
                     this->vertex_push (fp.plus_one_dim(), this->vertexPositions);
                     this->vertex_push (fq.plus_one_dim(), this->vertexPositions);
@@ -432,6 +432,7 @@ namespace morph {
                                 bot_left, top_left, bot_right, top_right]
             (unsigned int i, const vec<float, 2>& p_step)
             {
+                std::cout << "loop_lambda called with i = " << i << std::endl;
                 vec<float, 2> p1 = {0,0}, q1 = {0,0}, p2 = {0,0}, q2 = {0,0};
                 vec<float, 2> fp1 = {0,0}, fp2 = {0,0}, fq1 = {0,0}, fq2 = {0,0};
 
@@ -490,38 +491,45 @@ namespace morph {
                 bool first_loop = true;
                 for (vec<float, 2> p = p_0; ; p += p_step) {
 
+                    std::cout << "\nBAND " << i << std::endl;
+                    fp1 = {0,0}; fp2 = {0,0}; fq1 = {0,0}; fq2 = {0,0};
+
+                    // Identifiers for the final crossing points.
+                    fp1_id = border_id::unknown;
+                    fq1_id = border_id::unknown;
+                    fp2_id = border_id::unknown;
+                    fq2_id = border_id::unknown;
+
                     // Is the first edge off the rectangle?
                     bool first_off = false;
                     // Is the second edge off the rectangle?
                     bool second_off = false;
 
                     std::array<float, 3> col = i%2==0 ? colour1 : colour2;
+                    std::array<float, 3> band_repl_col = col;
+                    std::array<float, 3> band_compl_col1 = col;
+                    std::array<float, 3> band_compl_col2 = col;
                     if constexpr (debug_geometry) {
-                        col = i%2==0 ? morph::colour::seagreen3 : morph::colour::dodgerblue3;
+                        col = i%2==0 ? morph::colour::green2 : morph::colour::blue2;
+                        band_repl_col = (i%2==0 ? morph::colour::palegreen : morph::colour::lightblue1);
+                        band_compl_col1 = (i%2==0 ? morph::colour::lightgreen : morph::colour::lightblue2);
+                        band_compl_col2 = (i%2==0 ? morph::colour::palegreen3 : morph::colour::lightblue3);
                     }
-                    i++;
 
                     // First line of a 'band' p1-q1
                     p1 = p + half_wave;
                     q1 = p - half_wave;
 
                     // Compute intersections for p1, q1
-                    if constexpr (this->debug_text) {
-                        std::cout << "Compute intersections for p1, q1 with bottom border...\n";
-                    }
                     std::bitset<2> bi = morph::MathAlgo::segments_intersect (p1, q1, bot_p, bot_q);
-                    if constexpr (this->debug_text) {
-                        std::cout << "Compute intersections for p1, q1 with top border...\n";
-                    }
                     std::bitset<2> ti = morph::MathAlgo::segments_intersect (p1, q1, top_p, top_q);
-                    if constexpr (this->debug_text) {
-                        std::cout << "Compute intersections for p1, q1 with left border...\n";
-                    }
                     std::bitset<2> li = morph::MathAlgo::segments_intersect (p1, q1, left_p, left_q);
-                    if constexpr (this->debug_text) {
-                        std::cout << "Compute intersections for p1, q1 with right border...\n";
-                    }
                     std::bitset<2> ri = morph::MathAlgo::segments_intersect (p1, q1, right_p, right_q);
+                    std::cout << "p1/q1 segments intersection  bi: " << bi
+                              << "  ti: " << ti
+                              << "  li: " << li
+                              << "  ri: " << ri
+                              << std::endl;
 
                     // Check colinearity; in which case set fp1 & fq1 to the relevant corners.
                     bool first_colin = true;
@@ -542,20 +550,21 @@ namespace morph {
                         // Test if we're off the rectangle
                         if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
                             if constexpr (this->debug_text) {
-                                std::cout << "First was OFF rectangle\n";
+                                std::cout << "First band-edge was OFF rectangle\n";
                             }
                             first_off = true;
-                            // Set fp1, fq1 to the closest corner
+                            // Set fp1, fq1 to the closest corner. Necessary?
+                            std::cout << border_id_str(closest_id_p) <<","<< border_id_str(closest_id_q) << std::endl;
+                            /*
                             fp1 = bot_left;
                             fq1 = bot_left;
                             fp1_id = closest_id_p;
                             fq1_id = closest_id_q;
-
+                            */
                         } else {
-                            if constexpr (this->debug_text) { std::cout << "First was ON; find_border_points()\n"; }
+                            if constexpr (this->debug_text) { std::cout << "First band-edge was ON; find fp1 and fq1...\n"; }
                             // From p1, q1 find fp1 and fp1_id
                             find_border_points (p1, q1,  fp1, fq1, fp1_id, fq1_id, bi, ti, li, ri);
-                            //std::cout << "Determine fp1 fq1 from find_border_points: " << fp1 << "," << fq1 << std::endl;
                         }
                     }
 
@@ -564,7 +573,7 @@ namespace morph {
                     q2 = p + p_step - half_wave;
 
                     if constexpr (debug_geometry) {
-                        this->computeSphere (this->idx, p_0.plus_one_dim(), morph::colour::crimson, 0.02f + i*0.02f, 16, 20);
+                        this->computeSphere (this->idx, p_0.plus_one_dim(), morph::colour::crimson, 0.04f, 16, 20);
                         this->computeSphere (this->idx, p1.plus_one_dim(), morph::colour::grey20, 0.02f + i*0.02f, 16, 20);
                         this->computeSphere (this->idx, q1.plus_one_dim(), morph::colour::grey20, 0.02f + i*0.02f, 16, 20);
                         this->computeSphere (this->idx, p2.plus_one_dim(), morph::colour::navy, 0.02f + i*0.02f, 16, 20);
@@ -576,6 +585,11 @@ namespace morph {
                     ti = morph::MathAlgo::segments_intersect (p2, q2, top_p, top_q);
                     li = morph::MathAlgo::segments_intersect (p2, q2, left_p, left_q);
                     ri = morph::MathAlgo::segments_intersect (p2, q2, right_p, right_q);
+                    std::cout << "p2/q2 segments intersection  bi: " << bi
+                              << "  ti: " << ti
+                              << "  li: " << li
+                              << "  ri: " << ri
+                              << std::endl;
 
                     if (bi.test(1)) { // colinear with bottom rectangle border
                         fp2 = bot_left;   fp2_id = border_id::bottom;
@@ -593,86 +607,100 @@ namespace morph {
                         // Test if the *second* line of a band is off the rectangle
                         if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
                             // Off rectangle
-                            if (!first_colin) {
+                            std::cout << "Second band-edge was OFF rectangle\n";
+
+                            // Do this after?
+                            if (!first_colin && !first_off) {
                                 // Draw fill in shape using the first line
-                                if constexpr (debug_geometry) {
-                                    draw_fill_in_shape (p, fp1, fq1, fp1_id, fq1_id,
-                                                        (i%2!=0 ? morph::colour::green2 : morph::colour::turquoise1));
-                                } else {
-                                    draw_fill_in_shape (p, fp1, fq1, fp1_id, fq1_id, col);
-                                }
-                            }
-                            if constexpr (this->debug_text) {
-                                std::cout << "Second was OFF rectangle\n";
+                                std::cout << "** DRAW band-replacement fill-in for p="<<p<<",fp1="<<fp1<<"/fq1="<<fq1<<"!\n";
+                                std::cout << "...border_ids: " << border_id_str(fp1_id) << "-" << border_id_str(fq1_id) << "\n";
+                                draw_fill_in_shape (p, fp1, fq1, fp1_id, fq1_id, band_repl_col);
                             }
 #if 0
                             // Set fp2, fq2 to the closest corner?
-                            fp2 = bot_left;
-                            fq2 = bot_left;
-                            fp2_id = closest_id_p;
-                            fq2_id = closest_id_q;
+                            fp2 = bot_left;  fq2 = bot_left;   fp2_id = closest_id_p;  fq2_id = closest_id_q;
 #endif
                             second_off = true;
 
                         } else {
-                            if constexpr (this->debug_text) { std::cout << "Second was ON; find_border_points()\n"; }
+                            if constexpr (this->debug_text) { std::cout << "Second band-edge was ON; find fp2 and fq2...\n"; }
                             find_border_points (p2, q2,  fp2, fq2, fp2_id, fq2_id, bi, ti, li, ri);
                         }
                     }
 
                     // Check to see if we're ready to finish
                     if (first_off && second_off && first_loop) {
-                        // It's possible that the very first band is off the rectangle. In that
-                        // case, move on and try again before breaking.
+                        // The very first band is off the rectangle. In that case, move
+                        // on to the next band and try again before breaking.
+                        std::cout << "Both OFF; first loop; continue\n";
                         first_loop = false;
-                        continue;
+                        continue; // with no i++
                     } else if (first_off && second_off) {
+                        // Both band edges are off the rectangle; time to break out.
+                        std::cout << "Both OFF; not first loop; break\n";
                         break;
-                    }
+                    } else {
+                        std::cout << "Not both off.\n";
+                        if (first_loop) { first_loop = false; }
 
-                    // Does fp1-fp2 intersect with fq1-fq2? (if so triangles will draw badly so swap a pair)
-                    std::bitset<2> fpi = morph::MathAlgo::segments_intersect (fp1, fp2, fq1, fq2);
-                    if (fpi.test(0)) { this->swap_pair (fp2, fq2, fp2_id, fq2_id); }
+                        if (!first_off && !second_off) {
+                            std::cout << "both bands are ON, will draw a band.\n";
+                            // Does fp1-fp2 intersect with fq1-fq2? (if so triangles for the band will draw badly so swap a pair)
+                            std::bitset<2> fpi = morph::MathAlgo::segments_intersect (fp1, fp2, fq1, fq2);
+                            std::cout << "pre-swap, border_ids: "
+                                      << border_id_str(fp1_id) << "-" << border_id_str(fq1_id) << ":"
+                                      << border_id_str(fp2_id) << "-" << border_id_str(fq2_id) <<  "?\n";
+                            if (fpi.test(0)) {
+                                std::cout << "swap_pair\n";
+                                this->swap_pair (fp2, fq2, fp2_id, fq2_id);
+                            }
 
-                    // Determine if fill-in triangles should be drawn
-                    std::cout << "fp1/fp2 fill-in...\n";
-                    if (fp1_id != border_id::unknown && fp2_id != border_id::unknown && fp1_id != fp2_id) {
-                        std::cout << "draw it!\n";
-                        if constexpr (debug_geometry) {
-                            draw_fill_in_shape (p, fp1, fp2, fp1_id, fp2_id,
-                                                (i%2!=0 ? morph::colour::cobaltgreen : morph::colour::royalblue)
-                                                );
+                            // We now possibly have all 4 band vertex points. Do a sanity check
+                            std::cout << "** DRAW band for i=" << i << " "
+                                      << border_id_str(fp1_id) << "-" << border_id_str(fq1_id) << ":"
+                                      << border_id_str(fp2_id) << "-" << border_id_str(fq2_id) <<  "?\n";
+                            this->draw_band (fp1, fq1, fp2, fq2, col);
+
+                            // Complete the band
+                            if (fq1_id != border_id::unknown && fq2_id != border_id::unknown && fq1_id != fq2_id) {
+                                std::cout << "** DRAW 'q' band-completion fill-in for p,fq1/fq2!\n";
+                                std::cout << "...border_ids: " << border_id_str(fq1_id) << "-" << border_id_str(fq2_id) << "\n";
+                                draw_fill_in_shape (p, fq1, fq2, fq1_id, fq2_id, band_compl_col1);
+                            }
+                            if (fp1_id != border_id::unknown && fp2_id != border_id::unknown && fp1_id != fp2_id) {
+                                std::cout << "** DRAW 'p' band-completion fill-in for p/fp1/fp2!\n";
+                                std::cout << "...border_ids: " << border_id_str(fp1_id) << "-" << border_id_str(fp2_id) << "\n";
+                                draw_fill_in_shape (p, fp1, fp2, fp1_id, fp2_id, band_compl_col2);
+                            }
+
+                        } else if (!first_off || !second_off) {
+                            // At least one of the band edges was on the rectangle, do a fill-in in this case?
+                            std::cout << "ONE ON, border_ids: "
+                                      << border_id_str(fp1_id) << "-" << border_id_str(fq1_id) << ":"
+                                      << border_id_str(fp2_id) << "-" << border_id_str(fq2_id) <<  "\n";
+                            if (fq1_id != border_id::unknown && fq2_id != border_id::unknown && fq1_id != fq2_id) {
+                                std::cout << "** DRAW 'q' band-completion fill-in for p,fq1/fq2!\n";
+                                std::cout << "...border_ids: " << border_id_str(fq1_id) << "-" << border_id_str(fq2_id) << "\n";
+                                draw_fill_in_shape (p, fq1, fq2, fq1_id, fq2_id, band_compl_col1);
+                            }
+                            if (fp1_id != border_id::unknown && fp2_id != border_id::unknown && fp1_id != fp2_id) {
+                                std::cout << "** DRAW 'p' band-completion fill-in for p/fp1/fp2!\n";
+                                std::cout << "...border_ids: " << border_id_str(fp1_id) << "-" << border_id_str(fp2_id) << "\n";
+                                draw_fill_in_shape (p, fp1, fp2, fp1_id, fp2_id, band_compl_col2);
+                            }
                         } else {
-                            draw_fill_in_shape (p, fp1, fp2, fp1_id, fp2_id, col);
+                            std::cout << "No drawing, nothing on rectangle\n";
+                        }
+
+
+                        if constexpr (debug_geometry) {
+                            this->computeSphere (this->idx, fp1.plus_one_dim(), morph::colour::crimson, 0.01f, 16, 20);
+                            this->computeSphere (this->idx, fq1.plus_one_dim(), morph::colour::violetred2, 0.01f, 16, 20);
+                            this->computeSphere (this->idx, fp2.plus_one_dim(), morph::colour::royalblue, 0.01f, 16, 20);
+                            this->computeSphere (this->idx, fq2.plus_one_dim(), morph::colour::dodgerblue1, 0.01f, 16, 20);
                         }
                     }
-
-                    std::cout << "fq1/fq2 fill-in...\n";
-                    if (fq1_id != border_id::unknown && fq2_id != border_id::unknown && fq1_id != fq2_id) {
-                        std::cout << "draw it!\n";
-                        if constexpr (debug_geometry) {
-                            draw_fill_in_shape (p, fq1, fq2, fq1_id, fq2_id,
-                                                (i%2!=0 ? morph::colour::darkseagreen4 : morph::colour::blue)
-                                                );
-                        } else {
-                            draw_fill_in_shape (p, fq1, fq2, fq1_id, fq2_id, col);
-                        }
-                    }
-
-                    // We now possibly have all 4 band vertex points. Do a sanity check
-                    std::cout << "band...\n";
-                    if (fp1_id != border_id::unknown && fq1_id != border_id::unknown
-                        && fp2_id != border_id::unknown && fq2_id != border_id::unknown) {
-                        std::cout << "draw it!\n";
-                        this->draw_band (fp1, fq1, fp2, fq2, col);
-                    }
-
-                    if constexpr (debug_geometry) {
-                        this->computeSphere (this->idx, fp1.plus_one_dim(), morph::colour::crimson, 0.01f, 16, 20);
-                        this->computeSphere (this->idx, fq1.plus_one_dim(), morph::colour::violetred2, 0.01f, 16, 20);
-                        this->computeSphere (this->idx, fp2.plus_one_dim(), morph::colour::royalblue, 0.01f, 16, 20);
-                        this->computeSphere (this->idx, fq2.plus_one_dim(), morph::colour::dodgerblue1, 0.01f, 16, 20);
-                    }
+                    i++;
                 }
             }; // end of loop lambda
 
@@ -680,8 +708,8 @@ namespace morph {
             // Run the band drawing loop forwards...
             loop_lambda (0, p_step);
             // ...and backwards
-            std::cout << "Loop lambda 2...\n";
-            loop_lambda (1, -p_step);
+            //std::cout << "\nLoop lambda 2...\n";
+            //loop_lambda (1, -p_step);
 
 
             if constexpr (debug_geometry) {
@@ -721,6 +749,8 @@ namespace morph {
         //! Draw in colours that are helpful for debugging?
         static constexpr bool debug_geometry = true;
         static constexpr bool debug_text = true;
+        static constexpr bool debug_text2 = false;
+        static constexpr bool debug_no_fillin = true;
     };
 
 } // namespace morph
