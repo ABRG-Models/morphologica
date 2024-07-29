@@ -446,21 +446,22 @@ namespace morph {
             float length_of_lambda_in_y = this->lambda / std::sin (morph::mathconst<float>::deg2rad * this->alpha);
 
             // p_0 is our starting location to draw bands
-            vec<float, 2> p_0 = { 0.0f, 0.0f };
-            if (std::abs(length_of_lambda_in_x) > std::abs(dims[0])) {
-                // In this case we have horizontal bands, so start from a p_0 on the y axis
-                float y_lambdas_f = v_offset[1] / length_of_lambda_in_y;
-                float lambdas_y = std::trunc (y_lambdas_f);
-                float lambdas_y_offset = lambdas_y * length_of_lambda_in_y;
-                p_0[1] = v_offset[1] - lambdas_y_offset;
-            } else {
-                // Bands are roughly vertical, place p_0 on the x axis
-                float x_lambdas_f = v_offset[0] / length_of_lambda_in_x;
-                float lambdas_x = std::trunc (x_lambdas_f);
-                float lambdas_x_offset = lambdas_x * length_of_lambda_in_x;
-                p_0[0] = v_offset[0] - lambdas_x_offset;
+            vec<float, 2> p_0 = v_offset;
+            if (this->single_band == false) {
+                if (std::abs(length_of_lambda_in_x) > std::abs(dims[0])) {
+                    // In this case we have horizontal bands, so start from a p_0 on the y axis
+                    float y_lambdas_f = v_offset[1] / length_of_lambda_in_y;
+                    float lambdas_y = std::trunc (y_lambdas_f);
+                    float lambdas_y_offset = lambdas_y * length_of_lambda_in_y;
+                    p_0[1] = v_offset[1] - lambdas_y_offset;
+                } else {
+                    // Bands are roughly vertical, place p_0 on the x axis
+                    float x_lambdas_f = v_offset[0] / length_of_lambda_in_x;
+                    float lambdas_x = std::trunc (x_lambdas_f);
+                    float lambdas_x_offset = lambdas_x * length_of_lambda_in_x;
+                    p_0[0] = v_offset[0] - lambdas_x_offset;
+                }
             }
-
             // This vector is the distance to travel from a point within the rectangle to make half
             // of the wavefront that will be guaranteed to intersect with the rectangle border.
             vec<float, 2> half_wave = 2.0f  * dims.length() * u_alpha_perp;
@@ -668,14 +669,18 @@ namespace morph {
                         }
                     }
                     i++;
+
+                    if (this->single_band) { break; }
                 }
             }; // end of loop lambda
 
-            vec<float, 2> p_step = 0.5f * lambda * u_alpha;
+            // p_step is the 'movement of a grating front in one increment of t'
+            vec<float, 2> p_step = 0.5f * lambda * u_alpha; // whence??
+
             // Run the band drawing loop forwards...
             loop_lambda (0, p_step);
             // ...and backwards
-            if (do_loop2) {
+            if (do_loop2 && !single_band) {
                 if constexpr (debug_text) { std::cout << "\nLoop lambda 2...\n"; }
                 loop_lambda (1, -p_step);
             }
@@ -721,8 +726,9 @@ namespace morph {
         //! Current time
         unsigned long long int t = 0;
         bool do_loop2 = true;
+        bool single_band = false;
         //! Draw in colours that are helpful for debugging?
-        static constexpr bool debug_geometry = false;
+        static constexpr bool debug_geometry = true;
         static constexpr bool debug_text = false;
     };
 

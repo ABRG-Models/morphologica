@@ -82,11 +82,12 @@ int main (int ac, char** av)
 
         auto rvm = std::make_unique<morph::GratingVisual<>> (offset);
         v.bindmodel (rvm);
-        rvm->v_front = { -0.01f, 0.0173f };
+        rvm->v_front = { 0.1f, 0.0f };
         rvm->t = v.t;
         rvm->do_loop2 = v.do_loop2;
         rvm->lambda = v.lambda;
         rvm->alpha = v.angle;
+        rvm->single_band = true;
         rvm->finalize();
         auto rvmp = v.addVisualModel (rvm);
 
