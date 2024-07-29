@@ -562,11 +562,11 @@ namespace morph {
                     q2 = p + p_step - half_wave;
 
                     if constexpr (debug_geometry) {
-                        this->computeSphere (this->idx, p_0.plus_one_dim(), morph::colour::crimson, 0.04f, 16, 20);
-                        this->computeSphere (this->idx, p1.plus_one_dim(), morph::colour::grey20, 0.02f + i*0.02f, 16, 20);
-                        this->computeSphere (this->idx, q1.plus_one_dim(), morph::colour::grey20, 0.02f + i*0.02f, 16, 20);
-                        this->computeSphere (this->idx, p2.plus_one_dim(), morph::colour::navy, 0.02f + i*0.02f, 16, 20);
-                        this->computeSphere (this->idx, q2.plus_one_dim(), morph::colour::navy, 0.02f + i*0.02f, 16, 20);
+                        this->computeSphere (this->idx, p_0.plus_one_dim(), morph::colour::crimson, 0.012f, 16, 20);
+                        this->computeSphere (this->idx, p1.plus_one_dim(), morph::colour::grey20, 0.02f, 16, 20);
+                        this->computeSphere (this->idx, q1.plus_one_dim(), morph::colour::grey20, 0.02f, 16, 20);
+                        this->computeSphere (this->idx, p2.plus_one_dim(), morph::colour::navy, 0.02f, 16, 20);
+                        this->computeSphere (this->idx, q2.plus_one_dim(), morph::colour::navy, 0.02f, 16, 20);
                     }
 
                     // repeat computation of intersections for p2, q2.
@@ -698,6 +698,12 @@ namespace morph {
                 // Also show the v_front vector
                 morph::vec<float> vfstart = { -2.0f * this->v_front.length(), 0, 0};
                 this->computeArrow (vfstart, vfstart + this->v_front.plus_one_dim(), morph::colour::black);
+
+                // Draw a unit 1 ruler, too
+                this->computeFlatLine (this->idx,
+                                       (left_p + vec<float, 2>{0,-0.1}).plus_one_dim(),
+                                       (left_p + vec<float, 2>{1,-0.1}).plus_one_dim(),
+                                       this->uz, morph::colour::crimson, 0.01f);
             }
         }
 
