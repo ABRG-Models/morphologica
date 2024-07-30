@@ -215,21 +215,168 @@ v.diffuse_position = { 5.0f, 5.0f, 15.0f }; // coordinates
 v.diffuse_intensity = 0.4f;
 ```
 
-### Perspective/Orthgraphic
+### Perspective/Orthographic
 
-### Clipping distances and field of view
+`morph::Visual` renders a 3D scene to a 2D image that gives you, the
+viewer, the impression that you're viewing 3D objects. There is [more
+than one way](https://en.wikipedia.org/wiki/3D_projection) to project
+a 3D model onto a 2D image and `Visual` implements a couple of the
+major ones. These are the [frustrum perspective
+projection](https://en.wikipedia.org/wiki/Viewing_frustum) and an
+[orthographic
+projection](https://en.wikipedia.org/wiki/Orthographic_projection). The
+perspective projection is the default. In any `morph::Visual` window,
+you can cycle between different projections by pressing
+**Ctrl-y**. This will cycle between perspective, orthographic and an
+experimental cylindrical projection.
+
+You can select any of these as the default with the following function calls:
+```c++
+morph::Visual<> v(1024, 768, "Projections");
+v.ptype = morph::perspective_type::orthographic;
+// or
+v.ptype = morph::perspective_type::perspective;
+// or
+v.ptype = morph::perspective_type::cylindrical;
+```
+
+#### Clipping distances and field of view
+
+The parameters of the projections (`zNear`, `zFar`, `fov`, `ortho_lb`
+and `ortho_tr`) can be changed programatically, and they are also
+changed with user input, especially the mouse-wheel.
+
+`zNear` and `zFar` are used by both perspective and orthographic
+projections (`zNear` can be changed with keys
+**Ctrl-u**/**Ctrl-i**). `fov` is used in the perspective projection
+(change it with the keys **Ctrl-o**/**Ctrl-p**). `ortho_lb` is the
+orthographic view's 'Left-bottom' screen coordinate and `ortho_rt` is
+the right-top coordinate.
 
 ### Coordinate arrows
 
+Every morph::Visual has a special VisualModel that shows the 3D
+coordinate arrows. You can toggle them on and off with the key
+**Ctrl-c**. By default, they're hidden, but you can change this when
+you create your `Visual`:
+
+```c++
+morph::Visual v (1024, 768, "Coordinate arrows");
+v.showCoordArrows = true;
+```
+
+The coordinate arrows appear in the bottom left of the screen. You can
+control where the arrows appear by using additional arguments to the `Visual`
+constructor:
+
+```c++
+// Screen coordinates for the coordinate arrows. These run from -1 to +1
+morph::vec<float, 2> coordinate_offset = { -0.8f, -0.8f };
+// Lengths of each arm of the coordinate arrows
+morph::vec<float, 3> coordinate_lengths = { 0.05f, 0.05f, 0.05f };
+// How thick should the arms be?
+float coordinate_thickness = 1.0f;
+// A font size for the coordinate arrow labels
+float coordinate_fontsize = 0.02f;
+
+// Now construct:
+morph::Visual v (1024, 768, "Coordinate arrows",
+                 coordinate_offset, coordinate_lengths,
+                 coordinate_thickness, coordinate_fontsize);
+
+v.showCoordArrows = true;
+```
+
+You can change the coordinate arrow labels from 'x', 'y' and 'z', if
+you [derive a custom morph::Visual](#extending-morphvisual-to-add-custom-key-actions). There's an example program that demonstrates: [unicode_coordaxes.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/unicode_coordaxes.cpp)
+
 ## Working with Visuals in a loop
 
-render(), poll(), wait(), waitevents().
+If you have a static scene, you can simply call `Visual::keepOpen()`, which allows the user to rotate the view and observe the scene.
 
-## Dealing with OpenGL context
+If you have a dynamic scene, where the scene is updated as a model is computed, or on the basis of some sort of input data, you'll need to under stand the `render`, `poll`, `wait` and `waitevents` function calls and also how to access the VisualModels in your scene, so they can be updated.
 
-Switching between contexts.
+A good example program is [graph4.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph4.cpp).
 
-## Saving an image to make a movie
+In this program, we set up a `Visual` then add a `GraphVisual`:
+
+```c++
+    auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
+    v.bindmodel (gv);
+    gv->setsize (1.33, 1); // etc; other setup calls are hidden in this example
+    gv->finalize();
+    auto gvp = v.addVisualModel (gv);
+```
+
+When we call `addVisualModel`, ownership of the `GraphVisual` object
+passes into the `morph::Visual`. We can't subsequently access the
+now-defunct `std::unique_ptr<>` `gv`. We therefore hold the return
+value of `addVisualModel` which is a non-owning pointer to the
+`GraphVisual` we just added - it has type `GraphVisual<float>*`.
+
+In the example, we can then see the use of `gvp` in a while loop:
+
+```c++
+    while (v.readyToFinish == false) {
+        v.waitevents (0.018);
+        // Slowly update the content of the graph
+        if (rcount++ % 20 == 0 && idx < absc.size()) {
+            // Append to dataset 0
+            gvp->append (absc[idx], data[idx], 0);
+            // Append to dataset 1
+            gvp->append (absc[idx], data2[idx], 1);
+            ++idx;
+        }
+        v.render();
+    }
+```
+`Visual` has a flag called `readyToFinish`, which gets set to true when the user presses **Ctrl-q**. As long as this is false, the loop first calls `Visual::waitevents()` which waits for up to 0.018 seconds for a keyboard or mouse event. When this returns, there's a test to see if the graph should be updated with `GraphVisual::append`, accessed via the pointer `gvp`. Whether or not the graph was updated, `Visual::render()` is called to render the scene.
+
+Use of `waitevents` prevents the frame rate becoming too high. If you need the maximum possible framerate, then you can instead call `Visual::poll()` in place of `waitevents`.
+
+If you want to guarantee the 0.018 s pause, you can instead call `v.wait (0.018)`.
+
+### Dealing with OpenGL context
+
+If you have more than one `morph::Visual`, then you will need to take
+care to switch between OpenGL contexts when you create your
+VisualModels.
+
+The function calls are:
+
+```c++
+morph::Visual v1(1024, 768, "Window 1");
+morph::Visual v2(1024, 768, "Window 2");
+
+v1.setContext();
+
+auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
+v1.bindmodel (gv);
+// Setup of gv omitted
+gv->finalize();
+v1.addVisualModel (gv);
+
+// Optional: Explicitly release context:
+v1.releaseContext();
+
+// Switch to v2 context
+v2.setContext();
+
+// We can now re-use gv as long as we assign a new unique_ptr:
+gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
+v2.bindmodel (gv);
+// Setup of gv omitted
+gv->finalize();
+v2.addVisualModel (gv);
+
+// Again, an optional release:
+v2.releaseContext();
+
+```
+
+### Saving an image to make a movie
+
+## Extending morph::Visual to add custom key actions
 
 ## Under the hood
 
