@@ -25,6 +25,8 @@ namespace morph {
     {
 ```
 
+`morph::range` is `constexpr` capable.
+
 **Construct**
 ```c++
 morph::range<T> r;                  // Default range has min == max == T{0}
@@ -53,6 +55,11 @@ You can **stream** the range to get both at once:
 std::cout << r << std::endl;
 ```
 This would output `[-100,100]` in our example.
+
+There's a helper function to get `range.max - range.min`:
+```c++
+std::cout << "The range 'spans': " << r.span() << std::endl;
+```
 
 **Determine** a range **from data**. Here, we initialize a range with min taking the *maximum* possible value for the type and max taking the *minimum* possible value. This is done with a call to `range::search_init`. We then run through the data container, calling update for each element. For example:
 
