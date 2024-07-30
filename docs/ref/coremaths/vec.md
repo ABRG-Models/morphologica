@@ -71,32 +71,38 @@ float dp = u1.dot (u3);                      // (scalar/dot/inner)-product
 This was the first class where I decided to derive from an STL
 container. I was motivated by a need for a fixed size mathematical
 vector to use in the computation of three dimensional models for the
-visualization code. I wanted only the data stored in a fixed size
-std::array, but I wanted to add mathematical operations with an
+visualization code. I wanted the data stored in a fixed size
+`std::array`, but I wanted to add mathematical operations with an
 interface that would make coding with the class convenient, easy and
 enjoyable.
 
-Inheriting from an STL container is generally discouraged but it works
-very well because I add no additional member data attributes to the
-derived class, only methods. The resulting class is extremely
-convenient to use.
+While I could have created a class with an `std::array data` member, I
+thought simply adding functions to an extended `std::array` would work
+very well. It is indeed, extremely convenient to use.
+
+However, you may see this approach discouraged. As [explained by Roger
+Pate](https://stackoverflow.com/questions/2034916/is-it-okay-to-inherit-implementation-from-stl-containers-rather-than-delegate)
+the risk is deallocating through a pointer to the base class, with the
+issue being that STL containers don't have virtual deconstructors. I
+avoid this issue by adding *no additional member data attributes* to
+`morph::vec`, *only methods*.
 
 `std::array` is an 'aggregate class' with no user-provided constructors,
-and morph::vec does not add any of its own constructors. It is generally initialized with brace-initializer lists.
+and `morph::vec` does not add any of its own constructors. It is generally initialized with brace-initializer lists.
 ```c++
-vec<float, 3> v = { 1.0f , 1.0f, 1.0f };
+vec<float, 3> v = { 1.0f, 1.0f, 1.0f };
 ```
 
 The template arguments are `S` and `N` which are type and size. These
-are passed through to std::array. The argument name `S` hints 'scalar'
+are passed through to `std::array`. The argument name `S` hints 'scalar'
 as the elements of a mathematical vector of `N` dimensions are scalar,
 real numbers.
 
 ## Arithmetic operators
 
-You can use arithmetic operators on `vec` objects with their operations being applied element wise. operations with other `vec` objects and with scalars are all supported and should work as expected.
+You can use arithmetic operators on `vec` objects with their operations being applied element-wise. operations with other `vec` objects and with scalars are all supported and should work as expected.
 
-| Operator | Scalar example | Element wise `vec` example |
+| Operator | Scalar example | Element-Wise `vec` example |
 | --- | --- | --- |
 | + | `v2 = v1 + 2.0f;` *or* `v2 = 2.0f + v1;` | `v3 = v1 + v2;` |
 | += | `v2 += 2.0f;` | `v2 += v1;` |
@@ -130,18 +136,18 @@ morph::vec<float, 3> v1 = a1;           // Bad, doesn't compile
 
 ## Comparison operators
 
-The default comparison in `std::array` is a **lexicographic comparison**. This means that if the first element in a first `array` is less than the first element in a second `array`, then the first `array` is less than the second `array` regardless of the values in the remaining elements. This is not useful when the array is interpreted as a mathematical vector. In this case, an appropriate comparison is probably **vector magnitude comparison** (i.e comparing their lengths). Another useful comparison is **elementwise comparison** where one vector may be considered to be less than another if *each* of its elements is less than the corresonding other element. That is to say `v1` < `v2` if `v1[i]` < `v2[i]` for all `i`. Both vector magnitude and elementwise comparison can be applied to a `morph::vec` and a scalar.
+The default comparison in `std::array` is a **lexicographic comparison**. This means that if the first element in a first `array` is less than the first element in a second `array`, then the first `array` is less than the second `array` regardless of the values in the remaining elements. This is not useful when the array is interpreted as a mathematical vector. In this case, an appropriate comparison is probably **vector magnitude comparison** (i.e comparing their lengths). Another useful comparison is **element-wise comparison** where one vector may be considered to be less than another if *each* of its elements is less than the corresponding element in the other. That is to say `v1` < `v2` if `v1[i]` < `v2[i]` for all `i`. Both vector magnitude and element-wise comparison can be applied to a `morph::vec` and a scalar.
 
-In `morph::vec` I've implemented the following comparisons. Note that the default is not lexicographic comparison and that some comparisions could still be implemented.
+In `morph::vec` I've implemented the following comparisons. Note that the default is not lexicographic comparison and that some comparisons could still be implemented.
 
-| Comparison (`vec v1` with `vec v2`)   | Lexicographic      | Vector magnitude  | Elementwise |
+| Comparison (`vec v1` with `vec v2`)   | Lexicographic      | Vector magnitude  | Element-Wise |
 | --- | --- | --- | --- |
 | `v1` < `v2`  | `v1.lexical_lessthan (v2)` | `v1.length_lessthan (v2)` |  `v1 < v2`   |
 | `v1` <= `v2`  | not implemented | `v1.length_lte (v2)` |  `v1 <= v2`   |
 | `v1` > `v2`  | not implemented | `v1.length_gtrthan (v2)` |  `v1 > v2`   |
 | `v1` >= `v2`  | not implemented | `v1.length_gte (v2)` |  `v1 >= v2`   |
 
-| Comparison (`vec v ` with `scalar s`)    | Lexicographic      | Vector magnitude  | Elementwise |
+| Comparison (`vec v ` with `scalar s`)    | Lexicographic      | Vector magnitude  | Element-Wise |
 | --- | --- | --- | --- |
 | `v` < `s` | not implemented | not implemented |  `v < s` |
 | `v` <= `s` | not implemented | not implemented |  `v <= s` |
@@ -155,7 +161,7 @@ In `morph::vec` I've implemented the following comparisons. Note that the defaul
 
 ### Using `morph::vec` as a key in `std::map` or within an `std::set`
 
-Although `morph::vec` derives from `std::array`, you **can't use it as a key in an `std::map`**!
+Although `morph::vec` derives from `std::array`, you **can't use morph::vec as a key in an `std::map`**!
 
 **Danger!** The following examples **will compile**  but will have **unexpected runtime results**:
 
@@ -167,12 +173,13 @@ std::map<morph::vec<int, 2>, myclass> some_map;
 std::set<morph::vec<int, 2>> some_set;
 ```
 
-The reason for this is that `std::set` and `std::map` depend upon the less-than comparison for their functionality and the default element-wise less-than in `morph::vec` is *elementwise* which will fail to sort an array. In `std::array`, less-than is lexicographic which guarantees a successful sort.
+The reason for this is that `std::set` and `std::map` depend upon the less-than comparison for their functionality and the default less-than comparison in `morph::vec` is *element-wise* which will fail to sort an array. In `std::array`, less-than is *lexicographic* which guarantees a successful sort.
 
-The workaround is to specify that you want to use the `morph::vec` lexicographical less-than function `lexical_lessthan` in your `map` or `set`:
+If you really need to use `morph::vec` as a key, there *is* a workaround. You have to specify that you want to use the `morph::vec` lexicographical less-than function `lexical_lessthan` in your `map` or `set` like this:
 ```c++
-// To make the map work, we have to tell it to use lexical_lessthan:
+// To make the map work, we have to create a comparison function that uses lexical_lessthan...
 auto _cmp = [](morph::vec<int,2> a, morph::vec<int,2> b){return a.lexical_lessthan(b);};
+// ...then pass this function when declaring the `map` (or `set`):
 std::map<morph::vec<int, 2>, std::string, decltype(_cmp)> themap(_cmp);
 ```
 This example comes from [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp).
