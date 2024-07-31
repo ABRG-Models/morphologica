@@ -37,7 +37,7 @@ namespace morph {
         std::array<float, 3> frame_clr = {0,0,0};
         float frame_width = 0.01f;
 
-        // Note constructor forces centralize to be true, which is important when drawing a curvy CartGrid
+        // Note constructor forces GridVisual::centralize to be true, which is important when drawing a curvy CartGrid
         CurvyTellyVisual(const morph::Grid<I, C>* _cg, const morph::vec<float> _offset)
             : morph::GridVisual<T, I, C, glver>(_cg, _offset) { this->centralize = true; }
 
@@ -80,14 +80,6 @@ namespace morph {
 
             float angle_per_distance = this->angle_to_subtend / (dx[0]+this->grid->width());
 
-            // Use extents to plot a frame, if required. extents are { xmin, xmax, ymin, ymax }
-            morph::vec<float, 4> extents = this->grid->extents(); // Have to centre
-            float xmin = extents[0] + this->centering_offset[0];
-            float xmax = extents[1] + this->centering_offset[0];
-            float ymin = extents[2] + this->centering_offset[1];
-            float ymax = extents[3] + this->centering_offset[1];
-            //std::cout << "ymin: " << ymin << " and ymax: " << ymax << std::endl;
-
             for (unsigned int ri = 0; ri < nrect; ++ri) {
 
                 float T_border = false;
@@ -125,8 +117,8 @@ namespace morph {
                 this->vertex_push (vtx_ne, this->vertexPositions);
 
                 // With the NE vertex, figure out if we're at the top/right
-                if (vtx_ne[2] > ymax && this->tb_frames == true) { T_border = true; }
-                if ((_x > xmax || _x > max_abs_x) && this->lr_frames == true) { R_border = true; }
+                if (this->grid->row(ri) == (this->grid->get_h()-1) && this->tb_frames == true) { T_border = true; }
+                if (this->grid->col(ri) == (this->grid->get_w()-1) && this->lr_frames == true) { R_border = true; }
 
                 // SE vertex
                 vtx_se = vtx_ne; // x/y unchanged
@@ -143,10 +135,8 @@ namespace morph {
                 this->vertex_push (vtx_sw, this->vertexPositions);
 
                 // With the SW vertex, figure out if we're at the bottom/left
-                if (vtx_sw[2] < ymin && this->tb_frames == true) { B_border = true; }
-                if ((_x < xmin || std::abs(_x)+std::numeric_limits<float>::epsilon() >= max_abs_x) && this->lr_frames == true) {
-                    L_border = true;
-                }
+                if (this->grid->row(ri) == 0 && this->tb_frames == true) { B_border = true; }
+                if (this->grid->col(ri) == 0 && this->lr_frames == true) { L_border = true; }
 
                 // NW vertex
                 vtx_nw = vtx_sw; // x/y unchanged
@@ -196,11 +186,37 @@ namespace morph {
 
                 if (T_border) { this->draw_top_border (vtx_nw, vtx_ne); }
                 if (B_border) { this->draw_bottom_border (vtx_sw, vtx_se); }
-                if (L_border) { this->draw_edge_border (vtx_nw, vtx_sw, vtx_ne); }
-                if (R_border) { this->draw_edge_border (vtx_ne, vtx_se, vtx_nw); }
+                if (R_border) { this->draw_edge_border (vtx_nw, vtx_sw, vtx_ne); }
+                if (L_border) { this->draw_edge_border (vtx_ne, vtx_se, vtx_nw); }
+                // Handle corners, too:
+                if (T_border && R_border) {
+                    auto vtx_ne_up = vtx_ne;
+                    auto vtx_nw_up = vtx_nw;
+                    vtx_ne_up[2] += this->frame_width;
+                    vtx_nw_up[2] += this->frame_width;
+                    this->draw_edge_border (vtx_nw_up, vtx_nw, vtx_ne_up);
+
+                } else if (B_border && R_border) {
+                    auto vtx_sw_dn = vtx_sw;
+                    vtx_sw_dn[2] -= this->frame_width;
+                    this->draw_edge_border (vtx_sw, vtx_sw_dn, vtx_se);
+
+                } else if (T_border && L_border) {
+                    auto vtx_ne_up = vtx_ne;
+                    auto vtx_nw_up = vtx_nw;
+                    vtx_ne_up[2] += this->frame_width;
+                    vtx_nw_up[2] += this->frame_width;
+                    this->draw_edge_border (vtx_ne_up, vtx_ne, vtx_nw_up);
+
+                } else if (B_border && L_border) {
+                    auto vtx_se_dn = vtx_se;
+                    vtx_se_dn[2] -= this->frame_width;
+                    this->draw_edge_border (vtx_se, vtx_se_dn, vtx_sw);
+                }
             }
         }
 
+        // Draw a pixel of the top border
         void draw_top_border (const morph::vec<float> vtx_nw, const morph::vec<float> vtx_ne)
         {
             morph::vec<float> vtx_nw_up = vtx_nw;
@@ -210,6 +226,7 @@ namespace morph {
             this->computeFlatQuad (this->idx, vtx_nw, vtx_nw_up, vtx_ne_up, vtx_ne, this->frame_clr);
         }
 
+        // Draw a pixel of the bottom border
         void draw_bottom_border (const morph::vec<float> vtx_sw, const morph::vec<float> vtx_se)
         {
             morph::vec<float> vtx_sw_d = vtx_sw;
@@ -219,18 +236,17 @@ namespace morph {
             this->computeFlatQuad (this->idx, vtx_sw, vtx_sw_d, vtx_se_d, vtx_se, this->frame_clr);
         }
 
+        // Draw an edge pixel (either side).
         void draw_edge_border (morph::vec<float> vtx_a, morph::vec<float> vtx_b, const morph::vec<float> vtx_c)
         {
             // vtx_a is the upper vertex
-            vtx_a[2] += this->frame_width;
-            vtx_b[2] -= this->frame_width;
             morph::vec<float> vtx_a_l = vtx_a;
             morph::vec<float> vtx_b_l = vtx_b;
-            morph::vec<float> vtx_c_dirn = vtx_c - vtx_a;
+            morph::vec<float> vtx_c_dirn = vtx_a - vtx_c;
             vtx_c_dirn.renormalize();
             vtx_c_dirn *= this->frame_width;
-            vtx_a_l -= vtx_c_dirn;
-            vtx_b_l -= vtx_c_dirn;
+            vtx_a_l += vtx_c_dirn;
+            vtx_b_l += vtx_c_dirn;
             this->computeFlatQuad (this->idx, vtx_a, vtx_a_l, vtx_b_l, vtx_b, this->frame_clr);
         }
 
@@ -238,12 +254,10 @@ namespace morph {
         {
             // Compute the offset to ensure that the cartgrid is centred about the mv_offset.
             if (this->centralize == true) {
-                float left_lim = -this->grid->width()/2.0f;
-                float bot_lim = -this->grid->height()/2.0f;
-                morph::vec<float, 2> coord0 = (*this->grid)[0];
-                this->centering_offset[0] = left_lim - coord0[0];
-                this->centering_offset[1] = bot_lim - coord0[1];
-                //std::cout << "centering_offset is " << this->centering_offset << std::endl;
+                this->centering_offset = -this->grid->centre().plus_one_dim();
+                std::cout << "centralize: centering_offset is " << this->centering_offset << std::endl;
+            } else {
+                std::cout << "NO centralize: centering_offset is " << this->centering_offset << std::endl;
             }
             this->drawcurvygrid();
         }
