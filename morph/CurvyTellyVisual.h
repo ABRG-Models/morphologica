@@ -36,6 +36,9 @@ namespace morph {
         bool lr_frames = true;
         std::array<float, 3> frame_clr = {0,0,0};
         float frame_width = 0.01f;
+        // If true, shift the model so that the centroid of the CurvyTelly is the centre of the
+        // model. Don't confuse with GridVisual::centralize.
+        bool centroidize = false;
 
         // Note constructor forces GridVisual::centralize to be true, which is important when drawing a curvy CartGrid
         CurvyTellyVisual(const morph::Grid<I, C>* _cg, const morph::vec<float> _offset)
@@ -80,6 +83,8 @@ namespace morph {
 
             float angle_per_distance = this->angle_to_subtend / (dx[0]+this->grid->width());
 
+            morph::vec<float> centroid = { 0.0f, 0.0f, 0.0f };
+            unsigned long long int c_count = 0;
             for (unsigned int ri = 0; ri < nrect; ++ri) {
 
                 float T_border = false;
@@ -105,6 +110,8 @@ namespace morph {
                     (*this->grid)[ri][1]+this->centering_offset[1]
                 };
                 this->vertex_push (vtx_0, this->vertexPositions);
+                centroid += vtx_0;
+                ++c_count;
                 // Use the centre position as the first location for finding the normal vector
 
                 // NE vertex
@@ -115,6 +122,8 @@ namespace morph {
                     (*this->grid)[ri][1]+vy+this->centering_offset[1]
                 };
                 this->vertex_push (vtx_ne, this->vertexPositions);
+                centroid += vtx_ne;
+                ++c_count;
 
                 // With the NE vertex, figure out if we're at the top/right
                 if (this->grid->row(ri) == (this->grid->get_h()-1) && this->tb_frames == true) { T_border = true; }
@@ -124,6 +133,8 @@ namespace morph {
                 vtx_se = vtx_ne; // x/y unchanged
                 vtx_se[2] = (*this->grid)[ri][1]-vy+this->centering_offset[1];
                 this->vertex_push (vtx_se, this->vertexPositions);
+                centroid += vtx_se;
+                ++c_count;
 
                 // SW vertex
                 _x = -((*this->grid)[ri][0]+this->centering_offset[0])-hx;
@@ -133,6 +144,8 @@ namespace morph {
                     (*this->grid)[ri][1]-vy+this->centering_offset[1] // same as vtx_2[2]
                 };
                 this->vertex_push (vtx_sw, this->vertexPositions);
+                centroid += vtx_sw;
+                ++c_count;
 
                 // With the SW vertex, figure out if we're at the bottom/left
                 if (this->grid->row(ri) == 0 && this->tb_frames == true) { B_border = true; }
@@ -142,6 +155,8 @@ namespace morph {
                 vtx_nw = vtx_sw; // x/y unchanged
                 vtx_nw[2] = (*this->grid)[ri][1]+vy+this->centering_offset[1];
                 this->vertex_push (vtx_nw, this->vertexPositions);
+                centroid += vtx_nw;
+                ++c_count;
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
@@ -213,6 +228,13 @@ namespace morph {
                     vtx_se_dn[2] -= this->frame_width;
                     this->draw_edge_border (vtx_se, vtx_se_dn, vtx_sw);
                 }
+            }
+            centroid /= c_count;
+            // Loop through and alter vertices
+            for (unsigned int vi = 0; vi < this->vertexPositions.size()/3; ++vi) {
+                this->vertexPositions[vi * 3]     -= centroid[0];
+                this->vertexPositions[vi * 3 + 1] -= centroid[1];
+                this->vertexPositions[vi * 3 + 2] -= centroid[2];
             }
         }
 
