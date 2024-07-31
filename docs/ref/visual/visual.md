@@ -49,39 +49,6 @@ The following code (adapted from the [graph1.cpp](https://github.com/ABRG-Models
 
 *This is the [twowindows.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/twowindows.cpp) example program, which displays two windows with two `morph::Visual` instances. The graph on window 2 is very similar to what the preceding code example would generate, showing a `morph::GraphVisual`. Window 1 shows another kind of `morph::VisualModel` (a rather sparse `QuiverVisual`)*
 
-## Background: the `morph::Visual` GL version and `OWNED_MODE`
-
-`morph::Visual` and `morph::VisualModel` conspire to hide most of the
-OpenGL internals away from you, the client coder. However, there *is*
-some background knowledge that you need to understand.
-
-### OpenGL Version
-
-When you program with OpenGL, you have to choose which of the many versions of the library you want to use. morphologica uses 'modern OpenGL' which essentially means that we draw with *GLSL shader programs*. These are C-like programs which are executed by the graphics processing unit with many parallel threads (you don't need to learn GLSL; morphologica provides [default shader programs](https://github.com/ABRG-Models/morphologica/tree/main/shaders)). Different versions of OpenGL provide different supported features in the GLSL and the C function calls that support it. 'Modern OpenGL' started with OpenGL version 3.3, but version 4.1 was chosen for morphologica's default as it is well supported across the Linux, Mac and Windows platforms.
-
-OpenGL 4.1 was originally the *only* option, but more recently `Visual` and friends were extended to support other OpenGL versions, including OpenGL 4.1 to 4.6 (which makes it possible to use GL compute shaders) and OpenGL 3.0 ES and up, which makes it possible to run morphologica programs on the Raspberry Pi.
-
-The desired OpenGL version is passed to `morph::Visual` as a single template argument `glver` of type `int`.
-
-The default value for `glver` is `morph::gl::version_4_1` which requests the core version 4.1 of OpenGL. The integer values that specify each OpenGL version are defined in [morph/gl/version.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/gl/version.h). Both the 'desktop' OpenGL versions (from 4.1 up to 4.6) and the 'ES' versions (3.0 ES to 3.2 ES) are supported in both core and compatibility modes.
-
-Note that the OpenGL version integer is also used as a template parameter in the `morph::VisualModel` objects that will populate your `morph::Visual`. You should ensure that the same value for the GL version is used across all classes.
-
-### OpenGL header inclusion
-
-How you include OpenGL headers and link to OpenGL driver code can be complex, and can differ between Linux, Apple and Windows platforms. On Linux, morphologica will `#include` GL headers from its own code base, and on Apple, it will include them from the system. If you are integrating morphologica code into an existing program that *already* has a scheme for including OpenGL headers, then it should detect this gracefully.
-
-Linking should be determined by the CMake system.
-
-### `OWNED_MODE`
-
-One more concept to introduce before getting into `morph::Visual` usage is the 'operating mode'. When Visual was first developed, it was designed to own its desktop window, which would always be provided by the [GLFW library](https://www.glfw.org/). The Visual class would manage GLFW setup and window creation/destruction. Window pointers (aliased as `morph::win_t`) were always of type `GLFWwindow`.
-
-Later on, I wanted to add support for the Qt windowing system so that a `morph::Visual` could provide OpenGL graphics for a `QtWidget`. Qt manages OpenGL contexts and windows, so I had to create a new operating mode for `morph::Visual` in which it would use an externally managed context. To do this I defined `OWNED_MODE`. `OWNED_MODE` is enabled by `#define OWNED_MODE 1` in a relevant location (see [viswidget.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/qt/viswidget.h) for Qt and [viswx.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/wx/viswx.h) for wx windows).
-
-In `OWNED_MODE`, an alternative windowing system can be used and `morph::win_t` is mapped to the appropriate window/widget type. Code that is involved in setting up the windowing system is disabled.
-
-However, unless you are integrating morphologica into Qt or WxWidgets, you will leave `OWNED_MODE` undefined.
 
 ## Instantiating `morph::Visual`
 
@@ -166,34 +133,36 @@ auto gv_pointer = v.addVisualModel (gv);
 
 There's a selection of features that you can enable once you've instanciated your `Visual`:
 
-### Scene translation
+### Scene translation and rotation
 
 Once you've added several models to your scene, you may need to adjust where they appear in the window. Rather than moving each model programmatically (by altering offsets) you can simply shift the camera view point for the scene with a call to `setSceneTrans()`:
 
 ```c++
-v.setSceneTrans (morph::vec<float,3>({-0.35105f, -0.352273f, -2.4f}));
+v.setSceneTrans (morph::vec<float,3>{-0.35105f, -0.352273f, -2.4f});
+```
+The scene can also be rotated with
+```c++
+v.setSceneRotation (morph::Quaternion<float>{ 0.5f, 0.5f, -0.5f, -0.5f });
 ```
 
-You can find the best values for the offset by running your program, moving around with mouse commands until the position of your models is correct within the window and then press Ctrl-z and see stdout:
+You can find the best values to provide to these functions by running your program, moving around with mouse commands until the position of your models is correct within the window and then press Ctrl-z and see stdout:
 
 ```bash
 [seb@GPU3090 16:59:08 build]$ ./examples/graph1
 This is version 3.0 of morph::Visual<glver=4.1> running on OpenGL Version 4.1.0 NVIDIA 535.171.04
 Scenetrans setup code:
-    v.setSceneTrans (morph::vec<float,3>({-0.35105f, -0.352273f, -2.4f}));
-scene rotation is Quaternion[wxyz]=(1,0,0,0)
+    v.setSceneTrans (morph::vec<float,3>{ float{-5.38615}, float{-0.163962}, float{-15.3} });
+    v.setSceneRotation (morph::Quaternion<float>{ float{1}, float{0}, float{0}, float{0} });
 Writing scene trans/rotation into /tmp/Visual.json... Success.
 ```
 
-The line of code you need is printed out. Convenient!
+The lines of code you need are printed out. Convenient!
 
 ### Background colour
 
 ```c++
 v.backgroundWhite(); // Sets a white background (the default)
-
 v.backgroundBlack(); // Set a black background
-
 // or set Visual::bgcolour directly:
 v.bgcolour = std::array<float, 4>({ 1.0f, 0.0f, 1.0f, 1.0f }); // RGB triplet plus alpha. Range 0-1
 ```
@@ -255,10 +224,10 @@ the right-top coordinate.
 
 ### Coordinate arrows
 
-Every morph::Visual has a special VisualModel that shows the 3D
-coordinate arrows. You can toggle them on and off with the key
-**Ctrl-c**. By default, they're hidden, but you can change this when
-you create your `Visual`:
+Every `morph::Visual` contains a special `VisualModel` that shows a
+set of 3D coordinate arrows. You can toggle them on and off with the
+key **Ctrl-c**. By default, they're hidden, but you can change this
+when you create your `Visual`:
 
 ```c++
 morph::Visual v (1024, 768, "Coordinate arrows");
@@ -288,7 +257,7 @@ v.showCoordArrows = true;
 ```
 
 You can change the coordinate arrow labels from 'x', 'y' and 'z', if
-you [derive a custom morph::Visual](#extending-morphvisual-to-add-custom-key-actions). There's an example program that demonstrates: [unicode_coordaxes.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/unicode_coordaxes.cpp)
+you [derive a custom morph::Visual](#extending-morphvisual-to-add-custom-key-actions). There's an example program that demonstrates this: [unicode_coordaxes.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/unicode_coordaxes.cpp)
 
 ## Working with Visuals in a loop
 
@@ -338,46 +307,108 @@ If you want to guarantee the 0.018 s pause, you can instead call `v.wait (0.018)
 
 ### Dealing with OpenGL context
 
-If you have more than one `morph::Visual`, then you will need to take
-care to switch between OpenGL contexts when you create your
-VisualModels.
+An OpenGL 'context' is a term that refers to the memory and data
+structures that allow you to render a scene to your computer screen
+via your graphics processor. In most programs, one OpenGL context is
+associated with each desktop window. If you only have one window, then
+you will not need to concern yourself with the context, because the
+one context will always be current. However, if you have 2 windows or
+more, then certain operations will require the correct context
+(i.e. window) to be acquired.
 
-The function calls are:
+Although you don't have to worry much about OpenGL internals when
+using `morph::Visual`, if you have more than one `Visual` object, then
+you *will* need to take care to switch between OpenGL contexts when
+you create your VisualModels. This is achieved with the function call
+`Visual::setContext()`.
+
+Some example code is:
 
 ```c++
 morph::Visual v1(1024, 768, "Window 1");
 morph::Visual v2(1024, 768, "Window 2");
-
+// Set v1's context to be current:
 v1.setContext();
-
+// Create and add a model:
 auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
 v1.bindmodel (gv);
 // Setup of gv omitted
 gv->finalize();
 v1.addVisualModel (gv);
-
 // Optional: Explicitly release context:
 v1.releaseContext();
-
-// Switch to v2 context
+// Switch to v2's context
 v2.setContext();
-
 // We can now re-use gv as long as we assign a new unique_ptr:
 gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
 v2.bindmodel (gv);
 // Setup of gv omitted
 gv->finalize();
 v2.addVisualModel (gv);
-
 // Again, an optional release:
 v2.releaseContext();
-
 ```
+
+You don't need to `setContext()` when you call `v1.render()` or
+`v2.render()` because `setContext()` is called in the render function.
+
+
+`setContext()` and `releaseContext()` are only available when `OWNED_MODE` is defined; if your morph::Visual is operating within a Qt or wx environment, then those libraries will manage the OpenGL context.
 
 ### Saving an image to make a movie
 
+There's a `saveImage()` function that you can use to save a PNG image
+of the screen.
+```c++
+std::string fname("./movie_images/frame000.png");
+v.saveImage (fname);
+```
+To make a movie, simply generate a suitable sequential filename within
+your loop and call saveImage.
+
+### Saving the scene in glTF format
+
+morph::Visual contains code to save the 3D model in glTF format. This
+can be opened in 3D modelling programs like Blender. Note that only
+the structural parts of the model are incorporated into the glTF file;
+text is not currently saved.
+```c++
+std::string fname("./scene.gltf");
+v.savegltf (fname);
+```
+
 ## Extending morph::Visual to add custom key actions
 
-## Under the hood
+## Background: the `morph::Visual` GL version and `OWNED_MODE`
 
-Some techy info
+`morph::Visual` and `morph::VisualModel` conspire to hide most of the
+OpenGL internals away from you, the client coder. However, there *is*
+some background knowledge that it's useful to understand.
+
+### OpenGL Version
+
+When you program with OpenGL, you have to choose which of the many versions of the library you want to use. morphologica uses 'modern OpenGL' which essentially means that we draw with *GLSL shader programs*. These are C-like programs which are executed by the graphics processing unit with many parallel threads (you don't need to learn GLSL; morphologica provides [default shader programs](https://github.com/ABRG-Models/morphologica/tree/main/shaders)). Different versions of OpenGL provide different supported features in the GLSL and the C function calls that support it. 'Modern OpenGL' started with OpenGL version 3.3, but version 4.1 was chosen for morphologica's default as it is well supported across the Linux, Mac and Windows platforms.
+
+OpenGL 4.1 was originally the *only* option, but more recently `Visual` and friends were extended to support other OpenGL versions, including OpenGL 4.1 to 4.6 (which makes it possible to use GL compute shaders) and OpenGL 3.0 ES and up, which makes it possible to run morphologica programs on the Raspberry Pi.
+
+The desired OpenGL version is passed to `morph::Visual` as a single template argument `glver` of type `int`.
+
+The default value for `glver` is `morph::gl::version_4_1` which requests the core version 4.1 of OpenGL. The integer values that specify each OpenGL version are defined in [morph/gl/version.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/gl/version.h). Both the 'desktop' OpenGL versions (from 4.1 up to 4.6) and the 'ES' versions (3.0 ES to 3.2 ES) are supported in both core and compatibility modes.
+
+Note that the OpenGL version integer is also used as a template parameter in the `morph::VisualModel` objects that will populate your `morph::Visual`. You should ensure that the same value for the GL version is used across all classes.
+
+### OpenGL header inclusion
+
+How you include OpenGL headers and link to OpenGL driver code can be complex, and can differ between Linux, Apple and Windows platforms. On Linux, morphologica will `#include` GL headers from its own code base, and on Apple, it will include them from the system. If you are integrating morphologica code into an existing program that *already* has a scheme for including OpenGL headers, then it should detect this gracefully.
+
+Linking should be determined by the CMake system.
+
+### `OWNED_MODE`
+
+One more concept to be aware of when reading **morph/Visual.h** is the 'operating mode'. When `Visual` was first developed, it was designed to own its desktop window, which would always be provided by the [GLFW library](https://www.glfw.org/). The Visual class would manage GLFW setup and window creation/destruction. Window pointers (aliased as `morph::win_t`) were always of type `GLFWwindow`.
+
+Later on, I wanted to add support for the Qt windowing system so that a `morph::Visual` could provide OpenGL graphics for a `QtWidget`. Qt manages OpenGL contexts and windows, so I had to create a new operating mode for `morph::Visual` in which it would use an externally managed context. To do this I defined `OWNED_MODE`. `OWNED_MODE` is enabled by writing `#define OWNED_MODE 1` in a relevant location (for example locations of this line, see [viswidget.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/qt/viswidget.h) for Qt and [viswx.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/wx/viswx.h) for wx windows). Essentially, it has to come *before* `#include <morph/Visual.h>`.
+
+In `OWNED_MODE`, an alternative windowing system can be used and `morph::win_t` is mapped to the appropriate window/widget type. Any `Visual` code that is involved in setting up the windowing system is disabled in `OWNED_MODE`.
+
+However, unless you are integrating morphologica into Qt or WxWidgets, you will leave `OWNED_MODE` undefined.
