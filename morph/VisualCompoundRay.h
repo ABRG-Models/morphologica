@@ -1,6 +1,10 @@
 /*
  * An extension of morph::Visual which contains code to output a glTF description of a scene that is
- * compatible with compound-ray (https://github.com/BrainsOnBoard/compound-ray)
+ * compatible with (i.e. can be opened by) compound-ray
+ * (https://github.com/BrainsOnBoard/compound-ray)
+ *
+ * \author Seb James
+ * \date July 2024
  */
 
 #include <fstream>
@@ -19,8 +23,7 @@ namespace morph {
                            const float caThickness = 2.0f, const float caEm = 0.0f)
             : morph::Visual<glver> (width, height, title, caOffset, caLength, caThickness, caEm) {}
     public:
-        //! If set true, then output additional glTF to make files compatible with
-        //! https://github.com/BrainsOnBoard/compound-ray
+        //! If set true, then output additional glTF to make files compatible with compound-ray
         bool enable_compound_ray_gltf = true;
 
         //! We simply override the savegltf function to output in compound-ray format.
