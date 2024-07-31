@@ -274,12 +274,11 @@ namespace morph {
 
         virtual void initializeVertices()
         {
-            // Compute the offset to ensure that the cartgrid is centred about the mv_offset.
+            // Compute an offset (in Grid frame of ref) to ensure that the curved representation of
+            // the Grid has it's centre at 0 degrees. Turn centralize on/off to see the
+            // difference. It's true by default.
             if (this->centralize == true) {
                 this->centering_offset = -this->grid->centre().plus_one_dim();
-                std::cout << "centralize: centering_offset is " << this->centering_offset << std::endl;
-            } else {
-                std::cout << "NO centralize: centering_offset is " << this->centering_offset << std::endl;
             }
             this->drawcurvygrid();
         }
