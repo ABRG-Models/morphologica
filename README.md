@@ -89,7 +89,7 @@ plt.ylabel('y')
 # Render the graph on the screen until user quits with 'q'
 plt.show()
 ```
-See the [coding README](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md) for a description of some of the main classes that morphologica provides.
+See the [coding README](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md) for a description of some of the main classes that morphologica provides and the [reference website](https://abrg-models.github.io/morphologica/) for more comprehensive information.
 
 ## What is morphologica?
 
