@@ -764,7 +764,7 @@ namespace morph {
         }
 
         //! Save all the VisualModels in this Visual out to a GLTF format file
-        void savegltf (const std::string& gltf_file)
+        virtual void savegltf (const std::string& gltf_file)
         {
             std::ofstream fout;
             fout.open (gltf_file, std::ios::out|std::ios::trunc);
