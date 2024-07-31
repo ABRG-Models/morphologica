@@ -751,6 +751,12 @@ namespace morph {
             this->scenetrans_default = _xyz;
         }
 
+        void setSceneRotation (const morph::Quaternion<float>& _rotn)
+        {
+            this->rotation = _rotn;
+            this->rotation_default = _rotn;
+        }
+
         void lightingEffects (const bool effects_on = true)
         {
             this->ambient_intensity = effects_on ? 0.4f : 1.0f;
@@ -1096,6 +1102,12 @@ namespace morph {
         //! A rotation quaternion. You could have guessed that, right?
         morph::Quaternion<float> rotation;
 
+        //! The default rotation of the scene
+        morph::Quaternion<float> rotation_default;
+
+        //! A rotation that is saved between mouse button callbacks
+        morph::Quaternion<float> savedRotation;
+
         //! The projection matrix is a member of this class
         morph::TransformMatrix<float> projection;
 
@@ -1106,8 +1118,6 @@ namespace morph {
         morph::TransformMatrix<float> scene;
         //! Scene transformation inverse
         morph::TransformMatrix<float> invscene;
-
-        morph::Quaternion<float> savedRotation;
 
 #ifndef OWNED_MODE
         /*
@@ -1234,17 +1244,14 @@ namespace morph {
             }
 
             if (_key == key::z && (mods & keymod::control) && action == keyaction::press) {
-                std::cout << "Scenetrans setup code:\n    v.setSceneTrans (morph::vec<float,3>({"
-                          << this->scenetrans.x()
-                          << (this->scenetrans.x()/std::round(this->scenetrans.x()) == 1.0f ? ".0" : "")
-                          << "f, "
-                          << this->scenetrans.y()
-                          << (this->scenetrans.y()/std::round(this->scenetrans.y()) == 1.0f ? ".0" : "")
-                          << "f, "
+                std::cout << "Scenetrans setup code:\n    v.setSceneTrans (morph::vec<float,3>{ float{"
+                          << this->scenetrans.x() << "}, float{"
+                          << this->scenetrans.y() << "}, float{"
                           << this->scenetrans.z()
-                          << (this->scenetrans.z()/std::round(this->scenetrans.z()) == 1.0f ? ".0" : "")
-                          << "f}));"
-                          <<  "\nscene rotation is " << this->rotation << std::endl;
+                          << "} });"
+                          <<  "\n    v.setSceneRotation (morph::Quaternion<float>{ float{"
+                          << this->rotation.w << "}, float{" << this->rotation.x << "}, float{"
+                          << this->rotation.y << "}, float{" << this->rotation.z << "} });\n";
                 std::cout << "Writing scene trans/rotation into /tmp/Visual.json... ";
                 std::ofstream fout;
                 fout.open ("/tmp/Visual.json", std::ios::out|std::ios::trunc);
@@ -1339,8 +1346,7 @@ namespace morph {
                 this->scenetrans = this->scenetrans_default;
                 this->cyl_cam_pos = this->cyl_cam_pos_default;
                 // Reset rotation
-                morph::Quaternion<float> rt;
-                this->rotation = rt;
+                this->rotation = this->rotation_default;
 
                 needs_render = true;
             }
