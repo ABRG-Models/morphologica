@@ -234,9 +234,10 @@ morph::Visual v (1024, 768, "Coordinate arrows");
 v.showCoordArrows = true;
 ```
 
-The coordinate arrows appear in the bottom left of the screen. You can
-control where the arrows appear by using additional arguments to the `Visual`
-constructor:
+The coordinate arrows appear in the bottom left of the screen, staying
+in that position, but rotating as you rotate the scene view. You can
+control the screen position at which the arrows appear by using
+additional arguments to the `Visual` constructor:
 
 ```c++
 // Screen coordinates for the coordinate arrows. These run from -1 to +1
@@ -254,6 +255,12 @@ morph::Visual v (1024, 768, "Coordinate arrows",
                  coordinate_thickness, coordinate_fontsize);
 
 v.showCoordArrows = true;
+```
+
+If you prefer the coordinate arrows to appear *within* the scene, rather than fixed in the corner of the window, you can set this flag:
+```c++
+v.showCoordArrows = true;
+v.coordArrowsInScene = true;
 ```
 
 You can change the coordinate arrow labels from 'x', 'y' and 'z', if
@@ -355,7 +362,7 @@ You don't need to `setContext()` when you call `v1.render()` or
 
 `setContext()` and `releaseContext()` are only available when `OWNED_MODE` is defined; if your morph::Visual is operating within a Qt or wx environment, then those libraries will manage the OpenGL context.
 
-### Saving an image to make a movie
+## Saving an image to make a movie
 
 There's a `saveImage()` function that you can use to save a PNG image
 of the screen.
@@ -366,20 +373,31 @@ v.saveImage (fname);
 To make a movie, simply generate a suitable sequential filename within
 your loop and call saveImage.
 
-### Saving the scene in glTF format
+If you press **Ctrl-s** in a morphologica program, `saveImage` is called to save a PNG into the current working directory.
 
-morph::Visual contains code to save the 3D model in glTF format. This
+## Saving the scene in glTF format
+
+morph::Visual contains code to save the 3D model in [glTF format](https://www.khronos.org/gltf/). gltf files
 can be opened in 3D modelling programs like Blender. Note that only
-the structural parts of the model are incorporated into the glTF file;
-text is not currently saved.
+the 'structural' parts of the model are incorporated into the glTF file;
+text is not currently saved. Essentially, triangles are saved; text is not.
 ```c++
 std::string fname("./scene.gltf");
 v.savegltf (fname);
 ```
+**Ctrl-m** can be used to save a glTF file from any morphologica program.
 
 ## Extending morph::Visual to add custom key actions
 
-## Background: the `morph::Visual` GL version and `OWNED_MODE`
+When building a morphologica program, it's often useful to implement program-specific key actions. The correct way to do this is to extend `morph::Visual`, adding either a replacement for the `Visual::key_callback` function or a replacement for `Visual::key_callback_extra`.
+
+If you replace `Visual::key_callback` with an overload, you can remove or remap the key actions that are part of a default `morph::Visual` instance. For example, if you want to bind **Ctrl-s** to a new function, you'll want to replace `key_callback`, because in `Visual::key_callback`, **Ctrl-s** invokes `Visual::saveImage()`.
+
+If you want to keep the default morphologica key bindings (which are all *Ctrl-*combinations) and just add new ones, simply code a replacement `key_callback_extra` function.
+
+You can see how this works in the [myvisual.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/myvisual.cpp) example code.
+
+## OpenGL version and `OWNED_MODE`
 
 `morph::Visual` and `morph::VisualModel` conspire to hide most of the
 OpenGL internals away from you, the client coder. However, there *is*
