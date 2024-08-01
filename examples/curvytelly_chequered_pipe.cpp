@@ -1,5 +1,5 @@
 /*
- * Demonstrate the CurvyTellyVisual as a way to draw a stripey pipe
+ * Demonstrate the CurvyTellyVisual as a way to draw a chequered pipe
  */
 #include <morph/mathconst.h>
 #include <morph/vec.h>
@@ -29,10 +29,8 @@ int main()
     // we create some data with each row in the data set to an alternating 0 / increasing colour
     morph::vvec<float> stripe_data (grid.n, 0.0f);
     for (unsigned int y = 0; y < n_y; ++y) {
-        float colr = static_cast<float>(y) / static_cast<float>(n_y);
         for (unsigned int x = 0; x < n_x; ++x) {
-            // First strip is increasing value (colr), second is 0, third is colr, etc
-            stripe_data[x + n_x * y] = (y % 2 == 0 ? colr : 0.0f);
+            stripe_data[x + n_x * y] = ((y+x) % 2 == 0 ? 1.0f : 0.0f);
         }
     }
 
