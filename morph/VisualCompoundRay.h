@@ -26,6 +26,9 @@ namespace morph {
         //! If set true, then output additional glTF to make files compatible with compound-ray
         bool enable_compound_ray_gltf = true;
 
+        //! Path to the compound eye file (this file is part of compound-ray, not morphologica)
+        std::string path_to_compound_eye = "eyes/1000-horizontallyAcute-variableDegree.eye";
+
         //! We simply override the savegltf function to output in compound-ray format.
         virtual void savegltf (const std::string& gltf_file)
         {
@@ -55,68 +58,51 @@ namespace morph {
             fout << "\"extras\" : { \"background-shader\": \"simple_sky\" }, ";
         }
 
-        //! This outputs an example of a compound-ray compatible cameras section
-        virtual void compoundRayCameras (std::ofstream& fout) const
+        virtual void compoundRayPanCam (std::ofstream& fout) const
         {
-            fout << "  \"cameras\" : [\n"
-                 << "    {\n"
-                 << "      \"extras\" : {\n"
-                 << "        \"panoramic\" : \"true\"\n"
-                 << "      },\n"
+            fout << "    {\n"
                  << "      \"name\" : \"regular-panoramic\",\n"
+                 << "      \"type\" : \"perspective\",\n"
                  << "      \"perspective\" : {\n"
                  << "        \"aspectRatio\" : 1.7777777777777777,\n"
                  << "        \"yfov\" : 0.39959652046304894,\n"
                  << "        \"zfar\" : 1000,\n"
                  << "        \"znear\" : 0.10000000149011612\n"
                  << "      },\n"
-                 << "      \"type\" : \"perspective\"\n"
-                 << "    },\n"
-                 << "    {\n"
+                 << "      \"extras\" : {\n"
+                 << "        \"panoramic\" : \"true\"\n"
+                 << "      }\n"
+                 << "    }";
+        }
+
+        virtual void compoundRayEyeCam (std::ofstream& fout) const
+        {
+            fout << "    {\n"
+                 << "      \"name\" : \"simulated-compound-eye\",\n"
+                 << "      \"type\" : \"perspective\",\n"
+                 << "      \"perspective\" : {\n"
+                 << "        \"aspectRatio\" : 1.7777777777777777,\n"
+                 << "        \"yfov\" : 0.39959652046304894,\n"
+                 << "        \"zfar\" : 1000,\n"
+                 << "        \"znear\" : 0.10000000149011612\n"
+                 << "      },\n"
                  << "      \"extras\" : {\n"
                  << "        \"compound-eye\" : \"true\",\n"
                  << "        \"compound-projection\" : \"spherical_orientationwise\",\n"
-                 << "        \"compound-structure\" : \"eyes/1000-horizontallyAcute-variableDegree.eye\"\n"
-                 << "      },\n"
-                 << "      \"name\" : \"insect-eye-spherical-projector\",\n"
-                 << "      \"perspective\" : {\n"
-                 << "        \"aspectRatio\" : 1.7777777777777777,\n"
-                 << "        \"yfov\" : 0.39959652046304894,\n"
-                 << "        \"zfar\" : 1000,\n"
-                 << "        \"znear\" : 0.10000000149011612\n"
-                 << "      },\n"
-                 << "      \"type\" : \"perspective\"\n"
-                 << "    },\n"
-                 << "    {\n"
-                 << "      \"extras\" : {\n"
-                 << "        \"compound-eye\" : \"true\",\n"
-                 << "        \"compound-structure\" : \"1000-horizontallyAcute-variableDegree.eye\",\n"
-                 << "        \"compound-projection\" : \"spherical_orientationwise_ids\"\n"
-                 << "      },\n"
-                 << "      \"name\" : \"insect-eye-spherical-projector-ids\",\n"
-                 << "      \"perspective\" : {\n"
-                 << "        \"aspectRatio\" : 1.7777777777777777,\n"
-                 << "        \"yfov\" : 0.39959652046304894,\n"
-                 << "        \"zfar\" : 1000,\n"
-                 << "        \"znear\" : 0.10000000149011612\n"
-                 << "      },\n"
-                 << "      \"type\" : \"perspective\"\n"
-                 << "    },\n"
-                 << "    {\n"
-                 << "      \"extras\" : {\n"
-                 << "        \"compound-eye\" : \"true\",\n"
-                 << "        \"compound-projection\" : \"single_dimension_fast\",\n"
-                 << "        \"compound-structure\" : \"1000-horizontallyAcute-variableDegree.eye\"\n"
-                 << "      },\n"
-                 << "      \"name\" : \"insect-eye-fast-vector\",\n"
-                 << "      \"perspective\" : {\n"
-                 << "        \"aspectRatio\" : 1.7777777777777777,\n"
-                 << "        \"yfov\" : 0.39959652046304894,\n"
-                 << "        \"zfar\" : 1000,\n"
-                 << "        \"znear\" : 0.10000000149011612\n"
-                 << "      },\n"
-                 << "      \"type\" : \"perspective\"\n"
-                 << "    }\n"
+                 << "        \"compound-structure\" : \"" << this->path_to_compound_eye << "\"\n"
+                 << "      }\n"
+                 << "    }";
+        }
+
+        //! This outputs an example of a compound-ray compatible cameras section
+        virtual void compoundRayCameras (std::ofstream& fout) const
+        {
+            fout << "  \"cameras\" : [\n";
+            // Output camera sections of the cameras array
+            this->compoundRayPanCam (fout);
+            fout << ",\n";
+            this->compoundRayEyeCam (fout);
+            fout << "\n"
                  << "  ],\n";
         }
 
@@ -136,32 +122,12 @@ namespace morph {
                  << "    },\n"
                  << "    {\n"
                  << "      \"camera\" : 1,\n"
-                 << "      \"name\" : \"insect-eye-spherical-projector_Orientation\",\n"
+                 << "      \"name\" : \"simulated-compound-eye_Orientation\",\n"
                  << "      \"rotation\" : [ -0.7071067690849304, 0, 0, 0.7071067690849304 ]\n"
                  << "    },\n"
                  << "    {\n"
                  << "      \"children\" : [ 2 ],\n"
-                 << "      \"name\" : \"insect-eye-spherical-projector\",\n"
-                 << "      \"rotation\" : [ 0.7071068286895752, 0, 0, 0.7071068286895752 ]\n"
-                 << "    },\n"
-                 << "    {\n"
-                 << "      \"camera\" : 2,\n"
-                 << "      \"name\" : \"insect-eye-spherical-projector-ids_Orientation\",\n"
-                 << "      \"rotation\" : [ -0.7071067690849304, 0, 0, 0.7071067690849304 ]\n"
-                 << "    },\n"
-                 << "    {\n"
-                 << "      \"children\" : [ 4 ],\n"
-                 << "      \"name\" : \"insect-eye-spherical-projector-ids\",\n"
-                 << "      \"rotation\" : [ 0.7071068286895752, 0, 0, 0.7071068286895752 ]\n"
-                 << "    },\n"
-                 << "    {\n"
-                 << "      \"camera\" : 3,\n"
-                 << "      \"name\" : \"insect-eye-fast-vector_Orientation\",\n"
-                 << "      \"rotation\" : [ -0.7071067690849304, 0, 0, 0.7071067690849304 ]\n"
-                 << "    },\n"
-                 << "    {\n"
-                 << "      \"children\" : [ 6 ],\n"
-                 << "      \"name\" : \"insect-eye-fast-vector\",\n"
+                 << "      \"name\" : \"simulated-compound-eye\",\n"
                  << "      \"rotation\" : [ 0.7071068286895752, 0, 0, 0.7071068286895752 ]\n"
                  << "    },\n";
         }
