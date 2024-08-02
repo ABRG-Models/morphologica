@@ -406,10 +406,6 @@ namespace morph {
         //! Render the scene
         void render()
         {
-#ifdef PROFILE_RENDER
-            sc::time_point renderstart = sc::now();
-#endif
-
 #ifndef OWNED_MODE
             this->setContext();
 #endif
@@ -546,12 +542,6 @@ namespace morph {
 
 #ifndef OWNED_MODE
             glfwSwapBuffers (this->window);
-#endif
-
-#ifdef PROFILE_RENDER
-            sc::time_point renderend = sc::now();
-            std::chrono::duration time_span = renderend - renderstart;
-            std::cout << "Render took " << std::chrono::duration_cast<std::chrono::microseconds>(time_span).count() << " us\n";
 #endif
         }
 
