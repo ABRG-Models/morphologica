@@ -17,7 +17,7 @@ High quality random number generation (RNG) is important in many scientific simu
 
 ## Intervals
 
-This pages uses the common mathematical notation for intervals:
+This page uses the common mathematical notation for intervals:
 
 * **[a,b)** for a *semi-closed interval* which includes values from and including **a** up to, but not including **b**.
 * **[a,b]** for a *closed interval* which includes both **a** and **b** in the interval.
