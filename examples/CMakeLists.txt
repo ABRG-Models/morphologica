@@ -384,6 +384,12 @@ if(USE_GLEW)
   target_link_libraries(tri GLEW::GLEW)
 endif()
 
+add_executable(rectangle rectangle.cpp)
+target_link_libraries(rectangle OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(rectangle GLEW::GLEW)
+endif()
+
 add_executable(rhombo rhombo.cpp)
 target_link_libraries(rhombo OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
