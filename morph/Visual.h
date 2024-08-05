@@ -249,6 +249,8 @@ namespace morph {
         //! Make this Visual the current one, so that when creating/adding a visual model, the vao
         //! ids relate to the correct OpenGL context.
         void setContext() { glfwMakeContextCurrent (this->window); }
+        // A callback friendly wrapper
+        static void set_context (morph::Visual<glver>* _v) { _v->setContext(); };
 
         //! Release the OpenGL context
         void releaseContext() { glfwMakeContextCurrent (nullptr); }
@@ -264,6 +266,9 @@ namespace morph {
             model->get_shaderprogs = &morph::Visual<glver>::get_shaderprogs;
             model->get_gprog = &morph::Visual<glver>::get_gprog;
             model->get_tprog = &morph::Visual<glver>::get_tprog;
+#ifndef OWNED_MODE
+            model->setContext = &morph::Visual<glver>::set_context;
+#endif
         }
 
         /*!

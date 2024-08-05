@@ -51,20 +51,12 @@ int main()
         quivs.push_back ({-0.04, 0.05, -.2});
         quivs.push_back ({0.3,  -0.1,  0});
 
-        // NB: Before adding VisualModel, and before creating a new QuiverVisual, we
-        // need the OpenGL context to be correct, so set it on the first Visual, v with
-        // Visual::setContext():
-        v.setContext();
         auto qvp = std::make_unique<morph::QuiverVisual<float>>(&coords, offset, &quivs, morph::ColourMapType::Cividis);
         v.bindmodel (qvp);
         qvp->finalize();
         v.addVisualModel (qvp);
 
-        // Explicitly release context of the v Visual object, before calling setContext for the v2 object.
-        v.releaseContext();
-
         // Set up v2 with a graph, switching to the Visual v2's context first:
-        v2.setContext();
         auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
         v2.bindmodel (gv);
         morph::vvec<float> x =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};

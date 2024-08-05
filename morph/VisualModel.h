@@ -66,21 +66,17 @@ namespace morph {
     /*!
      * OpenGL model base class
      *
-     * This class is a base 'OpenGL model' class. It has the common code to create the
-     * vertices for some individual OpengGL model which is to be rendered in a 3-D
-     * scene.
+     * This class is a base 'OpenGL model' class. It has the common code to create the vertices for
+     * some individual OpengGL model which is to be rendered in a 3-D scene.
      *
-     * Some OpenGL models are derived directly from VisualModel; see for example
-     * morph::CoordArrows.
+     * Some OpenGL models are derived directly from VisualModel; see for example morph::CoordArrows.
      *
-     * Most of the models in morphologica are derived via morph::VisualDataModel,
-     * which adds a common mechanism for managing the data which is to be visualised
-     * by the final 'Visual' object (such as morph::HexGridVisual or
-     * morph::ScatterVisual)
+     * Other models in morphologica are derived via morph::VisualDataModel, which adds a common
+     * mechanism for managing the data which is to be visualised by the final 'Visual' object (such
+     * as morph::HexGridVisual or morph::ScatterVisual)
      *
-     * This class contains some common 'object primitives' code, such as computeSphere
-     * and computeCone, which compute the vertices that will make up sphere and cone,
-     * respectively.
+     * This class contains some common 'object primitives' code, such as computeSphere and
+     * computeCone, which compute the vertices that will make up sphere and cone, respectively.
      */
     template <int glver = morph::gl::version_4_1>
     class VisualModel
@@ -159,10 +155,13 @@ namespace morph {
         //! Initialize vertex buffer objects and vertex array object. Empty for 'text only' VisualModels.
         virtual void initializeVertices() {};
 
-        //! Re-initialize the buffers. Client code might have appended to
-        //! vertexPositions/Colors/Normals and indices before calling this method.
+        /*!
+         * Re-initialize the buffers. Client code might have appended to
+         * vertexPositions/Colors/Normals and indices before calling this method.
+         */
         void reinit_buffers()
         {
+            this->setContext (this->parentVis);
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
             morph::gl::Util::checkError (__FILE__, __LINE__);
             // Now re-set up the VBOs
@@ -182,9 +181,10 @@ namespace morph {
 #endif
         }
 
-        // reinit ONLY vertexColors buffer
+        //! reinit ONLY vertexColors buffer
         void reinit_colour_buffer()
         {
+            this->setContext (this->parentVis);
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
             morph::gl::Util::checkError (__FILE__, __LINE__);
             // Now re-set up the VBOs
@@ -217,6 +217,7 @@ namespace morph {
         //! Re-create the model - called after updating data
         void reinit()
         {
+            this->setContext (this->parentVis);
             // Fixme: Better not to clear, then repeatedly pushback here:
             this->vertexPositions.clear();
             this->vertexNormals.clear();
@@ -228,12 +229,14 @@ namespace morph {
             this->reinit_buffers();
         }
 
-        //! For some models it's important to clear the texts when reinitialising. This
-        //! is NOT the same as VisualModel::clear() followed by
-        //! initializeVertices(). For the same effect, you can call clearTexts() then
-        //! reinit().
+        /*!
+         * For some models it's important to clear the texts when reinitialising. This is NOT the
+         * same as VisualModel::clear() followed by initializeVertices(). For the same effect, you
+         * can call clearTexts() then reinit().
+         */
         void reinit_with_clearTexts()
         {
+            this->setContext (this->parentVis);
             this->vertexPositions.clear();
             this->vertexNormals.clear();
             this->vertexColors.clear();
@@ -252,11 +255,13 @@ namespace morph {
             this->indices.reserve (6u * n_vertices);
         }
 
-        //! A function to call initialiseVertices and postVertexInit after any necessary
-        //! attributes have been set (see, for example, setting the colour maps up in
-        //! VisualDataModel).
+        /*!
+         * A function to call initialiseVertices and postVertexInit after any necessary attributes
+         * have been set (see, for example, setting the colour maps up in VisualDataModel).
+         */
         void finalize()
         {
+            this->setContext (this->parentVis);
             this->initializeVertices();
             this->postVertexInitRequired = true;
         }
@@ -315,8 +320,10 @@ namespace morph {
 
     public:
 
-        //! Add a text label to the model at location (within the model coordinates) toffset. Return
-        //! the text geometry of the added label so caller can place associated text correctly.
+        /*!
+         * Add a text label to the model at location (within the model coordinates) toffset. Return
+         * the text geometry of the added label so caller can place associated text correctly.
+         */
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
                                       const morph::TextFeatures& tfeatures)
@@ -340,8 +347,10 @@ namespace morph {
             return this->texts.back()->getTextGeometry();
         }
 
-        //! Add a text label, with given offset _toffset and the specified features. The reference
-        //! to a pointer, tm, allows client code to change the text of the VisualTextModel as necessary.
+        /*!
+         * Add a text label, with given offset _toffset and the specified features. The reference
+         * to a pointer, tm, allows client code to change the text of the VisualTextModel as necessary.
+         */
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
                                       morph::VisualTextModel<glver>*& tm,
@@ -519,15 +528,15 @@ namespace morph {
          * Methods used by Visual::savegltf()
          */
 
-        // Get mv_offset in a json-friendly string
+        //! Get mv_offset in a json-friendly string
         std::string translation_str() { return this->mv_offset.str_mat(); }
 
-        // Return the number of elements in this->indices
+        //! Return the number of elements in this->indices
         std::size_t indices_size() { return this->indices.size(); }
         float indices_max() { return this->idx_max; }
         float indices_min() { return this->idx_min; }
         std::size_t indices_bytes() { return this->indices.size() * sizeof (GLuint); }
-        // Return base64 encoded version of indices
+        //! Return base64 encoded version of indices
         std::string indices_base64()
         {
             std::vector<std::uint8_t> idx_bytes (this->indices.size() << 2, 0);
@@ -541,7 +550,10 @@ namespace morph {
             return base64::encode (idx_bytes);
         }
 
-        // Compute the max and min values of indices and vertexPositions/Colors/Normals for use when saving gltf files
+        /*!
+         * Compute the max and min values of indices and vertexPositions/Colors/Normals for use
+         * when saving gltf files
+         */
         void computeVertexMaxMins()
         {
             // Compute index maxmins
@@ -658,16 +670,20 @@ namespace morph {
         }
 
     public:
-        // A function that will be runtime defined to get_shaderprogs from a pointer to
-        // Visual (saving a boilerplate argument and avoiding that killer circular
-        // dependency at the cost of one line of boilerplate in client programs)
+        /*!
+         * A function that will be runtime defined to get_shaderprogs from a pointer to
+         * Visual (saving a boilerplate argument and avoiding that killer circular
+         * dependency at the cost of one line of boilerplate in client programs)
+         */
         std::function<morph::visgl::visual_shaderprogs(morph::Visual<glver>*)> get_shaderprogs;
-        // Get the graphics shader prog id
+        //! Get the graphics shader prog id
         std::function<GLuint(morph::Visual<glver>*)> get_gprog;
-        // Get the text shader prog id
+        //! Get the text shader prog id
         std::function<GLuint(morph::Visual<glver>*)> get_tprog;
+        //! Set OpenGL context. Should call parentVis->setContext()
+        std::function<void(morph::Visual<glver>*)> setContext;
 
-        // Setter for the parent pointer, parentVis
+        //! Setter for the parent pointer, parentVis
         void set_parent (morph::Visual<glver>* _vis)
         {
             if (this->parentVis != nullptr) { throw std::runtime_error ("VisualModel: Set the parent pointer once only!"); }
@@ -732,16 +748,20 @@ namespace morph {
         //! CPU-side data for vertex colours
         std::vector<float> vertexColors;
 
-        // The max and min values in the next 8 attriubutes are only computed if gltf files are going to be output by Visual::safegltf()
+        static constexpr float _max = std::numeric_limits<float>::max();
+        static constexpr float _low = std::numeric_limits<float>::lowest();
+
+        // The max and min values in the next 8 attributes are only computed if gltf files are going
+        // to be output by Visual::savegltf()
 
         //! Max values of 0th, 1st and 2nd coordinates in vertexPositions
-        morph::vec<float, 3> vpos_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+        morph::vec<float, 3> vpos_maxes = { _low, _low, _low };
         //! Min values in vertexPositions
-        morph::vec<float, 3> vpos_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        morph::vec<float, 3> vcol_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-        morph::vec<float, 3> vcol_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        morph::vec<float, 3> vnorm_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-        morph::vec<float, 3> vnorm_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        morph::vec<float, 3> vpos_mins = { _max, _max, _max };
+        morph::vec<float, 3> vcol_maxes = { _low, _low, _low };
+        morph::vec<float, 3> vcol_mins = { _max, _max, _max };
+        morph::vec<float, 3> vnorm_maxes = { _low, _low, _low };
+        morph::vec<float, 3> vnorm_mins = { _max, _max, _max };
         //! Max value in indices
         GLuint idx_max = 0u;
         //! Min value in indices.

@@ -312,56 +312,6 @@ Use of `waitevents` prevents the frame rate becoming too high. If you need the m
 
 If you want to guarantee the 0.018 s pause, you can instead call `v.wait (0.018)`.
 
-### Dealing with OpenGL context
-
-An OpenGL 'context' is a term that refers to the memory and data
-structures that allow you to render a scene to your computer screen
-via your graphics processor. In most programs, one OpenGL context is
-associated with each desktop window. If you only have one window, then
-you will not need to concern yourself with the context, because the
-one context will always be current. However, if you have 2 windows or
-more, then certain operations will require the correct context
-(i.e. window) to be acquired.
-
-Although you don't have to worry much about OpenGL internals when
-using `morph::Visual`, if you have more than one `Visual` object, then
-you *will* need to take care to switch between OpenGL contexts when
-you create your VisualModels. This is achieved with the function call
-`Visual::setContext()`.
-
-Some example code is:
-
-```c++
-morph::Visual v1(1024, 768, "Window 1");
-morph::Visual v2(1024, 768, "Window 2");
-// Set v1's context to be current:
-v1.setContext();
-// Create and add a model:
-auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
-v1.bindmodel (gv);
-// Setup of gv omitted
-gv->finalize();
-v1.addVisualModel (gv);
-// Optional: Explicitly release context:
-v1.releaseContext();
-// Switch to v2's context
-v2.setContext();
-// We can now re-use gv as long as we assign a new unique_ptr:
-gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
-v2.bindmodel (gv);
-// Setup of gv omitted
-gv->finalize();
-v2.addVisualModel (gv);
-// Again, an optional release:
-v2.releaseContext();
-```
-
-You don't need to `setContext()` when you call `v1.render()` or
-`v2.render()` because `setContext()` is called in the render function.
-
-
-`setContext()` and `releaseContext()` are only available when `OWNED_MODE` is defined; if your morph::Visual is operating within a Qt or wx environment, then those libraries will manage the OpenGL context.
-
 ## Saving an image to make a movie
 
 There's a `saveImage()` function that you can use to save a PNG image
