@@ -1,5 +1,5 @@
 ---
-title: morph::VisualCommon
+title: VisualCommon.h
 parent: Visualization classes
 grand_parent: Reference
 permalink: /ref/visual/visualcommon
@@ -9,7 +9,7 @@ nav_order: 2
 ```c++
 #include <morph/VisualCommon.h>
 ```
-morph::VisualCommon contains a couple of structs used across the `Visual` and `VisualModel` classes. These are enclosed within a `morph::visgl` namespace to indicate that they are related to OpenGL graphics and related to `morph::Visual`.
+This header contains a couple of structs used across the `Visual` and `VisualModel` classes. These are enclosed within a `morph::visgl` namespace to indicate that they are related to OpenGL graphics and related to `morph::Visual`.
 
 ## Shader program struct: `visgl::visual_shaderprogs`
 
