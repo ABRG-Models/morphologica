@@ -590,7 +590,7 @@ namespace morph {
         morph::Visual<glver>* parentVis = nullptr;
     protected:
         //! A face for this text
-        morph::gl::VisualFace* face = nullptr;
+        morph::visgl::VisualFace* face = nullptr;
         //! The colour of the backing quad's vertices. Doesn't have any effect.
         std::array<float, 3> clr_backing = {1.0f, 1.0f, 0.0f};
         //! the desired width of an 'm'.

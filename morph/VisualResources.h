@@ -108,7 +108,7 @@ namespace morph {
         //! and fontpixels (the texture resolution)
         std::map<std::tuple<morph::VisualFont, unsigned int,
                             morph::Visual<glver>*>,
-                 std::unique_ptr<morph::gl::VisualFace>> faces;
+                 std::unique_ptr<morph::visgl::VisualFace>> faces;
 
         //! An error callback function for the GLFW windowing library
         static void errorCallback (int error, const char* description)
@@ -176,15 +176,15 @@ namespace morph {
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
-                                              morph::Visual<glver>* _vis)
+        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
+                                                 morph::Visual<glver>* _vis)
         {
-            morph::gl::VisualFace* rtn = nullptr;
+            morph::visgl::VisualFace* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);
             try {
                 rtn = this->faces.at(key).get();
             } catch (const std::out_of_range& e) {
-                this->faces[key] = std::make_unique<morph::gl::VisualFace> (font, fontpixels, this->freetypes.at(_vis));
+                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis));
                 rtn = this->faces.at(key).get();
             }
             return rtn;
