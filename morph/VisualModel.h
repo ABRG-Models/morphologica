@@ -132,7 +132,6 @@ namespace morph {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            //std::cout << "indices.size(): " << this->indices.size() << std::endl;
             int sz = this->indices.size() * sizeof(GLuint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
             morph::gl::Util::checkError (__FILE__, __LINE__);
@@ -190,7 +189,6 @@ namespace morph {
             // Now re-set up the VBOs
 #ifdef CAREFULLY_UNBIND_AND_REBIND // Experimenting with better buffer binding.
             glBindVertexArray (this->vao);
-            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
 #endif
             this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
 
