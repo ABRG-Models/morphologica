@@ -1,6 +1,6 @@
 ---
 title: morph::VisualTextModel
-parent: Visualization classes
+parent: Visualization API
 grand_parent: Reference
 permalink: /ref/visual/visualtextmodel
 layout: page

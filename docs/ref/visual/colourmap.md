@@ -1,6 +1,6 @@
 ---
 title: morph::ColourMap
-parent: Visualization classes
+parent: Visualization API
 grand_parent: Reference
 permalink: /ref/visual/colourmap
 layout: page

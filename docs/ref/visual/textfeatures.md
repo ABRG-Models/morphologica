@@ -1,6 +1,6 @@
 ---
 title: morph::TextFeatures
-parent: Visualization classes
+parent: Visualization API
 grand_parent: Reference
 permalink: /ref/visual/textfeatures
 layout: page

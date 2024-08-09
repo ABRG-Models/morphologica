@@ -1,6 +1,6 @@
 ---
 title: morph::TextGeometry
-parent: Visualization classes
+parent: Visualization API
 grand_parent: Reference
 permalink: /ref/visual/textgeometry
 layout: page

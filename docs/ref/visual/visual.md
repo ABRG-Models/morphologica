@@ -1,6 +1,6 @@
 ---
 title: morph::Visual
-parent: Visualization classes
+parent: Visualization API
 grand_parent: Reference
 permalink: /ref/visual/visual
 layout: page

@@ -1,6 +1,6 @@
 ---
 title: morph::VisualDataModel
-parent: Visualization classes
+parent: Visualization API
 grand_parent: Reference
 permalink: /ref/visual/visualdatamodel
 layout: page
