@@ -129,7 +129,6 @@ namespace morph {
             // First, need to know which set of points form two, adjacent rows. An assumption we'll
             // accept: The rows are listed in slice-order and the points in each row are listed in
             // position-along-the-curve order.
-            GLuint ib = 0; // only 16 bits, 65536 vertices. Not enough!
 
             std::size_t r1 = 0;
             std::size_t r1_e = 0;
@@ -153,9 +152,9 @@ namespace morph {
             // Now r1, r1_e, r2 and r2_e all point to the right places
             while (r2 != prlen) { // While through all 'rows' - pairs of pointrows
 
-                this->computeSphere (ib, (*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
-                this->computeSphere (ib, (*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
-                this->computeTube (ib, (*this->dataCoords)[r1], (*this->dataCoords)[r2],
+                this->computeSphere ((*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
+                this->computeSphere ((*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
+                this->computeTube ((*this->dataCoords)[r1], (*this->dataCoords)[r2],
                                    this->cm.convert(dcopy[r1]), this->cm.convert(dcopy[r2]), this->radius, this->tseg);
                 // Now while through the row pushing the rest of the vertices.
                 while (r2 <= r2_e && r1 <= r1_e) {
@@ -229,16 +228,16 @@ namespace morph {
 
                     if (must_be_r1n) {
                         // r1 is the next
-                        this->computeSphere (ib, (*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
-                        this->computeSphere (ib, (*this->dataCoords)[r1n], this->cm_sph.convert(dcopy[r1n]), this->sradius, this->srings, this->sseg);
-                        this->computeTube (ib, (*this->dataCoords)[r1], (*this->dataCoords)[r1n],
+                        this->computeSphere ((*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
+                        this->computeSphere ((*this->dataCoords)[r1n], this->cm_sph.convert(dcopy[r1n]), this->sradius, this->srings, this->sseg);
+                        this->computeTube ((*this->dataCoords)[r1], (*this->dataCoords)[r1n],
                                            this->cm.convert(dcopy[r1]), this->cm.convert(dcopy[r1n]), this->radius, this->tseg);
                         r1 = r1n;
                     } else {
                         // r2 is next
-                        this->computeSphere (ib, (*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
-                        this->computeSphere (ib, (*this->dataCoords)[r2n], this->cm_sph.convert(dcopy[r2n]), this->sradius, this->srings, this->sseg);
-                        this->computeTube (ib, (*this->dataCoords)[r2], (*this->dataCoords)[r2n],
+                        this->computeSphere ((*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
+                        this->computeSphere ((*this->dataCoords)[r2n], this->cm_sph.convert(dcopy[r2n]), this->sradius, this->srings, this->sseg);
+                        this->computeTube ((*this->dataCoords)[r2], (*this->dataCoords)[r2n],
                                            this->cm.convert(dcopy[r2]), this->cm.convert(dcopy[r2n]), this->radius, this->tseg);
                         r2 = r2n;
                     }
@@ -246,9 +245,9 @@ namespace morph {
                     if (completed_end_tri == true) { break; }
 
                     // Next tri:
-                    this->computeSphere (ib, (*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
-                    this->computeSphere (ib, (*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
-                    this->computeTube (ib, (*this->dataCoords)[r1], (*this->dataCoords)[r2],
+                    this->computeSphere ((*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
+                    this->computeSphere ((*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
+                    this->computeTube ((*this->dataCoords)[r1], (*this->dataCoords)[r2],
                                        this->cm.convert(dcopy[r1]), this->cm.convert(dcopy[r2]), this->radius, this->tseg);
                 }
 
@@ -269,7 +268,7 @@ namespace morph {
                 r2_e--;
                 // Now r1, r1_e, r2 and r2_e all point to the right places
             }
-            std::cout << "PointRowsMeshVisual has " << ib << " vertex indices\n";
+            std::cout << "PointRowsMeshVisual has " << this->idx << " vertex indices\n";
         }
 
     private:

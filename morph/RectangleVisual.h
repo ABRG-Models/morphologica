@@ -55,9 +55,7 @@ namespace morph {
             c3 = rotn * c3;
             c4 = rotn * c4;
 
-            this->computeFlatQuad (this->idx,
-                                   c1.plus_one_dim(), c2.plus_one_dim(), c3.plus_one_dim(), c4.plus_one_dim(),
-                                   this->col);
+            this->computeFlatQuad (c1.plus_one_dim(), c2.plus_one_dim(), c3.plus_one_dim(), c4.plus_one_dim(), this->col);
         }
 
         //! Initialize vertex buffer objects and vertex array object.

@@ -56,7 +56,7 @@ namespace morph {
             // Figure out ux, uy from position and vertex. Let ux be like dirn to vertex
             this->_ux = this->vertex - this->position;
             this->_uy = this->_ux.cross(this->uz);
-            this->computeTube (this->idx, this->position, pend, this->_ux, this->_uy,
+            this->computeTube (this->position, pend, this->_ux, this->_uy,
                                this->col, this->col,
                                this->radius, this->n);
         }

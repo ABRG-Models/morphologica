@@ -48,14 +48,13 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
 
+            constexpr morph::vec<float, 3> zvec  = {0,0,0};
             if (iterations > 5) {
                 // Note odd necessity to stick in the 'template' keyword after this->
-                this->template computeSphereGeoFast<double, iterations> (this->idx, morph::vec<float, 3>({0,0,0}),
-                                                                         this->colour, this->radius);
+                this->template computeSphereGeoFast<double, iterations> (zvec, this->colour, this->radius);
             } else {
                 // computeSphereGeo F defaults to float
-                this->template computeSphereGeoFast<float, iterations> (this->idx, morph::vec<float, 3>({0,0,0}),
-                                                                        this->colour, this->radius);
+                this->template computeSphereGeoFast<float, iterations> (zvec, this->colour, this->radius);
             }
         }
 

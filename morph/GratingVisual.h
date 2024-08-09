@@ -562,11 +562,11 @@ namespace morph {
                     q2 = p + p_step - half_wave;
 
                     if constexpr (debug_geometry) {
-                        this->computeSphere (this->idx, p_0.plus_one_dim(), morph::colour::crimson, 0.012f, 16, 20);
-                        this->computeSphere (this->idx, p1.plus_one_dim(), morph::colour::grey20, 0.02f, 16, 20);
-                        this->computeSphere (this->idx, q1.plus_one_dim(), morph::colour::grey20, 0.02f, 16, 20);
-                        this->computeSphere (this->idx, p2.plus_one_dim(), morph::colour::navy, 0.02f, 16, 20);
-                        this->computeSphere (this->idx, q2.plus_one_dim(), morph::colour::navy, 0.02f, 16, 20);
+                        this->computeSphere (p_0.plus_one_dim(), morph::colour::crimson, 0.012f, 16, 20);
+                        this->computeSphere (p1.plus_one_dim(), morph::colour::grey20, 0.02f, 16, 20);
+                        this->computeSphere (q1.plus_one_dim(), morph::colour::grey20, 0.02f, 16, 20);
+                        this->computeSphere (p2.plus_one_dim(), morph::colour::navy, 0.02f, 16, 20);
+                        this->computeSphere (q2.plus_one_dim(), morph::colour::navy, 0.02f, 16, 20);
                     }
 
                     // repeat computation of intersections for p2, q2.
@@ -661,10 +661,10 @@ namespace morph {
                         }
 
                         if constexpr (debug_geometry) {
-                            this->computeSphere (this->idx, fp1.plus_one_dim(), morph::colour::crimson, 0.01f, 16, 20);
-                            this->computeSphere (this->idx, fq1.plus_one_dim(), morph::colour::violetred2, 0.01f, 16, 20);
-                            this->computeSphere (this->idx, fp2.plus_one_dim(), morph::colour::royalblue, 0.01f, 16, 20);
-                            this->computeSphere (this->idx, fq2.plus_one_dim(), morph::colour::dodgerblue1, 0.01f, 16, 20);
+                            this->computeSphere (fp1.plus_one_dim(), morph::colour::crimson, 0.01f, 16, 20);
+                            this->computeSphere (fq1.plus_one_dim(), morph::colour::violetred2, 0.01f, 16, 20);
+                            this->computeSphere (fp2.plus_one_dim(), morph::colour::royalblue, 0.01f, 16, 20);
+                            this->computeSphere (fq2.plus_one_dim(), morph::colour::dodgerblue1, 0.01f, 16, 20);
                         }
                     }
                     i++;
@@ -686,13 +686,13 @@ namespace morph {
                 constexpr morph::vec<float, 2> voffs = {0.0f, bwid/2.0f};
                 constexpr morph::vec<float, 2> hoffs = {bwid/2.0f, 0.0f};
                 constexpr morph::vec<float, 2> hoffs2 = {bwid, 0.0f};
-                this->computeFlatLine (this->idx, (bot_p-voffs-hoffs2).plus_one_dim(), (bot_q-voffs+hoffs2).plus_one_dim(),
+                this->computeFlatLine ((bot_p-voffs-hoffs2).plus_one_dim(), (bot_q-voffs+hoffs2).plus_one_dim(),
                                        this->uz, morph::colour::black, bwid);
-                this->computeFlatLine (this->idx, (right_p+hoffs).plus_one_dim(), (right_q+hoffs).plus_one_dim(),
+                this->computeFlatLine ((right_p+hoffs).plus_one_dim(), (right_q+hoffs).plus_one_dim(),
                                        this->uz, morph::colour::black, bwid);
-                this->computeFlatLine (this->idx, (top_p+voffs-hoffs2).plus_one_dim(), (top_q+voffs+hoffs2).plus_one_dim(),
+                this->computeFlatLine ((top_p+voffs-hoffs2).plus_one_dim(), (top_q+voffs+hoffs2).plus_one_dim(),
                                        this->uz, morph::colour::black, bwid);
-                this->computeFlatLine (this->idx, (left_p-hoffs).plus_one_dim(), (left_q-hoffs).plus_one_dim(),
+                this->computeFlatLine ((left_p-hoffs).plus_one_dim(), (left_q-hoffs).plus_one_dim(),
                                        this->uz, morph::colour::black, bwid);
 
                 // Also show the v_front vector
@@ -700,8 +700,7 @@ namespace morph {
                 this->computeArrow (vfstart, vfstart + this->v_front.plus_one_dim(), morph::colour::black);
 
                 // Draw a unit 1 ruler, too
-                this->computeFlatLine (this->idx,
-                                       (left_p + vec<float, 2>{0,-0.1}).plus_one_dim(),
+                this->computeFlatLine ((left_p + vec<float, 2>{0,-0.1}).plus_one_dim(),
                                        (left_p + vec<float, 2>{1,-0.1}).plus_one_dim(),
                                        this->uz, morph::colour::crimson, 0.01f);
             }

@@ -38,8 +38,7 @@ namespace morph {
         }
 
         //! Compute a triangle from 3 arbitrary corners
-        void computeTriangle (GLuint& idx,
-                              vec<float> c1, vec<float> c2, vec<float> c3,
+        void computeTriangle (vec<float> c1, vec<float> c2, vec<float> c3,
                               std::array<float, 3> colr)
         {
             // v is the face normal
@@ -56,9 +55,9 @@ namespace morph {
                 this->vertex_push (colr, this->vertexColors);
                 this->vertex_push (v, this->vertexNormals);
             }
-            this->indices.push_back (idx++);
-            this->indices.push_back (idx++);
-            this->indices.push_back (idx++);
+            this->indices.push_back (this->idx++);
+            this->indices.push_back (this->idx++);
+            this->indices.push_back (this->idx++);
         }
 
         //! Initialize vertex buffer objects and vertex array object.
@@ -70,10 +69,7 @@ namespace morph {
             this->indices.clear();
 
             // Draw a triangle. That's it.
-            this->computeTriangle (this->idx, this->coord1, this->coord2, this->coord3, this->col);
-
-            //std::cout << "idx now has value: " << this->idx << std::endl;
-            //std::cout << "vertexPositions has size " <<  this->vertexPositions.size()<< std::endl;
+            this->computeTriangle (this->coord1, this->coord2, this->coord3, this->col);
         }
 
         //! The position of the vertices of the triangle

@@ -66,7 +66,7 @@ struct SquareGridVisual : public morph::VisualModel<>
                 std::array<float, 3> element_colour = this->colourMap.convert (x/num_elements_less_one, y/num_elements_less_one);
 
                 // We use a 'flat poly' primitive to draw a square. ux and uy are unit vectors that control the orientation of the polygon
-                this->computeFlatPoly (this->idx, element_pos, this->ux, this->uy, element_colour,
+                this->computeFlatPoly (element_pos, this->ux, this->uy, element_colour,
                                        square_centre_to_vertex, square_has_four_segments, square_needs_rotation);
             }
         }

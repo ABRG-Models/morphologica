@@ -707,63 +707,53 @@ namespace morph {
             float lh = this->hg->getd()/60.0f; // line height
 
             // Vertices and lines of base hexagon
-            this->computeSphere (this->idx, this->hg->sw_loc.plus_one_dim(), clr, sw, 14, 12);
-            this->computeSphere (this->idx, this->hg->nw_loc.plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx, this->hg->sw_loc.plus_one_dim(),
+            this->computeSphere (this->hg->sw_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeSphere (this->hg->nw_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->hg->sw_loc.plus_one_dim(),
                                this->hg->nw_loc.plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, this->hg->n_loc.plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               this->hg->nw_loc.plus_one_dim(),
+            this->computeSphere (this->hg->n_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->hg->nw_loc.plus_one_dim(),
                                this->hg->n_loc.plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, this->hg->ne_loc.plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               this->hg->n_loc.plus_one_dim(),
+            this->computeSphere (this->hg->ne_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->hg->n_loc.plus_one_dim(),
                                this->hg->ne_loc.plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, this->hg->se_loc.plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               this->hg->ne_loc.plus_one_dim(),
+            this->computeSphere (this->hg->se_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->hg->ne_loc.plus_one_dim(),
                                this->hg->se_loc.plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, this->hg->s_loc.plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               this->hg->se_loc.plus_one_dim(),
+            this->computeSphere (this->hg->s_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->hg->se_loc.plus_one_dim(),
                                this->hg->s_loc.plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, this->hg->s_loc.plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               this->hg->s_loc.plus_one_dim(),
+            this->computeSphere (this->hg->s_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->hg->s_loc.plus_one_dim(),
                                this->hg->sw_loc.plus_one_dim(),
                                uz, clr, clr, lw, lh);
             if (!this->hg->q1.has_nan() && !this->hg->q6.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->q1.plus_one_dim(),
+                this->computeLine (this->hg->q1.plus_one_dim(),
                                    this->hg->q6.plus_one_dim(),
                                    uz, clr, clr, lw, lh);
             }
             if (!this->hg->p6.has_nan() && !this->hg->q6.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->p6.plus_one_dim(),
+                this->computeLine (this->hg->p6.plus_one_dim(),
                                    this->hg->q6.plus_one_dim(),
                                    uz, clr, clr, lw, lh);
             }
             if (!this->hg->p6.has_nan() && !this->hg->q5.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->p6.plus_one_dim(),
+                this->computeLine (this->hg->p6.plus_one_dim(),
                                    this->hg->q5.plus_one_dim(),
                                    uz, clr, clr, lw, lh);
             }
             if (!this->hg->q6.has_nan() && !this->hg->p8.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->q6.plus_one_dim(),
+                this->computeLine (this->hg->q6.plus_one_dim(),
                                    this->hg->p8.plus_one_dim(),
                                    uz, clr, clr, lw, lh);
             }
             if (!this->hg->q8.has_nan() && !this->hg->p8.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->q8.plus_one_dim(),
+                this->computeLine (this->hg->q8.plus_one_dim(),
                                    this->hg->p8.plus_one_dim(),
                                    uz, clr, clr, lw, lh);
             }
@@ -771,67 +761,57 @@ namespace morph {
 
             // Vertices and lines of 0 hexagon
             clr = { 0.1, 0.1, 0.8 };
-            this->computeSphere (this->idx, (this->hg->sw_0).plus_one_dim(), clr, sw, 14, 12);
-            this->computeSphere (this->idx, (this->hg->nw_0).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx, (this->hg->sw_0).plus_one_dim(),
+            this->computeSphere ((this->hg->sw_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeSphere ((this->hg->nw_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->sw_0).plus_one_dim(),
                                (this->hg->nw_0).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->n_0).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->nw_0).plus_one_dim(),
+            this->computeSphere ((this->hg->n_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->nw_0).plus_one_dim(),
                                (this->hg->n_0).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->ne_0).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->n_0).plus_one_dim(),
+            this->computeSphere ((this->hg->ne_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->n_0).plus_one_dim(),
                                (this->hg->ne_0).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->se_0).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->ne_0).plus_one_dim(),
+            this->computeSphere ((this->hg->se_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->ne_0).plus_one_dim(),
                                (this->hg->se_0).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->s_0).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->se_0).plus_one_dim(),
+            this->computeSphere ((this->hg->s_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->se_0).plus_one_dim(),
                                (this->hg->s_0).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->s_0).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->s_0).plus_one_dim(),
+            this->computeSphere ((this->hg->s_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->s_0).plus_one_dim(),
                                (this->hg->sw_0).plus_one_dim(),
                                uz, clr, clr, lw, lh);
 
             // Vertices and lines of shifted hexagon
             clr = { 0.9, 0.1, 0.1 };
-            this->computeSphere (this->idx, (this->hg->sw_sft).plus_one_dim(), clr, sw, 14, 12);
-            this->computeSphere (this->idx, (this->hg->nw_sft).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx, (this->hg->sw_sft).plus_one_dim(),
+            this->computeSphere ((this->hg->sw_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeSphere ((this->hg->nw_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->sw_sft).plus_one_dim(),
                                (this->hg->nw_sft).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->n_sft).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->nw_sft).plus_one_dim(),
+            this->computeSphere ((this->hg->n_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->nw_sft).plus_one_dim(),
                                (this->hg->n_sft).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->ne_sft).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->n_sft).plus_one_dim(),
+            this->computeSphere ((this->hg->ne_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->n_sft).plus_one_dim(),
                                (this->hg->ne_sft).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->se_sft).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->ne_sft).plus_one_dim(),
+            this->computeSphere ((this->hg->se_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->ne_sft).plus_one_dim(),
                                (this->hg->se_sft).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->s_sft).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->se_sft).plus_one_dim(),
+            this->computeSphere ((this->hg->s_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->se_sft).plus_one_dim(),
                                (this->hg->s_sft).plus_one_dim(),
                                uz, clr, clr, lw, lh);
-            this->computeSphere (this->idx, (this->hg->s_sft).plus_one_dim(), clr, sw, 14, 12);
-            this->computeLine (this->idx,
-                               (this->hg->s_sft).plus_one_dim(),
+            this->computeSphere ((this->hg->s_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine ((this->hg->s_sft).plus_one_dim(),
                                (this->hg->sw_sft).plus_one_dim(),
                                uz, clr, clr, lw, lh);
 
@@ -839,13 +819,11 @@ namespace morph {
             clr = blk;
             if (!this->hg->p1.has_nan() && !this->hg->q1.has_nan()
                 && !this->hg->p2.has_nan() && !this->hg->q2.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->p1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->p1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->q1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, blk, blk, lw/2.0f, lh);
 
-                this->computeLine (this->idx,
-                                   this->hg->p2.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->p2.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->q2.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, blk, blk, lw/2.0f, lh);
             }
@@ -853,13 +831,11 @@ namespace morph {
             // finding i5
             if (!this->hg->p3.has_nan() && !this->hg->q3.has_nan()
                 && !this->hg->p4.has_nan() && !this->hg->q4.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->p3.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->p3.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->q3.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, blk, blk, lw/2.0f, lh);
 
-                this->computeLine (this->idx,
-                                   this->hg->p4.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->p4.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->q4.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, blk, blk, lw/2.0f, lh);
             }
@@ -868,23 +844,23 @@ namespace morph {
             sw = this->hg->getd()/40.0f;
             if (!this->hg->i1.has_nan()) {
                 clr = {1,0,0};
-                this->computeSphere (this->idx, this->hg->i1.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->i1.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("i1", (this->hg->i1).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
                 clr = {0,0,0};
             }
             if (!this->hg->i2.has_nan()) {
-                this->computeSphere (this->idx, this->hg->i2.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->i2.plus_one_dim(), clr, sw, 14, 12);
             }
             if (!this->hg->i3.has_nan()) {
-                this->computeSphere (this->idx, this->hg->i3.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->i3.plus_one_dim(), clr, sw, 14, 12);
             }
             if (!this->hg->i4.has_nan()) {
-                this->computeSphere (this->idx, this->hg->i4.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->i4.plus_one_dim(), clr, sw, 14, 12);
             }
             if (!this->hg->i5.has_nan()) {
-                this->computeSphere (this->idx, this->hg->i5.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->i5.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("i5", (this->hg->i5).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -893,14 +869,14 @@ namespace morph {
             // p/q points used to compute additional pgrams
             if (!this->hg->q2.has_nan()) {
                 clr = {0,0,1};
-                this->computeSphere (this->idx, this->hg->q2.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->q2.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q2", (this->hg->q2).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
             }
             if (!this->hg->q1.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->q1.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->q1.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q1", (this->hg->q1).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -908,14 +884,14 @@ namespace morph {
             }
             if (!this->hg->q3.has_nan()) {
                 clr = {0,0,1};
-                this->computeSphere (this->idx, this->hg->q3.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->q3.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q3", (this->hg->q3).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
             }
             if (!this->hg->q4.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->q4.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->q4.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q4", (this->hg->q4).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -923,7 +899,7 @@ namespace morph {
             }
             if (!this->hg->q5.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->q5.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->q5.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q5", (this->hg->q5).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -931,7 +907,7 @@ namespace morph {
             }
             if (!this->hg->q6.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->q6.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->q6.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q6", (this->hg->q6).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -939,7 +915,7 @@ namespace morph {
             }
             if (!this->hg->q7.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->q7.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->q7.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q7", (this->hg->q7).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -947,7 +923,7 @@ namespace morph {
             }
             if (!this->hg->q8.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->q8.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->q8.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q8", (this->hg->q8).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -956,29 +932,26 @@ namespace morph {
 #if 1 // 60/300 units vectors
             if (!this->hg->i1.has_nan() && !this->hg->unit_60.has_nan()) {
                 clr = {1,0,0};
-                this->computeLine (this->idx,
-                                   this->hg->i1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    (this->hg->i1+this->hg->unit_60).plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
             if (!this->hg->i5.has_nan() && !this->hg->unit_300.has_nan()) {
                 clr = {0,0,0};
-                this->computeLine (this->idx,
-                                   this->hg->i5.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i5.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    (this->hg->i5+this->hg->unit_300).plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
             if (!this->hg->i1.has_nan() && !this->hg->unit_120.has_nan()) {
                 clr = {1,0,0};
-                this->computeLine (this->idx,
-                                   this->hg->i1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    (this->hg->i1+this->hg->unit_120).plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
 #endif
             if (!this->hg->p1.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->p1.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->p1.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p1", (this->hg->p1).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -986,14 +959,14 @@ namespace morph {
             }
             if (!this->hg->p2.has_nan()) {
                 clr = {0,0,1};
-                this->computeSphere (this->idx, this->hg->p2.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->p2.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p2", (this->hg->p2).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
             }
             if (!this->hg->p3.has_nan()) {
                 clr = {0,0,1};
-                this->computeSphere (this->idx, this->hg->p3.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->p3.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p3", (this->hg->p3).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -1001,14 +974,14 @@ namespace morph {
             }
             if (!this->hg->p4.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->p4.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->p4.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p4", (this->hg->p4).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
             }
             if (!this->hg->p5.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->p5.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->p5.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p5", (this->hg->p5).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -1016,7 +989,7 @@ namespace morph {
             }
             if (!this->hg->p6.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->p6.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->p6.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p6", (this->hg->p6).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -1024,7 +997,7 @@ namespace morph {
             }
             if (!this->hg->p8.has_nan()) {
                 clr = {0,1,0};
-                this->computeSphere (this->idx, this->hg->p8.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->hg->p8.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p8", (this->hg->p8).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
@@ -1035,51 +1008,42 @@ namespace morph {
             clr = {0.5f, 0.5f, 0.5f};
             // t1
             if (!this->hg->a1_tl.has_nan() && !this->hg->i1.has_nan() && !this->hg->i2.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->a1_tl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->a1_tl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->i1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
-                this->computeLine (this->idx,
-                                   this->hg->i1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i1.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->i2.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
-                this->computeLine (this->idx,
-                                   this->hg->i2.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i2.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->a1_tl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
             // t2
             if (!this->hg->a1_bl.has_nan() && !this->hg->i3.has_nan() && !this->hg->i4.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->i3.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
-                this->computeLine (this->idx,
-                                   this->hg->i3.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i3.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->i4.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
-                this->computeLine (this->idx,
-                                   this->hg->i4.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i4.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
 
             // Sides of a1
             if (!this->hg->a1_bl.has_nan() && !this->hg->i2.has_nan() && !this->hg->i3.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
-                this->computeLine (this->idx,
-                                   this->hg->i2.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i2.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->i3.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
 
             // Side of the central rectangle, from i5 and up
             if (!this->hg->i5.has_nan() && !this->hg->i6.has_nan()) {
-                this->computeLine (this->idx,
-                                   this->hg->i5.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
+                this->computeLine (this->hg->i5.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    this->hg->i6.plus_one_dim()+vec<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
@@ -1087,43 +1051,37 @@ namespace morph {
             // Parallel and rectangle vertices. Do vert cylinders
             if (!this->hg->pll1_top.has_nan()) {
                 clr = morph::colour::magenta2;
-                this->computeTube (this->idx,
-                                   this->hg->pll1_top.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
+                this->computeTube (this->hg->pll1_top.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
                                    this->hg->pll1_top.plus_one_dim()+vec<float>({0,0,-0.1}) * this->hg->getd(),
                                    clr, clr, lw/4.0f);
             }
             if (!this->hg->pll1_br.has_nan()) {
                 clr = morph::colour::deeppink2;
-                this->computeTube (this->idx,
-                                   this->hg->pll1_br.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
+                this->computeTube (this->hg->pll1_br.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
                                    this->hg->pll1_br.plus_one_dim()+vec<float>({0,0,-0.1}) * this->hg->getd(),
                                    clr, clr, lw/4.0f);
             }
             if (!this->hg->pll2_bot.has_nan()) {
                 clr = morph::colour::dodgerblue2;
-                this->computeTube (this->idx,
-                                   this->hg->pll2_bot.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
+                this->computeTube (this->hg->pll2_bot.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
                                    this->hg->pll2_bot.plus_one_dim()+vec<float>({0,0,-0.1}) * this->hg->getd(),
                                    clr, clr, lw/4.0f);
             }
             if (!this->hg->pll2_tr.has_nan()) {
                 clr = morph::colour::darkgreen;
-                this->computeTube (this->idx,
-                                   this->hg->pll2_tr.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
+                this->computeTube (this->hg->pll2_tr.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
                                    this->hg->pll2_tr.plus_one_dim()+vec<float>({0,0,-0.1}) * this->hg->getd(),
                                    clr, clr, lw/4.0f);
             }
             if (!this->hg->a1_tl.has_nan()) {
                 clr = morph::colour::yellow;
-                this->computeTube (this->idx,
-                                   this->hg->a1_tl.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
+                this->computeTube (this->hg->a1_tl.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
                                    this->hg->a1_tl.plus_one_dim()+vec<float>({0,0,-0.1}) * this->hg->getd(),
                                    clr, clr, lw/4.0f);
             }
             if (!this->hg->a1_bl.has_nan()) {
                 clr = morph::colour::green;
-                this->computeTube (this->idx,
-                                   this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
+                this->computeTube (this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,0.1}) * this->hg->getd(),
                                    this->hg->a1_bl.plus_one_dim()+vec<float>({0,0,-0.1}) * this->hg->getd(),
                                    clr, clr, lw/4.0f);
             }

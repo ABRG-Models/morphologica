@@ -108,23 +108,19 @@ namespace morph {
             morph::vec<float, 2> extents = { width, length };
             if (this->orientation == colourbar_orientation::horizontal) { extents = { length, width }; }
 
-            this->computeFlatLine (this->idx,
-                                   {-this->framelinewidth,            -(this->framelinewidth*0.5f), this->z},
+            this->computeFlatLine ({-this->framelinewidth,            -(this->framelinewidth*0.5f), this->z},
                                    {extents.x()+this->framelinewidth, -(this->framelinewidth*0.5f), this->z},
                                    this->uz, this->framecolour, this->framelinewidth);
 
-            this->computeFlatLine (this->idx,
-                                   {extents.x()+this->framelinewidth*0.5f, 0.0f,        this->z},
+            this->computeFlatLine ({extents.x()+this->framelinewidth*0.5f, 0.0f,        this->z},
                                    {extents.x()+this->framelinewidth*0.5f, extents.y(), this->z},
                                    this->uz, this->framecolour, this->framelinewidth);
 
-            this->computeFlatLine (this->idx,
-                                   {extents.x()+this->framelinewidth, extents.y()+(this->framelinewidth*0.5f), this->z},
+            this->computeFlatLine ({extents.x()+this->framelinewidth, extents.y()+(this->framelinewidth*0.5f), this->z},
                                    {-this->framelinewidth,            extents.y()+(this->framelinewidth*0.5f), this->z},
                                    this->uz, this->framecolour, this->framelinewidth);
 
-            this->computeFlatLine (this->idx,
-                                   {-this->framelinewidth*0.5f, extents.y(), this->z},
+            this->computeFlatLine ({-this->framelinewidth*0.5f, extents.y(), this->z},
                                    {-this->framelinewidth*0.5f, 0.0f,        this->z},
                                    this->uz, this->framecolour, this->framelinewidth);
         }
@@ -140,16 +136,14 @@ namespace morph {
                 if (this->orientation == colourbar_orientation::horizontal) {
                     // above
                     for (auto t : this->tick_posns) {
-                        this->computeFlatLine (this->idx,
-                                               {static_cast<float>(t), width+framelinewidth*0.5f,    this->z},
+                        this->computeFlatLine ({static_cast<float>(t), width+framelinewidth*0.5f,    this->z},
                                                {static_cast<float>(t), width+framelinewidth*0.5f+tl, this->z}, this->uz,
                                                this->framecolour, this->framelinewidth*0.5f);
                     }
                 } else {
                     // left
                     for (auto t : this->tick_posns) {
-                        this->computeFlatLine (this->idx,
-                                               {-framelinewidth*0.5f,    static_cast<float>(t), this->z},
+                        this->computeFlatLine ({-framelinewidth*0.5f,    static_cast<float>(t), this->z},
                                                {-framelinewidth*0.5f-tl, static_cast<float>(t), this->z}, this->uz,
                                                this->framecolour, this->framelinewidth*0.5f);
                     }
@@ -162,16 +156,14 @@ namespace morph {
                 if (this->orientation == colourbar_orientation::horizontal) {
                     // below
                     for (auto t : this->tick_posns) {
-                        this->computeFlatLine (this->idx,
-                                               {static_cast<float>(t), -framelinewidth*0.5f,      this->z},
+                        this->computeFlatLine ({static_cast<float>(t), -framelinewidth*0.5f,      this->z},
                                                {static_cast<float>(t), -(framelinewidth*0.5f)-tl, this->z}, this->uz,
                                                this->framecolour, this->framelinewidth*0.5f);
                     }
                 } else {
                     // right
                     for (auto t : this->tick_posns) {
-                        this->computeFlatLine (this->idx,
-                                               {width+framelinewidth*0.5f,    static_cast<float>(t), this->z},
+                        this->computeFlatLine ({width+framelinewidth*0.5f,    static_cast<float>(t), this->z},
                                                {width+framelinewidth*0.5f+tl, static_cast<float>(t), this->z}, this->uz,
                                                this->framecolour, this->framelinewidth*0.5f);
                     }
@@ -331,7 +323,7 @@ namespace morph {
                     c2 = { segstart, this->width, this->z };
                     c3 = { segend,   this->width, this->z };
                     c4 = { segend,             0, this->z };
-                    this->computeFlatQuad (this->idx, c1, c2, c3, c4, this->cm.convert(colourval));
+                    this->computeFlatQuad (c1, c2, c3, c4, this->cm.convert(colourval));
                     colourval += 1.0f/this->numsegs;
                 }
             } else { // vertical
@@ -342,7 +334,7 @@ namespace morph {
                     c2 = { 0,           segend,   this->z };
                     c3 = { this->width, segend,   this->z };
                     c4 = { this->width, segstart, this->z };
-                    this->computeFlatQuad (this->idx, c1, c2, c3, c4, this->cm.convert(colourval));
+                    this->computeFlatQuad (c1, c2, c3, c4, this->cm.convert(colourval));
                     colourval += 1.0f/this->numsegs;
                 }
             }

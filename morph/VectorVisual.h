@@ -72,10 +72,10 @@ namespace morph {
             vec<float> cone_start = arrow_line.shorten (len * arrowhead_prop);
             cone_start += start;
 
-            this->computeTube (this->idx, start, cone_start, clr, clr, thickness * this->scale_factor, shapesides);
+            this->computeTube (start, cone_start, clr, clr, thickness * this->scale_factor, shapesides);
             float conelen = (arrow_line - cone_start).length();
             if (arrow_line.length() > conelen) {
-                this->computeCone (this->idx, cone_start, end, 0.0f, clr, thickness  * this->scale_factor * 2.0f, shapesides);
+                this->computeCone (cone_start, end, 0.0f, clr, thickness  * this->scale_factor * 2.0f, shapesides);
             }
         }
 

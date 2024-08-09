@@ -140,10 +140,10 @@ namespace morph {
                 morph::vec<float> lt = {{left, top, bz}};
                 morph::vec<float> rt = {{right, top, bz}};
                 morph::vec<float> rb = {{right, bot, bz}};
-                this->computeTube (this->idx, lb, lt, this->border_colour, this->border_colour, bthick, 12);
-                this->computeTube (this->idx, lt, rt, this->border_colour, this->border_colour, bthick, 12);
-                this->computeTube (this->idx, rt, rb, this->border_colour, this->border_colour, bthick, 12);
-                this->computeTube (this->idx, rb, lb, this->border_colour, this->border_colour, bthick, 12);
+                this->computeTube (lb, lt, this->border_colour, this->border_colour, bthick, 12);
+                this->computeTube (lt, rt, this->border_colour, this->border_colour, bthick, 12);
+                this->computeTube (rt, rb, this->border_colour, this->border_colour, bthick, 12);
+                this->computeTube (rb, lb, this->border_colour, this->border_colour, bthick, 12);
             }
         }
 

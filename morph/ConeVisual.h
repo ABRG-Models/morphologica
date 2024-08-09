@@ -25,7 +25,7 @@ namespace morph {
         //! Do the computations to initialize the vertices that will represent the Quivers.
         void initializeVertices()
         {
-            this->computeCone (this->idx, this->start, this->end, this->ringoffset, this->clr, this->radius, this->shapesides);
+            this->computeCone (this->start, this->end, this->ringoffset, this->clr, this->radius, this->shapesides);
         }
 
         vec<float> clr = {1.0f, 0.0f, 0.7f};

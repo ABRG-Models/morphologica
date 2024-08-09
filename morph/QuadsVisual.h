@@ -141,29 +141,29 @@ namespace morph {
 
                 // Two triangles per quad, two quads per quad (front and back)
                 // qi * 4 + 1, 2 3 or 4
-                unsigned int ib = qi;
-                ib *= (this->computeBackQuads == true ? 8 : 4);
+                this->idx = qi;
+                this->idx *= (this->computeBackQuads == true ? 8 : 4);
 
-                this->indices.push_back (ib++); // 0
-                this->indices.push_back (ib++); // 1
-                this->indices.push_back (ib);   // 2
+                this->indices.push_back (this->idx++); // 0
+                this->indices.push_back (this->idx++); // 1
+                this->indices.push_back (this->idx);   // 2
 
-                this->indices.push_back (ib++); // 2
-                this->indices.push_back (ib);   // 3
-                ib -= 3;
-                this->indices.push_back (ib);   // 0
+                this->indices.push_back (this->idx++); // 2
+                this->indices.push_back (this->idx);   // 3
+                this->idx -= 3;
+                this->indices.push_back (this->idx);   // 0
 
                 if (this->computeBackQuads == true) {
-                    ib += 4;
+                    this->idx += 4;
                     // Back face
-                    this->indices.push_back (ib++); // 0
-                    this->indices.push_back (ib++); // 1
-                    this->indices.push_back (ib);   // 2
+                    this->indices.push_back (this->idx++); // 0
+                    this->indices.push_back (this->idx++); // 1
+                    this->indices.push_back (this->idx);   // 2
 
-                    this->indices.push_back (ib++); // 2
-                    this->indices.push_back (ib);   // 3
-                    ib -= 3;
-                    this->indices.push_back (ib);   // 0
+                    this->indices.push_back (this->idx++); // 2
+                    this->indices.push_back (this->idx);   // 3
+                    this->idx -= 3;
+                    this->indices.push_back (this->idx);   // 0
                 }
             }
         }

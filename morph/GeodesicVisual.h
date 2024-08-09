@@ -58,10 +58,10 @@ namespace morph {
                 this->data.resize (this->n_faces, T{0});
 
                 if (iterations > 5) {
-                    this->n_verts = this->template computeSphereGeoFaces<double> (this->idx, morph::vec<float, 3>({0,0,0}),
+                    this->n_verts = this->template computeSphereGeoFaces<double> (morph::vec<float, 3>({0,0,0}),
                                                                                   this->cm.convert(0.0f), this->radius, this->iterations);
                 } else {
-                    this->n_verts = this->computeSphereGeoFaces (this->idx, morph::vec<float, 3>({0,0,0}),
+                    this->n_verts = this->computeSphereGeoFaces (morph::vec<float, 3>({0,0,0}),
                                                                  this->cm.convert(0.0f), this->radius, this->iterations);
                 }
 
@@ -69,11 +69,11 @@ namespace morph {
 
                 if (iterations > 5) {
                     // Note odd necessity to stick in the 'template' keyword after this->
-                    this->n_verts = this->template computeSphereGeo<double> (this->idx, morph::vec<float, 3>({0,0,0}),
+                    this->n_verts = this->template computeSphereGeo<double> (morph::vec<float, 3>({0,0,0}),
                                                                              this->cm.convert(0.0f), this->radius, this->iterations);
                 } else {
                     // computeSphereGeo F defaults to float
-                    this->n_verts = this->computeSphereGeo (this->idx, morph::vec<float, 3>({0,0,0}),
+                    this->n_verts = this->computeSphereGeo (morph::vec<float, 3>({0,0,0}),
                                                             this->cm.convert(0.0f), this->radius, this->iterations);
                 }
                 // Resize our data.
