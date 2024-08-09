@@ -82,7 +82,7 @@ int main()
 
     morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
 
-    // TextFeatures is a nice way to specify font size, colour (and other things) for your addLabel() calls. See VisualTextModel.h.
+    // TextFeatures is a nice way to specify font size, colour (and other things) for your addLabel() calls.
     morph::TextFeatures tf (0.5f, morph::colour::white);
 
     // Grid 1

@@ -11,6 +11,7 @@
 #include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
+#include <morph/VisualTextModel.h>
 #include <morph/HexGridVisual.h>
 #include <morph/HexGrid.h>
 

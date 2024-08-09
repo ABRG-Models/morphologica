@@ -7,6 +7,6 @@ layout: page
 nav_order: 12
 ---
 ```c++
-#include <morph/VisualTextModel.h> // may move to morph/TextGeometry.h
+#include <morph/TextGeometry.h>
 ```
-Geometry of a piece of text.
+Geometry of a piece of text

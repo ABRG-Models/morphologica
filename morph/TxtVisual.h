@@ -5,7 +5,7 @@
 #include <morph/VisualModel.h>
 #include <morph/vec.h>
 #include <morph/tools.h>
-#include <morph/VisualTextModel.h>
+#include <morph/TextFeatures.h>
 #include <string>
 #include <iostream>
 #include <vector>

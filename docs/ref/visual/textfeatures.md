@@ -7,6 +7,6 @@ layout: page
 nav_order: 10
 ---
 ```c++
-#include <morph/VisualTextModel.h> // may move to morph/TextFeatures.h
+#include <morph/TextFeatures.h>
 ```
 Font features
