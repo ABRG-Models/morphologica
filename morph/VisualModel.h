@@ -318,8 +318,6 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
-    public:
-
         /*!
          * Add a text label to the model at location (within the model coordinates) toffset. Return
          * the text geometry of the added label so caller can place associated text correctly.
@@ -669,7 +667,6 @@ namespace morph {
             this->model_scaling[5] = yscl;
         }
 
-    public:
         /*!
          * A function that will be runtime defined to get_shaderprogs from a pointer to
          * Visual (saving a boilerplate argument and avoiding that killer circular
