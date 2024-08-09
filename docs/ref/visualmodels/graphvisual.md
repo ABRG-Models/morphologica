@@ -1,8 +1,8 @@
 ---
 title: morph::GraphVisual
-parent: Visualization classes
+parent: VisualModel classes
 grand_parent: Reference
-permalink: /ref/visual/graphvisual
+permalink: /ref/visualmodels/graphvisual
 layout: page
 nav_order: 10
 ---

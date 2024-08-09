@@ -6,7 +6,10 @@ nav_order: 2
 layout: page
 has_children: true
 ---
-# Visualization reference
+# Visualization API reference
+
+This section contains reference material for classes that you'll need to interface with as a user of morphologica's visualization code.
+
 
 morphologica uses OpenGL to draw graphics and text.
 In a way it's like a game engine for data visualization because it provides a 3D world into which models are drawn and you can 'fly around' the models viewing them from different angles.

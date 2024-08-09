@@ -1,8 +1,8 @@
 ---
 title: VisualCommon.h
-parent: Visualization classes
+parent: Internal classes
 grand_parent: Reference
-permalink: /ref/visual/visualcommon
+permalink: /ref/visualint/visualcommon
 layout: page
 nav_order: 2
 ---

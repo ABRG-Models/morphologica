@@ -4,7 +4,7 @@ parent: Visualization classes
 grand_parent: Reference
 permalink: /ref/visual/visualtextmodel
 layout: page
-nav_order: 7
+nav_order: 6
 ---
 ```c++
 #include <morph/VisualTextModel.h>

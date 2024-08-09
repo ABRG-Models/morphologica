@@ -4,7 +4,7 @@ parent: Visualization classes
 grand_parent: Reference
 permalink: /ref/visual/visualdatamodel
 layout: page
-nav_order: 6
+nav_order: 4
 ---
 ```c++
 #include <morph/VisualDataModel.h>

@@ -4,7 +4,7 @@ parent: Visualization classes
 grand_parent: Reference
 permalink: /ref/visual/colourmap
 layout: page
-nav_order: 4
+nav_order: 8
 ---
 ```c++
 #include <morph/ColourMap.h>

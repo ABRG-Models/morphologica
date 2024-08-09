@@ -1,8 +1,8 @@
 ---
 title: morph::VisualResources
-parent: Visualization classes
+parent: Internal classes
 grand_parent: Reference
-permalink: /ref/visual/visualresources
+permalink: /ref/visualint/visualresources
 layout: page
 nav_order: 1
 ---

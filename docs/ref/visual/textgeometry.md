@@ -4,7 +4,7 @@ parent: Visualization classes
 grand_parent: Reference
 permalink: /ref/visual/textgeometry
 layout: page
-nav_order: 9
+nav_order: 12
 ---
 ```c++
 #include <morph/VisualTextModel.h> // may move to morph/TextGeometry.h

@@ -1,8 +1,8 @@
 ---
 title: morph::VisualFace
-parent: Visualization classes
+parent: Internal classes
 grand_parent: Reference
-permalink: /ref/visual/visualface
+permalink: /ref/visualint/visualface
 layout: page
 nav_order: 3
 ---
