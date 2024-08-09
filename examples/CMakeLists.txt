@@ -355,6 +355,7 @@ endif()
 
 add_executable(sphere sphere.cpp)
 target_link_libraries(sphere OpenGL::GL glfw Freetype::Freetype)
+set_property(TARGET sphere PROPERTY CXX_STANDARD 20)
 if(USE_GLEW)
   target_link_libraries(sphere GLEW::GLEW)
 endif()
