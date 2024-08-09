@@ -245,7 +245,7 @@ namespace morph {
             morph::vec<float> vtx_ne_up = vtx_ne;
             vtx_nw_up[2] += this->frame_width;
             vtx_ne_up[2] += this->frame_width;
-            this->computeFlatQuad (this->idx, vtx_nw, vtx_nw_up, vtx_ne_up, vtx_ne, this->frame_clr);
+            this->computeFlatQuad (vtx_nw, vtx_nw_up, vtx_ne_up, vtx_ne, this->frame_clr);
         }
 
         // Draw a pixel of the bottom border
@@ -255,7 +255,7 @@ namespace morph {
             morph::vec<float> vtx_se_d = vtx_se;
             vtx_sw_d[2] -= this->frame_width;
             vtx_se_d[2] -= this->frame_width;
-            this->computeFlatQuad (this->idx, vtx_sw, vtx_sw_d, vtx_se_d, vtx_se, this->frame_clr);
+            this->computeFlatQuad (vtx_sw, vtx_sw_d, vtx_se_d, vtx_se, this->frame_clr);
         }
 
         // Draw an edge pixel (either side).
@@ -269,7 +269,7 @@ namespace morph {
             vtx_c_dirn *= this->frame_width;
             vtx_a_l += vtx_c_dirn;
             vtx_b_l += vtx_c_dirn;
-            this->computeFlatQuad (this->idx, vtx_a, vtx_a_l, vtx_b_l, vtx_b, this->frame_clr);
+            this->computeFlatQuad (vtx_a, vtx_a_l, vtx_b_l, vtx_b, this->frame_clr);
         }
 
         virtual void initializeVertices()

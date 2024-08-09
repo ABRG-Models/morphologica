@@ -54,7 +54,7 @@ namespace morph {
 
             // Draw spheres
             for (unsigned int i = 0U; i < ncoords; ++i) {
-                this->computeSphere (this->idx, (*this->dataCoords)[i], this->cm.convert ((*this->scalarData)[i]), sradius);
+                this->computeSphere ((*this->dataCoords)[i], this->cm.convert ((*this->scalarData)[i]), sradius);
             }
             // Draw tubes
             std::array<float, 3> clr = {0.3f,0.3f,0.3f};
@@ -62,8 +62,7 @@ namespace morph {
                 morph::vec<float> v1 = (*this->dataCoords)[i];
                 unsigned int e = (i < (ncoords-1) ? i+1 : 0);
                 morph::vec<float> v2 = (*this->dataCoords)[e];
-                this->computeTube (this->idx, this->mv_offset+v1, this->mv_offset+v2,
-                                   clr, clr, this->radius, this->tseg);
+                this->computeTube (this->mv_offset+v1, this->mv_offset+v2, clr, clr, this->radius, this->tseg);
             }
         }
 

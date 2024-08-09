@@ -114,7 +114,7 @@ namespace morph {
                 float len = nrmlzedlengths[i] * this->quiver_length_gain;
                 if ((std::isnan(dlengths[i]) || dlengths[i] == Flt{0}) && this->show_zero_vectors) {
                     // NaNs denote zero vectors when the lengths have been log scaled.
-                    this->computeSphere (this->idx, coords_i, zero_vector_colour, this->zero_vector_marker_size * quiver_thickness_gain);
+                    this->computeSphere (coords_i, zero_vector_colour, this->zero_vector_marker_size * quiver_thickness_gain);
                     continue;
                 }
 
@@ -144,15 +144,15 @@ namespace morph {
                 vec<float> arrow_line = end - start;
                 vec<float> cone_start = arrow_line.shorten (len*quiver_arrowhead_prop);
                 cone_start += start;
-                this->computeTube (this->idx, start, cone_start, clr, clr, quiv_thick, shapesides);
+                this->computeTube (start, cone_start, clr, clr, quiv_thick, shapesides);
                 float conelen = (end-cone_start).length();
                 if (arrow_line.length() > conelen) {
-                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, quiv_thick*2.0f, shapesides);
+                    this->computeCone (cone_start, end, 0.0f, clr, quiv_thick*2.0f, shapesides);
                 }
 
                 if (this->show_coordinate_sphere == true) {
                     // Draw a sphere on the coordinate:
-                    this->computeSphere (this->idx, coords_i, clr, quiv_thick*2.0f, shapesides/2, shapesides);
+                    this->computeSphere (coords_i, clr, quiv_thick*2.0f, shapesides/2, shapesides);
                 }
             }
         }

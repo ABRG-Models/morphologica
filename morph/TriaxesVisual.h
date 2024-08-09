@@ -93,24 +93,21 @@ namespace morph {
         {
             // Draw the main axes x. Draw a rectangular tube of side axislinewidth
             // (Specifying radius = axislinewidth/root(2) and 45 degree rotation)
-            this->computeTube (this->idx,
-                               { -0.5f*axislinewidth,                   0, 0 }, // start
+            this->computeTube ({ -0.5f*axislinewidth,                   0, 0 }, // start
                                { this->axis_ends[0]+0.5f*axislinewidth, 0, 0 }, // end
                                -this->uy, this->uz,
                                this->axiscolour, this->axiscolour,
                                morph::mathconst<float>::one_over_root_2*this->axislinewidth,
                                4, morph::mathconst<float>::pi_over_4);
             // y
-            this->computeTube (this->idx,
-                               { 0, -0.5f*axislinewidth,                   0 },
+            this->computeTube ({ 0, -0.5f*axislinewidth,                   0 },
                                { 0, this->axis_ends[1]+0.5f*axislinewidth, 0 },
                                this->ux, this->uz,
                                this->axiscolour, this->axiscolour,
                                morph::mathconst<float>::one_over_root_2*this->axislinewidth,
                                4, morph::mathconst<float>::pi_over_4);
             // z
-            this->computeTube (this->idx,
-                               {0, 0, -0.5f*axislinewidth},
+            this->computeTube ({0, 0, -0.5f*axislinewidth},
                                {0, 0, this->axis_ends[2]+0.5f*axislinewidth},
                                this->ux, this->uy,
                                this->axiscolour, this->axiscolour,
@@ -120,45 +117,39 @@ namespace morph {
             // Complete the box side panels if required
             if (this->axisstyle == axisstyle::box || this->axisstyle == axisstyle::panels) {
                 // x
-                this->computeTube (this->idx,
-                                   { -0.5f*axislinewidth,                   0, this->axis_ends[2] },
+                this->computeTube ({ -0.5f*axislinewidth,                   0, this->axis_ends[2] },
                                    { this->axis_ends[0]+0.5f*axislinewidth, 0, this->axis_ends[2] },
                                    -this->uy, this->uz,
                                    this->axiscolour2, this->axiscolour2,
                                    morph::mathconst<float>::one_over_root_2*this->axislinewidth,
                                    4, morph::mathconst<float>::pi_over_4);
-                this->computeTube (this->idx,
-                                   { -0.5f*axislinewidth,                   this->axis_ends[1], 0 },
+                this->computeTube ({ -0.5f*axislinewidth,                   this->axis_ends[1], 0 },
                                    { this->axis_ends[0]+0.5f*axislinewidth, this->axis_ends[1], 0 },
                                    -this->uy, this->uz,
                                    this->axiscolour2, this->axiscolour2,
                                    morph::mathconst<float>::one_over_root_2*this->axislinewidth,
                                    4, morph::mathconst<float>::pi_over_4);
                 // y
-                this->computeTube (this->idx,
-                                   { 0, -0.5f*axislinewidth,                   this->axis_ends[2] },
+                this->computeTube ({ 0, -0.5f*axislinewidth,                   this->axis_ends[2] },
                                    { 0, this->axis_ends[1]+0.5f*axislinewidth, this->axis_ends[2] },
                                    this->ux, this->uz,
                                    this->axiscolour2, this->axiscolour2,
                                    morph::mathconst<float>::one_over_root_2*this->axislinewidth,
                                    4, morph::mathconst<float>::pi_over_4);
-                this->computeTube (this->idx,
-                                   { this->axis_ends[0], -0.5f*axislinewidth,                   0 },
+                this->computeTube ({ this->axis_ends[0], -0.5f*axislinewidth,                   0 },
                                    { this->axis_ends[0], this->axis_ends[1]+0.5f*axislinewidth, 0 },
                                    this->ux, this->uz,
                                    this->axiscolour2, this->axiscolour2,
                                    morph::mathconst<float>::one_over_root_2*this->axislinewidth,
                                    4, morph::mathconst<float>::pi_over_4);
                 // z
-                this->computeTube (this->idx,
-                                   { this->axis_ends[0], 0, -0.5f*axislinewidth },
+                this->computeTube ({ this->axis_ends[0], 0, -0.5f*axislinewidth },
                                    { this->axis_ends[0], 0, this->axis_ends[2]+0.5f*axislinewidth },
                                    this->ux, this->uy,
                                    this->axiscolour2, this->axiscolour2,
                                    morph::mathconst<float>::one_over_root_2*this->axislinewidth,
                                    4, morph::mathconst<float>::pi_over_4);
-                this->computeTube (this->idx,
-                                   { 0, this->axis_ends[1], -0.5f*axislinewidth },
+                this->computeTube ({ 0, this->axis_ends[1], -0.5f*axislinewidth },
                                    { 0, this->axis_ends[1], this->axis_ends[2]+0.5f*axislinewidth },
                                    this->ux, this->uy,
                                    this->axiscolour2, this->axiscolour2,
@@ -178,22 +169,19 @@ namespace morph {
             if (this->tickstyle == tickstyle::ticksin) { tl = this->ticklength; }
             // x ticks
             for (auto xt : this->xtick_posns) {
-                this->computeFlatLine (this->idx,
-                                       {(float)xt, 0.0f, 0.0f},
+                this->computeFlatLine ({(float)xt, 0.0f, 0.0f},
                                        {(float)xt, tl,   0.0f}, this->uz,
                                        this->axiscolour, this->axislinewidth*0.5f);
             }
             // y ticks
             for (auto yt : this->ytick_posns) {
-                this->computeFlatLine (this->idx,
-                                       {tl, (float)yt, 0.0f},
+                this->computeFlatLine ({tl, (float)yt, 0.0f},
                                        {0.0f, (float)yt, 0.0f}, this->uz,
                                        this->axiscolour, this->axislinewidth*0.5f);
             }
             // z ticks
             for (auto zt : this->ztick_posns) {
-                this->computeFlatLine (this->idx,
-                                       {tl, 0.0f, (float)zt},
+                this->computeFlatLine ({tl, 0.0f, (float)zt},
                                        {0.0f, 0.0f, (float)zt}, this->uy,
                                        this->axiscolour, this->axislinewidth*0.5f);
             }

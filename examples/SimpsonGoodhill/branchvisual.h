@@ -54,11 +54,11 @@ public:
                 last[1] = b.path[i-1][1];
                 cur[0] = b.path[i][0];
                 cur[1] = b.path[i][1];
-                this->computeFlatLineRnd (this->idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
+                this->computeFlatLineRnd (last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
             }
             // Finally, a sphere at the last location. Tune number of rings (second last
             // arg) in sphere to change size of clr2 disc at top
-            this->computeSphere (this->idx, cur, clr, clr2, this->radiusFixed, 14, 12);
+            this->computeSphere (cur, clr, clr2, this->radiusFixed, 14, 12);
         }
     }
 

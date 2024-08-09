@@ -818,11 +818,11 @@ namespace morph {
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
          */
-        void computeTube (GLuint& idx, vec<float> start, vec<float> end,
+        void computeTube (vec<float> start, vec<float> end,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12)
         {
-            this->computeFlaredTube (idx, start, end, colStart, colEnd, r, r, segments);
+            this->computeFlaredTube (start, end, colStart, colEnd, r, r, segments);
         }
 
         /*!
@@ -833,7 +833,6 @@ namespace morph {
          * Create a tube from \a start to \a end, with radius \a r and a colour which
          * transitions from the colour \a colStart to \a colEnd.
          *
-         * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
          * \param _ux a vector in the x axis direction for the end face
@@ -845,7 +844,7 @@ namespace morph {
          * \param rotation A rotation in the _ux/_uy plane to orient the vertices of the
          * tube. Useful if this is to be a short tube used as a graph marker.
          */
-        void computeTube (GLuint& idx, vec<float> start, vec<float> end,
+        void computeTube (vec<float> start, vec<float> end,
                           vec<float> _ux, vec<float> _uy,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12, float rotation = 0.0f)
@@ -911,9 +910,9 @@ namespace morph {
             int nverts = (segments * 4) + 2;
 
             // After creating vertices, push all the indices.
-            GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1u;
-            GLuint endMiddle = idx + (GLuint)nverts - 1u;
+            GLuint capMiddle = this->idx;
+            GLuint capStartIdx = this->idx + 1u;
+            GLuint endMiddle = this->idx + (GLuint)nverts - 1u;
             GLuint endStartIdx = capStartIdx + (3u * segments);
 
             // Start cap indices
@@ -929,7 +928,7 @@ namespace morph {
 
             // Middle sections
             for (int lsection = 0; lsection < 3; ++lsection) {
-                capStartIdx = idx + 1 + lsection*segments;
+                capStartIdx = this->idx + 1 + lsection*segments;
                 endStartIdx = capStartIdx + segments;
                 for (int j = 0; j < segments; j++) {
                     this->indices.push_back (capStartIdx + j);
@@ -964,7 +963,7 @@ namespace morph {
             this->indices.push_back (endStartIdx);
 
             // Update idx
-            idx += nverts;
+            this->idx += nverts;
         } // end computeTube with ux/uy vectors for faces
 
         /*!
@@ -1002,10 +1001,10 @@ namespace morph {
             // We don't draw the full tube
             vec<float> cone_start = arrow_line.shorten (len * arrowhead_prop);
             cone_start += start;
-            this->computeTube (this->idx, start, cone_start, clr, clr, tube_radius, shapesides);
+            this->computeTube (start, cone_start, clr, clr, tube_radius, shapesides);
             float conelen = (end-cone_start).length();
             if (arrow_line.length() > conelen) {
-                this->computeCone (this->idx, cone_start, end, 0.0f, clr, cone_radius, shapesides);
+                this->computeCone (cone_start, end, 0.0f, clr, cone_radius, shapesides);
             }
         }
 
@@ -1024,7 +1023,7 @@ namespace morph {
          * \param flare The angle, measured wrt the direction of the tube in radians, by which the
          * tube 'flares'
          */
-        void computeFlaredTube (GLuint& idx, morph::vec<float> start, morph::vec<float> end,
+        void computeFlaredTube (morph::vec<float> start, morph::vec<float> end,
                                 std::array<float, 3> colStart, std::array<float, 3> colEnd,
                                 float r = 1.0f, int segments = 12, float flare = 0.0f)
         {
@@ -1035,7 +1034,7 @@ namespace morph {
             float r_add = l * std::tan (std::abs(flare)) * (flare > 0.0f ? 1.0f : -1.0f);
             float r_end = r + r_add;
             // Now call into the other overload:
-            this->computeFlaredTube (idx, start, end, colStart, colEnd, r, r_end, segments);
+            this->computeFlaredTube (start, end, colStart, colEnd, r, r_end, segments);
         }
 
         /*!
@@ -1043,7 +1042,6 @@ namespace morph {
          * which transitions from the colour \a colStart to \a colEnd. The radius of the end is
          * r_end, given as a function argument.
          *
-         * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
          * \param colStart The tube starting colour
@@ -1052,7 +1050,7 @@ namespace morph {
          * \param r_end radius of the end cap
          * \param segments Number of segments used to render the tube
          */
-        void computeFlaredTube (GLuint& idx, morph::vec<float> start, morph::vec<float> end,
+        void computeFlaredTube (morph::vec<float> start, morph::vec<float> end,
                                 std::array<float, 3> colStart, std::array<float, 3> colEnd,
                                 float r = 1.0f, float r_end = 1.0f, int segments = 12)
         {
@@ -1133,9 +1131,9 @@ namespace morph {
             int nverts = (segments * 4) + 2;
 
             // After creating vertices, push all the indices.
-            GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1u;
-            GLuint endMiddle = idx + (GLuint)nverts - 1u;
+            GLuint capMiddle = this->idx;
+            GLuint capStartIdx = this->idx + 1u;
+            GLuint endMiddle = this->idx + (GLuint)nverts - 1u;
             GLuint endStartIdx = capStartIdx + (3u * segments);
 
             // Start cap
@@ -1151,7 +1149,7 @@ namespace morph {
 
             // Middle sections
             for (int lsection = 0; lsection < 3; ++lsection) {
-                capStartIdx = idx + 1 + lsection*segments;
+                capStartIdx = this->idx + 1 + lsection*segments;
                 endStartIdx = capStartIdx + segments;
                 // This does sides between start and end. I want to do this three times.
                 for (int j = 0; j < segments; j++) {
@@ -1190,12 +1188,11 @@ namespace morph {
             this->indices.push_back (endStartIdx);
 
             // Update idx
-            idx += nverts;
+            this->idx += nverts;
         } // end computeFlaredTube with randomly initialized end vertices
 
         //! Compute a Quad from 4 arbitrary corners which must be ordered clockwise around the quad.
-        void computeFlatQuad (GLuint& idx,
-                              vec<float> c1, vec<float> c2,
+        void computeFlatQuad (vec<float> c1, vec<float> c2,
                               vec<float> c3, vec<float> c4,
                               std::array<float, 3> col)
         {
@@ -1221,7 +1218,7 @@ namespace morph {
             this->indices.push_back (botLeft);
             this->indices.push_back (botLeft+2);
             this->indices.push_back (botLeft+3);
-            idx += 4;
+            this->idx += 4;
         }
 
         /*!
@@ -1242,7 +1239,7 @@ namespace morph {
          * \param rotation A rotation in the ux/uy plane to orient the vertices of the
          * tube. Useful if this is to be a short tube used as a graph marker.
          */
-        void computeFlatPoly (GLuint& idx, vec<float> vstart,
+        void computeFlatPoly (vec<float> vstart,
                               vec<float> _ux, vec<float> _uy,
                               std::array<float, 3> col,
                               float r = 1.0f, int segments = 12, float rotation = 0.0f)
@@ -1270,8 +1267,8 @@ namespace morph {
             int nverts = segments + 1;
 
             // After creating vertices, push all the indices.
-            GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1;
+            GLuint capMiddle = this->idx;
+            GLuint capStartIdx = this->idx + 1;
 
             // Start cap indices
             for (int j = 0; j < segments-1; j++) {
@@ -1285,7 +1282,7 @@ namespace morph {
             this->indices.push_back (capStartIdx);
 
             // Update idx
-            idx += nverts;
+            this->idx += nverts;
         } // end computeFlatPloy with ux/uy vectors for faces
 
         /*!
@@ -1297,7 +1294,7 @@ namespace morph {
          * \param t Thickness of the ring
          * \param segments Number of tube segments used to render the ring
          */
-        void computeRing (GLuint& idx, vec<float> ro, std::array<float, 3> rc, float r = 1.0f,
+        void computeRing (vec<float> ro, std::array<float, 3> rc, float r = 1.0f,
                           float t = 0.1f, int segments = 12)
         {
             for (int j = 0; j < segments; j++) {
@@ -1319,7 +1316,7 @@ namespace morph {
                 vec<float> c2 = { xout, yout, 0.0f };
                 vec<float> c3 = { xout_n, yout_n, 0.0f };
                 vec<float> c4 = { xin_n, yin_n, 0.0f };
-                this->computeFlatQuad (idx, ro+c1, ro+c2, ro+c3, ro+c4, rc);
+                this->computeFlatQuad (ro+c1, ro+c2, ro+c3, ro+c4, rc);
             }
         }
 
@@ -1334,7 +1331,6 @@ namespace morph {
          *
          * \tparam F The type used for the polyhedron computation. Use float or double.
          *
-         * \param idx The index into the 'vertex indices array'
          * \param so The sphere offset. Where to place this sphere...
          * \param sc The sphere colour.
          * \param r Radius of the sphere
@@ -1363,8 +1359,7 @@ namespace morph {
          * \return The number of vertices in the generated geodesic sphere
          */
         template<typename F=float>
-        int computeSphereGeo (GLuint& idx, vec<float> so, std::array<float, 3> sc,
-                              float r = 1.0f, int iterations = 2)
+        int computeSphereGeo (vec<float> so, std::array<float, 3> sc, float r = 1.0f, int iterations = 2)
         {
             if (iterations < 0) { throw std::runtime_error ("computeSphereGeo: iterations must be positive"); }
             // test if type F is float
@@ -1387,13 +1382,13 @@ namespace morph {
                 this->vertex_push (sc, this->vertexColors);
             }
             for (auto f : geo.poly.faces) {
-                this->indices.push_back (idx + f[0]);
-                this->indices.push_back (idx + f[1]);
-                this->indices.push_back (idx + f[2]);
+                this->indices.push_back (this->idx + f[0]);
+                this->indices.push_back (this->idx + f[1]);
+                this->indices.push_back (this->idx + f[2]);
             }
             // idx is the *vertex index* and should be incremented by the number of vertices in the polyhedron
             int n_verts = static_cast<int>(geo.poly.vertices.size());
-            idx += n_verts;
+            this->idx += n_verts;
 
             return n_verts;
         }
@@ -1408,7 +1403,6 @@ namespace morph {
          *
          * \tparam F The type used for the polyhedron computation. Use float or double.
          *
-         * \param idx The index into the 'vertex indices array'
          * \param so The sphere offset. Where to place this sphere...
          * \param sc The default colour
          * \param r Radius of the sphere
@@ -1416,8 +1410,7 @@ namespace morph {
          * through. Determines number of faces
          */
         template<typename F=float>
-        int computeSphereGeoFaces (GLuint& idx, morph::vec<float> so, std::array<float, 3> sc,
-                                   float r = 1.0f, int iterations = 2)
+        int computeSphereGeoFaces (morph::vec<float> so, std::array<float, 3> sc, float r = 1.0f, int iterations = 2)
         {
             if (iterations < 0) { throw std::runtime_error ("computeSphereGeo: iterations must be positive"); }
             // test if type F is float
@@ -1444,11 +1437,11 @@ namespace morph {
                 for (int j = 0; j < 3; ++j) { // Faces all have size 3
                     this->vertex_push (nf, this->vertexNormals);
                     this->vertex_push (sc, this->vertexColors); // A default colour
-                    this->indices.push_back (idx + (3 * i) + j); // indices is vertex index
+                    this->indices.push_back (this->idx + (3 * i) + j); // indices is vertex index
                 }
             }
             // An index for each vertex of each face.
-            idx += 3 * n_faces;
+            this->idx += 3 * n_faces;
 
             return n_faces;
         }
@@ -1457,8 +1450,7 @@ namespace morph {
         //! resulting vertices and faces are NOT in any kind of order, but ok for
         //! plotting, e.g. scatter graph spheres.
         template<typename F=float, int iterations = 2>
-        int computeSphereGeoFast (GLuint& idx, vec<float> so, std::array<float, 3> sc,
-                                  float r = 1.0f)
+        int computeSphereGeoFast (vec<float> so, std::array<float, 3> sc, float r = 1.0f)
         {
             // test if type F is float
             if constexpr (std::is_same<std::decay_t<F>, float>::value == true) {
@@ -1476,13 +1468,13 @@ namespace morph {
                 this->vertex_push (sc, this->vertexColors);
             }
             for (auto f : geo.poly.faces) {
-                this->indices.push_back (idx + f[0]);
-                this->indices.push_back (idx + f[1]);
-                this->indices.push_back (idx + f[2]);
+                this->indices.push_back (this->idx + f[0]);
+                this->indices.push_back (this->idx + f[1]);
+                this->indices.push_back (this->idx + f[2]);
             }
             // idx is the *vertex index* and should be incremented by the number of vertices in the polyhedron
             int n_verts = static_cast<int>(geo.poly.vertices.size());
-            idx += n_verts;
+            this->idx += n_verts;
 
             return n_verts;
         }
@@ -1492,7 +1484,6 @@ namespace morph {
          *
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
          *
-         * \param idx The index into the 'vertex indices array'
          * \param so The sphere offset. Where to place this sphere...
          * \param sc The sphere colour.
          * \param r Radius of the sphere
@@ -1501,8 +1492,7 @@ namespace morph {
          *
          * Number of faces should be (2 + rings) * segments
          */
-        void computeSphere (GLuint& idx, vec<float> so,
-                            std::array<float, 3> sc,
+        void computeSphere (vec<float> so, std::array<float, 3> sc,
                             float r = 1.0f, int rings = 10, int segments = 12)
         {
             // First cap, draw as a triangle fan, but record indices so that
@@ -1520,9 +1510,9 @@ namespace morph {
             this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
             this->vertex_push (sc, this->vertexColors);
 
-            GLuint capMiddle = idx++;
-            GLuint ringStartIdx = idx;
-            GLuint lastRingStartIdx = idx;
+            GLuint capMiddle = this->idx++;
+            GLuint ringStartIdx = this->idx;
+            GLuint lastRingStartIdx = this->idx;
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
@@ -1541,15 +1531,15 @@ namespace morph {
 
                 if (!firstseg) {
                     this->indices.push_back (capMiddle);
-                    this->indices.push_back (idx-1);
-                    this->indices.push_back (idx++);
+                    this->indices.push_back (this->idx-1);
+                    this->indices.push_back (this->idx++);
                 } else {
-                    idx++;
+                    this->idx++;
                     firstseg = false;
                 }
             }
             this->indices.push_back (capMiddle);
-            this->indices.push_back (idx-1);
+            this->indices.push_back (this->idx-1);
             this->indices.push_back (capMiddle+1);
 
             // Now add the triangles around the rings
@@ -1583,18 +1573,18 @@ namespace morph {
                     if (j == segments - 1) {
                         // Last vertex is back to the start
                         this->indices.push_back (ringStartIdx++);
-                        this->indices.push_back (idx);
+                        this->indices.push_back (this->idx);
                         this->indices.push_back (lastRingStartIdx);
                         this->indices.push_back (lastRingStartIdx);
-                        this->indices.push_back (idx++);
+                        this->indices.push_back (this->idx++);
                         this->indices.push_back (lastRingStartIdx+segments);
                     } else {
                         this->indices.push_back (ringStartIdx++);
-                        this->indices.push_back (idx);
+                        this->indices.push_back (this->idx);
                         this->indices.push_back (ringStartIdx);
                         this->indices.push_back (ringStartIdx);
-                        this->indices.push_back (idx++);
-                        this->indices.push_back (idx);
+                        this->indices.push_back (this->idx++);
+                        this->indices.push_back (this->idx);
                     }
                 }
                 lastRingStartIdx += segments;
@@ -1609,7 +1599,7 @@ namespace morph {
             this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
             this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             this->vertex_push (sc, this->vertexColors);
-            capMiddle = idx++;
+            capMiddle = this->idx++;
             firstseg = true;
             // No more vertices to push, just do the indices for the bottom cap
             ringStartIdx = lastRingStartIdx;
@@ -1633,7 +1623,6 @@ namespace morph {
          * Code for creating a sphere as part of this model. I'll use a sphere at the
          * centre of the arrows.
          *
-         * \param idx The index into the 'vertex indices array'
          * \param so The sphere offset. Where to place this sphere...
          * \param sc The sphere colour.
          * \param sc2 The sphere's second colour - used for cap and first ring
@@ -1641,8 +1630,7 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (GLuint& idx, vec<float> so,
-                            std::array<float, 3> sc, std::array<float, 3> sc2,
+        void computeSphere (vec<float> so, std::array<float, 3> sc, std::array<float, 3> sc2,
                             float r = 1.0f, int rings = 10, int segments = 12)
         {
             // First cap, draw as a triangle fan, but record indices so that
@@ -1660,9 +1648,9 @@ namespace morph {
             this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
             this->vertex_push (sc2, this->vertexColors);
 
-            GLuint capMiddle = idx++;
-            GLuint ringStartIdx = idx;
-            GLuint lastRingStartIdx = idx;
+            GLuint capMiddle = this->idx++;
+            GLuint ringStartIdx = this->idx;
+            GLuint lastRingStartIdx = this->idx;
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
@@ -1681,15 +1669,15 @@ namespace morph {
 
                 if (!firstseg) {
                     this->indices.push_back (capMiddle);
-                    this->indices.push_back (idx-1);
-                    this->indices.push_back (idx++);
+                    this->indices.push_back (this->idx-1);
+                    this->indices.push_back (this->idx++);
                 } else {
-                    idx++;
+                    this->idx++;
                     firstseg = false;
                 }
             }
             this->indices.push_back (capMiddle);
-            this->indices.push_back (idx-1);
+            this->indices.push_back (this->idx-1);
             this->indices.push_back (capMiddle+1);
 
             // Now add the triangles around the rings
@@ -1726,18 +1714,18 @@ namespace morph {
                     if (j == segments - 1) {
                         // Last vertex is back to the start
                         this->indices.push_back (ringStartIdx++);
-                        this->indices.push_back (idx);
+                        this->indices.push_back (this->idx);
                         this->indices.push_back (lastRingStartIdx);
                         this->indices.push_back (lastRingStartIdx);
-                        this->indices.push_back (idx++);
+                        this->indices.push_back (this->idx++);
                         this->indices.push_back (lastRingStartIdx+segments);
                     } else {
                         this->indices.push_back (ringStartIdx++);
-                        this->indices.push_back (idx);
+                        this->indices.push_back (this->idx);
                         this->indices.push_back (ringStartIdx);
                         this->indices.push_back (ringStartIdx);
-                        this->indices.push_back (idx++);
-                        this->indices.push_back (idx);
+                        this->indices.push_back (this->idx++);
+                        this->indices.push_back (this->idx);
                     }
                 }
                 lastRingStartIdx += segments;
@@ -1752,7 +1740,7 @@ namespace morph {
             this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
             this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             this->vertex_push (sc2, this->vertexColors);
-            capMiddle = idx++;
+            capMiddle = this->idx++;
             firstseg = true;
             // No more vertices to push, just do the indices for the bottom cap
             ringStartIdx = lastRingStartIdx;
@@ -1800,8 +1788,6 @@ namespace morph {
         /*!
          * Create a cone.
          *
-         * \param idx The index into the 'vertex array'
-         *
          * \param centre The centre of the cone - would be the end of the line
          *
          * \param tip The tip of the cone
@@ -1815,8 +1801,7 @@ namespace morph {
          *
          * \param segments Number of segments used to render the tube
          */
-        void computeCone (GLuint& idx,
-                          vec<float> centre,
+        void computeCone (vec<float> centre,
                           vec<float> tip,
                           float ringoffset,
                           std::array<float, 3> col,
@@ -1885,9 +1870,9 @@ namespace morph {
             int nverts = segments * 3 + 2;
 
             // After creating vertices, push all the indices.
-            GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1;
-            GLuint endMiddle = idx + (GLuint)nverts - 1;
+            GLuint capMiddle = this->idx;
+            GLuint capStartIdx = this->idx + 1;
+            GLuint endMiddle = this->idx + (GLuint)nverts - 1u;
             GLuint endStartIdx = capStartIdx;
 
             // Base of the cone
@@ -1903,7 +1888,7 @@ namespace morph {
 
             // Middle sections
             for (int lsection = 0; lsection < 2; ++lsection) {
-                capStartIdx = idx + 1 + lsection*segments;
+                capStartIdx = this->idx + 1 + lsection*segments;
                 endStartIdx = capStartIdx + segments;
                 for (int j = 0; j < segments; j++) {
                     // Triangle 1:
@@ -1941,16 +1926,16 @@ namespace morph {
             this->indices.push_back (endStartIdx);
 
             // Update idx
-            idx += nverts;
+            this->idx += nverts;
         } // end of cone calculation
 
         //! Compute a line with a single colour
-        void computeLine (GLuint& idx, vec<float> start, vec<float> end,
+        void computeLine (vec<float> start, vec<float> end,
                           vec<float> _uz,
                           std::array<float, 3> col,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
         {
-            this->computeLine (idx, start, end, _uz, col, col, w, thickness, shorten);
+            this->computeLine (start, end, _uz, col, col, w, thickness, shorten);
         }
 
         /*!
@@ -1958,7 +1943,6 @@ namespace morph {
          * transitions from the colour \a colStart to \a colEnd. The thickness of the
          * line in the z direction is \a thickness
          *
-         * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
          * \param _uz Dirn of z (up) axis for end face of line. Should be normalized.
@@ -1968,7 +1952,7 @@ namespace morph {
          * \param thickness The thickness/depth of the line in uy direction
          * \param shorten An amount by which to shorten the length of the line at each end.
          */
-        void computeLine (GLuint& idx, vec<float> start, vec<float> end,
+        void computeLine (vec<float> start, vec<float> end,
                           vec<float> _uz,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
@@ -2054,9 +2038,9 @@ namespace morph {
             int nverts = (segments * 4) + 2;
 
             // After creating vertices, push all the indices.
-            GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1u;
-            GLuint endMiddle = idx + (GLuint)nverts - 1u;
+            GLuint capMiddle = this->idx;
+            GLuint capStartIdx = this->idx + 1u;
+            GLuint endMiddle = this->idx + (GLuint)nverts - 1u;
             GLuint endStartIdx = capStartIdx + (3u * segments);
 
             // Start cap indices
@@ -2072,7 +2056,7 @@ namespace morph {
 
             // Middle sections
             for (int lsection = 0; lsection < 3; ++lsection) {
-                capStartIdx = idx + 1 + lsection*segments;
+                capStartIdx = this->idx + 1 + lsection*segments;
                 endStartIdx = capStartIdx + segments;
                 for (int j = 0; j < segments; j++) {
                     this->indices.push_back (capStartIdx + j);
@@ -2107,11 +2091,11 @@ namespace morph {
             this->indices.push_back (endStartIdx);
 
             // Update idx
-            idx += nverts;
+            this->idx += nverts;
         } // end computeLine
 
         // Like computeLine, but this line has no thickness.
-        void computeFlatLine (GLuint& idx, vec<float> start, vec<float> end,
+        void computeFlatLine (vec<float> start, vec<float> end,
                               vec<float> uz,
                               std::array<float, 3> col,
                               float w = 0.1f, float shorten = 0.0f)
@@ -2159,23 +2143,23 @@ namespace morph {
             int nverts = 4;
 
             // After creating vertices, push all the indices.
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+1);
-            this->indices.push_back (idx+2);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+1);
+            this->indices.push_back (this->idx+2);
 
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+2);
-            this->indices.push_back (idx+3);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx+3);
 
             // Update idx
-            idx += nverts;
+            this->idx += nverts;
 
         } // end computeFlatLine
 
         // Like computeFlatLine but with option to add rounded start/end caps (I lazily
         // draw a whole circle around start/end to achieve this, rather than figuring
         // out a semi-circle).
-        void computeFlatLineRnd (GLuint& idx, vec<float> start, vec<float> end,
+        void computeFlatLineRnd (vec<float> start, vec<float> end,
                                  vec<float> uz,
                                  std::array<float, 3> col,
                                  float w = 0.1f, float shorten = 0.0f, bool startcaps = true, bool endcaps = true)
@@ -2272,17 +2256,17 @@ namespace morph {
             }
 
             // The line itself
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+1);
-            this->indices.push_back (idx+2);
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+2);
-            this->indices.push_back (idx+3);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+1);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx+3);
             // Update idx
             this->idx += 4;
 
             if (endcaps) {
-                GLuint botcap = idx;
+                GLuint botcap = this->idx;
                 for (int j = 0; j < segments; j++) {
                     int inc1 = 1+j;
                     int inc2 = 1+((j+1)%segments);
@@ -2297,7 +2281,7 @@ namespace morph {
         //! Like computeFlatLine, but this line has no thickness and you can provide the
         //! previous and next data points so that this line, the previous line and the
         //! next line can line up perfectly without drawing a circular rounded 'end cap'!
-        void computeFlatLine (GLuint& idx, vec<float> start, vec<float> end,
+        void computeFlatLine (vec<float> start, vec<float> end,
                               vec<float> prev, vec<float> next,
                               vec<float> uz,
                               std::array<float, 3> col,
@@ -2350,20 +2334,20 @@ namespace morph {
             this->vertex_push (uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+1);
-            this->indices.push_back (idx+2);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+1);
+            this->indices.push_back (this->idx+2);
 
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+2);
-            this->indices.push_back (idx+3);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx+3);
 
             // Update idx
-            idx += 4;
+            this->idx += 4;
         } // end computeFlatLine that joins perfectly
 
         //! Make a joined up line with previous.
-        void computeFlatLineP (GLuint& idx, vec<float> start, vec<float> end,
+        void computeFlatLineP (vec<float> start, vec<float> end,
                                vec<float> prev,
                                vec<float> uz,
                                std::array<float, 3> col,
@@ -2412,20 +2396,20 @@ namespace morph {
             this->vertex_push (uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+1);
-            this->indices.push_back (idx+2);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+1);
+            this->indices.push_back (this->idx+2);
 
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+2);
-            this->indices.push_back (idx+3);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx+3);
 
             // Update idx
-            idx += 4;
+            this->idx += 4;
         } // end computeFlatLine that joins perfectly with prev
 
         //! Flat line, joining up with next
-        void computeFlatLineN (GLuint& idx, vec<float> start, vec<float> end,
+        void computeFlatLineN (vec<float> start, vec<float> end,
                                vec<float> next,
                                vec<float> uz,
                                std::array<float, 3> col,
@@ -2474,22 +2458,22 @@ namespace morph {
             this->vertex_push (uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+1);
-            this->indices.push_back (idx+2);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+1);
+            this->indices.push_back (this->idx+2);
 
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+2);
-            this->indices.push_back (idx+3);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx+3);
 
             // Update idx
-            idx += 4;
+            this->idx += 4;
         } // end computeFlatLine that joins perfectly with next line
 
         // Like computeLine, but this line has no thickness and it's dashed.
         // dashlen: the length of dashes
         // gap prop: The proportion of dash length used for the gap
-        void computeFlatDashedLine (GLuint& idx, vec<float> start, vec<float> end,
+        void computeFlatDashedLine (vec<float> start, vec<float> end,
                                     vec<float> uz,
                                     std::array<float, 3> col,
                                     float w = 0.1f, float shorten = 0.0f,
@@ -2550,16 +2534,16 @@ namespace morph {
                 int nverts = 4;
 
                 // After creating vertices, push all the indices.
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+1);
-                this->indices.push_back (idx+2);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+1);
+                this->indices.push_back (this->idx+2);
 
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+2);
-                this->indices.push_back (idx+3);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+2);
+                this->indices.push_back (this->idx+3);
 
                 // Update idx
-                idx += nverts;
+                this->idx += nverts;
 
                 // Next dash
                 dash_s = dash_e + v * dashlen * gapprop;
@@ -2570,7 +2554,7 @@ namespace morph {
         } // end computeFlatDashedLine
 
         // Compute a flat line circle outline
-        void computeFlatCircleLine (GLuint& idx, vec<float> centre, vec<float> norm, float radius,
+        void computeFlatCircleLine (vec<float> centre, vec<float> norm, float radius,
                                     float linewidth, std::array<float, 3> col, int segments = 128)
         {
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal
@@ -2606,14 +2590,14 @@ namespace morph {
             // After creating vertices, push all the indices.
             for (int j = 0; j < segments; j++) {
                 int jn = (segments + ((j+1) % segments)) % segments;
-                this->indices.push_back (idx+(2*j));
-                this->indices.push_back (idx+(2*jn));
-                this->indices.push_back (idx+(2*jn+1));
-                this->indices.push_back (idx+(2*j));
-                this->indices.push_back (idx+(2*jn+1));
-                this->indices.push_back (idx+(2*j+1));
+                this->indices.push_back (this->idx+(2*j));
+                this->indices.push_back (this->idx+(2*jn));
+                this->indices.push_back (this->idx+(2*jn+1));
+                this->indices.push_back (this->idx+(2*j));
+                this->indices.push_back (this->idx+(2*jn+1));
+                this->indices.push_back (this->idx+(2*j+1));
             }
-            idx += 2 * segments; // nverts
+            this->idx += 2 * segments; // nverts
 
         } // end computeFlatCircle
     };

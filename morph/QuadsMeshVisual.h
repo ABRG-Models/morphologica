@@ -88,9 +88,6 @@ namespace morph {
             this->colourScale.do_autoscale = true;
             this->colourScale.transform ((*this->scalarData), dcopy);
 
-            // Index buffer index
-            GLuint ib = 0;
-
             // I'm examining a set of vecs, which means I have to specify the compare
             // operation. See:
             // https://abrg-models.github.io/morphologica/ref/coremaths/vec/#comparison-operators
@@ -125,27 +122,27 @@ namespace morph {
                     // by the last quad, omit drawing it again.
                     if (lastQuadLines.count(line0) == 0 && lastQuadLines.count(rline0) == 0) {
                         std::cout << "draw\n";
-                        this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
+                        this->computeTube (q0, q1, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line1) == 0 && lastQuadLines.count(rline1) == 0) {
                         std::cout << "draw\n";
-                        this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
+                        this->computeTube (q1, q2, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line2) == 0 && lastQuadLines.count(rline2) == 0) {
                         std::cout << "draw\n";
-                        this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);
+                        this->computeTube (q2, q3, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line3) == 0 && lastQuadLines.count(rline3) == 0) {
                         std::cout << "draw\n";
-                        this->computeTube (ib, q3, q0, clr, clr, this->radius, this->tseg);
+                        this->computeTube (q3, q0, clr, clr, this->radius, this->tseg);
                     }
                     lastQuadLines.clear();
                 } else { // No last quad, so draw all the lines in the current quad
                     std::cout << "Draw all\n";
-                    this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
-                    this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
-                    this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);
-                    this->computeTube (ib, q3, q0, clr, clr, this->radius, this->tseg);
+                    this->computeTube (q0, q1, clr, clr, this->radius, this->tseg);
+                    this->computeTube (q1, q2, clr, clr, this->radius, this->tseg);
+                    this->computeTube (q2, q3, clr, clr, this->radius, this->tseg);
+                    this->computeTube (q3, q0, clr, clr, this->radius, this->tseg);
                 }
                 // Record the lastQuadLines (and their inverses) for the next loop
                 lastQuadLines.insert (line0);
@@ -157,7 +154,7 @@ namespace morph {
                 lastQuadLines.insert (rline2);
                 lastQuadLines.insert (rline3);
             }
-            std::cout << "QuadsMeshVisual has " << ib << " vertex indices\n";
+            std::cout << "QuadsMeshVisual has " << this->idx << " vertex indices\n";
         }
 
     private:

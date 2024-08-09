@@ -62,7 +62,7 @@ namespace morph {
         void drawFrame()
         {
             // Draw an approximation of a circle.
-            this->computeFlatCircleLine (this->idx, vec<float>({0,0,this->z}), this->uz, this->radius + this->framelinewidth/2.0f,
+            this->computeFlatCircleLine (vec<float>({0,0,this->z}), this->uz, this->radius + this->framelinewidth/2.0f,
                                          this->framelinewidth, this->framecolour, this->numsegs);
         }
 

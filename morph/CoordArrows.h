@@ -117,24 +117,24 @@ namespace morph {
             // (mv_offset is applied in translation matrices)
             vec<float, 3> reloffset = {0,0,0};
             vec<float, 3> zerocoord = {0,0,0};
-            this->computeSphere (this->idx, zerocoord, centresphere_col, this->thickness*this->lengths[0]/20.0);
+            this->computeSphere (zerocoord, centresphere_col, this->thickness*this->lengths[0]/20.0);
 
             // x
             reloffset[0] += this->lengths[0];
-            this->computeSphere (this->idx, reloffset, x_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (this->idx, zerocoord, reloffset, x_axis_col, x_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeSphere (reloffset, x_axis_col, this->thickness*this->lengths[0]/40.0);
+            this->computeTube (zerocoord, reloffset, x_axis_col, x_axis_col, this->thickness*this->lengths[0]/80.0);
 
             // y
             reloffset[0] -= this->lengths[0];
             reloffset[1] += this->lengths[1];
-            this->computeSphere (this->idx, reloffset, y_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (this->idx, zerocoord, reloffset, y_axis_col, y_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeSphere (reloffset, y_axis_col, this->thickness*this->lengths[0]/40.0);
+            this->computeTube (zerocoord, reloffset, y_axis_col, y_axis_col, this->thickness*this->lengths[0]/80.0);
 
             // z
             reloffset[1] -= this->lengths[1];
             reloffset[2] += this->lengths[2];
-            this->computeSphere (this->idx, reloffset, z_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (this->idx, zerocoord, reloffset, z_axis_col, z_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeSphere (reloffset, z_axis_col, this->thickness*this->lengths[0]/40.0);
+            this->computeTube (zerocoord, reloffset, z_axis_col, z_axis_col, this->thickness*this->lengths[0]/80.0);
         }
 
         //! The lengths of the x, y and z arrows.

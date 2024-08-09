@@ -879,14 +879,13 @@ namespace morph {
                             auto point_to_point = (*this->graphDataCoords[dsi])[i] - (*this->graphDataCoords[dsi])[i-1];
                             if (point_to_point.length() > this->datastyles[dsi].markergap * 2.0f) {
                                 // Draw solid lines between marker points with gaps between line and marker
-                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], this->uz,
+                                this->computeFlatLine ((*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], this->uz,
                                                        this->datastyles[dsi].linecolour,
                                                        this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
                             }
                         } else if (appending == true) {
                             // We are appending a line to an existing graph, so compute a single line with rounded ends
-                            this->computeFlatLineRnd (this->idx,
-                                                      (*this->graphDataCoords[dsi])[i-1], // start
+                            this->computeFlatLineRnd ((*this->graphDataCoords[dsi])[i-1], // start
                                                       (*this->graphDataCoords[dsi])[i],   // end
                                                       this->uz,
                                                       this->datastyles[dsi].linecolour,
@@ -899,16 +898,14 @@ namespace morph {
                             // and draw the alt colour (which may be bg colour) between the dashes.
                             if (i == 1+coords_start && (coords_end-coords_start)==2) {
                                 // First and only line
-                                this->computeFlatLine (this->idx,
-                                                       (*this->graphDataCoords[dsi])[i-1], // start
+                                this->computeFlatLine ((*this->graphDataCoords[dsi])[i-1], // start
                                                        (*this->graphDataCoords[dsi])[i],   // end
                                                        this->uz,
                                                        this->datastyles[dsi].linecolour,
                                                        this->datastyles[dsi].linewidth);
                             } else if (i == 1+coords_start) {
                                 // First line
-                                this->computeFlatLineN (this->idx,
-                                                        (*this->graphDataCoords[dsi])[i-1], // start
+                                this->computeFlatLineN ((*this->graphDataCoords[dsi])[i-1], // start
                                                         (*this->graphDataCoords[dsi])[i],   // end
                                                         (*this->graphDataCoords[dsi])[i+1], // next
                                                         this->uz,
@@ -916,14 +913,14 @@ namespace morph {
                                                         this->datastyles[dsi].linewidth);
                             } else if (i == (coords_end-1)) {
                                 // last line
-                                this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                this->computeFlatLineP ((*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
                                                         (*this->graphDataCoords[dsi])[i-2],
                                                         this->uz,
                                                         this->datastyles[dsi].linecolour,
                                                         this->datastyles[dsi].linewidth);
                             } else {
                                 // An intermediate line
-                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                this->computeFlatLine ((*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
                                                        (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
                                                        this->uz,
                                                        this->datastyles[dsi].linecolour,
@@ -1033,7 +1030,7 @@ namespace morph {
                 if (this->datastyles[dsi].showlines == true && this->datastyles[dsi].markerstyle != markerstyle::bar) {
                     // draw short line at lpos (rounded ends)
                     morph::vec<float, 3> abit = { 0.5f * toffset[0], 0.0f, 0.0f };
-                    this->computeFlatLineRnd (this->idx, lpos - abit, lpos + abit,
+                    this->computeFlatLineRnd (lpos - abit, lpos + abit,
                                               this->uz,
                                               this->datastyles[dsi].linecolour,
                                               this->datastyles[dsi].linewidth);
@@ -1207,26 +1204,22 @@ namespace morph {
             // Vert zero is not at model(0,0), have to get model coords of data(0,0)
             float _x0_mdl = this->abscissa_scale.transform_one (0);
             float _y0_mdl = this->ord1_scale.transform_one (0);
-            this->computeFlatLine (this->idx,
-                                   {_x0_mdl, -(this->axislinewidth*0.5f),             -this->thickness},
+            this->computeFlatLine ({_x0_mdl, -(this->axislinewidth*0.5f),             -this->thickness},
                                    {_x0_mdl, this->height+(this->axislinewidth*0.5f), -this->thickness},
                                    this->uz, this->axiscolour, this->axislinewidth*0.7f);
             // Horz zero
-            this->computeFlatLine (this->idx,
-                                   {0,           _y0_mdl, -this->thickness},
+            this->computeFlatLine ({0,           _y0_mdl, -this->thickness},
                                    {this->width, _y0_mdl, -this->thickness},
                                    this->uz, this->axiscolour, this->axislinewidth*0.7f);
 
             for (auto xt : this->xtick_posns) {
                 // Want to place lines in screen units. So transform the data units
-                this->computeFlatLine (this->idx,
-                                       {(float)xt, _y0_mdl,                      -this->thickness},
+                this->computeFlatLine ({(float)xt, _y0_mdl,                      -this->thickness},
                                        {(float)xt, _y0_mdl - this->ticklength,   -this->thickness}, this->uz,
                                        this->axiscolour, this->axislinewidth*0.5f);
             }
             for (auto yt : this->ytick_posns) {
-                this->computeFlatLine (this->idx,
-                                       {_x0_mdl,                    (float)yt, -this->thickness},
+                this->computeFlatLine ({_x0_mdl,                    (float)yt, -this->thickness},
                                        {_x0_mdl - this->ticklength, (float)yt, -this->thickness}, this->uz,
                                        this->axiscolour, this->axislinewidth*0.5f);
             }
@@ -1247,13 +1240,11 @@ namespace morph {
                 || this->axisstyle == axisstyle::L) {
 
                 // y axis
-                this->computeFlatLine (this->idx,
-                                       {0, -(this->axislinewidth*0.5f),             -this->thickness},
+                this->computeFlatLine ({0, -(this->axislinewidth*0.5f),             -this->thickness},
                                        {0, this->height + this->axislinewidth*0.5f, -this->thickness},
                                        this->uz, this->axiscolour, this->axislinewidth);
                 // x axis
-                this->computeFlatLine (this->idx,
-                                       {0,           0, -this->thickness},
+                this->computeFlatLine ({0,           0, -this->thickness},
                                        {this->width, 0, -this->thickness},
                                        this->uz, this->axiscolour, this->axislinewidth);
 
@@ -1263,14 +1254,12 @@ namespace morph {
 
                 for (auto xt : this->xtick_posns) {
                     // Want to place lines in screen units. So transform the data units
-                    this->computeFlatLine (this->idx,
-                                           {(float)xt, 0.0f, -this->thickness},
+                    this->computeFlatLine ({(float)xt, 0.0f, -this->thickness},
                                            {(float)xt, tl,   -this->thickness}, this->uz,
                                            this->axiscolour, this->axislinewidth*0.5f);
                 }
                 for (auto yt : this->ytick_posns) {
-                    this->computeFlatLine (this->idx,
-                                           {0.0f, (float)yt, -this->thickness},
+                    this->computeFlatLine ({0.0f, (float)yt, -this->thickness},
                                            {tl,   (float)yt, -this->thickness}, this->uz,
                                            this->axiscolour, this->axislinewidth*0.5f);
                 }
@@ -1282,13 +1271,11 @@ namespace morph {
                 || this->axisstyle == axisstyle::boxfullticks
                 || this->axisstyle == axisstyle::boxcross) {
                 // right axis
-                this->computeFlatLine (this->idx,
-                                       {this->width, -this->axislinewidth*0.5f,               -this->thickness},
+                this->computeFlatLine ({this->width, -this->axislinewidth*0.5f,               -this->thickness},
                                        {this->width, this->height+(this->axislinewidth*0.5f), -this->thickness},
                                        this->uz, this->axiscolour, this->axislinewidth);
                 // top axis
-                this->computeFlatLine (this->idx,
-                                       {0,           this->height, -this->thickness},
+                this->computeFlatLine ({0,           this->height, -this->thickness},
                                        {this->width, this->height, -this->thickness},
                                        this->uz, this->axiscolour, this->axislinewidth);
 
@@ -1301,22 +1288,19 @@ namespace morph {
                     // Tick positions
                     for (auto xt : this->xtick_posns) {
                         // Want to place lines in screen units. So transform the data units
-                        this->computeFlatLine (this->idx,
-                                               {(float)xt, this->height,      -this->thickness},
+                        this->computeFlatLine ({(float)xt, this->height,      -this->thickness},
                                                {(float)xt, this->height + tl, -this->thickness}, this->uz,
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
                     for (auto yt : this->ytick_posns) {
-                        this->computeFlatLine (this->idx,
-                                               {this->width,      (float)yt, -this->thickness},
+                        this->computeFlatLine ({this->width,      (float)yt, -this->thickness},
                                                {this->width + tl, (float)yt, -this->thickness}, this->uz,
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
                 } else if (this->axisstyle == axisstyle::twinax) {
                     // Draw ticks for y2
                     for (auto yt : this->ytick_posns2) {
-                        this->computeFlatLine (this->idx,
-                                               {this->width,      (float)yt, -this->thickness},
+                        this->computeFlatLine ({this->width,      (float)yt, -this->thickness},
                                                {this->width + tl, (float)yt, -this->thickness}, this->uz,
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
@@ -1337,7 +1321,7 @@ namespace morph {
             if ((std::isnan(dlength) || dlength == Flt{0})
                 && style.quiver_flagset.test(static_cast<unsigned int>(morph::quiver_flags::show_zeros)) == true) {
                 // NaNs denote zero vectors when the lengths have been log scaled.
-                this->computeSphere (this->idx, coords_i, style.quiver_zero_colour,
+                this->computeSphere (coords_i, style.quiver_zero_colour,
                                      style.markersize * style.quiver_thickness_gain);
             } else { // Not a zero marker, draw a quiver
 
@@ -1364,15 +1348,15 @@ namespace morph {
                 cone_start += start;
                 constexpr int shapesides = 12;
                 std::array<float, 3> clr = style.quiver_colourmap.convert (lengthcolour);
-                this->computeTube (this->idx, start, cone_start, clr, clr, quiv_thick, shapesides);
+                this->computeTube (start, cone_start, clr, clr, quiv_thick, shapesides);
                 float conelen = (end-cone_start).length();
                 if (arrow_line.length() > conelen) {
-                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, quiv_thick * style.quiver_conewidth, shapesides);
+                    this->computeCone (cone_start, end, 0.0f, clr, quiv_thick * style.quiver_conewidth, shapesides);
                 }
 
                 if (style.quiver_flagset.test(static_cast<unsigned int>(morph::quiver_flags::marker_sphere)) == true) {
                     // Draw a sphere on the coordinate:
-                    this->computeSphere (this->idx, coords_i, clr, quiv_thick * style.quiver_conewidth, shapesides/2, shapesides);
+                    this->computeSphere (coords_i, clr, quiv_thick * style.quiver_conewidth, shapesides/2, shapesides);
                 }
             }
         }
@@ -1396,16 +1380,16 @@ namespace morph {
             morph::vec<float> p2b = p2;
             p2b[1] = this->height * this->dataaxisdist;
 
-            this->computeFlatQuad (this->idx, p1b, p1, p2, p2b, style.markercolour);
+            this->computeFlatQuad (p1b, p1, p2, p2b, style.markercolour);
 
             if (style.showlines == true) {
                 p1b[2] += this->thickness/2.0f;
                 p1[2] += this->thickness/2.0f;
                 p2[2] += this->thickness/2.0f;
                 p2b[2] += this->thickness/2.0f;
-                this->computeFlatLineRnd (this->idx, p1b, p1,  this->uz, style.linecolour, style.linewidth, 0.0f, false, true);
-                this->computeFlatLineRnd (this->idx, p1,  p2,  this->uz, style.linecolour, style.linewidth, 0.0f, true, true);
-                this->computeFlatLineRnd (this->idx, p2,  p2b, this->uz, style.linecolour, style.linewidth, 0.0f, true, false);
+                this->computeFlatLineRnd (p1b, p1,  this->uz, style.linecolour, style.linewidth, 0.0f, false, true);
+                this->computeFlatLineRnd (p1,  p2,  this->uz, style.linecolour, style.linewidth, 0.0f, true, true);
+                this->computeFlatLineRnd (p2,  p2b, this->uz, style.linecolour, style.linewidth, 0.0f, true, false);
             }
         }
 
@@ -1427,17 +1411,17 @@ namespace morph {
 
             float outline_width = 0.005f; // also fixed
 
-            this->computeFlatQuad (this->idx, p1b, p1, p2, p2b, style.markercolour);
+            this->computeFlatQuad (p1b, p1, p2, p2b, style.markercolour);
 
             if (style.showlines == true) {
                 p1b[2] += this->thickness;
                 p1[2] += this->thickness;
                 p2[2] += this->thickness;
                 p2b[2] += this->thickness;
-                this->computeFlatLineRnd (this->idx, p1b, p1,  this->uz, style.linecolour, outline_width, 0.0f, true, true);
-                this->computeFlatLineRnd (this->idx, p1,  p2,  this->uz, style.linecolour, outline_width, 0.0f, true, true);
-                this->computeFlatLineRnd (this->idx, p2,  p2b, this->uz, style.linecolour, outline_width, 0.0f, true, true);
-                this->computeFlatLineRnd (this->idx, p2b, p1b, this->uz, style.linecolour, outline_width, 0.0f, true, true);
+                this->computeFlatLineRnd (p1b, p1,  this->uz, style.linecolour, outline_width, 0.0f, true, true);
+                this->computeFlatLineRnd (p1,  p2,  this->uz, style.linecolour, outline_width, 0.0f, true, true);
+                this->computeFlatLineRnd (p2,  p2b, this->uz, style.linecolour, outline_width, 0.0f, true, true);
+                this->computeFlatLineRnd (p2b, p1b, this->uz, style.linecolour, outline_width, 0.0f, true, true);
             }
         }
 
@@ -1519,7 +1503,7 @@ namespace morph {
         void polygonMarker  (morph::vec<float> p, int n, const morph::DatasetStyle& style)
         {
             p[2] += this->thickness;
-            this->computeFlatPoly (this->idx, p, this->ux, this->uy,
+            this->computeFlatPoly (p, this->ux, this->uy,
                                    style.markercolour,
                                    style.markersize*Flt{0.5}, n);
         }
@@ -1528,7 +1512,7 @@ namespace morph {
         void polygonFlattop (morph::vec<float> p, int n, const morph::DatasetStyle& style)
         {
             p[2] += this->thickness;
-            this->computeFlatPoly (this->idx, p, this->ux, this->uy,
+            this->computeFlatPoly (p, this->ux, this->uy,
                                    style.markercolour,
                                    style.markersize*Flt{0.5}, n, morph::mathconst<float>::pi/static_cast<float>(n));
         }
