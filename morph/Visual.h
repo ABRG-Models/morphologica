@@ -56,6 +56,8 @@
 
 #include <morph/gl/version.h>
 #include <morph/VisualModel.h>
+#include <morph/TextFeatures.h>
+#include <morph/TextGeometry.h>
 #include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
 #include <morph/gl/shaders.h> // for ShaderInfo/LoadShaders
