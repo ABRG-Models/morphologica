@@ -24,7 +24,7 @@ GLFW window setup is performed if [`OWNED_MODE`](/morphologica/ref/visual/visual
 Freetype library management occurs in
 `VisualResources::freetype_init(Visual<>*)`. Originally I believed
 that I required only a single Freetype library instance (allocated
-with the function `FT_Init_FreeType). This was the reason for carrying
+with the function `FT_Init_FreeType`). This was the reason for carrying
 out Freetype library init within the VisualResources class. However, I
 found it necessary to initialize one Freetype library instance for
 *each* `morph::Visual`. This suggests that a better design would be
