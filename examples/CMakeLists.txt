@@ -353,6 +353,12 @@ if(USE_GLEW)
   target_link_libraries(cone GLEW::GLEW)
 endif()
 
+add_executable(sphere sphere.cpp)
+target_link_libraries(sphere OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(sphere GLEW::GLEW)
+endif()
+
 add_executable(icosahedron icosahedron.cpp)
 target_link_libraries(icosahedron OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
