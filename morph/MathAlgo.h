@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <bitset>
 #include <memory>
-#include <cuchar>
+#include <cstddef>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/range.h>

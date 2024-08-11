@@ -12,7 +12,7 @@
 #include <map>
 #include <set>
 #include <vector>
-#include <cuchar>
+#include <cstddef>
 
 namespace morph {
     namespace bn {

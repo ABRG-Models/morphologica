@@ -130,12 +130,12 @@ namespace morph {
                 if (morph::Tools::fileExists (entry.filename)) {
                     std::cout << "Using " << morph::gl::shader_type_str(entry.type)
                               << " shader from the file " << entry.filename << std::endl;
-                    source = std::move (morph::gl::ReadShader (entry.filename));
+                    source = morph::gl::ReadShader (entry.filename);
                 } else {
                     if constexpr (debug_shaders == true) {
                         std::cout << "Using compiled-in " << morph::gl::shader_type_str(entry.type) << " shader\n";
                     }
-                    source = std::move (morph::gl::ReadDefaultShader (entry.compiledIn));
+                    source = morph::gl::ReadDefaultShader (entry.compiledIn);
                 }
                 if (source == nullptr) {
                     for (auto entry : shader_info) {

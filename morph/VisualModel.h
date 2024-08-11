@@ -44,7 +44,7 @@
 #include <string>
 #include <memory>
 #include <functional>
-#include <cuchar>
+#include <cstddef>
 
 // Switches on some changes where I carefully unbind gl buffers after calling
 // glBufferData() and rebind when changing the vertex model. Makes no difference on my

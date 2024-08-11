@@ -78,7 +78,7 @@
 #include <memory>
 #include <functional>
 #include <chrono>
-#include <cuchar>
+#include <cstddef>
 
 #include <morph/VisualDefaultShaders.h>
 

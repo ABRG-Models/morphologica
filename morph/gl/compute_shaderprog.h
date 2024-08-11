@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <cuchar>
+#include <cstddef>
 #include <morph/gl/version.h>
 #include <morph/gl/util.h>
 #include <morph/vec.h>

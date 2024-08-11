@@ -249,21 +249,27 @@ add_test(testConfig testConfig)
 add_executable(testQuaternion testQuaternion.cpp)
 add_test(testQuaternion testQuaternion)
 
-add_executable(testQuat_constexpr testQuat_constexpr.cpp)
-set_property(TARGET testQuat_constexpr PROPERTY CXX_STANDARD 20)
-add_test(testQuat_constexpr testQuat_constexpr)
+# Note that we only compile the constexpr tests if compiler is not Clang. Clang doesn't like std::abs,
+# std::sin (etc) within a constexpr function.
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  add_executable(testQuat_constexpr testQuat_constexpr.cpp)
+  set_property(TARGET testQuat_constexpr PROPERTY CXX_STANDARD 20)
+  add_test(testQuat_constexpr testQuat_constexpr)
+endif()
 
 # test morph::vec.
 add_executable(testvec testvec.cpp)
 add_test(testvec testvec)
 
-# constexpr functionality in morph::vec
-# Need C++20 for the way I use constexpr here so that it is legal to
-# have "a definition of a variable for which no initialization is
-# performed".
-add_executable(testvec_constexpr testvec_constexpr.cpp)
-set_property(TARGET testvec_constexpr PROPERTY CXX_STANDARD 20)
-add_test(testvec_constexpr testvec_constexpr)
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  # constexpr functionality in morph::vec
+  # Need C++20 for the way I use constexpr here so that it is legal to
+  # have "a definition of a variable for which no initialization is
+  # performed".
+  add_executable(testvec_constexpr testvec_constexpr.cpp)
+  set_property(TARGET testvec_constexpr PROPERTY CXX_STANDARD 20)
+  add_test(testvec_constexpr testvec_constexpr)
+endif()
 
 add_executable(testvec_asmapkey testvec_asmapkey.cpp)
 add_test(testvec_asmapkey testvec_asmapkey)
@@ -328,10 +334,12 @@ add_test(testScaleVector testScaleVector)
 add_executable(testTransformMatrix testTransformMatrix.cpp)
 add_test(testTransformMatrix testTransformMatrix)
 
-# constexpr TransformMatrix
-add_executable(testTransMat_constexpr testTransMat_constexpr.cpp)
-set_property(TARGET testTransMat_constexpr PROPERTY CXX_STANDARD 20)
-add_test(testTransMat_constexpr testTransMat_constexpr)
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  # constexpr TransformMatrix
+  add_executable(testTransMat_constexpr testTransMat_constexpr.cpp)
+  set_property(TARGET testTransMat_constexpr PROPERTY CXX_STANDARD 20)
+  add_test(testTransMat_constexpr testTransMat_constexpr)
+endif()
 
 # Test morph::Matrix33 (3x3 matrix)
 add_executable(testMatrix33 testMatrix33.cpp)

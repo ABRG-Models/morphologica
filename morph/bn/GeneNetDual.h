@@ -4,7 +4,7 @@
 #include <morph/bn/Genome.h>
 #include <morph/bn/GeneNet.h>
 #include <set>
-#include <cuchar>
+#include <cstddef>
 
 namespace morph {
     namespace  bn {

@@ -15,7 +15,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <cmath>
-#include <cuchar>
+#include <cstddef>
 #ifdef __ICC__
 # define ARMA_ALLOW_FAKE_GCC 1
 #endif
