@@ -11,7 +11,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <cuchar>
+#include <cstddef>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string.h>

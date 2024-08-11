@@ -19,7 +19,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <functional>
-#include <cuchar>
+#include <cstddef>
 #include <morph/Random.h>
 #include <morph/range.h>
 #include <morph/trait_tests.h>

@@ -12,7 +12,7 @@
 #include <bitset>
 #include <iostream>
 #include <sstream>
-#include <cuchar>
+#include <cstddef>
 #include <immintrin.h>
 #include <morph/tools.h>
 #include <morph/bn/Random.h>

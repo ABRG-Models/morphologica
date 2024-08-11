@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <vector>
 #include <string>
-#include <cuchar>
+#include <cstddef>
 #include <stdexcept>
 #include <morph/vec.h>
 #include <morph/vvec.h>

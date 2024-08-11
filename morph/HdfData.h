@@ -18,7 +18,7 @@
 #include <string>
 #include <utility>
 #include <bitset>
-#include <cuchar>
+#include <cstddef>
 #include <sstream>
 #include <stdexcept>
 #include <morph/vec.h>

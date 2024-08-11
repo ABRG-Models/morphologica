@@ -5,7 +5,7 @@
 #pragma once
 
 #include <array>
-#include <cuchar>
+#include <cstddef>
 #include <morph/Random.h>
 #include <morph/bn/Genosect.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cuchar>
+#include <cstddef>
 
 /*!
  * Listed colour maps, copied from _cm_listed.py

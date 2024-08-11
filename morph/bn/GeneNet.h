@@ -15,7 +15,7 @@
 #include <vector>
 #include <bitset>
 #include <list>
-#include <cuchar>
+#include <cstddef>
 #include <math.h>
 #include <immintrin.h> // Using intrinsics for computing Hamming distances
 #include <morph/bn/Genome.h>

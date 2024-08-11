@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <cuchar>
+#include <cstddef>
 #include <algorithm>
 #include <morph/bn/Implicant.h>
 

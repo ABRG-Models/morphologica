@@ -40,7 +40,7 @@
 
 #include <stdexcept>
 #include <cmath>
-#include <cuchar>
+#include <cstddef>
 #include <string>
 #include <sstream>
 #include <morph/MathAlgo.h>
