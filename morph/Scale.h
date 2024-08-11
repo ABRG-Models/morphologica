@@ -77,7 +77,7 @@ namespace morph {
      * integers.
      */
     template <typename T, typename S>
-    class ScaleImplBase
+    struct ScaleImplBase
     {
     public:
         /*!
