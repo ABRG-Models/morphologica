@@ -65,6 +65,8 @@ else()
       endif()
       set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors -Wno-psabi")
       set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -g ${COMPREHENSIVE_WARNING_FLAGS} -march=native -O3")
+      # Make it possible to compile complex constexpr functions
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=5000000000")
     endif()
   else() # Windows
     # Set flags for Windows. /EHsc required for use of exceptions
@@ -174,9 +176,6 @@ if(wxWidgets_FOUND)
     message(WARNING "The wxWidgets examples require GLEW. wxWidgets was found but USE_GLEW is OFF. You will need to call cmake with the -DUSE_GLEW=ON option to compile wxWidgets examples.")
   endif()
 endif()
-
-# Make it possible to compile complex constexpr functions
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=5000000000")
 
 # rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
 #include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
