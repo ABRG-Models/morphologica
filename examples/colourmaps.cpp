@@ -104,7 +104,6 @@ int main()
             offset[1] -= 1.0f;
         }
     }
-#endif
 
     v.keepOpen();
 
