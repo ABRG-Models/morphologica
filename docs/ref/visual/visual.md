@@ -21,6 +21,9 @@ or save the scene in glTF format. `morph::Visual` supports perspective
 and orthographic projections and even has an experimental cylindrical
 projection mode.
 
+![A morph::Visual scene from the showcase example program](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/showcase.png?raw=true)
+*A morph::Visual scene containing some grid-based VisualModels*
+
 You need at least one morph::Visual in your program. In general, one
 morph::Visual will relate to one window. (If you have two or more
 Visuals, then you will have two or more windows.)
@@ -47,7 +50,7 @@ The following code (adapted from the [graph1.cpp](https://github.com/ABRG-Models
 
 ![Screenshot of two computer windows each backed by a morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/morph_two_visuals.png?raw=true)
 
-*This is the [twowindows.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/twowindows.cpp) example program, which displays two windows with two `morph::Visual` instances. The graph on window 2 is very similar to what the preceding code example would generate, showing a `morph::GraphVisual`. Window 1 shows another kind of `morph::VisualModel` (a rather sparse `QuiverVisual`)*
+*This is the [twowindows.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/twowindows.cpp) example program, which displays two windows with two `morph::Visual` instances. The `GraphVisual` on window 2 shows what the preceding code example would generate. Window 1 shows another kind of `morph::VisualModel` (a rather sparse `QuiverVisual`)*
 
 
 ## Instantiating `morph::Visual`

@@ -18,12 +18,11 @@ provides, which are a great resource for learning how to write your
 own VisualModels.)
 
 A `VisualModel` holds all the coordinates that define a set of
-triangles that make up a 'graphical model'. You can draw anything with
-triangles and besides this, OpenGL gives you almost no other way to
-draw. `VisualModel` also contains a list of text objects so that your
-graphical elements can be embellished with text. Text is created by
-drawing rectangles (made from triangles) to which bitmap 'texture'
-images of character glyphs are applied.
+triangles that make up a 'graphical model' (in OpenGL we draw almost
+exclusively with triangles). `VisualModel` also contains a list of
+text objects so that your graphical elements can be embellished with
+text. Text is created by drawing rectangles (made from triangles) to
+which bitmap 'texture' images of character glyphs are applied.
 
 ## Creating a VisualModel instance
 
