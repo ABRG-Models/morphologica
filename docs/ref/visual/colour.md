@@ -27,4 +27,6 @@ primitive) you can pass the named colour like this (using
 this->computeSphere (sphere_location, morph::colour::mint);
 ```
 
-I use the webpage to find a colour I want to use, and the names can be used directly as above.
+I use the webpage to find a colour I want to use, and the names can be used directly as above. The entry corresponding to `morph::colour::mint` is:
+
+![Image of the entry for the colour mint on the cloford.com colour web page](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/mint.png?raw=true)
