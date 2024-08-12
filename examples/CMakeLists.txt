@@ -194,6 +194,12 @@ if(ARMADILLO_FOUND)
 
 endif(ARMADILLO_FOUND)
 
+add_executable(colourmaps colourmaps.cpp)
+target_link_libraries(colourmaps OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(colourmaps GLEW::GLEW)
+endif()
+
 add_executable(logisticmap logisticmap.cpp)
 target_link_libraries(logisticmap OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
