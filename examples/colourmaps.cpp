@@ -85,25 +85,43 @@ int main()
         data[j] = (grid[j] / (N * pw)).plus_one_dim();
     }
 
-    i = 0;
-    for (auto cmap_type : cmap_2d_types) {
-        ++i;
-        auto gv = std::make_unique<morph::GridVisual<float, int>>(&grid, offset);
-        v.bindmodel (gv);
-        gv->gridVisMode = morph::GridVisMode::RectInterp;
-        gv->setVectorData (&data);
-        gv->cm.setType (cmap_type);
-        gv->zScale.setParams(0,0);
-        gv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_type), {0, -0.1, 0}, morph::TextFeatures(0.05f));
-        gv->finalize();
-        v.addVisualModel (gv);
+    auto gv = std::make_unique<morph::GridVisual<float, int>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Triangles;
+    gv->setVectorData (&data);
+    gv->cm.setType (cmap_2d_types[0]);
+    gv->zScale.setParams(0,0);
+    gv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_2d_types[0]), {0, -0.1, 0}, morph::TextFeatures(0.05f));
+    gv->twodimensional = true;
+    gv->finalize();
+    v.addVisualModel (gv);
 
-        offset[0] += 0.8f;
-        if (i % 3 == 0) {
-            offset[0] = 0.0f;
-            offset[1] -= 1.0f;
-        }
-    }
+    offset[0] += 0.8f;
+
+    gv = std::make_unique<morph::GridVisual<float, int>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Triangles;
+    gv->setVectorData (&data);
+    gv->cm.setType (cmap_2d_types[1]);
+    gv->zScale.setParams(0,0);
+    gv->addLabel ("duochrome red-green", {0, -0.1, 0}, morph::TextFeatures(0.05f));
+    gv->twodimensional = true;
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    offset[0] += 0.8f;
+
+    gv = std::make_unique<morph::GridVisual<float, int>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Triangles;
+    gv->setVectorData (&data);
+    gv->cm.setType (cmap_2d_types[1]);
+    gv->cm.setHueRB();
+    gv->zScale.setParams(0,0);
+    gv->addLabel ("duochrome red-blue", {0, -0.1, 0}, morph::TextFeatures(0.05f));
+    gv->twodimensional = true;
+    gv->finalize();
+    v.addVisualModel (gv);
 
     v.keepOpen();
 
