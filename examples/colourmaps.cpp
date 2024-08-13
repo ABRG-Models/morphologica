@@ -17,9 +17,8 @@ int main()
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
     std::string title_str = "ColourMaps";
-    morph::Visual v(1200, 1000, title_str);
-    // Position with some scene trans setup code (try Ctrl-z in the program and see stdout):
-    v.setSceneTrans (morph::vec<float,3>({-0.140266f, 0.237435f, -3.5f}));
+    morph::Visual v(1000, 1400, title_str);
+    v.setSceneTrans (morph::vec<float,3>{ float{-1.17245}, float{1.24502}, float{-7.7} });
 
     morph::Scale<float> scale1;
     scale1.compute_autoscale (0, 1); // Simply maps 0->1 to 0->1!
@@ -40,7 +39,6 @@ int main()
     cmap_types.push_back (morph::ColourMapType::GreyscaleInv);
     cmap_types.push_back (morph::ColourMapType::Monochrome);
     cmap_types.push_back (morph::ColourMapType::Monoval);
-    //cmap_types.push_back (morph::ColourMapType::HSV1D); -1 to 1 range
 
     morph::ColourMap<float> cm1(morph::ColourMapType::Jet);
 
@@ -58,6 +56,31 @@ int main()
         cbv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_type), {0, -0.1, 0}, morph::TextFeatures(0.05f));
         cbv->finalize();
         v.addVisualModel (cbv);
+        // Update location
+        offset[0] += 0.4f;
+        if (i % 6 == 0) {
+            offset[0] = 0.0f;
+            offset[1] -= 1.0f;
+        }
+    }
+
+    float hue = 0.0f;
+    for (int k = 0; k < 6; ++k) {
+        ++i;
+        cm1.setType (morph::ColourMapType::HSV1D);
+        auto cbv =  std::make_unique<morph::ColourBarVisual<float>>(offset);
+        v.bindmodel (cbv);
+        cbv->orientation = morph::colourbar_orientation::vertical;
+        cbv->tickside = morph::colourbar_tickside::right_or_below;
+        cbv->cm = cm1;
+        // Set the 'hue' angle (range 0 to 1)
+        cbv->cm.setHue (hue);
+        cbv->scale = scale1;
+        cbv->addLabel ("hsv1d " + std::to_string(static_cast<int>(hue * 360)), {0, -0.1, 0}, morph::TextFeatures(0.05f));
+        cbv->finalize();
+        v.addVisualModel (cbv);
+        // Increment hue
+        hue += 0.2f;
         // Update location
         offset[0] += 0.4f;
         if (i % 6 == 0) {
