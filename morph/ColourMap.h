@@ -42,8 +42,8 @@ namespace morph {
         RGBGrey,      // Takes RGB input and outputs a greyscale version
         HSV,          // A special map in which two input numbers are used to compute a hue and a saturation.
         HSV1D,        // A 1D version of HSV, traverses a line across the HSV circle for a set value of hue,
-                      // which determines what colour the value 1 will return. Unlike all the rest of the colour
-                      // maps, this maps the values [-1,1] to colour output.
+                      // which determines what colour the value 1 will return. Useful for positive/negative ranges.
+                      // Map the negative portion of our input to the rnage 0->0.5 and the positive to 0.5->1
         Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
 
@@ -554,20 +554,12 @@ namespace morph {
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
                 // Copy, enforce range
                 datum = _datum > T{1} ? 1.0f : static_cast<float>(_datum);
-                if (this->type == ColourMapType::HSV1D) {
-                    datum = datum < T{-1} ? -1.0f : datum;
-                } else {
-                    datum = datum < T{0} ? 0.0f : datum;
-                }
+                datum = datum < T{0} ? 0.0f : datum;
 
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
                 // Copy, and enforce range of datum
                 datum = _datum > T{1} ? 1.0f : _datum;
-                if (this->type == ColourMapType::HSV1D) {
-                    datum = datum < T{-1} ? -1.0f : datum;
-                } else {
-                    datum = datum < T{0} ? 0.0f : datum;
-                }
+                datum = datum < T{0} ? 0.0f : datum;
 
             } else if constexpr (std::is_same<std::decay_t<T>, bool>::value == true) {
                 datum = _datum ? 1.0f : 0.0f;
@@ -690,12 +682,12 @@ namespace morph {
             }
             case ColourMapType::HSV1D:
             {
-                // HSV1D allows val e
-                if (datum >= 0.0f) {
-                    c = ColourMap::hsv2rgb (this->hue, datum, 1.0f);
-                } else {
+                // If we're in the upper half range (0.5 to 1.0) then use primary hue, if in lower half range, use hue2
+                if (datum >= 0.5f) {
+                    c = ColourMap::hsv2rgb (this->hue, 2.0f * (datum - 0.5f), this->val);
+                } else { // 0 to 0.5
                     // hue2 should be set to the 'opposite' of hue.
-                    c = ColourMap::hsv2rgb (this->hue2, -datum, 1.0f);
+                    c = ColourMap::hsv2rgb (this->hue2, 2.0f * (0.5f - datum), this->val);
                 }
                 break;
             }
