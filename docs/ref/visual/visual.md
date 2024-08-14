@@ -6,12 +6,11 @@ permalink: /ref/visual/visual
 layout: page
 nav_order: 0
 ---
-# morph::Visual
 ```c++
 #include <morph/Visual.h>
 ```
 
-## Overview
+# Overview
 
 `morph::Visual<>` manages the graphical scene in which all your
 morphologica visualizations will exist. `morph::Visual` provides a
@@ -53,7 +52,7 @@ The following code (adapted from the [graph1.cpp](https://github.com/ABRG-Models
 *This is the [twowindows.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/twowindows.cpp) example program, which displays two windows with two `morph::Visual` instances. The `GraphVisual` on window 2 shows what the preceding code example would generate. Window 1 shows another kind of `morph::VisualModel` (a rather sparse `QuiverVisual`)*
 
 
-## Instantiating `morph::Visual`
+# Instantiating `morph::Visual`
 
 Instantiate your `morph::Visual` with the following three-argument constructor:
 
@@ -66,7 +65,7 @@ In addition to the usual, three-argument constructor, there's a constructor whic
 
 There *is* also a default, no-argument constructor, but you'll only need to call this if you're adapting a new `OWNED_MODE`.
 
-## Adding labels to the window
+# Adding labels to the window
 
 You can add a scene-wide label to your `morph::Visual` scene. Although there are a number of overloads of `Visual::addLabel`, the best one to use is:
 
@@ -88,7 +87,7 @@ v.addLabel ("Test label", textpos, morph::TextFeatures(0.15f));
 
 The `Visual::addLabel` function is similar to `VisualModel::addLabel`. Other ways to set the font colour and face are documented on [TextFeatures](textfeatures) and [VisualModel](visualmodel).
 
-## Adding and removing `VisualModels`
+# Adding and removing `VisualModels`
 
 Other than labels, the main constituents of your scenes will be `morph::VisualModel` objects. Each `VisualModel` contains a set of OpenGL vertex buffer objects that define an 'OpenGL model' comprised mostly of triangles and also of a few textures (for text). `VisualModel` is designed as a base class; you won't actually add VisualModels to the `morph::Visual`. Instead, you'll add objects of derived classes such as `morph::GraphVisual`, `morph::ScatterVisual` or `morph::GridVisual`.
 
@@ -132,11 +131,11 @@ auto gv_pointer = v.addVisualModel (gv);
 
 **Don't try to use `gv` after you have added it!** Your local `unique_ptr gv` *no longer owns the memory*. However, you *can* re-use `gv` if you want to, setting it with another call to `std::make_unique` for a new model.
 
-## Setting `Visual` features
+# Setting `Visual` features
 
 There's a selection of features that you can enable once you've instanciated your `Visual`:
 
-### Scene translation and rotation
+## Scene translation and rotation
 
 Once you've added several models to your scene, you may need to adjust where they appear in the window. Rather than moving each model programmatically (by altering offsets) you can simply shift the camera view point for the scene with a call to `setSceneTrans()`:
 
@@ -161,7 +160,7 @@ Writing scene trans/rotation into /tmp/Visual.json... Success.
 
 The lines of code you need are printed out. Convenient!
 
-### Background colour
+## Background colour
 
 ```c++
 v.backgroundWhite(); // Sets a white background (the default)
@@ -170,7 +169,7 @@ v.backgroundBlack(); // Set a black background
 v.bgcolour = std::array<float, 4>({ 1.0f, 0.0f, 1.0f, 1.0f }); // RGB triplet plus alpha. Range 0-1
 ```
 
-### Lighting effects
+## Lighting effects
 
 The default shader will not apply any lighting to the scene. This means that plots that use colour to indicate values aren't distorted by lighting variance. However, sometimes it is useful to get the sense of depth that some simple diffuse lighting provides. To turn it on it's:
 
@@ -187,7 +186,7 @@ v.diffuse_position = { 5.0f, 5.0f, 15.0f }; // coordinates
 v.diffuse_intensity = 0.4f;
 ```
 
-### Perspective/Orthographic
+## Perspective/Orthographic
 
 `morph::Visual` renders a 3D scene to a 2D image that gives you, the
 viewer, the impression that you're viewing 3D objects. There is [more
@@ -212,7 +211,7 @@ v.ptype = morph::perspective_type::perspective;
 v.ptype = morph::perspective_type::cylindrical;
 ```
 
-#### Clipping distances and field of view
+### Clipping distances and field of view
 
 The parameters of the projections (`zNear`, `zFar`, `fov`, `ortho_lb`
 and `ortho_tr`) can be changed programatically, and they are also
@@ -225,7 +224,7 @@ projections (`zNear` can be changed with keys
 orthographic view's 'Left-bottom' screen coordinate and `ortho_rt` is
 the right-top coordinate.
 
-### Coordinate arrows
+## Coordinate arrows
 
 Every `morph::Visual` contains a special `VisualModel` that shows a
 set of 3D coordinate arrows. You can toggle them on and off with the
@@ -269,7 +268,7 @@ v.coordArrowsInScene = true;
 You can change the coordinate arrow labels from 'x', 'y' and 'z', if
 you [derive a custom morph::Visual](#extending-morphvisual-to-add-custom-key-actions). There's an example program that demonstrates this: [unicode_coordaxes.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/unicode_coordaxes.cpp)
 
-## Working with Visuals in a loop
+# Working with Visuals in a loop
 
 If you have a static scene, you can simply call `Visual::keepOpen()`, which allows the user to rotate the view and observe the scene.
 
@@ -315,7 +314,7 @@ Use of `waitevents` prevents the frame rate becoming too high. If you need the m
 
 If you want to guarantee the 0.018 s pause, you can instead call `v.wait (0.018)`.
 
-## Saving an image to make a movie
+# Saving an image to make a movie
 
 There's a `saveImage()` function that you can use to save a PNG image
 of the screen.
@@ -328,7 +327,7 @@ your loop and call saveImage.
 
 If you press **Ctrl-s** in a morphologica program, `saveImage` is called to save a PNG into the current working directory.
 
-## Saving the scene in glTF format
+# Saving the scene in glTF format
 
 morph::Visual contains code to save the 3D model in [glTF format](https://www.khronos.org/gltf/). gltf files
 can be opened in 3D modelling programs like Blender. Note that only
@@ -340,7 +339,7 @@ v.savegltf (fname);
 ```
 **Ctrl-m** can be used to save a glTF file from any morphologica program.
 
-## Extending morph::Visual to add custom key actions
+# Extending morph::Visual to add custom key actions
 
 When building a morphologica program, it's often useful to implement program-specific key actions. The correct way to do this is to extend `morph::Visual`, adding either a replacement for the `Visual::key_callback` function or a replacement for `Visual::key_callback_extra`.
 
@@ -350,13 +349,52 @@ If you want to keep the default morphologica key bindings (which are all *Ctrl-*
 
 You can see how this works in the [myvisual.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/myvisual.cpp) example code.
 
-## OpenGL version and `OWNED_MODE`
+# Multi-threading
+
+You *can* use morphologica in multi-threaded programs, but you do have
+to be very careful if you wish to split `morph::Visual` objects between
+threads.
+
+The issue is that you are likely using a single GPU to render images
+and your OpenGL function calls each need to access the correct OpenGL
+'context' (the context specifies the memory structures on CPU and GPU
+for a given window of your program - there's generally one context per
+window).
+
+If thread 1 has a function1() which sets context 1, starts to
+makes GL function calls on that context and then releases the context,
+and there's another thread which calls function2() which sets context
+2 and calls GL functions on it, you can see that function1() on thread
+1 could be making glFunction calls into the wrong context if function2
+'interrupted' it before it was finished. You therefore have to write
+some kind of locking scheme to ensure that function1() and function2()
+do not overlap in execution and that really loses the benefit of
+multi-threading! In most cases, it is simplest and optimal to execute
+your graphics on a common thread.
+
+Some of morph::Visual's methods make calls to GLFW functions that (on
+some platforms) must run on 'the main thread'. This has to do with how
+event queues (for mouse and keyboard input) are managed. This differs
+between Mac, Windows and Linux/X windows. On some platforms there is a
+common event processing queue, on others there is per-window event
+processing. Calling `Visual::poll()`, `Visual::wait()` and
+`Visual::waitevents() only on the main thread will ensure
+cross-platform compatibility for your code.  There's a useful
+discussion on this subject
+[here](https://discourse.glfw.org/t/multithreading-glfw/573) (see
+especially the comment from [elmindreda](https://discourse.glfw.org/t/multithreading-glfw/573/5)).
+
+There are no issues if you want to multi-thread the rest of your
+program - the parts that compute the values that will be visualized
+with `morph::Visual`.
+
+# OpenGL version and `OWNED_MODE`
 
 `morph::Visual` and `morph::VisualModel` conspire to hide most of the
 OpenGL internals away from you, the client coder. However, there *is*
 some background knowledge that it's useful to understand.
 
-### OpenGL Version
+## OpenGL Version
 
 When you program with OpenGL, you have to choose which of the many versions of the library you want to use. morphologica uses 'modern OpenGL' which essentially means that we draw with *GLSL shader programs*. These are C-like programs which are executed by the graphics processing unit with many parallel threads (you don't need to learn GLSL; morphologica provides [default shader programs](https://github.com/ABRG-Models/morphologica/tree/main/shaders)). Different versions of OpenGL provide different supported features in the GLSL and the C function calls that support it. 'Modern OpenGL' started with OpenGL version 3.3, but version 4.1 was chosen for morphologica's default as it is well supported across the Linux, Mac and Windows platforms.
 
@@ -368,13 +406,13 @@ The default value for `glver` is `morph::gl::version_4_1` which requests the cor
 
 Note that the OpenGL version integer is also used as a template parameter in the `morph::VisualModel` objects that will populate your `morph::Visual`. You should ensure that the same value for the GL version is used across all classes.
 
-### OpenGL header inclusion
+## OpenGL header inclusion
 
 How you include OpenGL headers and link to OpenGL driver code can be complex, and can differ between Linux, Apple and Windows platforms. On Linux, morphologica will `#include` GL headers from its own code base, and on Apple, it will include them from the system. If you are integrating morphologica code into an existing program that *already* has a scheme for including OpenGL headers, then it should detect this gracefully.
 
 Linking should be determined by the CMake system.
 
-### `OWNED_MODE`
+## `OWNED_MODE`
 
 One more concept to be aware of when reading **morph/Visual.h** is the 'operating mode'. When `Visual` was first developed, it was designed to own its desktop window, which would always be provided by the [GLFW library](https://www.glfw.org/). The Visual class would manage GLFW setup and window creation/destruction. Window pointers (aliased as `morph::win_t`) were always of type `GLFWwindow`.
 

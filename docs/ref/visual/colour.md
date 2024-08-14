@@ -9,11 +9,12 @@ nav_order: 7
 ```c++
 #include <morph/colour.h>
 ```
+# Colour naming
 
-morph::colour provides named colour definitions. Colours are specified as 3 element
-arrays representing red, green and blue channels. morph::colour
-provides a list of pre-defined colours with a naming scheme that
-follows this web page:
+`morph::colour` is a namespace full of (static constexpr) named colour
+definitions. Colours are specified as 3 element arrays representing
+red, green and blue channels. morph::colour provides a list of
+pre-defined colours with a naming scheme that follows this web page:
 
 [http://www.cloford.com/resources/colours/500col.htm](http://www.cloford.com/resources/colours/500col.htm)
 

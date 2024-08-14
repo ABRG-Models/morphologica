@@ -10,6 +10,8 @@ nav_order: 12
 #include <morph/TextGeometry.h>
 ```
 
+# How long is that string?
+
 When you add a label to a `VisualModel`, information about the text
 that was added to the screen is returned in a `TextGeometry`
 object. This makes it possible to determine where another section of

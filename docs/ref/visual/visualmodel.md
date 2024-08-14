@@ -24,7 +24,7 @@ text objects so that your graphical elements can be embellished with
 text. Text is created by drawing rectangles (made from triangles) to
 which bitmap 'texture' images of character glyphs are applied.
 
-## Creating a VisualModel instance
+# Creating a VisualModel instance
 
 Taking a derived class called `GraphVisual` as an example, we create an instance of a `VisualModel`-derived class by using `std::make_unique`. This allows us to pass ownership of the VisualModel's memory into a `morph::Visual`.
 
@@ -62,7 +62,7 @@ overridden in derived classes. The job of `initializeVertices` is to
 create the vertices, normals, colours and indices that fill the OpenGL
 vertex buffers.
 
-## Initializing Vertices
+# Initializing Vertices
 
 `initializeVertices` implementations will fill these `vector` VisualModel members:
 ```c++
@@ -135,7 +135,7 @@ If you need to create a custom visualization, then you may well end up
 needing to write you own initializeVertices function. Consult other
 examples in the graphics primitives for more inspiration.
 
-## Re-initializing a VisualModel
+# Re-initializing a VisualModel
 
 If you need your VisualModel to *change* then you will need to
 reinitialize it. There are several reinit functions for different
@@ -152,17 +152,17 @@ vertexColors. Where you are using only colour to indicate changing
 values, this can be a very efficient way of updating your
 visualization.
 
-## Adding text labels to VisualModels
+# Adding text labels to VisualModels
 
 `VisualModel::addLabel`...
 
-## Features you can change
+# Features you can change
 
 `setAlpha` `setHide` `toggleHide` `setSizeScale` `twodimensional`
 
-## Graphics primitives
+# Graphics primitives
 
-### Tubes
+## Tubes
 
 Rods or tubes can be created with the `computeTube` functions:
 ```c++
@@ -191,7 +191,7 @@ void computeFlaredTube (morph::vec<float> start, morph::vec<float> end,
                         std::array<float, 3> colStart, std::array<float, 3> colEnd,
                         float r = 1.0f, int segments = 12, float flare = 0.0f)
 ```
-### Cones
+## Cones
 
 Use `computeCone` to draw a cone. Provide coordinates of the centre of the cone base, the tip along with colour, radius, number of segments to draw with and finally a ringoffset, the effect of which is obvious in the image below (it offsets the circle of the cone away from the base so that the cone effectively becomes a double cone with two tips).
 
@@ -202,7 +202,7 @@ void computeCone (vec<float> centre, vec<float> tip,
 
 ![Screenshot of the computeCone example](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/A_simple_cone.png?raw=true)
 
-### Spheres
+## Spheres
 
 There are a couple of different sphere primitives. `computeSphere` draws a fan of triangles at each end, then fills in the space with rings of triangles. The image below shows also `computeSphereGeo` which computes an icosahedral geodesic to pattern the triangles.
 ```c++
@@ -216,12 +216,12 @@ this->computeSphereGeoFast (morph::vec<float>{ 0.0f, y, 0.0f }, morph::colour::c
 ```
 ![Screenshot of spheres](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/Sphere_primitives.png?raw=true)
 
-### Rings
+## Rings
 
-### Discs
+## Discs
 
-## Protected attributes
+# Protected attributes
 
 vao, vbos, indices, vertexPositions, vertexNormals, vertexColors
 
-## Methods used when saving glTF files
+# Methods used when saving glTF files

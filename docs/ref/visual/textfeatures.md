@@ -10,6 +10,8 @@ nav_order: 10
 #include <morph/TextFeatures.h>
 ```
 
+# `TextFeatures` for a morphologica label
+
 TextFeatures is a small class that holds the attributes required to
 specify the appearance of a string of text rendered by morphologica.
 
