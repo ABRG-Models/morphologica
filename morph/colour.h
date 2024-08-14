@@ -12,9 +12,8 @@
 #include <array>
 
 namespace morph {
+    namespace colour {
 
-    struct colour
-    {
         static constexpr std::array<float, 3> indian_red={0.6901960784,0.0901960784,0.1215686275}; //,176,23,31
         static constexpr std::array<float, 3> crimson={0.862745098,0.0784313725,0.2352941176}; //,220,20,60
         static constexpr std::array<float, 3> lightpink={1,0.7137254902,0.7568627451}; //,255,182,193
@@ -33,6 +32,7 @@ namespace morph {
         static constexpr std::array<float, 3> palevioletred3={0.8039215686,0.4078431373,0.537254902}; //,205,104,137
         static constexpr std::array<float, 3> palevioletred4={0.5450980392,0.2784313725,0.3647058824}; //,139,71,93
         static constexpr std::array<float, 3> lavenderblush={1,0.9411764706,0.9607843137}; //,255,240,245
+        static constexpr std::array<float, 3> lavenderblush1=lavenderblush;
         static constexpr std::array<float, 3> lavenderblush2={0.9333333333,0.8784313725,0.8980392157}; //,238,224,229
         static constexpr std::array<float, 3> lavenderblush3={0.8039215686,0.7568627451,0.7725490196}; //,205,193,197
         static constexpr std::array<float, 3> lavenderblush4={0.5450980392,0.5137254902,0.5254901961}; //,139,131,134
@@ -74,9 +74,11 @@ namespace morph {
         static constexpr std::array<float, 3> plum={0.8666666667,0.6274509804,0.8666666667}; //,221,160,221
         static constexpr std::array<float, 3> violet={0.9333333333,0.5098039216,0.9333333333}; //,238,130,238
         static constexpr std::array<float, 3> magenta={1,0,1}; //,255,0,255
+        static constexpr std::array<float, 3> fuchsia=magenta;
         static constexpr std::array<float, 3> magenta2={0.9333333333,0,0.9333333333}; //,238,0,238
         static constexpr std::array<float, 3> magenta3={0.8039215686,0,0.8039215686}; //,205,0,205
-        static constexpr std::array<float, 3> darkmagenta={0.5450980392,0,0.5450980392}; //,139,0,139
+        static constexpr std::array<float, 3> magenta4={0.5450980392,0,0.5450980392}; //,139,0,139
+        static constexpr std::array<float, 3> darkmagenta=magenta4;
         static constexpr std::array<float, 3> purple={0.5019607843,0,0.5019607843}; //,128,0,128
         static constexpr std::array<float, 3> mediumorchid={0.7294117647,0.3333333333,0.8274509804}; //,186,85,211
         static constexpr std::array<float, 3> mediumorchid1={0.8784313725,0.4,1}; //,224,102,255
@@ -111,11 +113,12 @@ namespace morph {
         static constexpr std::array<float, 3> ghostwhite={0.9725490196,0.9725490196,1}; //,248,248,255
         static constexpr std::array<float, 3> lavender={0.9019607843,0.9019607843,0.9803921569}; //,230,230,250
         static constexpr std::array<float, 3> blue={0,0,1}; //,0,0,255
+        static constexpr std::array<float, 3> blue1=blue;
         static constexpr std::array<float, 3> blue2={0,0,0.9333333333}; //,0,0,238
-        static constexpr std::array<float, 3> mediumblue={0,0,0.8039215686}; //,0,0,205
         static constexpr std::array<float, 3> blue3={0,0,0.8039215686}; //,0,0,205
-        static constexpr std::array<float, 3> darkblue={0,0,0.5450980392}; //,0,0,139
+        static constexpr std::array<float, 3> mediumblue=blue3;
         static constexpr std::array<float, 3> blue4={0,0,0.5450980392}; //,0,0,139
+        static constexpr std::array<float, 3> darkblue=blue4;
         static constexpr std::array<float, 3> navy={0,0,0.5019607843}; //,0,0,128
         static constexpr std::array<float, 3> midnightblue={0.0980392157,0.0980392157,0.4392156863}; //,25,25,112
         static constexpr std::array<float, 3> cobalt={0.2392156863,0.3490196078,0.6705882353}; //,61,89,171
@@ -137,7 +140,7 @@ namespace morph {
         static constexpr std::array<float, 3> slategray3={0.6235294118,0.7137254902,0.8039215686}; //,159,182,205
         static constexpr std::array<float, 3> slategray4={0.4235294118,0.4823529412,0.5450980392}; //,108,123,139
         static constexpr std::array<float, 3> dodgerblue={0.1176470588,0.5647058824,1}; //,30,144,255
-        static constexpr std::array<float, 3> dodgerblue1={0.1176470588,0.5647058824,1}; //,30,144,255
+        static constexpr std::array<float, 3> dodgerblue1=dodgerblue;
         static constexpr std::array<float, 3> dodgerblue2={0.1098039216,0.5254901961,0.9333333333}; //,28,134,238
         static constexpr std::array<float, 3> dodgerblue3={0.0941176471,0.4549019608,0.8039215686}; //,24,116,205
         static constexpr std::array<float, 3> dodgerblue4={0.062745098,0.3058823529,0.5450980392}; //,16,78,139
@@ -152,13 +155,13 @@ namespace morph {
         static constexpr std::array<float, 3> lightskyblue2={0.6431372549,0.8274509804,0.9333333333}; //,164,211,238
         static constexpr std::array<float, 3> lightskyblue3={0.5529411765,0.7137254902,0.8039215686}; //,141,182,205
         static constexpr std::array<float, 3> lightskyblue4={0.3764705882,0.4823529412,0.5450980392}; //,96,123,139
+        static constexpr std::array<float, 3> skyblue={0.5294117647,0.8078431373,0.9215686275}; //,135,206,235
         static constexpr std::array<float, 3> skyblue1={0.5294117647,0.8078431373,1}; //,135,206,255
         static constexpr std::array<float, 3> skyblue2={0.4941176471,0.7529411765,0.9333333333}; //,126,192,238
         static constexpr std::array<float, 3> skyblue3={0.4235294118,0.6509803922,0.8039215686}; //,108,166,205
         static constexpr std::array<float, 3> skyblue4={0.2901960784,0.4392156863,0.5450980392}; //,74,112,139
-        static constexpr std::array<float, 3> skyblue={0.5294117647,0.8078431373,0.9215686275}; //,135,206,235
         static constexpr std::array<float, 3> deepskyblue={0,0.7490196078,1}; //,0,191,255
-        static constexpr std::array<float, 3> deepskyblue1={0,0.7490196078,1}; //,0,191,255
+        static constexpr std::array<float, 3> deepskyblue1=deepskyblue;
         static constexpr std::array<float, 3> deepskyblue2={0,0.6980392157,0.9333333333}; //,0,178,238
         static constexpr std::array<float, 3> deepskyblue3={0,0.6039215686,0.8039215686}; //,0,154,205
         static constexpr std::array<float, 3> deepskyblue4={0,0.4078431373,0.5450980392}; //,0,104,139
@@ -180,16 +183,18 @@ namespace morph {
         static constexpr std::array<float, 3> cadetblue={0.3725490196,0.6196078431,0.6274509804}; //,95,158,160
         static constexpr std::array<float, 3> darkturquoise={0,0.8078431373,0.8196078431}; //,0,206,209
         static constexpr std::array<float, 3> azure={0.9411764706,1,1}; //,240,255,255
-        static constexpr std::array<float, 3> azure1={0.9411764706,1,1}; //,240,255,255
+        static constexpr std::array<float, 3> azure1=azure;
         static constexpr std::array<float, 3> azure2={0.8784313725,0.9333333333,0.9333333333}; //,224,238,238
         static constexpr std::array<float, 3> azure3={0.7568627451,0.8039215686,0.8039215686}; //,193,205,205
         static constexpr std::array<float, 3> azure4={0.5137254902,0.5450980392,0.5450980392}; //,131,139,139
         static constexpr std::array<float, 3> lightcyan={0.8784313725,1,1}; //,224,255,255
+        static constexpr std::array<float, 3> lightcyan1=lightcyan;
         static constexpr std::array<float, 3> lightcyan2={0.8196078431,0.9333333333,0.9333333333}; //,209,238,238
         static constexpr std::array<float, 3> lightcyan3={0.7058823529,0.8039215686,0.8039215686}; //,180,205,205
         static constexpr std::array<float, 3> lightcyan4={0.4784313725,0.5450980392,0.5450980392}; //,122,139,139
         static constexpr std::array<float, 3> paleturquoise1={0.7333333333,1,1}; //,187,255,255
         static constexpr std::array<float, 3> paleturquoise={0.6823529412,0.9333333333,0.9333333333}; //,174,238,238
+        static constexpr std::array<float, 3> paleturquoise2=paleturquoise;
         static constexpr std::array<float, 3> paleturquoise3={0.5882352941,0.8039215686,0.8039215686}; //,150,205,205
         static constexpr std::array<float, 3> paleturquoise4={0.4,0.5450980392,0.5450980392}; //,102,139,139
         static constexpr std::array<float, 3> darkslategray={0.1843137255,0.3098039216,0.3098039216}; //,47,79,79
@@ -198,9 +203,11 @@ namespace morph {
         static constexpr std::array<float, 3> darkslategray3={0.4745098039,0.8039215686,0.8039215686}; //,121,205,205
         static constexpr std::array<float, 3> darkslategray4={0.3215686275,0.5450980392,0.5450980392}; //,82,139,139
         static constexpr std::array<float, 3> cyan={0,1,1}; //,0,255,255
+        static constexpr std::array<float, 3> cyan1=cyan;
         static constexpr std::array<float, 3> cyan2={0,0.9333333333,0.9333333333}; //,0,238,238
         static constexpr std::array<float, 3> cyan3={0,0.8039215686,0.8039215686}; //,0,205,205
-        static constexpr std::array<float, 3> darkcyan={0,0.5450980392,0.5450980392}; //,0,139,139
+        static constexpr std::array<float, 3> cyan4={0,0.5450980392,0.5450980392}; //,0,139,139
+        static constexpr std::array<float, 3> darkcyan=cyan4;
         static constexpr std::array<float, 3> teal={0,0.5019607843,0.5019607843}; //,0,128,128
         static constexpr std::array<float, 3> mediumturquoise={0.2823529412,0.8196078431,0.8}; //,72,209,204
         static constexpr std::array<float, 3> lightseagreen={0.1254901961,0.6980392157,0.6666666667}; //,32,178,170
@@ -209,8 +216,10 @@ namespace morph {
         static constexpr std::array<float, 3> coldgrey={0.5019607843,0.5411764706,0.5294117647}; //,128,138,135
         static constexpr std::array<float, 3> turquoiseblue={0,0.7803921569,0.5490196078}; //,0,199,140
         static constexpr std::array<float, 3> aquamarine={0.4980392157,1,0.831372549}; //,127,255,212
+        static constexpr std::array<float, 3> aquamarine1=aquamarine;
         static constexpr std::array<float, 3> aquamarine2={0.462745098,0.9333333333,0.7764705882}; //,118,238,198
-        static constexpr std::array<float, 3> mediumaquamarine={0.4,0.8039215686,0.6666666667}; //,102,205,170
+        static constexpr std::array<float, 3> aquamarine3={0.4,0.8039215686,0.6666666667}; //,102,205,170
+        static constexpr std::array<float, 3> mediumaquamarine=aquamarine3;
         static constexpr std::array<float, 3> aquamarine4={0.2705882353,0.5450980392,0.4549019608}; //,69,139,116
         static constexpr std::array<float, 3> mediumspringgreen={0,0.9803921569,0.6039215686}; //,0,250,154
         static constexpr std::array<float, 3> mintcream={0.9607843137,1,0.9803921569}; //,245,255,250
@@ -223,10 +232,12 @@ namespace morph {
         static constexpr std::array<float, 3> seagreen2={0.3058823529,0.9333333333,0.5803921569}; //,78,238,148
         static constexpr std::array<float, 3> seagreen3={0.262745098,0.8039215686,0.5019607843}; //,67,205,128
         static constexpr std::array<float, 3> seagreen={0.1803921569,0.5450980392,0.3411764706}; //,46,139,87
+        static constexpr std::array<float, 3> seagreen4=seagreen;
         static constexpr std::array<float, 3> emeraldgreen={0,0.7882352941,0.3411764706}; //,0,201,87
         static constexpr std::array<float, 3> mint={0.7411764706,0.9882352941,0.7882352941}; //,189,252,201
         static constexpr std::array<float, 3> cobaltgreen={0.2392156863,0.568627451,0.2509803922}; //,61,145,64
         static constexpr std::array<float, 3> honeydew={0.9411764706,1,0.9411764706}; //,240,255,240
+        static constexpr std::array<float, 3> honeydew1=honeydew;
         static constexpr std::array<float, 3> honeydew2={0.8784313725,0.9333333333,0.8784313725}; //,224,238,224
         static constexpr std::array<float, 3> honeydew3={0.7568627451,0.8039215686,0.7568627451}; //,193,205,193
         static constexpr std::array<float, 3> honeydew4={0.5137254902,0.5450980392,0.5137254902}; //,131,139,131
@@ -238,11 +249,13 @@ namespace morph {
         static constexpr std::array<float, 3> palegreen={0.5960784314,0.9843137255,0.5960784314}; //,152,251,152
         static constexpr std::array<float, 3> palegreen1={0.6039215686,1,0.6039215686}; //,154,255,154
         static constexpr std::array<float, 3> lightgreen={0.5647058824,0.9333333333,0.5647058824}; //,144,238,144
+        static constexpr std::array<float, 3> palegreen2=lightgreen;
         static constexpr std::array<float, 3> palegreen3={0.4862745098,0.8039215686,0.4862745098}; //,124,205,124
         static constexpr std::array<float, 3> palegreen4={0.3294117647,0.5450980392,0.3294117647}; //,84,139,84
         static constexpr std::array<float, 3> limegreen={0.1960784314,0.8039215686,0.1960784314}; //,50,205,50
         static constexpr std::array<float, 3> forestgreen={0.1333333333,0.5450980392,0.1333333333}; //,34,139,34
         static constexpr std::array<float, 3> lime={0,1,0}; //,0,255,0
+        static constexpr std::array<float, 3> green1=lime;
         static constexpr std::array<float, 3> green2={0,0.9333333333,0}; //,0,238,0
         static constexpr std::array<float, 3> green3={0,0.8039215686,0}; //,0,205,0
         static constexpr std::array<float, 3> green4={0,0.5450980392,0}; //,0,139,0
@@ -251,6 +264,7 @@ namespace morph {
         static constexpr std::array<float, 3> sapgreen={0.1882352941,0.5019607843,0.0784313725}; //,48,128,20
         static constexpr std::array<float, 3> lawngreen={0.4862745098,0.9882352941,0}; //,124,252,0
         static constexpr std::array<float, 3> chartreuse={0.4980392157,1,0}; //,127,255,0
+        static constexpr std::array<float, 3> chartreuse1=chartreuse;
         static constexpr std::array<float, 3> chartreuse2={0.462745098,0.9333333333,0}; //,118,238,0
         static constexpr std::array<float, 3> chartreuse3={0.4,0.8039215686,0}; //,102,205,0
         static constexpr std::array<float, 3> chartreuse4={0.2705882353,0.5450980392,0}; //,69,139,0
@@ -263,19 +277,23 @@ namespace morph {
         static constexpr std::array<float, 3> olivedrab={0.4196078431,0.5568627451,0.137254902}; //,107,142,35
         static constexpr std::array<float, 3> olivedrab1={0.7529411765,1,0.2431372549}; //,192,255,62
         static constexpr std::array<float, 3> olivedrab2={0.7019607843,0.9333333333,0.2274509804}; //,179,238,58
-        static constexpr std::array<float, 3> yellowgreen={0.6039215686,0.8039215686,0.1960784314}; //,154,205,50
+        static constexpr std::array<float, 3> olivedrab3={0.6039215686,0.8039215686,0.1960784314}; //,154,205,50
+        static constexpr std::array<float, 3> yellowgreen=olivedrab3;
         static constexpr std::array<float, 3> olivedrab4={0.4117647059,0.5450980392,0.1333333333}; //,105,139,34
         static constexpr std::array<float, 3> ivory={1,1,0.9411764706}; //,255,255,240
+        static constexpr std::array<float, 3> ivory1=ivory;
         static constexpr std::array<float, 3> ivory2={0.9333333333,0.9333333333,0.8784313725}; //,238,238,224
         static constexpr std::array<float, 3> ivory3={0.8039215686,0.8039215686,0.7568627451}; //,205,205,193
         static constexpr std::array<float, 3> ivory4={0.5450980392,0.5450980392,0.5137254902}; //,139,139,131
         static constexpr std::array<float, 3> beige={0.9607843137,0.9607843137,0.862745098}; //,245,245,220
         static constexpr std::array<float, 3> lightyellow={1,1,0.8784313725}; //,255,255,224
+        static constexpr std::array<float, 3> lightyellow1=lightyellow;
         static constexpr std::array<float, 3> lightyellow2={0.9333333333,0.9333333333,0.8196078431}; //,238,238,209
         static constexpr std::array<float, 3> lightyellow3={0.8039215686,0.8039215686,0.7058823529}; //,205,205,180
         static constexpr std::array<float, 3> lightyellow4={0.5450980392,0.5450980392,0.4784313725}; //,139,139,122
         static constexpr std::array<float, 3> lightgoldenrodyellow={0.9803921569,0.9803921569,0.8235294118}; //,250,250,210
         static constexpr std::array<float, 3> yellow={1,1,0}; //,255,255,0
+        static constexpr std::array<float, 3> yellow1=yellow;
         static constexpr std::array<float, 3> yellow2={0.9333333333,0.9333333333,0}; //,238,238,0
         static constexpr std::array<float, 3> yellow3={0.8039215686,0.8039215686,0}; //,205,205,0
         static constexpr std::array<float, 3> yellow4={0.5450980392,0.5450980392,0}; //,139,139,0
@@ -289,6 +307,7 @@ namespace morph {
         static constexpr std::array<float, 3> khaki={0.9411764706,0.9019607843,0.5490196078}; //,240,230,140
         static constexpr std::array<float, 3> palegoldenrod={0.9333333333,0.9098039216,0.6666666667}; //,238,232,170
         static constexpr std::array<float, 3> lemonchiffon={1,0.9803921569,0.8039215686}; //,255,250,205
+        static constexpr std::array<float, 3> lemonchiffon1=lemonchiffon;
         static constexpr std::array<float, 3> lemonchiffon2={0.9333333333,0.9137254902,0.7490196078}; //,238,233,191
         static constexpr std::array<float, 3> lemonchiffon3={0.8039215686,0.7882352941,0.6470588235}; //,205,201,165
         static constexpr std::array<float, 3> lemonchiffon4={0.5450980392,0.537254902,0.4392156863}; //,139,137,112
@@ -298,10 +317,12 @@ namespace morph {
         static constexpr std::array<float, 3> lightgoldenrod4={0.5450980392,0.5058823529,0.2980392157}; //,139,129,76
         static constexpr std::array<float, 3> banana={0.8901960784,0.8117647059,0.3411764706}; //,227,207,87
         static constexpr std::array<float, 3> gold={1,0.8431372549,0}; //,255,215,0
+        static constexpr std::array<float, 3> gold1=gold;
         static constexpr std::array<float, 3> gold2={0.9333333333,0.7882352941,0}; //,238,201,0
         static constexpr std::array<float, 3> gold3={0.8039215686,0.6784313725,0}; //,205,173,0
         static constexpr std::array<float, 3> gold4={0.5450980392,0.4588235294,0}; //,139,117,0
         static constexpr std::array<float, 3> cornsilk={1,0.9725490196,0.862745098}; //,255,248,220
+        static constexpr std::array<float, 3> cornsilk1=cornsilk;
         static constexpr std::array<float, 3> cornsilk2={0.9333333333,0.9098039216,0.8039215686}; //,238,232,205
         static constexpr std::array<float, 3> cornsilk3={0.8039215686,0.7843137255,0.6941176471}; //,205,200,177
         static constexpr std::array<float, 3> cornsilk4={0.5450980392,0.5333333333,0.4705882353}; //,139,136,120
@@ -315,6 +336,7 @@ namespace morph {
         static constexpr std::array<float, 3> darkgoldenrod2={0.9333333333,0.6784313725,0.0549019608}; //,238,173,14
         static constexpr std::array<float, 3> darkgoldenrod3={0.8039215686,0.5843137255,0.0470588235}; //,205,149,12
         static constexpr std::array<float, 3> darkgoldenrod4={0.5450980392,0.3960784314,0.031372549}; //,139,101,8
+        static constexpr std::array<float, 3> orange={1,0.5019607843,0}; //,255,128,0
         static constexpr std::array<float, 3> orange1={1,0.6470588235,0}; //,255,165,0
         static constexpr std::array<float, 3> orange2={0.9333333333,0.6039215686,0}; //,238,154,0
         static constexpr std::array<float, 3> orange3={0.8039215686,0.5215686275,0}; //,205,133,0
@@ -330,11 +352,11 @@ namespace morph {
         static constexpr std::array<float, 3> papayawhip={1,0.937254902,0.8352941176}; //,255,239,213
         static constexpr std::array<float, 3> blanchedalmond={1,0.9215686275,0.8039215686}; //,255,235,205
         static constexpr std::array<float, 3> navajowhite={1,0.8705882353,0.6784313725}; //,255,222,173
+        static constexpr std::array<float, 3> navajowhite1=navajowhite;
         static constexpr std::array<float, 3> navajowhite2={0.9333333333,0.8117647059,0.631372549}; //,238,207,161
         static constexpr std::array<float, 3> navajowhite3={0.8039215686,0.7019607843,0.5450980392}; //,205,179,139
         static constexpr std::array<float, 3> navajowhite4={0.5450980392,0.4745098039,0.368627451}; //,139,121,94
         static constexpr std::array<float, 3> eggshell={0.9882352941,0.9019607843,0.7882352941}; //,252,230,201
-        static constexpr std::array<float, 3> tan={0.8235294118,0.7058823529,0.5490196078}; //,210,180,140
         static constexpr std::array<float, 3> brick={0.6117647059,0.4,0.1215686275}; //,156,102,31
         static constexpr std::array<float, 3> cadmiumyellow={1,0.6,0.0705882353}; //,255,153,18
         static constexpr std::array<float, 3> antiquewhite={0.9803921569,0.9215686275,0.8431372549}; //,250,235,215
@@ -348,6 +370,7 @@ namespace morph {
         static constexpr std::array<float, 3> burlywood3={0.8039215686,0.6666666667,0.4901960784}; //,205,170,125
         static constexpr std::array<float, 3> burlywood4={0.5450980392,0.4509803922,0.3333333333}; //,139,115,85
         static constexpr std::array<float, 3> bisque={1,0.8941176471,0.768627451}; //,255,228,196
+        static constexpr std::array<float, 3> bisque1=bisque;
         static constexpr std::array<float, 3> bisque2={0.9333333333,0.8352941176,0.7176470588}; //,238,213,183
         static constexpr std::array<float, 3> bisque3={0.8039215686,0.7176470588,0.6196078431}; //,205,183,158
         static constexpr std::array<float, 3> bisque4={0.5450980392,0.4901960784,0.4196078431}; //,139,125,107
@@ -358,17 +381,20 @@ namespace morph {
         static constexpr std::array<float, 3> darkorange2={0.9333333333,0.462745098,0}; //,238,118,0
         static constexpr std::array<float, 3> darkorange3={0.8039215686,0.4,0}; //,205,102,0
         static constexpr std::array<float, 3> darkorange4={0.5450980392,0.2705882353,0}; //,139,69,0
-        static constexpr std::array<float, 3> orange={1,0.5019607843,0}; //,255,128,0
+        static constexpr std::array<float, 3> tan={0.8235294118,0.7058823529,0.5490196078}; //,210,180,140
         static constexpr std::array<float, 3> tan1={1,0.6470588235,0.3098039216}; //,255,165,79
         static constexpr std::array<float, 3> tan2={0.9333333333,0.6039215686,0.2862745098}; //,238,154,73
         static constexpr std::array<float, 3> tan3={0.8039215686,0.5215686275,0.2470588235}; //,205,133,63
+        static constexpr std::array<float, 3> peru=tan3;
         static constexpr std::array<float, 3> tan4={0.5450980392,0.3529411765,0.168627451}; //,139,90,43
         static constexpr std::array<float, 3> linen={0.9803921569,0.9411764706,0.9019607843}; //,250,240,230
         static constexpr std::array<float, 3> peachpuff={1,0.8549019608,0.7254901961}; //,255,218,185
+        static constexpr std::array<float, 3> peachpuff1=peachpuff;
         static constexpr std::array<float, 3> peachpuff2={0.9333333333,0.7960784314,0.6784313725}; //,238,203,173
         static constexpr std::array<float, 3> peachpuff3={0.8039215686,0.6862745098,0.5843137255}; //,205,175,149
         static constexpr std::array<float, 3> peachpuff4={0.5450980392,0.4666666667,0.3960784314}; //,139,119,101
         static constexpr std::array<float, 3> seashell={1,0.9607843137,0.9333333333}; //,255,245,238
+        static constexpr std::array<float, 3> seashell1=seashell;
         static constexpr std::array<float, 3> seashell2={0.9333333333,0.8980392157,0.8705882353}; //,238,229,222
         static constexpr std::array<float, 3> seashell3={0.8039215686,0.7725490196,0.7490196078}; //,205,197,191
         static constexpr std::array<float, 3> seashell4={0.5450980392,0.5254901961,0.5098039216}; //,139,134,130
@@ -379,6 +405,7 @@ namespace morph {
         static constexpr std::array<float, 3> chocolate2={0.9333333333,0.462745098,0.1294117647}; //,238,118,33
         static constexpr std::array<float, 3> chocolate3={0.8039215686,0.4,0.1137254902}; //,205,102,29
         static constexpr std::array<float, 3> chocolate4={0.5450980392,0.2705882353,0.0745098039}; //,139,69,19
+        static constexpr std::array<float, 3> saddlebrown = chocolate4;
         static constexpr std::array<float, 3> ivoryblack={0.1607843137,0.1411764706,0.1294117647}; //,41,36,33
         static constexpr std::array<float, 3> flesh={1,0.4901960784,0.2509803922}; //,255,125,64
         static constexpr std::array<float, 3> cadmiumorange={1,0.3803921569,0.0117647059}; //,255,97,3
@@ -389,11 +416,13 @@ namespace morph {
         static constexpr std::array<float, 3> sienna3={0.8039215686,0.4078431373,0.2235294118}; //,205,104,57
         static constexpr std::array<float, 3> sienna4={0.5450980392,0.2784313725,0.1490196078}; //,139,71,38
         static constexpr std::array<float, 3> lightsalmon={1,0.6274509804,0.4784313725}; //,255,160,122
+        static constexpr std::array<float, 3> lightsalmon1=lightsalmon;
         static constexpr std::array<float, 3> lightsalmon2={0.9333333333,0.5843137255,0.4470588235}; //,238,149,114
         static constexpr std::array<float, 3> lightsalmon3={0.8039215686,0.5058823529,0.3843137255}; //,205,129,98
         static constexpr std::array<float, 3> lightsalmon4={0.5450980392,0.3411764706,0.2588235294}; //,139,87,66
         static constexpr std::array<float, 3> coral={1,0.4980392157,0.3137254902}; //,255,127,80
         static constexpr std::array<float, 3> orangered={1,0.2705882353,0}; //,255,69,0
+        static constexpr std::array<float, 3> orangered1=orangered;
         static constexpr std::array<float, 3> orangered2={0.9333333333,0.2509803922,0}; //,238,64,0
         static constexpr std::array<float, 3> orangered3={0.8039215686,0.2156862745,0}; //,205,55,0
         static constexpr std::array<float, 3> orangered4={0.5450980392,0.1450980392,0}; //,139,37,0
@@ -409,15 +438,18 @@ namespace morph {
         static constexpr std::array<float, 3> coral4={0.5450980392,0.2431372549,0.1843137255}; //,139,62,47
         static constexpr std::array<float, 3> burntumber={0.5411764706,0.2,0.1411764706}; //,138,51,36
         static constexpr std::array<float, 3> tomato={1,0.3882352941,0.2784313725}; //,255,99,71
+        static constexpr std::array<float, 3> tomato1=tomato;
         static constexpr std::array<float, 3> tomato2={0.9333333333,0.3607843137,0.2588235294}; //,238,92,66
         static constexpr std::array<float, 3> tomato3={0.8039215686,0.3098039216,0.2235294118}; //,205,79,57
         static constexpr std::array<float, 3> tomato4={0.5450980392,0.2117647059,0.1490196078}; //,139,54,38
         static constexpr std::array<float, 3> salmon={0.9803921569,0.5019607843,0.4470588235}; //,250,128,114
-        static constexpr std::array<float, 3> mistyrose1={1,0.8941176471,0.8823529412}; //,255,228,225
+        static constexpr std::array<float, 3> mistyrose={1,0.8941176471,0.8823529412}; //,255,228,225
+        static constexpr std::array<float, 3> mistyrose1=mistyrose;
         static constexpr std::array<float, 3> mistyrose2={0.9333333333,0.8352941176,0.8235294118}; //,238,213,210
         static constexpr std::array<float, 3> mistyrose3={0.8039215686,0.7176470588,0.7098039216}; //,205,183,181
         static constexpr std::array<float, 3> mistyrose4={0.5450980392,0.4901960784,0.4823529412}; //,139,125,123
         static constexpr std::array<float, 3> snow={1,0.9803921569,0.9803921569}; //,255,250,250
+        static constexpr std::array<float, 3> snow1=snow;
         static constexpr std::array<float, 3> snow2={0.9333333333,0.9137254902,0.9137254902}; //,238,233,233
         static constexpr std::array<float, 3> snow3={0.8039215686,0.7882352941,0.7882352941}; //,205,201,201
         static constexpr std::array<float, 3> snow4={0.5450980392,0.537254902,0.537254902}; //,139,137,137
@@ -443,9 +475,11 @@ namespace morph {
         static constexpr std::array<float, 3> firebrick3={0.8039215686,0.1490196078,0.1490196078}; //,205,38,38
         static constexpr std::array<float, 3> firebrick4={0.5450980392,0.1019607843,0.1019607843}; //,139,26,26
         static constexpr std::array<float, 3> red={1,0,0}; //,255,0,0
+        static constexpr std::array<float, 3> red1=red;
         static constexpr std::array<float, 3> red2={0.9333333333,0,0}; //,238,0,0
         static constexpr std::array<float, 3> red3={0.8039215686,0,0}; //,205,0,0
-        static constexpr std::array<float, 3> darkred={0.5450980392,0,0}; //,139,0,0
+        static constexpr std::array<float, 3> red4={0.5450980392,0,0}; //,139,0,0
+        static constexpr std::array<float, 3> darkred=red4;
         static constexpr std::array<float, 3> maroon={0.5019607843,0,0}; //,128,0,0
         static constexpr std::array<float, 3> sgi_beet={0.5568627451,0.2196078431,0.5568627451}; //,142,56,142
         static constexpr std::array<float, 3> sgi_slateblue={0.4431372549,0.4431372549,0.7764705882}; //,113,113,198
@@ -674,5 +708,5 @@ namespace morph {
         static constexpr std::array<float, 3> grey3={0.031372549,0.031372549,0.031372549}; //,8,8,8
         static constexpr std::array<float, 3> grey2={0.0196078431,0.0196078431,0.0196078431}; //,5,5,5
         static constexpr std::array<float, 3> grey1={0.0117647059,0.0117647059,0.0117647059}; //,3,3,3
-    };
+    } // end of namespace colour
 } // namespace morph
