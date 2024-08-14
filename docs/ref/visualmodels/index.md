@@ -2,7 +2,7 @@
 title: VisualModel classes
 parent: Reference
 permalink: /ref/visualmodels/
-nav_order: 2
+nav_order: 3
 layout: page
 has_children: true
 ---

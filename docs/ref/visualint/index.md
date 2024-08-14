@@ -2,7 +2,7 @@
 title: Internal classes
 parent: Reference
 permalink: /ref/visualint/
-nav_order: 3
+nav_order: 4
 layout: page
 has_children: true
 ---

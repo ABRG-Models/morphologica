@@ -3,7 +3,7 @@ title: Core maths classes
 parent: Reference
 layout: page
 permalink: /ref/coremaths/
-nav_order: 1
+nav_order: 0
 has_children: true
 ---
 As I developed the data-vis features of morphologica, I found I needed functionality that I've used repeatedly in many programs.
