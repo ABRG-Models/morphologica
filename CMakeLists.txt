@@ -35,6 +35,12 @@ option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArr
 # required to allow brace initializers for the morph::Vector class
 set (CMAKE_CXX_STANDARD 17)
 
+# Load this module which is useful for checking for include files such
+# as <format>. Do this with:
+#  CHECK_INCLUDE_FILE_CXX(format, HAVE_STD_FORMAT)
+# then test on HAVE_STD_FORMAT to choose what/how to compile.
+include(CheckIncludeFileCXX)
+
 # There's ONE class that requires C++-20. C++-20 support is available
 # in Gnu GCC so if we have a recent enough version of that, then go
 # ahead and compile the morph::Grid code.
