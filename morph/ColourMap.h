@@ -960,25 +960,25 @@ namespace morph {
         static std::array<float,3> jetcolour (float datum)
         {
             float color_table[][3] = {
-                {0.0, 0.0, 0.5}, // #00007F
-                {0.0, 0.0, 1.0}, // blue
-                {0.0, 0.5, 1.0}, // #007FFF
-                {0.0, 1.0, 1.0}, // cyan
-                {0.5, 1.0, 0.5}, // #7FFF7F
-                {1.0, 1.0, 0.0}, // yellow
-                {1.0, 0.5, 0.0}, // #FF7F00
-                {1.0, 0.0, 0.0}, // red
-                {0.5, 0.0, 0.0}, // #7F0000
+                { 0.0f, 0.0f, 0.5f }, // #00007F
+                { 0.0f, 0.0f, 1.0f }, // blue
+                { 0.0f, 0.5f, 1.0f }, // #007FFF
+                { 0.0f, 1.0f, 1.0f }, // cyan
+                { 0.5f, 1.0f, 0.5f }, // #7FFF7F
+                { 1.0f, 1.0f, 0.0f }, // yellow
+                { 1.0f, 0.5f, 0.0f }, // #FF7F00
+                { 1.0f, 0.0f, 0.0f }, // red
+                { 0.5f, 0.0f, 0.0f }, // #7F0000
             };
-            std::array<float,3> col = {0.0f, 0.0f, 0.0f};
-            float ivl = 1.0/8.0;
+            std::array<float,3> col = { 0.0f, 0.0f, 0.0f };
+            float ivl = 0.125f; // 1/8
             for (int i=0; i<8; i++) {
-                float llim = (i==0) ? 0.0f : (float)i/8.0f;
-                float ulim = (i==7) ? 1.0f : ((float)(i+1))/8.0f;
+                float llim = (i==0) ? 0.0f : static_cast<float>(i) / 8.0f;
+                float ulim = (i==7) ? 1.0f : static_cast<float>(i+1) / 8.0f;
                 if (datum >= llim && datum <= ulim) {
                     for (int j=0; j<3; j++) {
                         float c = static_cast<float>(datum - llim);
-                        col[j] = (color_table[i][j]*(ivl-c)/ivl + color_table[i+1][j]*c/ivl);
+                        col[j] = (color_table[i][j] * (ivl - c) / ivl + color_table[i+1][j] * c / ivl);
                     }
                     break;
                 }
@@ -1004,12 +1004,12 @@ namespace morph {
         //! Convert hue, saturation, value to RGB. single precision arguments.
         static std::array<float,3> hsv2rgb (float h, float s, float v)
         {
-            std::array<float, 3> rgb = {0.0f, 0.0f, 0.0f};
+            std::array<float, 3> rgb = { 0.0f, 0.0f, 0.0f };
             int i = floor(h * 6);
-            float f = h * 6. - i;
-            float p = v * (1. - s);
-            float q = v * (1. - f * s);
-            float t = v * (1. - (1. - f) * s);
+            float f = h * 6.0f - i;
+            float p = v * (1.0f - s);
+            float q = v * (1.0f - f * s);
+            float t = v * (1.0f - (1.0f - f) * s);
             switch (i % 6) {
             case 0: rgb[0] = v, rgb[1] = t, rgb[2] = p; break;
             case 1: rgb[0] = q, rgb[1] = v, rgb[2] = p; break;
@@ -1040,7 +1040,7 @@ namespace morph {
         //! Convert RGB to hue, saturation, value. single precision arguments.
         static std::array<float, 3> rgb2hsv (float r, float g, float b)
         {
-            std::array<float, 3> hsv = {0.0f, 0.0f, 0.0f};
+            std::array<float, 3> hsv = { 0.0f, 0.0f, 0.0f };
             float min = 0.0f, max = 0.0f, delta = 0.0f;
 
             min = r < g ? r : g;
