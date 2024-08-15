@@ -11,18 +11,20 @@ nav_order: 8
 ```
 # Introduction
 
-`morph::ColourMap` provides a set of colour maps to indicate numerical values with graded colours. It's a very important class in the visualization of data! Here is a selection of colour maps (I used [morph::ColourBarVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/ColourBarVisual.h) to make this graphic):
-
-![A selection of colour maps available in morph::ColourMap](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/ColourMaps.png?raw=true)
+Colour is one of the most important ways you can indicate value in a
+visualization. `morph::ColourMap` is the class that provides mappings
+of values to graded colours.
 
 The class exists to convert an input number (usually a `float`) in the
 range [0, 1] into an RGB colour triplet, returned as (usually)
 `std::array<float, 3>`. The examples above show several colour maps
 which will be familiar to those who have used colour maps in Python or
-MATLAB.
+MATLAB (the maps are shown as [morph::ColourBarVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/ColourBarVisual.h) objects).
+
+![A selection of colour maps available in morph::ColourMap](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/ColourMaps.png?raw=true)
 
 As well as the one dimensional colour maps shown above,
-`morph::ColourMap` can convert two (and even three) dimensional
+`morph::ColourMap` can convert two (and three) dimensional
 numbers into colours. Here you can see i) the 'HSV' map which converts
 the 'x' and 'y' of a two-dimensional input into polar coordinates,
 then uses these as the hue (r) and saturation (phi) of an HSV colour
@@ -91,9 +93,19 @@ the range [0, 1]) to a colour. Exceptions are `Duochrome`,
 It's a colour map which always returns the same colour, but it will
 pretend to be a 1D map.
 
-# Simple usage
+# Client coding with `ColourMap`
 
 ## Constructors and `ColourMapType`
+
+`ColourMap` is a templated class whose template argument `T` is the
+type of the data values. `T` may be any floating point or integer
+type.
+
+```c++
+template <typename T>
+class ColourMap
+{ /* ... */ }
+```
 
 Construct with a `ColourMapType` as argument, with a string representation of the colour map type or with no argument:
 
@@ -201,16 +213,23 @@ std::cout << cm_bool.range_max << "\n"; // 1
 
 # Using 1D maps
 
-There's not much more to be said about 1D maps; in most cases,
-construct a `ColourMap<T>` object, set its `ColourMapType` and then
-call `ColourMap::convert(T)`. However, there are some 1D maps which
-have some additional options.
+One dimensional maps, which convert a scalar value into a colour are
+easy to use. In most cases, you construct a `ColourMap<T>` object, set its
+`ColourMapType` and then call `ColourMap::convert(T)`.
 
-## Monochrome and Monoval maps
+Importantly, all the 1D maps use the same input range for the
+mapping. This is [0, 1] for floating point types. Your data may well
+fall into a different range. For this reason, a `ColourMap` is usually
+used along with a [`morph::Scale`](/morphologica/ref/coremaths/scale)
+object. You [set the `Scale`](/morphologica/ref/coremaths/scale#usage) so that your input data is mapped to a
+range [0, 1] (or [0, 127] for `T=char`/[0, 255] for other integral
+types).
+
+## Variable hue in 1D maps
 
 The `Monochrome` map has a gradually increasing saturation of one
 colour. The colour, which defaults to red, is held in the private
-member `ColourMap::hue` and can be changed with `setHue`. `Monochrome`
+member `T ColourMap::hue` and can be changed with `setHue`. `Monochrome`
 simply wires the input datum to the saturation and creates an HSV
 colour based on ( `ColourMap::hue`, input datum, `ColourMap::value`
 ). `ColourMap::value` is 1 by default, but it can be set with `setVal()`.
@@ -223,9 +242,11 @@ std::array<float, 3> mycolour1 = colour_map1.convert (0.5f);
 ![A selection of Hue variable 1D colour Monochrome maps
  morph::ColourMap](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/monochrome.png?raw=true)
 
+This image shows six `Monochrome` colour maps with varying hues
+
 There are some convenience ColourMapTypes that set the hue when you
 set the type. These are `MonochromeRed`, `MonochromeGreen` and
-`MonochromeBlue`.
+`MonochromeBlue` which set the hue to 0, 0.333 and 0.667, respectively.
 
 The `Monoval` maps are similar to `Monochrome`, but instead of varying
 saturation, they vary the value of the HSV colour. They transition
@@ -236,14 +257,23 @@ from black to the maximally bright colour. They look like this:
 
 ## HSV1D
 
-`setHue()`
+`HSV1D` is a one dimensional hue-saturation-value map that is related
+to the two dimensional `ColourMapType::HSV`. The hue set for a
+`ColourMap` of type `HSV1D` defines the angle on the HSV wheel at
+which the linear map will be taken. Although these maps are useful for
+values which are both positive and negative, they still accept the
+same input range ([0, 1], [0 127 or [0 255]) as the other colour maps.
 
 ![HSV colour maps
  morph::ColourMap](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/hsv1d.png?raw=true)
 
+# Using 2D ColourMaps
+
+`Duochrome`, `HSV`.
+
 # Static colour conversion methods
 
-ColourMap contains some static methods that could be used in isolation.
+ColourMap contains some static methods that could be used in isolation in your programs.
 
 ```c++
 // Convert float ([0, 1]) into a colour from the Jet colour map
