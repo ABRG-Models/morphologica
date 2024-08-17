@@ -50,7 +50,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::Triangles;
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->addLabel ("GridVisMode::Triangles", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->addLabel ("GridVisMode::Triangles", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -60,7 +60,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->addLabel ("GridVisMode::RectInterp", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->addLabel ("GridVisMode::RectInterp", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -71,7 +71,7 @@ int main()
     gv->interpolate_colour_sides = true;
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->addLabel ("GridVisMode::Columns, interpolated sides", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->addLabel ("GridVisMode::Columns, interpolated sides", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
 
