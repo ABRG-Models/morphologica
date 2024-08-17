@@ -256,8 +256,7 @@ int main (int argc, char **argv)
     v1.bindmodel (uvm);
     uvm->setScalarData (&(RD.u));
     uvm->zScale.setParams (0.2f, 0.0f);
-    uvm->addLabel ("Population u", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
-                   morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    uvm->addLabel ("Population u", { -0.2f, RD.ellipse_b*-1.4f, 0.01f }, morph::TextFeatures(0.1f, 48, morph::colour::white));
     uvm->finalize();
     auto uvmp = v1.addVisualModel (uvm);
 
@@ -268,8 +267,7 @@ int main (int argc, char **argv)
     v1.bindmodel (vvm);
     vvm->setScalarData (&(RD.v));
     vvm->zScale.setParams (0.2f, 0.0f);
-    vvm->addLabel ("Population v", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
-                   morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    vvm->addLabel ("Population v", { -0.2f, RD.ellipse_b*-1.4f, 0.01f }, morph::TextFeatures(0.1f, 48, morph::colour::white));
     vvm->finalize();
     auto vvmp = v1.addVisualModel (vvm);
 #endif

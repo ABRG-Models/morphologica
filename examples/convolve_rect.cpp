@@ -77,7 +77,7 @@ int main()
     cgv->cm.setType (morph::ColourMapType::GreyscaleInv);
     cgv->zScale.setParams (0, 0);
     cgv->addLabel(std::string("Original"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
-                  morph::colour::black, morph::VisualFont::DVSans, 0.1f, 48);
+                  morph::TextFeatures(0.1f, 48));
     cgv->finalize();
     v.addVisualModel (cgv);
 
@@ -89,7 +89,7 @@ int main()
     cgvk->cm.setType (morph::ColourMapType::GreyscaleInv);
     cgvk->zScale.setParams (0, 0);
     cgvk->addLabel(std::string("Kernel"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
-                   morph::colour::black, morph::VisualFont::DVSans, 0.1f, 48);
+                   morph::TextFeatures(0.1f, 48));
     cgvk->finalize();
     v.addVisualModel (cgvk);
 
@@ -101,7 +101,7 @@ int main()
     cgvr->cm.setType (morph::ColourMapType::GreyscaleInv);
     cgvr->zScale.setParams (0, 0);
     cgvr->addLabel (std::string("Convolved"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
-                    morph::colour::black, morph::VisualFont::DVSans, 0.1f, 48);
+                    morph::TextFeatures(0.1f, 48));
     cgvr->finalize();
     v.addVisualModel (cgvr);
 

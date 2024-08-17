@@ -279,8 +279,7 @@ int main (int argc, char **argv)
     hgv1->zScale.setParams (0.2f, 0.0f);
     hgv1->colourScale.do_autoscale = true;
     hgv1->cm.setType (morph::ColourMapType::Greyscale); // or GreyscaleInv
-    hgv1->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
-                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    hgv1->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f }, morph::TextFeatures(0.1f, 48, morph::colour::white));
     hgv1->finalize();
     auto hgv1p = v1.addVisualModel (hgv1);
 
@@ -293,8 +292,7 @@ int main (int argc, char **argv)
     hgv2->zScale.setParams (0.2f, 0.0f);
     hgv2->colourScale.do_autoscale = true;
     hgv2->cm.setType (morph::ColourMapType::Greyscale);
-    hgv2->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
-                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    hgv2->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f }, morph::TextFeatures(0.1f, 48, morph::colour::white));
     hgv2->finalize();
     auto hgv2p = v1.addVisualModel (hgv2);
 #endif

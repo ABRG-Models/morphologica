@@ -171,8 +171,7 @@ int main (int argc, char **argv)
     hgv1->setCScale (cscale);
     hgv1->cm.setType (morph::ColourMapType::Jet);
     hgv1->hexVisMode = morph::HexVisMode::Triangles;
-    hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
-                    morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
+    hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0}, morph::TextFeatures(0.12f, 64, morph::colour::white));
     hgv1->finalize();
     auto hgv1p = v.addVisualModel (hgv1);
 
@@ -186,8 +185,7 @@ int main (int argc, char **argv)
     hgv2->setCScale (cscale);
     hgv2->cm.setType (morph::ColourMapType::Jet);
     hgv2->hexVisMode = morph::HexVisMode::HexInterp;
-    hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
-                    morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
+    hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0}, morph::TextFeatures(0.12f, 64, morph::colour::white));
     hgv2->finalize();
     auto hgv2p = v.addVisualModel (hgv2);
 

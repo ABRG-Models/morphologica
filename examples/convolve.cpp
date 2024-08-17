@@ -76,7 +76,7 @@ int main()
     v.bindmodel (hgv);
     hgv->setScalarData (&data);
     hgv->cm.setType(morph::ColourMapType::Viridis);
-    hgv->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
+    hgv->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::TextFeatures(0.1f, morph::colour::white));
     hgv->finalize();
     // Get the non-owning pointer to hgv from the addVisualModel call
     auto hgvp = v.addVisualModel (hgv);
@@ -90,7 +90,7 @@ int main()
     auto kgvp = v.addVisualModel (kgv);
 
     // Labels can be added after finalize() and after addVisualModel
-    kgvp->addLabel ("Kernel", { 0.1f, 0.14f, 0.01f }, morph::colour::white);
+    kgvp->addLabel ("Kernel", { 0.1f, 0.14f, 0.01f }, morph::TextFeatures(0.1f, morph::colour::white));
 
     offset[1] -= 0.6f;
     offset[0] += 1.0f;
@@ -99,7 +99,7 @@ int main()
     rgv->setScalarData (&convolved);
     rgv->cm.setType(morph::ColourMapType::Viridis);
     rgv->finalize();
-    rgv->addLabel ("Output", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
+    rgv->addLabel ("Output", { -0.3f, -0.45f, 0.01f }, morph::TextFeatures(0.1f, morph::colour::white));
     rgv->finalize();
     auto rgvp = v.addVisualModel (rgv);
 

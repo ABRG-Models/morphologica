@@ -846,8 +846,7 @@ namespace morph {
                 clr = {1,0,0};
                 this->computeSphere (this->hg->i1.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("i1", (this->hg->i1).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
                 clr = {0,0,0};
             }
             if (!this->hg->i2.has_nan()) {
@@ -862,8 +861,7 @@ namespace morph {
             if (!this->hg->i5.has_nan()) {
                 this->computeSphere (this->hg->i5.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("i5", (this->hg->i5).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
 
             // p/q points used to compute additional pgrams
@@ -871,63 +869,50 @@ namespace morph {
                 clr = {0,0,1};
                 this->computeSphere (this->hg->q2.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q2", (this->hg->q2).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->q1.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->q1.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q1", (this->hg->q1).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
 
             }
             if (!this->hg->q3.has_nan()) {
                 clr = {0,0,1};
                 this->computeSphere (this->hg->q3.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q3", (this->hg->q3).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->q4.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->q4.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q4", (this->hg->q4).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->q5.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->q5.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q5", (this->hg->q5).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->q6.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->q6.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q6", (this->hg->q6).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->q7.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->q7.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q7", (this->hg->q7).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->q8.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->q8.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("q8", (this->hg->q8).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
 #if 1 // 60/300 units vectors
             if (!this->hg->i1.has_nan() && !this->hg->unit_60.has_nan()) {
@@ -953,55 +938,43 @@ namespace morph {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->p1.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p1", (this->hg->p1).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->p2.has_nan()) {
                 clr = {0,0,1};
                 this->computeSphere (this->hg->p2.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p2", (this->hg->p2).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->p3.has_nan()) {
                 clr = {0,0,1};
                 this->computeSphere (this->hg->p3.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p3", (this->hg->p3).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->p4.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->p4.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p4", (this->hg->p4).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->p5.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->p5.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p5", (this->hg->p5).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->p6.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->p6.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p6", (this->hg->p6).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
             if (!this->hg->p8.has_nan()) {
                 clr = {0,1,0};
                 this->computeSphere (this->hg->p8.plus_one_dim(), clr, sw, 14, 12);
                 this->addLabel ("p8", (this->hg->p8).plus_one_dim()+vec<float>({sw,0,0.02}) * this->hg->getd(),
-                                clr, morph::VisualFont::DVSans,
-                                0.1f*this->hg->getd(), 48);
-
+                                morph::TextFeatures(0.1f * this->hg->getd(), 48, clr));
             }
 
             // Draw grey triangles/rects for the relevant areas

@@ -317,6 +317,15 @@ namespace morph {
         }
 
         /*!
+         * Add a text label with the default font features
+         */
+        morph::TextGeometry addLabel (const std::string& _text, const morph::vec<float, 3>& _toffset)
+        {
+            morph::TextFeatures tf;
+            return this->addLabel (_text, _toffset, tf);
+        }
+
+        /*!
          * Add a text label to the model at location (within the model coordinates) toffset. Return
          * the text geometry of the added label so caller can place associated text correctly.
          */
@@ -370,31 +379,6 @@ namespace morph {
             this->texts.push_back (std::move(tmup));
             tm = this->texts.back().get();
             return this->texts.back()->getTextGeometry();
-        }
-
-        //! Deprecated argument format. Prefer the versions that take TextFeatures, rather than multiple args.
-        morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::vec<float, 3>& _toffset,
-                                      const std::array<float, 3>& _tcolour = morph::colour::black,
-                                      const morph::VisualFont _font = morph::VisualFont::DVSans,
-                                      const float _fontsize = 0.05f,
-                                      const int _fontres = 24)
-        {
-            morph::TextFeatures tfeat (_fontsize, _fontres, false, _tcolour, _font);
-            return addLabel (_text, _toffset, tfeat);
-        }
-
-        //! Deprecated argument format. Prefer the versions that take TextFeatures, rather than multiple args.
-        morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModel<glver>*& tm,
-                                      const std::array<float, 3>& _tcolour = morph::colour::black,
-                                      const morph::VisualFont _font = morph::VisualFont::DVSans,
-                                      const float _fontsize = 0.05f,
-                                      const int _fontres = 24)
-        {
-            morph::TextFeatures tfeat (_fontsize, _fontres, false, _tcolour, _font);
-            return addLabel (_text, _toffset, tm, tfeat);
         }
 
         //! Setter for the viewmatrix

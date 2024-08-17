@@ -101,9 +101,9 @@ int main (int argc, char** argv)
     v.bindmodel (hgv);
     hgv->setScalarData (&obj_f);
 #ifdef USE_BOHACHEVSKY_FUNCTION
-    hgv->addLabel ("Objective: See Bohachevsky et al.", { -0.5f, -0.75f, -0.1f }, morph::colour::black);
+    hgv->addLabel ("Objective: See Bohachevsky et al.", { -0.5f, -0.75f, -0.1f });
 #else
-    hgv->addLabel ("Objective: 2 Gaussians and some noise", { -0.5f, -0.75f, -0.1f }, morph::colour::black);
+    hgv->addLabel ("Objective: 2 Gaussians and some noise", { -0.5f, -0.75f, -0.1f });
 #endif
     hgv->finalize();
     v.addVisualModel (hgv);

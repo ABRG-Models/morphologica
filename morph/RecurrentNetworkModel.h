@@ -628,8 +628,8 @@ namespace morph {
                 hgv1->zScale = zscale;
                 hgv1->colourScale = scale;
                 hgv1->cm.setType (colourMap);
-                // How to do a label:
-                //hgv1->addLabel ("My label", { -0.2f, -1.4f, 0.01f }, morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+                // How to do a label (TextFeatures args are: (fontsize, fontres, colour):
+                // hgv1->addLabel ("My label", { -0.2f, -1.4f, 0.01f }, morph::TextFeatures(0.1f, 48, morph::colour::white));
                 hgv1->finalize();
                 v.addVisualModel (hgv1);
                 v.render();
