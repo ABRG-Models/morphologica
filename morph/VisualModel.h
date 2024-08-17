@@ -160,7 +160,7 @@ namespace morph {
          */
         void reinit_buffers()
         {
-            this->setContext (this->parentVis);
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
             morph::gl::Util::checkError (__FILE__, __LINE__);
             // Now re-set up the VBOs
@@ -183,7 +183,7 @@ namespace morph {
         //! reinit ONLY vertexColors buffer
         void reinit_colour_buffer()
         {
-            this->setContext (this->parentVis);
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
             morph::gl::Util::checkError (__FILE__, __LINE__);
             // Now re-set up the VBOs
@@ -215,7 +215,7 @@ namespace morph {
         //! Re-create the model - called after updating data
         void reinit()
         {
-            this->setContext (this->parentVis);
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             // Fixme: Better not to clear, then repeatedly pushback here:
             this->vertexPositions.clear();
             this->vertexNormals.clear();
@@ -234,7 +234,7 @@ namespace morph {
          */
         void reinit_with_clearTexts()
         {
-            this->setContext (this->parentVis);
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             this->vertexPositions.clear();
             this->vertexNormals.clear();
             this->vertexColors.clear();
@@ -259,7 +259,7 @@ namespace morph {
          */
         void finalize()
         {
-            this->setContext (this->parentVis);
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             this->initializeVertices();
             this->postVertexInitRequired = true;
         }
@@ -653,7 +653,7 @@ namespace morph {
         std::function<GLuint(morph::Visual<glver>*)> get_gprog;
         //! Get the text shader prog id
         std::function<GLuint(morph::Visual<glver>*)> get_tprog;
-        //! Set OpenGL context. Should call parentVis->setContext()
+        //! Set OpenGL context. Should call parentVis->setContext(). Can be nullptr (if in OWNED_MODE).
         std::function<void(morph::Visual<glver>*)> setContext;
 
         //! Setter for the parent pointer, parentVis
