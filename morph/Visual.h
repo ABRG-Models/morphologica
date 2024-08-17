@@ -619,7 +619,7 @@ namespace morph {
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
             // Construct the point for the location of the coord arrows
-            morph::vec<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0 };
+            morph::vec<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0f };
             // Inverse project
             morph::vec<float, 3> v0;
             v0.set_from ((this->invproj * p0));
