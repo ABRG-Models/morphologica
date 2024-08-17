@@ -132,7 +132,7 @@ case. If you wish to build a model from rods, cones, discs and
 spheres, then you can use the VisualModel graphics primitives.
 
 If you need to create a custom visualization, then you may well end up
-needing to write you own initializeVertices function. Consult other
+needing to write your own initializeVertices function. Consult other
 examples in the graphics primitives for more inspiration.
 
 # Re-initializing a VisualModel
@@ -152,9 +152,58 @@ vertexColors. Where you are using only colour to indicate changing
 values, this can be a very efficient way of updating your
 visualization.
 
+# The VisualModel coordinate frame
+
+When you add vertices to a VisualModel, you do so in the model's own
+frame of reference. The VisualModel class holds two transformation
+matrices which are applied in the shader when the models are rendered
+in the scene.
+
 # Adding text labels to VisualModels
 
-`VisualModel::addLabel`...
+The VisualModel base class provides `addLabel` methods to add texts to
+your models.
+
+```c++
+visualModel_ptr->addLabel ("Label text", {0, -1, 0}, morph::TextFeatures(0.06f));
+```
+
+Here, the first argument is simply a `const std::string&` of the text you want to display. The second argument is a coordinate in the model frame which defines where the text should appear and the third argument is a [`TextFeatures`](/morphologica/ref/visual/textfeatures) object that defines font size, face, resolution and colour. Usually, you construct `TextFeatures` in the `addLabel` arguments.
+
+With the simplest TextFeatures constructor, you set only the font size to 0.06 (`vm_ptr` is a `VisualModel*` pointer):
+```c++
+vm_ptr->addLabel ("Label text", {0, -1, 0}, morph::TextFeatures(0.06f));
+```
+You can set the text colour with a second argument in a two-argument constructor. Colours can be chosen from the [`morph::colour`](/morphologica/ref/visual/colour) namespace.
+```c++
+vm_ptr->addLabel ("Large text", {0, -1, 0}, morph::TextFeatures(0.12f, morph::colour::crimson));
+```
+There is a three argument constructor to set font size, font resolution and font colour. The font resolution here is the resolution of the bitmap image for the font glyph. You have to adjust this based on the size of the font; it it is too high or too low, your fonts will not look very good on screen.
+
+```c++
+vm_ptr->addLabel ("Small text", {0, -1, 0}, morph::TextFeatures(0.03f, 48, morph::colour::red));
+```
+
+The font face can be chosen like this with the 5 argument constructor. Available font faces are found in the enum class `morph::VisualFont` in [`VisualFace.h`](/morphologica/ref/visualint/visualface#available-font-faces)
+```c++
+bool no_centering = false;
+vm_ptr->addLabel ("Small text", {0, -1, 0}, morph::TextFeatures(0.03f, 48, no_centering,
+                                                                morph::colour::blue1,
+                                                                morph::VisualFont::DVSansItalic));
+```
+When you add a text to a VisualModel is is created as a `VisualTextModel` and added to a member attribute which is a `vector` of texts. This is a vector of unique pointers, indicating that the VisualModel owns the memory associated with the texts.
+
+```c++
+template <int glver = morph::gl::version_4_1>
+class VisualModel
+{
+    ...
+    //! A vector of pointers to text models that should be rendered.
+    std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
+    ...
+};
+```
+By default, the text will have its vertical axis aligned with the model coordinate frame's 'y' axis and the horizontal axis is aligned with the 'x' axis. It is possible to change this by rotating the text models (see morph::GraphVisual::drawAxisLabels for example code; the coord axes in Visual also rotate).
 
 # Features you can change
 
