@@ -323,40 +323,11 @@ namespace morph {
             if (found_model == true) { this->vm.erase (this->vm.begin() + modelId); }
         }
 
-        //! Add a text label to the scene at a given location. Return the width and height of the
-        //! text in a TextGeometry object.
+        //! Add a label _text to the scene at position _toffset. Font features are
+        //! defined by the tfeatures. Return geometry of the text.
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
-                                      const std::array<float, 3>& _tcolour = morph::colour::black,
-                                      const morph::VisualFont _font = morph::VisualFont::DVSans,
-                                      const float _fontsize = 0.01,
-                                      const int _fontres = 24)
-        {
-            morph::VisualTextModel<glver>* tm = nullptr;
-            return this->addLabel (_text, _toffset, tm, _tcolour, _font, _fontsize, _fontres);
-        }
-
-        //! Add label, using the passed-in pointer. Allows client code to update the text model
-        morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModel<glver>*& tm,
-                                      const std::array<float, 3>& _tcolour = morph::colour::black,
-                                      const morph::VisualFont _font = morph::VisualFont::DVSans,
-                                      const float _fontsize = 0.01,
-                                      const int _fontres = 24)
-        {
-            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, _font, _fontsize, _fontres);
-            tmup->setupText (_text, _toffset, _tcolour);
-            tm = tmup.get();
-            this->texts.push_back (std::move(tmup));
-            return tm->getTextGeometry();
-        }
-
-        //! An addLabel overload that takes a morph::TextFeatures object
-        morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::vec<float, 3>& _toffset,
-                                      const morph::TextFeatures& tfeatures)
+                                      const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
         {
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
             auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures);
@@ -373,6 +344,28 @@ namespace morph {
             return tm->getTextGeometry();
         }
 
+        //! Add a label _text to the scene at position _toffset. Font features are
+        //! defined by the tfeatures. Return geometry of the text. The pointer tm is a
+        //! return value that allows client code to change the text after the label has been added.
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::vec<float, 3>& _toffset,
+                                      morph::VisualTextModel<glver>*& tm,
+                                      const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
+        {
+            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures);
+            if (tfeatures.centre_horz == true) {
+                morph::TextGeometry tg = tmup->getTextGeometry(_text);
+                morph::vec<float, 3> centred_locn = _toffset;
+                centred_locn[0] = -tg.half_width();
+                tmup->setupText (_text, centred_locn, tfeatures.colour);
+            } else {
+                tmup->setupText (_text, _toffset, tfeatures.colour);
+            }
+            tm = tmup.get();
+            this->texts.push_back (std::move(tmup));
+            return tm->getTextGeometry();
+        }
 
 #ifndef OWNED_MODE
         /*!

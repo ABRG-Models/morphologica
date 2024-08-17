@@ -317,21 +317,14 @@ namespace morph {
         }
 
         /*!
-         * Add a text label with the default font features
-         */
-        morph::TextGeometry addLabel (const std::string& _text, const morph::vec<float, 3>& _toffset)
-        {
-            morph::TextFeatures tf;
-            return this->addLabel (_text, _toffset, tf);
-        }
-
-        /*!
-         * Add a text label to the model at location (within the model coordinates) toffset. Return
-         * the text geometry of the added label so caller can place associated text correctly.
+         * Add a text label to the model at location (within the model coordinates)
+         * toffset. Return the text geometry of the added label so caller can place
+         * associated text correctly.  Control font size, resolution, colour and font
+         * face with tfeatures.
          */
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
-                                      const morph::TextFeatures& tfeatures)
+                                      const morph::TextFeatures& tfeatures = morph::TextFeatures())
         {
             if (this->get_shaderprogs(this->parentVis).tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
@@ -353,13 +346,14 @@ namespace morph {
         }
 
         /*!
-         * Add a text label, with given offset _toffset and the specified features. The reference
-         * to a pointer, tm, allows client code to change the text of the VisualTextModel as necessary.
+         * Add a text label, with given offset _toffset and the specified tfeatures. The
+         * reference to a pointer, tm, allows client code to change the text of the
+         * VisualTextModel as necessary, after the label has been added.
          */
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
                                       morph::VisualTextModel<glver>*& tm,
-                                      const morph::TextFeatures& tfeatures)
+                                      const morph::TextFeatures& tfeatures = morph::TextFeatures())
         {
             if (this->get_shaderprogs(this->parentVis).tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
