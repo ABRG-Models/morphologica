@@ -10,12 +10,12 @@ nav_order: 2
 #include <morph/VisualModel.h>
 ```
 
-`morph::VisualModel` is the base class for graphical models in your
-`morph::Visual` scene. This page describes the base class. (There is a
-whole [section](/morphologica/ref/visualmodels) dedicated to
-documenting all the VisualModel-derived classes that morphologica
-provides, which are a great resource for learning how to write your
-own VisualModels.)
+# `VisualModel`: The base class for objects
+
+`morph::VisualModel` is the base class for graphical objects in your
+`morph::Visual` scene. This page describes the base class and then
+there is a [section](/morphologica/ref/visualmodels) dedicated to
+documenting the derived classes that morphologica provides.
 
 A `VisualModel` holds all the coordinates that define a set of
 triangles that make up a 'graphical model' (in OpenGL we draw almost
@@ -24,7 +24,7 @@ text objects so that your graphical elements can be embellished with
 text. Text is created by drawing rectangles (made from triangles) to
 which bitmap 'texture' images of character glyphs are applied.
 
-# Creating a VisualModel instance
+# Creating an instance
 
 Taking a derived class called `GraphVisual` as an example, we create an instance of a `VisualModel`-derived class by using `std::make_unique`. This allows us to pass ownership of the VisualModel's memory into a `morph::Visual`.
 
@@ -178,6 +178,11 @@ You can set the text colour with a second argument in a two-argument constructor
 ```c++
 vm_ptr->addLabel ("Large text", {0, -1, 0}, morph::TextFeatures(0.12f, morph::colour::crimson));
 ```
+Another two-argument constructor allows you to set the font size and the resolution:
+```c++
+vm_ptr->addLabel ("High-res text", {0, -1, 0}, morph::TextFeatures(0.3f, 128));
+```
+
 There is a three argument constructor to set font size, font resolution and font colour. The font resolution here is the resolution of the bitmap image for the font glyph. You have to adjust this based on the size of the font; it it is too high or too low, your fonts will not look very good on screen.
 
 ```c++
@@ -191,7 +196,7 @@ vm_ptr->addLabel ("Small text", {0, -1, 0}, morph::TextFeatures(0.03f, 48, no_ce
                                                                 morph::colour::blue1,
                                                                 morph::VisualFont::DVSansItalic));
 ```
-When you add a text to a VisualModel is is created as a `VisualTextModel` and added to a member attribute which is a `vector` of texts. This is a vector of unique pointers, indicating that the VisualModel owns the memory associated with the texts.
+When you add a text to a VisualModel is is created as a `VisualTextModel` and added to a member attribute which is a `vector` of texts. This is a vector of unique pointers, indicating that the `VisualModel` owns the memory associated with the texts.
 
 ```c++
 template <int glver = morph::gl::version_4_1>
@@ -203,7 +208,32 @@ class VisualModel
     ...
 };
 ```
-By default, the text will have its vertical axis aligned with the model coordinate frame's 'y' axis and the horizontal axis is aligned with the 'x' axis. It is possible to change this by rotating the text models (see morph::GraphVisual::drawAxisLabels for example code; the coord axes in Visual also rotate).
+By default, the text will have its vertical axis aligned with the model coordinate frame's 'y' axis and the horizontal axis is aligned with the 'x' axis. It is possible to change this by rotating the text models (see [`morph::GraphVisual::drawAxisLabels`](/morphologica/ref/visualmodels/graphvisual) for example code; the coordinate axis labels in [CoordArrows](/morphologica/ref/visualmodels/coordarrows) also rotate).
+
+## Adding text with symbols
+
+You can incorporate a variety of symbols in your text, including Greek
+characters and mathematical symbols. This is achieved with the help of
+[`morph::unicode`](/morphologica/ref/visual/unicode) and the
+[`VisualFont::DejaVu`](/morphologica/ref/visualint/visualface) that
+provides a wide range of non-Latin Glyphs.
+
+```c++
+std::string spc(", ");
+std::string greek = "Greek ABC: "
+                    + morph::unicode::toUtf8 (morph::unicode::alpha)
+                    + spc + morph::unicode::toUtf8 (morph::unicode::beta)
+                    + spc + morph::unicode::toUtf8 (morph::unicode::gamma);
+vm_ptr->addLabel (greek, {0,0,0});
+```
+
+`morph::unicode::alpha` is a `constexpr char32_t` containing the
+unicode value for the alpha character which is
+0x03b1. `morph::unicode::toUtf8` is a static function that converts
+this 32 bit character code into a sequence of 8 bit wide UTF-8
+codes. These UTF-8 codes can be appended to your `std::string` and
+passed straight into `VisualModel::addLabel`. You can output the UTF-8
+to a modern command line, too.
 
 # Features you can change
 
