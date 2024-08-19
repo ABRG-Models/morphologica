@@ -310,8 +310,9 @@ Here we specify start and end coordinates for the tube, along with start and end
 
 ![Screenshot of rods/tubes](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/rods.png?raw=true)
 
+Example code to generate the image above is in [examples/rod.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/rod.cpp).
 
-Arrows are tube-like:
+Arrows are tube-like ([`VectorVisual`](https://github.com/ABRG-Models/morphologica/blob/main/morph/VectorVisual.h) makes use of this, see [examples/vectorvis.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/vectorvis.cpp):
 ```c++
 void computeArrow (const vec<float>& start, const vec<float>& end,
                    const std::array<float, 3> clr,
@@ -337,6 +338,8 @@ void computeCone (vec<float> centre, vec<float> tip,
 
 ![Screenshot of the computeCone example](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/A_simple_cone.png?raw=true)
 
+Example computeCone code: [examples/cone.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/cone.cpp)
+
 ## Spheres
 
 There are a couple of different sphere primitives. `computeSphere` draws a fan of triangles at each end, then fills in the space with rings of triangles. The image below shows also `computeSphereGeo` which computes an icosahedral geodesic to pattern the triangles.
@@ -351,7 +354,13 @@ this->computeSphereGeoFast (morph::vec<float>{ 0.0f, y, 0.0f }, morph::colour::c
 ```
 ![Screenshot of spheres](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/Sphere_primitives.png?raw=true)
 
+[examples/sphere.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/sphere.cpp) generated the image above.
+
 ## Rings
+
+`computeRing` draws a ring made of flat quads. Example is [examples/ring.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/ring.cpp).
+
+![Screenshot of rings](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/rings.png?raw=true)
 
 ## Discs
 
