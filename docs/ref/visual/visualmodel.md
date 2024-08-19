@@ -312,7 +312,7 @@ Here we specify start and end coordinates for the tube, along with start and end
 
 Example code to generate the image above is in [examples/rod.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/rod.cpp).
 
-Arrows are tube-like ([`VectorVisual`](https://github.com/ABRG-Models/morphologica/blob/main/morph/VectorVisual.h) makes use of this, see [examples/vectorvis.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/vectorvis.cpp):
+Arrows are tube-like ([`VectorVisual`](https://github.com/ABRG-Models/morphologica/blob/main/morph/VectorVisual.h) makes use of this, see [examples/vectorvis.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/vectorvis.cpp)):
 ```c++
 void computeArrow (const vec<float>& start, const vec<float>& end,
                    const std::array<float, 3> clr,
@@ -327,6 +327,11 @@ void computeFlaredTube (morph::vec<float> start, morph::vec<float> end,
                         std::array<float, 3> colStart, std::array<float, 3> colEnd,
                         float r = 1.0f, int segments = 12, float flare = 0.0f)
 ```
+
+## Lines
+
+If a tube is the wrong kind of line for your visualization, you may need a 'flat line'. We have `VisualModel::computeFlatLine` and friends.
+
 ## Cones
 
 Use `computeCone` to draw a cone. Provide coordinates of the centre of the cone base, the tip along with colour, radius, number of segments to draw with and finally a ringoffset, the effect of which is obvious in the image below (it offsets the circle of the cone away from the base so that the cone effectively becomes a double cone with two tips).
@@ -363,6 +368,17 @@ this->computeSphereGeoFast (morph::vec<float>{ 0.0f, y, 0.0f }, morph::colour::c
 ![Screenshot of rings](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/rings.png?raw=true)
 
 ## Discs
+
+Thick discs can be made with very short tubes (use `computeTube`). There is also a function to make 2D polygons: `computeFlatPoly`.
+
+```c++
+this->computeFlatPoly (vec<float> vstart,
+                       vec<float> _ux, vec<float> _uy,
+                       std::array<float, 3> col,
+                       float r = 1.0f, int segments = 12, float rotation = 0.0f)
+```
+
+This'll need some explanation.
 
 # Protected attributes
 
