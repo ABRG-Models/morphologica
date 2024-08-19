@@ -386,6 +386,12 @@ if(USE_GLEW)
   target_link_libraries(cone GLEW::GLEW)
 endif()
 
+add_executable(ring ring.cpp)
+target_link_libraries(ring OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(ring GLEW::GLEW)
+endif()
+
 # This sphere example uses constexpr code
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   add_executable(sphere sphere.cpp)

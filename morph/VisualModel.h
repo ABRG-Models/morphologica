@@ -1262,7 +1262,7 @@ namespace morph {
         } // end computeFlatPloy with ux/uy vectors for faces
 
         /*!
-         * Make a ring of radius r, comprised of tubes(?)
+         * Make a ring of radius r, comprised of flat segments
          *
          * \param ro position of the centre of the ring
          * \param rc The ring colour.
