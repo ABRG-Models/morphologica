@@ -30,21 +30,21 @@ Visuals, then you will have two or more windows.)
 The following code (adapted from the [graph1.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph1.cpp) example) illustrates basic usage:
 
 ```c++
-    // First, instantiate a 1024x768 morph::Visual object/window
-    morph::Visual v(1024, 768, "Window title here");
+// First, instantiate a 1024x768 morph::Visual object/window
+morph::Visual v(1024, 768, "Window title here");
 
-    // You then create some kind of morph::VisualModel (GraphVisual derives from VisualModel):
-    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
-    v.bindmodel (gv);                                       // bindmodel is boilerplate
-    morph::vvec<double> x = {0,.1,.2,.3,.4,.5,.6,.7,.8,.9}; // x axis data
-    gv->setdata (x, x.pow(3));                              // Graph y = x^3
-    gv->finalize();                                         // 'completes' the VisualModel
+// You then create some kind of morph::VisualModel (GraphVisual derives from VisualModel):
+auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+v.bindmodel (gv);                                       // bindmodel is boilerplate
+morph::vvec<double> x = {0,.1,.2,.3,.4,.5,.6,.7,.8,.9}; // x axis data
+gv->setdata (x, x.pow(3));                              // Graph y = x^3
+gv->finalize();                                         // 'completes' the VisualModel
 
-    // By adding the VisualModel it will appear in the scene
-    v.addVisualModel (gv);
+// By adding the VisualModel it will appear in the scene
+v.addVisualModel (gv);
 
-    // You can now render manually with v.render() or until the user quits with this function:
-    v.keepOpen();
+// You can now render manually with v.render() or until the user quits with this function:
+v.keepOpen();
 ```
 
 ![Screenshot of two computer windows each backed by a morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/morph_two_visuals.png?raw=true)
@@ -105,17 +105,17 @@ When `Visual` needs to `render()`, it will iterate through this vector, calling 
 To guarantee the ownership of the model will reside in the `morph::Visual` instance, you have to 'pass in' each VisualModel. The workflow is (using `GraphVisual` as the example and assuming the `Visual` object is called `v`):
 
 ```c++
-    // Create a GraphVisual. gv will be of type std::unique_ptr<morph::GraphVisual<double>>
-    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
-    // Bind the new model to the Visual instance
-    v.bindmodel (gv);
-    // Do some GraphVisual-specific setup:
-    gv->setdata (x, x.pow(3));
-    // Call VisualModel::finalize(), which populates the OpenGL vertex/index buffers
-    gv->finalize();
+// Create a GraphVisual. gv will be of type std::unique_ptr<morph::GraphVisual<double>>
+auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+// Bind the new model to the Visual instance
+v.bindmodel (gv);
+// Do some GraphVisual-specific setup:
+gv->setdata (x, x.pow(3));
+// Call VisualModel::finalize(), which populates the OpenGL vertex/index buffers
+gv->finalize();
 
-    // Now the GraphVisual has been created, add it:
-    morph::GraphVisual<double>* gv_pointer = v.addVisualModel (gv);
+// Now the GraphVisual has been created, add it:
+morph::GraphVisual<double>* gv_pointer = v.addVisualModel (gv);
 ```
 Here we've created a GraphVisual, set it up and added it to the scene.
 

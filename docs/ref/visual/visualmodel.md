@@ -17,50 +17,67 @@ nav_order: 2
 there is a [section](/morphologica/ref/visualmodels) dedicated to
 documenting the derived classes that morphologica provides.
 
+![Four VisualModels in a Visual scene. Each model is a geodesic polynomial](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/geodesics.png?raw=true)
+
 A `VisualModel` holds all the coordinates that define a set of
 triangles that make up a 'graphical model' (in OpenGL we draw almost
 exclusively with triangles). `VisualModel` also contains a list of
 text objects so that your graphical elements can be embellished with
 text. Text is created by drawing rectangles (made from triangles) to
-which bitmap 'texture' images of character glyphs are applied.
+which bitmap 'texture' images of character glyphs are applied. The image above shows geodesic polynomials which are constructed from triangles. Here, each triangle is individually coloured so you can see the OpenGL model structure clearly.
 
 # Creating an instance
 
-Taking a derived class called `GraphVisual` as an example, we create an instance of a `VisualModel`-derived class by using `std::make_unique`. This allows us to pass ownership of the VisualModel's memory into a `morph::Visual`.
+Taking a derived class called `GraphVisual` as an example, we create an instance of a `VisualModel`-derived class by using `std::make_unique`. This allows us to pass ownership of the VisualModel's memory into a `morph::Visual`. Our example first needs a `morph::Visual` instance:
 
 ```c++
 morph::Visual v(1024, 768, "Example");
-// Create a new VisualModel
-auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
-// Call essential bindmodel function to wire up callbacks
-v.bindmodel (gv);
-// [snip] Call additional methods from GraphVisual to set it up further
-// Call VisualModel::finalize to build the OpenGL model
-gv->finalize();
-// Transfer memory ownership to the parent Visual
-morph::GraphVisual<float>* gv_ptr = v.addVisualModel (gv);
 ```
-we call `Visual::bindmodel` to set up these callback functions in VisualModel:
-
+The new VisualModel (a GraphVisual) must be created with `std::make_unique`
 ```c++
-//! Get all shader progs
-std::function<morph::visgl::visual_shaderprogs(morph::Visual<glver>*)> get_shaderprogs;
-//! Get the graphics shader prog id
-std::function<GLuint(morph::Visual<glver>*)> get_gprog;
-//! Get the text shader prog id
-std::function<GLuint(morph::Visual<glver>*)> get_tprog;
-//! Set OpenGL context. Should call parentVis->setContext()
-std::function<void(morph::Visual<glver>*)> setContext;
+auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
 ```
+Once we have the `unique_ptr`, we have to call the essential bindmodel function to wire up the callbacks:
+```c++
+v.bindmodel (gv);
+```
+After bindmodel, programs will then make any additional function calls to set up the object. Here we might set the data and change what kind of axes should be drawn.
 
-The example omits any GraphVisual-specific setup, but normally this would appear before `gv->finalize()`.
-
+After set up, the `VisualModel::finalize()` function is the last piece of boilerplate code.
 `VisualModel::finalize` is as essential as `bindmodel`. `finalize`
 calls the virtual function `VisualModel::initializeVertices` which is
 defined as empty (rather than abstract) in `VisualModel`, but must be
 overridden in derived classes. The job of `initializeVertices` is to
 create the vertices, normals, colours and indices that fill the OpenGL
 vertex buffers.
+
+```c++
+gv->finalize();
+```
+Lastly, we transfer memory ownership to the parent Visual with `Visual::addVisualModel()`.
+```c++
+morph::GraphVisual<float>* gv_ptr = v.addVisualModel (gv);
+```
+In the example, `Visual::bindmodel` is used to set up these callback functions in VisualModel:
+
+```c++
+template <int glver = morph::gl::version_4_1>
+class VisualModel
+{
+    ...
+    //! Get all shader progs
+    std::function<morph::visgl::visual_shaderprogs(morph::Visual<glver>*)> get_shaderprogs;
+    //! Get the graphics shader prog id
+    std::function<GLuint(morph::Visual<glver>*)> get_gprog;
+    //! Get the text shader prog id
+    std::function<GLuint(morph::Visual<glver>*)> get_tprog;
+    //! Set OpenGL context. Should call parentVis->setContext()
+    std::function<void(morph::Visual<glver>*)> setContext;
+    ...
+};
+```
+
+Three of the functions ensure that the `VisualModel` can get access to the OpenGL shader program IDs in a way that avoids a circular header dependency between Visual.h and VisualModel.h. `VisualModel::render()` needs access to the shader information. The last function allows `VisualModel` to set the correct OpenGL context in any of its function calls that use the OpenGL library code.
 
 # Initializing Vertices
 
@@ -155,9 +172,14 @@ visualization.
 # The VisualModel coordinate frame
 
 When you add vertices to a VisualModel, you do so in the model's own
-frame of reference. The VisualModel class holds two transformation
-matrices which are applied in the shader when the models are rendered
-in the scene.
+frame of reference.  The VisualModel coordinate frame uses the same
+arbitrary unit of length as the scene's coordinate frame.
+
+The VisualModel class holds two transformation matrices (a model view
+matrix and a scene view matrix) which are applied in the shader when
+the models are rendered in the scene. The scene view matrix changes as
+the scene view point is altered (by mouse events). The model view
+matrix is a way to rotate the model's coordinate frame independently.
 
 # Adding text labels to VisualModels
 
@@ -235,9 +257,43 @@ codes. These UTF-8 codes can be appended to your `std::string` and
 passed straight into `VisualModel::addLabel`. You can output the UTF-8
 to a modern command line, too.
 
-# Features you can change
+# `VisualModel` features
 
-`setAlpha` `setHide` `toggleHide` `setSizeScale` `twodimensional`
+There are a number of features built into `VisualModel`, including the
+transparency of the model, whether it is currently visible and whether
+it should be allowed to rotate.
+
+## Setting the alpha channel
+
+The `setAlpha` function allows you to set the transparency of a VisualModel. The single argument is the alpha value, with 0 giving a fully transparent (i.e. invisible) model  and 1 giving a fully opaque model (the default).
+
+```c++
+vm_ptr->setAlpha (0.8f); // valid range: [0, 1]
+```
+
+## Hiding a model
+
+It is sometimes useful to hide a model in a scene. This is carried out with `setHide(bool)` and `toggleHide()`.
+
+```c++
+vm_ptr->setHide();      // Hide the vm_ptr model
+vm_ptr->setHide(false); // Un-hide the model
+vm_ptr->toggleHide();   // Toggle hiddenness
+```
+
+## Scaling the model
+
+The function `VisualModel::setSizeScale(float)` sets up a transformation matrix `VisualModel::model_scaling` which is multiplied by the view matrix on each call to `render()`. The argument to setSizeScale scales the model equally in all directions by a scalar factor.
+
+## Two dimensional models
+
+OpenGL is fundamentally three dimensional. However, some models, such as a `GraphVisual` are only really useful as two dimensional figures. It's possible to prevent a model from being rotatable within the scene, even when other models *can* rotate. Use the Boolean `VisualModel::twodimensional` attribute to indicate which.
+
+```c++
+cube_vm_ptr->twodimensional = false; // This cube won't rotate
+```
+
+You can change this attribute at any time, it will be used on each call to `render()`. In some derived classes, such as  `GraphVisual`,  `twodimensional` is set to true by default.
 
 # Graphics primitives
 
