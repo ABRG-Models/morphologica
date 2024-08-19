@@ -10,6 +10,6 @@ nav_order: 18
 #include <morph/TxtVisual.h>
 ```
 
-# Colour bars
+# A `VisualModel` for text
 
 `morph::TxtVisual` is a class for displaying only text.

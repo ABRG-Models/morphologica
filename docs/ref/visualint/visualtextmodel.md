@@ -1,10 +1,10 @@
 ---
 title: morph::VisualTextModel
-parent: Visualization API
+parent: Internal classes
 grand_parent: Reference
 permalink: /ref/visual/visualtextmodel
 layout: page
-nav_order: 6
+nav_order: 2
 ---
 ```c++
 #include <morph/VisualTextModel.h>

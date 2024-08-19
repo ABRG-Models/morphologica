@@ -4,7 +4,7 @@ parent: Internal classes
 grand_parent: Reference
 permalink: /ref/visualint/visualface
 layout: page
-nav_order: 3
+nav_order: 4
 ---
 ```c++
 #include <morph/VisualFace.h>

@@ -16,11 +16,11 @@ However, it is also possible to create a `vvec` of vectors or coordinates.
 Here's how the class is declared:
 
 ```c++
-    template <typename S=float, typename Al=std::allocator<S>>
-    struct vvec : public std::vector<S, Al>
-    {
-        //! We inherit std::vector's constructors like this:
-        using std::vector<S, Al>::vector;
+template <typename S=float, typename Al=std::allocator<S>>
+struct vvec : public std::vector<S, Al>
+{
+    //! We inherit std::vector's constructors like this:
+    using std::vector<S, Al>::vector;
 ```
 
 ## Creating a `vvec`

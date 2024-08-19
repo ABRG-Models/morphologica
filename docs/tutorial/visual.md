@@ -53,8 +53,8 @@ else. However, try pressing 'Ctrl-c' in the window, and you'll see the
 3D coordinate system arrows appear. Press 'Ctrl-q' to exit.
 
 ## Adding a visual model to the scene
-Rod
-A Visual scene is nothing without some objects inside it. We'll use an example VisualModel called RodVisual to add an object. Add this include to the helloworld program:
+
+A Visual scene is nothing without some objects inside it. We'll use an example VisualModel called `RodVisual` to add an object. Add this include to the helloworld program:
 ```c++
 #include <morph/RodVisual.h>
 ```
@@ -105,19 +105,6 @@ v.keepOpen();
 ```
 is equivalent to `render()` followed by `waitevents (0.018)` in an infinite loop.
 
-
-### OpenGL Context
-
-It is essential that the correct OpenGL context is current when rendering a morph::Visual. This is especially true when rendering to two Visual windows in one program, or when rendering in one morph::Visual window, while another does GL-compute operations.
-
-In these situations, before calling `Visual::render` for a Visual object, call its setContext() method:
-
-```c++
-v.setContext();
-v.render();
-```
-If you only have one window, you won't need to setContext().
-
 ## The scene view
 The scene will render VisualModel objects at different coordinates. You may add several graphs on a grid, and when you've completed the scene, you will want the new window to appear with a view that places all the graphs within a appropriately sized window. You can set the window size in the Visual constructor, but to move the 'view' of the scene, you need `Visual::setSceneTrans`. This translates the entire scene by a 3D vector. By moving the scene in the z coordinate, you can zoom.
 ```c++
@@ -127,15 +114,15 @@ To get the right numbers for the offset, Visual has a neat trick which you can t
 
 ```
 Scenetrans setup code:
-    v.setSceneTrans (morph::vec<float,3>({-0.411793f, -0.397834f, -5.0f}));
-scene rotation is Quaternion[wxyz]=(0.999999,0.00121815,0,0)
+    v.setSceneTrans (morph::vec<float,3>{ float{-0.140266}, float{0.237435}, float{-3.5} });
+    v.setSceneRotation (morph::Quaternion<float>{ float{0.910055}, float{0.402162}, float{0.100329}, float{0} });
 Writing scene trans/rotation into /tmp/Visual.json... Success.
 ```
 
 It will give the setSceneTrans() call you need. Add it after the Visual constructor:
 ```c++
 morph::Visual<morph::gl::version_4_1> v(600, 400, "Hello World!");
-v.setSceneTrans (morph::vec<float,3>({-0.411793f, -0.397834f, -5.0f}));
+v.setSceneTrans (morph::vec<float,3>{ float{-0.140266}, float{0.237435}, float{-3.5} });
 ```
 
 ## Background colour and lighting

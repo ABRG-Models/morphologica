@@ -4,7 +4,7 @@ parent: Internal classes
 grand_parent: Reference
 permalink: /ref/visualint/visualcommon
 layout: page
-nav_order: 2
+nav_order: 3
 ---
 ```c++
 #include <morph/VisualCommon.h>
