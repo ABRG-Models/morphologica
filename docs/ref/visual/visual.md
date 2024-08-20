@@ -20,6 +20,13 @@ or save the scene in glTF format. `morph::Visual` supports perspective
 and orthographic projections and even has an experimental cylindrical
 projection mode.
 
+It is a templated class with a single template argument to specify the [OpenGL version](/morphologica/ref/visual/visual#opengl-version).
+```c++
+template <int glver = morph::gl::version_4_1>
+class Visual
+{ ... }
+```
+
 ![A morph::Visual scene from the showcase example program](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/showcase.png?raw=true)
 *A morph::Visual scene containing some grid-based VisualModels*
 
@@ -47,11 +54,6 @@ v.addVisualModel (gv);
 v.keepOpen();
 ```
 
-![Screenshot of two computer windows each backed by a morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/morph_two_visuals.png?raw=true)
-
-*This is the [twowindows.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/twowindows.cpp) example program, which displays two windows with two `morph::Visual` instances. The `GraphVisual` on window 2 shows what the preceding code example would generate. Window 1 shows another kind of `morph::VisualModel` (a rather sparse `QuiverVisual`)*
-
-
 # Instantiating `morph::Visual`
 
 Instantiate your `morph::Visual` with the following three-argument constructor:
@@ -61,7 +63,25 @@ morph::Visual v(1280, 1024, "Your window title goes here");
 ```
 The first two arguments are the width and height of the window in pixels. The third argument is the text title for the window.
 
-In addition to the usual, three-argument constructor, there's a constructor which allows you to set parameters for the coordinate arrows (length, thickness, etc). Use only if you need to adapt the coordinate arrows (see [Visual.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h#L153) for the declaration).
+Here, we omitted the template argument, allowing it to take its default value. We can also indicate clearly that the default template argument is chosen...
+```c++
+morph::Visual<> v(1280, 1024, "Your window title goes here");
+```
+...or explicitly select the default value:
+```c++
+morph::Visual<morph::gl::version_4_1> v(1280, 1024, "Your window title goes here");
+```
+
+The `int` template argument specifies the OpenGL version to request. The examples show that it can be left out. It defaults to `morph::gl::version_4_1`, which is compatible across Linux, Mac and Windows platforms. You can select an alternative from the values in [morph/gl/version.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/gl/version.h). You might do so to support a device such as a [Raspberry Pi](https://github.com/ABRG-Models/morphologica/blob/main/examples/pi/graph1.cpp) or to support OpenGL [compute shaders](https://github.com/ABRG-Models/morphologica/blob/main/examples/gl_compute/shadercompute.cpp).
+
+For example, to use the latest OpenGL version, which is 4.6, you would:
+
+```c++
+morph::Visual<morph::gl::version_4_6> v(1280, 1024, "Using OpenGL 4.6");
+```
+Note that you will have to add the same version to any `VisualModel` instances that you create (`VisualModel` also has a 'GL version' template argument). Some more information on OpenGL versions is [given below](/morphologica/ref/visual/visual#opengl-version).
+
+In addition to the usual, three-argument constructor, there's a constructor which allows you to set parameters for the coordinate arrows (length, thickness, etc). Use this only if you need to adapt the coordinate arrows (see [Visual.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h#L153) for the declaration).
 
 There *is* also a default, no-argument constructor, but you'll only need to call this if you're adapting a new `OWNED_MODE`.
 
@@ -349,6 +369,15 @@ If you want to keep the default morphologica key bindings (which are all *Ctrl-*
 
 You can see how this works in the [myvisual.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/myvisual.cpp) example code.
 
+# Working with multiple windows
+
+You can create more than one `morph::Visual` in your program. Each `Visual` will be related to a separate OpenGL context. morphoglogica will handle the switching of the context automatically (by calling `Visual::setContext()` as needed, for example if you call `Visual::render()`).
+
+![Screenshot of two computer windows each backed by a morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/morph_two_visuals.png?raw=true)
+
+*This is the [twowindows.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/twowindows.cpp) example program, which displays two windows with two `morph::Visual` instances. The `GraphVisual` on window 2 shows what the preceding code example would generate. Window 1 shows another kind of `morph::VisualModel` (a `QuiverVisual`)*
+
+
 # Multi-threading
 
 You *can* use morphologica in multi-threaded programs, but you do have
@@ -401,6 +430,12 @@ When you program with OpenGL, you have to choose which of the many versions of t
 OpenGL 4.1 was originally the *only* option, but more recently `Visual` and friends were extended to support other OpenGL versions, including OpenGL 4.1 to 4.6 (which makes it possible to use GL compute shaders) and OpenGL 3.0 ES and up, which makes it possible to run morphologica programs on the Raspberry Pi.
 
 The desired OpenGL version is passed to `morph::Visual` as a single template argument `glver` of type `int`.
+
+```c++
+template <int glver = morph::gl::version_4_1>
+class Visual
+{ ... }
+```
 
 The default value for `glver` is `morph::gl::version_4_1` which requests the core version 4.1 of OpenGL. The integer values that specify each OpenGL version are defined in [morph/gl/version.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/gl/version.h). Both the 'desktop' OpenGL versions (from 4.1 up to 4.6) and the 'ES' versions (3.0 ES to 3.2 ES) are supported in both core and compatibility modes.
 
