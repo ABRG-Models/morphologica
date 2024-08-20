@@ -368,6 +368,15 @@ namespace morph {
         }
 
 #ifndef OWNED_MODE
+        /*
+         * A note on setContext() in keepOpen/poll/waitevents/wait:
+         *
+         * I considered automatically calling setContext in these functions. However, the event
+         * queue is not necessarily bound to the context (it depends on the platform), so I will
+         * leave these as they are. The call to render() inside keepOpen() WILL correctly induce a
+         * setContext() call.
+         */
+
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window open, and
          * responsive, while displaying the result of a simulation. FIXME: This won't work for two
