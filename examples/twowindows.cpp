@@ -37,22 +37,44 @@ int main()
         // Set up data for the first Visual
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
 
-        std::vector<morph::vec<float, 3>> coords;
-        coords.push_back ({0, 0,   0});
-        coords.push_back ({1, 1,   0});
-        coords.push_back ({2, 0,   0});
-        coords.push_back ({1, 0.8, 0});
-        coords.push_back ({2, 0.5, 0});
+        std::vector<morph::vec<float, 3>> coords(20*20);
+        std::vector<morph::vec<float, 3>> quivs(20*20);
+        morph::vvec<float> qlens(20*20, 0.0f);
 
-        std::vector<morph::vec<float, 3>> quivs;
-        quivs.push_back ({0.3,   0.4,  0});
-        quivs.push_back ({0.1,   0.2,  0.1});
-        quivs.push_back ({-0.1,  0,    0});
-        quivs.push_back ({-0.04, 0.05, -.2});
-        quivs.push_back ({0.3,  -0.1,  0});
+        size_t k = 0;
+        for (int i = -10; i < 10; ++i) {
+            for (int j = -10; j < 10; ++j) {
+                float x = 0.1*i;
+                float y = 0.1*j;
+                // z is some function of x, y
+                float z = x * std::exp(-(x*x) - (y*y));
+                coords[k] = {x, y, z};
+                k++;
+            }
+        }
 
-        auto qvp = std::make_unique<morph::QuiverVisual<float>>(&coords, offset, &quivs, morph::ColourMapType::Cividis);
+        k = 0;
+        for (int i = -10; i < 10; ++i) {
+            for (int j = -10; j < 10; ++j) {
+                if (i > -10 && i < 10 && j > -10 && j < 10) {
+                    morph::vec<float> r = coords[k] - coords[k-20];
+                    morph::vec<float> g = coords[k] - coords[k-1];
+                    // Compute normal and modulate by the distance from the centre
+                    quivs[k] = r.cross(g);
+                    if (coords[k].length() != 0.0f) { quivs[k] *= 1.0f / (1.2f + coords[k].length()); }
+                    qlens[k] = quivs[k].length();
+                } else {
+                    quivs[k] = {0.0f, 0.0f, 0.0f};
+                }
+                k++;
+            }
+        }
+
+        auto qvp = std::make_unique<morph::QuiverVisual<float>>(&coords, offset, &quivs, morph::ColourMapType::Jet);
         v.bindmodel (qvp);
+        qvp->quiver_length_gain = 1.0f; // Scale the length of the quivers on screen
+        qvp->colourScale.compute_autoscale(0, qlens.max());
+        qvp->quiver_thickness_gain = 0.02f; // Scale thickness of the quivers
         qvp->finalize();
         v.addVisualModel (qvp);
 
