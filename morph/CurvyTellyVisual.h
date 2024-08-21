@@ -165,7 +165,7 @@ namespace morph {
                 // opposite normal.
                 morph::vec<float> plane1 = vtx_ne - vtx_0;
                 morph::vec<float> plane2 = vtx_se - vtx_0;
-                morph::vec<float> vnorm = plane2.cross (plane1);
+                morph::vec<float> vnorm = plane1.cross (plane2);
                 vnorm.renormalize();
                 this->vertex_push (vnorm, this->vertexNormals);
                 this->vertex_push (vnorm, this->vertexNormals);
@@ -181,20 +181,20 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
 
                 // Define indices now to produce the 4 triangles in the hex
+                this->indices.push_back (this->idx);
                 this->indices.push_back (this->idx+1);
-                this->indices.push_back (this->idx);
                 this->indices.push_back (this->idx+2);
 
+                this->indices.push_back (this->idx);
                 this->indices.push_back (this->idx+2);
-                this->indices.push_back (this->idx);
                 this->indices.push_back (this->idx+3);
 
-                this->indices.push_back (this->idx+3);
                 this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+3);
                 this->indices.push_back (this->idx+4);
 
-                this->indices.push_back (this->idx+4);
                 this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+4);
                 this->indices.push_back (this->idx+1);
 
                 this->idx += 5; // 5 vertices (each of 3 floats for x/y/z), 15 indices.
@@ -245,7 +245,7 @@ namespace morph {
             morph::vec<float> vtx_ne_up = vtx_ne;
             vtx_nw_up[2] += this->frame_width;
             vtx_ne_up[2] += this->frame_width;
-            this->computeFlatQuad (vtx_nw, vtx_nw_up, vtx_ne_up, vtx_ne, this->frame_clr);
+            this->computeFlatQuad (vtx_nw, vtx_ne, vtx_ne_up, vtx_nw_up, this->frame_clr);
         }
 
         // Draw a pixel of the bottom border
@@ -269,7 +269,20 @@ namespace morph {
             vtx_c_dirn *= this->frame_width;
             vtx_a_l += vtx_c_dirn;
             vtx_b_l += vtx_c_dirn;
-            this->computeFlatQuad (vtx_a, vtx_a_l, vtx_b_l, vtx_b, this->frame_clr);
+
+            // We have to figure out which way round is clockwise to pass vertices to computeFlatQuad in the right order
+            morph::vec<float> ab = vtx_b - vtx_a;
+            morph::vec<float> a_al = vtx_a_l - vtx_a;
+            morph::vec<float> norm = ab.cross (a_al);
+            norm.renormalize();
+            morph::vec<float> a_rn = vtx_a;
+            a_rn.renormalize();
+
+            if (a_rn.dot (norm) < 0.0f) {
+                this->computeFlatQuad (vtx_a, vtx_a_l, vtx_b_l, vtx_b, this->frame_clr);
+            } else {
+                this->computeFlatQuad (vtx_a, vtx_b, vtx_b_l, vtx_a_l, this->frame_clr);
+            }
         }
 
         virtual void initializeVertices()
