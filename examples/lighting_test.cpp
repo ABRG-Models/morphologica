@@ -13,7 +13,7 @@ struct my_vm : public morph::VisualModel<glver>
 
     void initializeVertices()
     {
-        this->computeRhombus ({-1.5,-0.5,-0.5}, 3, 1, 1, morph::colour::navy);
+        this->computeRectCuboid ({-1.5,-0.5,-0.5}, 3, 1, 1, morph::colour::navy);
 
         std::array<morph::vec<float>, 8> cubecorners;
         cubecorners[0] = {-0.1, 0.5, -0.1};

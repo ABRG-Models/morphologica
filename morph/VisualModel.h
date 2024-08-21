@@ -2658,9 +2658,9 @@ namespace morph {
             }
         } // computeCuboid
 
-        // Compute a rhombus of width (in x), height (in y) and depth (in z).
-        void computeRhombus (const vec<float>& o, const float wx, const float hy, const float dz,
-                             const std::array<float, 3>& clr)
+        // Compute a rectangular cuboid of width (in x), height (in y) and depth (in z).
+        void computeRectCuboid (const vec<float>& o, const float wx, const float hy, const float dz,
+                                const std::array<float, 3>& clr)
         {
             vec<float> px = o + vec<float>{wx, 0, 0};
             vec<float> py = o + vec<float>{0, hy, 0};
