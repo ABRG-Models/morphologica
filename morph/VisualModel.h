@@ -2576,6 +2576,97 @@ namespace morph {
             this->idx += 2 * segments; // nverts
 
         } // end computeFlatCircle
+
+        // Compute triangles to form a true cuboid from 8 corners.
+        void computeCuboid (const std::array<vec<float>, 8>& v, const std::array<float, 3>& clr)
+        {
+            this->computeFlatQuad (v[0], v[1], v[2], v[3], clr);
+            this->computeFlatQuad (v[0], v[4], v[5], v[1], clr);
+            this->computeFlatQuad (v[1], v[5], v[6], v[2], clr);
+            this->computeFlatQuad (v[2], v[6], v[7], v[3], clr);
+            this->computeFlatQuad (v[3], v[7], v[4], v[0], clr);
+            this->computeFlatQuad (v[7], v[6], v[5], v[4], clr);
+        }
+
+        // Compute a rhombus using the four defining coordinates. The coordinates are named as if
+        // they were the origin, x, y and z of a right-handed 3D coordinate system. These define three edges
+        void computeRhombus (const vec<float>& o, const vec<float>& x, const vec<float>& y, const vec<float>& z,
+                             const std::array<float, 3>& clr)
+        {
+            // Edge vectors
+            vec<float> edge1 = x - o;
+            vec<float> edge2 = y - o;
+            vec<float> edge3 = z - o;
+
+            // Compute the face normals
+            vec<float> _n1 = edge1.cross (edge2);
+            _n1.renormalize();
+            vec<float> _n2 = edge2.cross (edge3);
+            _n2.renormalize();
+            vec<float> _n3 = edge1.cross (edge3);
+            _n3.renormalize();
+
+            // Push positions and normals for 24 vertices to make up the rhombohedron; 4 for each face.
+            // Front face
+            this->vertex_push (o,                        this->vertexPositions);
+            this->vertex_push (o + edge1,                this->vertexPositions);
+            this->vertex_push (o + edge3,                this->vertexPositions);
+            this->vertex_push (o + edge1 + edge3,        this->vertexPositions);
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (_n3, this->vertexNormals); }
+            // Top face
+            this->vertex_push (o + edge3,                 this->vertexPositions);
+            this->vertex_push (o + edge1 + edge3,         this->vertexPositions);
+            this->vertex_push (o + edge2 + edge3,         this->vertexPositions);
+            this->vertex_push (o + edge2 + edge1 + edge3, this->vertexPositions);
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (_n1, this->vertexNormals); }
+            // Back face
+            this->vertex_push (o + edge2 + edge3,         this->vertexPositions);
+            this->vertex_push (o + edge2 + edge1 + edge3, this->vertexPositions);
+            this->vertex_push (o + edge2,                 this->vertexPositions);
+            this->vertex_push (o + edge2 + edge1,         this->vertexPositions);
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (-_n3, this->vertexNormals); }
+            // Bottom face
+            this->vertex_push (o + edge2,                 this->vertexPositions);
+            this->vertex_push (o + edge2 + edge1,         this->vertexPositions);
+            this->vertex_push (o,                         this->vertexPositions);
+            this->vertex_push (o + edge1,                 this->vertexPositions);
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (-_n1, this->vertexNormals); }
+            // Left face
+            this->vertex_push (o + edge2,                 this->vertexPositions);
+            this->vertex_push (o,                         this->vertexPositions);
+            this->vertex_push (o + edge2 + edge3,         this->vertexPositions);
+            this->vertex_push (o + edge3,                 this->vertexPositions);
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (-_n2, this->vertexNormals); }
+            // Right face
+            this->vertex_push (o + edge1,                 this->vertexPositions);
+            this->vertex_push (o + edge1 + edge2,         this->vertexPositions);
+            this->vertex_push (o + edge1 + edge3,         this->vertexPositions);
+            this->vertex_push (o + edge1 + edge2 + edge3, this->vertexPositions);
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (_n2, this->vertexNormals); }
+
+            // Vertex colours are all the same
+            for (unsigned short i = 0U; i < 24U; ++i) { this->vertex_push (clr, this->vertexColors); }
+
+            // Indices for 6 faces
+            for (unsigned short i = 0U; i < 6U; ++i) {
+                this->indices.push_back (this->idx++);
+                this->indices.push_back (this->idx++);
+                this->indices.push_back (this->idx--);
+                this->indices.push_back (this->idx++);
+                this->indices.push_back (this->idx++);
+                this->indices.push_back (this->idx++);
+            }
+        } // computeCuboid
+
+        // Compute a rhombus of width (in x), height (in y) and depth (in z).
+        void computeRhombus (const vec<float>& o, const float wx, const float hy, const float dz,
+                             const std::array<float, 3>& clr)
+        {
+            vec<float> px = o + vec<float>{wx, 0, 0};
+            vec<float> py = o + vec<float>{0, hy, 0};
+            vec<float> pz = o + vec<float>{0, 0, dz};
+            this->computeRhombus (o, px, py, pz, clr);
+        }
     };
 
 } // namespace morph
