@@ -15,11 +15,7 @@ template <int glver = morph::gl::version_4_1>
 class RingVisual : public morph::VisualModel<glver>
 {
 public:
-    RingVisual(const morph::vec<float> _offset)
-    {
-        this->mv_offset = _offset;
-        this->viewmatrix.translate (this->mv_offset);
-    }
+    RingVisual(const morph::vec<float> _offset) : morph::VisualModel<glver>::VisualModel (_offset) {}
 
     void initializeVertices()
     {
