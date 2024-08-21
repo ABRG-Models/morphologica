@@ -621,3 +621,9 @@ target_link_libraries(curvytelly_chequered_pipe OpenGL::GL glfw Freetype::Freety
 if(USE_GLEW)
   target_link_libraries(curvytelly_chequered_pipe GLEW::GLEW)
 endif()
+
+add_executable(lighting_test lighting_test.cpp)
+target_link_libraries(lighting_test OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(lighting_test GLEW::GLEW)
+endif()
