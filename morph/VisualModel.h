@@ -1172,10 +1172,10 @@ namespace morph {
                               vec<float> c3, vec<float> c4,
                               std::array<float, 3> col)
         {
-            // is the face normal
+            // v is the face normal
             vec<float> u1 = c1-c2;
             vec<float> u2 = c2-c3;
-            vec<float> v = u1.cross(u2);
+            vec<float> v = u2.cross(u1);
             v.renormalize();
             // Push corner vertices
             this->vertex_push (c1, this->vertexPositions);
@@ -1288,10 +1288,10 @@ namespace morph {
                 float yout_n = (r+(t*0.5f)) * sin(segnext);
 
                 // Now draw a quad
-                vec<float> c1 = { xin, yin, 0.0f };
-                vec<float> c2 = { xout, yout, 0.0f };
-                vec<float> c3 = { xout_n, yout_n, 0.0f };
-                vec<float> c4 = { xin_n, yin_n, 0.0f };
+                vec<float> c4 = { xin, yin, 0.0f };
+                vec<float> c3 = { xout, yout, 0.0f };
+                vec<float> c2 = { xout_n, yout_n, 0.0f };
+                vec<float> c1 = { xin_n, yin_n, 0.0f };
                 this->computeFlatQuad (ro+c1, ro+c2, ro+c3, ro+c4, rc);
             }
         }
