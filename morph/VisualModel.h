@@ -1301,7 +1301,7 @@ namespace morph {
          *
          * This function creates an object with exactly one OpenGL vertex per 'geometric
          * vertex of the polyhedron'. That means that colouring this object must be
-         * achieved by colouring the vertices an faces cannot be coloured
+         * achieved by colouring the vertices and faces cannot be coloured
          * distinctly. Pass in a single colour for the initial object. To recolour,
          * modify the content of vertexColors.
          *
