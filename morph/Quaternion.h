@@ -242,7 +242,7 @@ namespace morph {
          * Change this Quaternion to represent a new rotation by rotating it \a angle
          * (radians) around the axis given by \a axis_x, \a axis_y, \a axis_z.
          */
-        constexpr void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt angle)
+        constexpr void rotate (const Flt& axis_x, const Flt& axis_y, const Flt& axis_z, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
@@ -255,7 +255,7 @@ namespace morph {
          * Change this Quaternion to represent a new rotation by rotating it \a angle
          * (radians) around the axis given by \a axis.
          */
-        constexpr void rotate (const std::array<Flt, 3>& axis, const Flt angle)
+        constexpr void rotate (const std::array<Flt, 3>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
@@ -268,7 +268,7 @@ namespace morph {
          * Change this Quaternion to represent a new rotation by rotating it \a angle
          * (radians) around the axis given by \a axis.
          */
-        constexpr void rotate (const vec<Flt, 3>& axis, const Flt angle)
+        constexpr void rotate (const vec<Flt, 3>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
