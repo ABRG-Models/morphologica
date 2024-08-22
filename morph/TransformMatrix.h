@@ -510,14 +510,14 @@ namespace morph {
         {
             Quaternion<Flt> q;
             q.rotate (axis, theta);
-            this->rotate (q);
+            this->rotate<Flt> (q);
         }
 
         constexpr void rotate (const morph::vec<Flt, 3>& axis, const Flt& theta)
         {
             Quaternion<Flt> q;
             q.rotate (axis, theta);
-            this->rotate (q);
+            this->rotate<Flt> (q);
         }
 
         //! Right-multiply this->mat with m2.
