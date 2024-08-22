@@ -467,79 +467,50 @@ namespace morph {
          * This algorithm was obtained from:
          * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
          */
-        constexpr void rotate (const Quaternion<float>& q)
+        template <typename T = float>
+        constexpr void rotate (const Quaternion<T>& q)
         {
             std::array<Flt, 16> m;
 
-            const float f2x = q.x + q.x;
-            const float f2y = q.y + q.y;
-            const float f2z = q.z + q.z;
-            const float f2xw = f2x * q.w;
-            const float f2yw = f2y * q.w;
-            const float f2zw = f2z * q.w;
-            const float f2xx = f2x * q.x;
-            const float f2xy = f2x * q.y;
-            const float f2xz = f2x * q.z;
-            const float f2yy = f2y * q.y;
-            const float f2yz = f2y * q.z;
-            const float f2zz = f2z * q.z;
+            const T f2x = q.x + q.x;
+            const T f2y = q.y + q.y;
+            const T f2z = q.z + q.z;
+            const T f2xw = f2x * q.w;
+            const T f2yw = f2y * q.w;
+            const T f2zw = f2z * q.w;
+            const T f2xx = f2x * q.x;
+            const T f2xy = f2x * q.y;
+            const T f2xz = f2x * q.z;
+            const T f2yy = f2y * q.y;
+            const T f2yz = f2y * q.z;
+            const T f2zz = f2z * q.z;
 
-            m[0]  = 1.0f - (f2yy + f2zz);
+            m[0]  = T{1} - (f2yy + f2zz);
             m[1]  =         f2xy - f2zw;
             m[2]  =         f2xz + f2yw;
-            m[3]  = 0.0f;
+            m[3]  = T{0};
             m[4]  =         f2xy + f2zw;
-            m[5]  = 1.0f - (f2xx + f2zz);
+            m[5]  = T{1} - (f2xx + f2zz);
             m[6]  =         f2yz - f2xw;
-            m[7]  = 0.0f;
+            m[7]  = T{0};
             m[8]  =         f2xz - f2yw;
             m[9]  =         f2yz + f2xw;
-            m[10] = 1.0f - (f2xx + f2yy);
-            m[11] = 0.0f;
-            m[12] = 0.0f;
-            m[13] = 0.0f;
-            m[14] = 0.0f;
-            m[15] = 1.0f;
+            m[10] = T{1} - (f2xx + f2yy);
+            m[11] = T{0};
+            m[12] = T{0};
+            m[13] = T{0};
+            m[14] = T{0};
+            m[15] = T{1};
 
             *this *= m;
         }
 
-        //! Rotate, but this time with a Quaternion made of doubles, rather than floats.
-        constexpr void rotate (const Quaternion<double>& q)
+        //! Rotate an angle theta radians about axis
+        constexpr void rotate (const std::array<Flt, 3>& axis, const Flt theta)
         {
-            std::array<Flt, 16> m;
-
-            const double f2x = q.x + q.x;
-            const double f2y = q.y + q.y;
-            const double f2z = q.z + q.z;
-            const double f2xw = f2x * q.w;
-            const double f2yw = f2y * q.w;
-            const double f2zw = f2z * q.w;
-            const double f2xx = f2x * q.x;
-            const double f2xy = f2x * q.y;
-            const double f2xz = f2x * q.z;
-            const double f2yy = f2y * q.y;
-            const double f2yz = f2y * q.z;
-            const double f2zz = f2z * q.z;
-
-            m[0]  = 1.0 - (f2yy + f2zz);
-            m[1]  =        f2xy - f2zw;
-            m[2]  =        f2xz + f2yw;
-            m[3]  = 0.0;
-            m[4]  =        f2xy + f2zw;
-            m[5]  = 1.0 - (f2xx + f2zz);
-            m[6]  =        f2yz - f2xw;
-            m[7]  = 0.0;
-            m[8]  =        f2xz - f2yw;
-            m[9]  =        f2yz + f2xw;
-            m[10] = 1.0 - (f2xx + f2yy);
-            m[11] = 0.0;
-            m[12] = 0.0;
-            m[13] = 0.0;
-            m[14] = 0.0;
-            m[15] = 1.0;
-
-            *this *= m;
+            Quaternion<Flt> q;
+            q.rotate (axis, theta);
+            this->rotate (q);
         }
 
         //! Right-multiply this->mat with m2.
@@ -1022,7 +993,7 @@ namespace morph {
             // than it is high.
 
             // Bail out if the projection volume is zero-sized.
-            if (zNear == zFar || aspect == 0.0f) { return; }
+            if (zNear == zFar || aspect == Flt{0}) { return; }
 
             Flt fovRad_ov2 = fovDeg * morph::mathconst<Flt>::pi_over_360; // fovDeg/2 converted to radians
             Flt sineFov = std::sin (fovRad_ov2);
@@ -1032,15 +1003,15 @@ namespace morph {
 
             // Perspective matrix to multiply self by
             std::array<Flt, 16> persMat;
-            persMat.fill (0.0);
+            persMat.fill (Flt{0});
             persMat[0] = cotanFov/aspect; // n/(width/2) = 2n/width, or generally 2n/r-l
             persMat[5] = cotanFov;        // n/(height/2) = 2n/height, or generally 2n/t-b
             // For fully general frustrum not centered on the z axis, we would add these:
             //persMat[8] = r+l/r-l
             //persMat[9] = t+b/t-b
             persMat[10] = -(zNear+zFar)/clip;
-            persMat[11] = -1.0;
-            persMat[14] = -(2.0 * zNear * zFar)/clip;
+            persMat[11] = Flt{-1};
+            persMat[14] = -(Flt{2} * zNear * zFar)/clip;
 
             (*this) *= persMat;
         }
