@@ -506,7 +506,14 @@ namespace morph {
         }
 
         //! Rotate an angle theta radians about axis
-        constexpr void rotate (const std::array<Flt, 3>& axis, const Flt theta)
+        constexpr void rotate (const std::array<Flt, 3>& axis, const Flt& theta)
+        {
+            Quaternion<Flt> q;
+            q.rotate (axis, theta);
+            this->rotate (q);
+        }
+
+        constexpr void rotate (const morph::vec<Flt, 3>& axis, const Flt& theta)
         {
             Quaternion<Flt> q;
             q.rotate (axis, theta);
