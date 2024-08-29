@@ -236,12 +236,14 @@ namespace morph {
         //! Indexing the grid will return a memorized vec location.
         morph::vec<C, 2> operator[] (const I index) const
         {
+            if (index >= this->n) { return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}); }
             return morph::vec<C, 2>({ this->v_x[index], this->v_y[index] });
         }
 
         //! A named function that does the same as operator[]
         morph::vec<C, 2> coord_lookup (const I index) const
         {
+            if (index >= this->n) { return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}); }
             return morph::vec<C, 2>({ this->v_x[index], this->v_y[index] });
         }
 
