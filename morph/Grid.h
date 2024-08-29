@@ -114,7 +114,7 @@ namespace morph {
         // Getters
         I get_w() const { return this->w; }
         I get_h() const { return this->h; }
-        morph::vec<I, 2> get_dims() const { return morph::vec<I, 2>({this->w, this->h}); }
+        morph::vec<I, 2> get_dims() const { return morph::vec<I, 2>{this->w, this->h}; }
         morph::vec<C, 2> get_dx() const { return this->dx; }
         morph::vec<C, 2> get_offset() const { return this->offset; }
         GridDomainWrap get_wrap() const { return this->wrap; }
@@ -236,21 +236,21 @@ namespace morph {
         //! Indexing the grid will return a memorized vec location.
         morph::vec<C, 2> operator[] (const I index) const
         {
-            if (index >= this->n) { return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}); }
-            return morph::vec<C, 2>({ this->v_x[index], this->v_y[index] });
+            return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}
+            : morph::vec<C, 2>{ this->v_x[index], this->v_y[index] };
         }
 
         //! A named function that does the same as operator[]
         morph::vec<C, 2> coord_lookup (const I index) const
         {
-            if (index >= this->n) { return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}); }
-            return morph::vec<C, 2>({ this->v_x[index], this->v_y[index] });
+            return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}
+            : morph::vec<C, 2>{ this->v_x[index], this->v_y[index] };
         }
 
         //! Compute and return the coordinate with the given index
         morph::vec<C, 2> coord (const I index) const
         {
-            if (index >= this->n) { return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}); }
+            if (index >= this->n) { return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}; }
             morph::vec<C, 2> loc = this->offset;
             if (order == morph::GridOrder::bottomleft_to_topright) {
                 loc[I{0}] += this->dx[I{0}] * (index % this->w);
@@ -292,7 +292,7 @@ namespace morph {
         {
             I idx = index_ne (index);
             if (idx < n) { return (*this)[idx]; }
-            return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
+            return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
         //! Return true if the index has a neighbour to the east
         bool has_ne (const I index) const { return index_ne (index) != std::numeric_limits<I>::max(); }
@@ -316,7 +316,7 @@ namespace morph {
         {
             I idx = index_nw (index);
             if (idx < n) { return (*this)[idx]; }
-            return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
+            return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
         //! Return true if the index has a neighbour to the west
         bool has_nw (const I index) const { return index_nw (index) != std::numeric_limits<I>::max(); }
@@ -375,7 +375,7 @@ namespace morph {
         {
             I idx = index_nn (index);
             if (idx < n) { return (*this)[idx]; }
-            return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
+            return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
         //! Return true if the index has a neighbour to the north
         bool has_nn (const I index) const { return index_nn (index) != std::numeric_limits<I>::max(); }
@@ -435,7 +435,7 @@ namespace morph {
         {
             I idx = index_ns (index);
             if (idx < n) { return (*this)[idx]; }
-            return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
+            return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
         //! Return true if the index has a neighbour to the south
         bool has_ns (const I index) const { return index_ns (index) != std::numeric_limits<I>::max(); }
@@ -450,7 +450,7 @@ namespace morph {
         morph::vec<C, 2> coord_nne (const I index) const
         {
             I idx = this->index_nne (index);
-            return idx < n ? (*this)[idx] : morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
+            return idx < n ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
 
         //! Neighbour north west
@@ -463,7 +463,7 @@ namespace morph {
         morph::vec<C, 2> coord_nnw (const I index) const
         {
             I idx = this->index_nnw (index);
-            return idx < n ? (*this)[idx] : morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
+            return idx < n ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
 
         //! Neighbour south east
@@ -476,7 +476,7 @@ namespace morph {
         morph::vec<C, 2> coord_nse (const I index) const
         {
             I idx = this->index_nse (index);
-            return idx < n ? (*this)[idx] : morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
+            return idx < n ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
 
         //! Neighbour south west
@@ -489,7 +489,7 @@ namespace morph {
         morph::vec<C, 2> coord_nsw (const I index) const
         {
             I idx = this->index_nsw (index);
-            return idx < n ? (*this)[idx] : morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
+            return idx < n ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
 
         /*!
@@ -541,10 +541,10 @@ namespace morph {
         }
 
         //! Extents {xmin, xmax, ymin, ymax}
-        morph::vec<C, 4> extents() const { return morph::vec<C, 4>({ xmin(), xmax(), ymin(), ymax() }); }
+        morph::vec<C, 4> extents() const { return morph::vec<C, 4>{ xmin(), xmax(), ymin(), ymax() }; }
 
         //! Return the coordinates of the centre of the grid
-        morph::vec<C, 2> centre() const { return morph::vec<C, 2>({ xmax() - xmin(), ymax() - ymin() }) * C{0.5}; }
+        morph::vec<C, 2> centre() const { return morph::vec<C, 2>{ xmax() - xmin(), ymax() - ymin() } * C{0.5}; }
 
         //! Return the y coordinates for each row in the Grid
         morph::vvec<C> get_abscissae() const
