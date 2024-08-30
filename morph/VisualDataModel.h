@@ -180,11 +180,6 @@ namespace morph {
         //! graph, quiver plot). Note fixed type of float, which is suitable for
         //! OpenGL coordinates. Not const as child code may resize or update content.
         std::vector<vec<float>>* dataCoords = nullptr;
-
-        //! Graph data coordinates. Different from dataCoords, because it's a vector of
-        //! vectors of pointers to data, with one pointer for each graph in the
-        //! model. Not const, too.
-        std::vector<std::vector<vec<float>>*> graphDataCoords;
     };
 
 } // namespace morph
