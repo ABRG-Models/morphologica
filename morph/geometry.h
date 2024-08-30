@@ -50,7 +50,7 @@ namespace morph {
         template<typename F>
         constexpr polyhedron<F, 12, 20> icosahedron()
         {
-            constexpr F phi = (F{1} + std::sqrt(F{5})) / F{2};
+            constexpr F phi = (F{1} + morph::mathconst<F>::root_5) / F{2};
 
             morph::geometry_ce::polyhedron<F, 12, 20> ico;
             // Arranged 'in spiral order', going with positive angle in x/y plane (i.e. around z axis)
