@@ -144,8 +144,6 @@ namespace morph {
             this->reinit();
         }
 
-        void setZeroGrid (const bool _zerogrid) { this->zerogrid = _zerogrid; }
-
         //! All data models use a a colour map. Change the type/hue of this colour map
         //! object to generate different types of map.
         ColourMap<float> cm;
