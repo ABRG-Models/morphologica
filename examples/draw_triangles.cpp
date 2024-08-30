@@ -56,7 +56,7 @@ public:
 
         // Add illustrative stuff
         for (unsigned int i = 0; i < 3U; ++i) {
-            this->computeSphere (this->coords[i], this->colours[i], 0.05f, 16, 18);
+            this->computeSphereGeo (this->coords[i], this->colours[i], 0.05f, 2);
             this->computeArrow (this->coords[i], this->coords[i] + this->normal, this->colours[i], 0.015f);
         }
     }
@@ -128,7 +128,7 @@ public:
 
         // Add illustrative stuff
         for (unsigned int i = 0; i < 4U; ++i) {
-            this->computeSphere (this->coords[i], this->colours[i], 0.05f, 16, 18);
+            this->computeSphereGeo (this->coords[i], this->colours[i], 0.05f, 2);
             this->computeArrow (this->coords[i], this->coords[i] + this->normal, this->colours[i], 0.015f);
         }
     }
@@ -207,7 +207,7 @@ public:
 
         // Add illustrative stuff
         for (unsigned int i = 0; i < 6U; ++i) {
-            this->computeSphere (this->coords[i], this->colours[i], 0.05f, 16, 18);
+            this->computeSphereGeo (this->coords[i], this->colours[i], 0.05f, 2);
             this->computeArrow (this->coords[i], this->coords[i] + this->normals[i<3?0:1], this->colours[i], 0.015f);
         }
     }

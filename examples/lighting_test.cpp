@@ -30,7 +30,7 @@ struct my_vm : public morph::VisualModel<glver>
         morph::vec<float> a1e = { 1, 1.5, 0 };
         this->computeTube (a1s, a1e, morph::colour::navy, morph::colour::blue, 0.1f);
 
-        this->computeSphere (a1e, morph::colour::orchid1, 0.3, 16, 18);
+        this->computeSphereGeo (a1e, morph::colour::orchid1, 0.3, 4);
 
         this->computeRing ({ 1, 2.5, 0 }, morph::colour::mint, 0.3, 0.08, 50);
 
