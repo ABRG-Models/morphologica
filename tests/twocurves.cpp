@@ -41,13 +41,11 @@ int main()
 
     // Look at 'em
     typename vector<BezCoord<float>>::iterator ai = a.begin();
-    int ii = 0;
     while (ai != a.end()) {
         if (ai->getNullCoordinate() == false) {
             cout << *(ai) << endl;
         }
         ++ai;
-        ++ii;
     }
     --ai; // Step back to final null coordinate
     cout << "Remaining: " << ai->getRemaining() << endl;
@@ -59,13 +57,11 @@ int main()
     vector<BezCoord<float>> b = cc2.computePoints (steplen, firstl);
 
     ai = b.begin();
-    ii = 0;
     while (ai != b.end()) {
         if (ai->getNullCoordinate() == false) {
             cout << *(ai) << endl;
         }
         ++ai;
-        ++ii;
     }
     --ai; // Step back to final null coordinate
     cout << "Remaining: " << ai->getRemaining() << endl;
