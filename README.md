@@ -20,7 +20,7 @@ morphologica has an (in-progress) **documentation and reference** website at htt
 
 ## Quick Start
 
-This quick start shows dependency installation for Linux, because on this platform, it's a single call to apt (or your favourite package manager). If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users. For notes on compiler versions, see [README.build.compiler](https://github.com/ABRG-Models/morphologica/tree/main/README.build.compiler.md)
+This quick start shows dependency installation for Linux, because on this platform, it's a single call to apt (or your favourite package manager). If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users. For notes on supported compilers, see [README.build.compiler](https://github.com/ABRG-Models/morphologica/tree/main/README.build.compiler.md)
 
 ```bash
 # Install dependencies for building graph1.cpp and (almost) all the other examples (assuming Debian-like OS)
