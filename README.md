@@ -2,7 +2,7 @@
 
 ![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
 
-![cmake build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-single-platform.yml/badge.svg)
+![cmake ubuntu build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-single-platform.yml/badge.svg) ![cmake mac build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-mac.yml/badge.svg)
 
 **Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
 
