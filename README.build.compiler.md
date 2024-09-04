@@ -15,12 +15,12 @@ fulfil the requirements given here.
 
 ## Tested compiler versions
 
-| OS        | Compiler | Version | Result and reason                        |
-| :-------: | :------: | :-----: | ---------------------------------------- |
-| Ubuntu 24 | gcc      | 10.5    | Fail: on constexpr code in morph::Gridct |
-| Ubuntu 24 | gcc      | 11.4    | Pass (make && make test)                 |
-| Ubuntu 24 | gcc      | 12.3    | Pass (make && make test)                 |
-| Ubuntu 24 | gcc      | 13.2    | Pass (make && make test)                 |
+| OS           | Compiler | Version | Result and reason                        |
+| :-------:    | :------: | :-----: | ---------------------------------------- |
+| Ubuntu 24.04 | gcc      | 10.5    | Fail: on constexpr code in morph::Gridct |
+| Ubuntu 24.04 | gcc      | 11.4    | Pass (make && make test)                 |
+| Ubuntu 24.04 | gcc      | 12.3    | Pass (make && make test)                 |
+| Ubuntu 24.04 | gcc      | 13.2    | Pass (make && make test)                 |
 
 The build also succeeds on various versions of Mac OS with
 clang. Entries in the table for clang on Mac and Linux are to follow.
@@ -34,3 +34,11 @@ clang. Entries in the table for clang on Mac and Linux are to follow.
 | Ubuntu 22.04 | gcc              | 11      | Yes     |
 | Ubuntu 22.10 | gcc              | 12      | Yes     |
 | Ubuntu 24.04 | gcc              | 13      | Yes     |
+| Fedora 35    | gcc              | 11      | Yes     |
+| Fedora 36    | gcc              | 12      | Yes     |
+| Fedora 37    | gcc              | 12      | Yes     |
+| Fedora 38    | gcc              | 13      | Yes     |
+| Fedora 39    | gcc              | 13      | Yes     |
+| Fedora 40    | gcc              | 14      | Yes*    |
+
+*Well, probably/hopefully/presumably :)
