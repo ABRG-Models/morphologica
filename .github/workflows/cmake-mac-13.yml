@@ -45,7 +45,7 @@ jobs:
       run: |
         export OpenMP_ROOT=$(brew --prefix)/opt/lib
         echo ${OpenMP_ROOT}
-        cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target colourmaps_mono
 
     - name: Test
       working-directory: ${{github.workspace}}/build
