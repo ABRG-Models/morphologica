@@ -79,8 +79,10 @@ else()
       endif()
       set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors -Wno-psabi")
       set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -g ${COMPREHENSIVE_WARNING_FLAGS} -march=native -O3")
-      # Make it possible to compile complex constexpr functions
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=5000000000")
+      if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+        # Make it possible to compile complex constexpr functions (gcc only)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=5000000000")
+      endif()
     endif()
   else() # Windows
     # Set flags for Windows. /EHsc required for use of exceptions
