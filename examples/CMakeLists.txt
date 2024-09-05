@@ -200,8 +200,9 @@ if(USE_GLEW)
   target_link_libraries(colourmaps GLEW::GLEW)
 endif()
 
-# On MacOS 13 as a github runner, HAVE_STD_FORMAT is set to 1, but the compile fails.
+# On MacOS 13 as a github runner, HAVE_STD_FORMAT gets set to 1, but the compile still fails. Odd.
 CHECK_INCLUDE_FILE_CXX(format HAVE_STD_FORMAT)
+message(STATUS "HAVE_STD_FORMAT: ${HAVE_STD_FORMAT}")
 if(HAVE_STD_FORMAT)
   add_executable(colourmaps_mono colourmaps_mono.cpp)
   set_property(TARGET colourmaps_mono PROPERTY CXX_STANDARD 20)
