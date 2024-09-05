@@ -42,3 +42,19 @@ clang. Entries in the table for clang on Mac and Linux are to follow.
 | Fedora 40    | gcc              | 14      | Yes*    |
 
 *Well, probably/hopefully/presumably :)
+
+## Building with clang on Linux
+
+Install clang (which on Ubuntu provides clang++) and a suitable version of libstdc++.
+
+On Ubuntu 24, I used `clang-18` and `libstdc++-14-dev` together.
+
+You then call cmake with
+
+```bash
+mkdir build_clang
+cd build_clang
+CC=clang CXX=clang++ cmake ..
+make
+```
+(You probably don't need CC=clang)

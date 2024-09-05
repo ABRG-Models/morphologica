@@ -92,7 +92,7 @@ namespace morph {
                 v.render();
             }
 
-            void mousePressEvent (QMouseEvent* event)
+            void mousePressEvent (QMouseEvent* event) override
             {
                 v.set_cursorpos (event->x(), event->y());
                 int bflg = event->button();
@@ -107,7 +107,7 @@ namespace morph {
                 event->accept();
             }
 
-            void mouseMoveEvent (QMouseEvent* event)
+            void mouseMoveEvent (QMouseEvent* event) override
             {
                 if (v.cursor_position_callback (event->x(), event->y())) {
                     this->update();
@@ -115,7 +115,7 @@ namespace morph {
                 event->accept();
             }
 
-            void mouseReleaseEvent (QMouseEvent* event)
+            void mouseReleaseEvent (QMouseEvent* event) override
             {
                 v.set_cursorpos (event->x(), event->y());
                 int bflg = event->button();
@@ -126,7 +126,7 @@ namespace morph {
                 event->accept();
             }
 
-            void wheelEvent (QWheelEvent* event)
+            void wheelEvent (QWheelEvent* event) override
             {
                 QPoint numSteps = event->angleDelta() / 120;
                 v.scroll_callback (numSteps.x(), numSteps.y());
@@ -135,7 +135,7 @@ namespace morph {
             }
 
             // Keyboard events...
-            void keyPressEvent (QKeyEvent* event)
+            void keyPressEvent (QKeyEvent* event) override
             {
                 int mflg = event->modifiers();
                 int mods = 0;
