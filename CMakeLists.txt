@@ -1,8 +1,8 @@
 # AUTOMOC requires 2.8.6. The CMAKE_CXX_STANDARD variable requires 3.1.
 cmake_minimum_required(VERSION 3.8)
 project(morphologica)
-set(VERSION 0.1)
-set(SOVERSION 1.0)
+set(VERSION 0.1)   # FIXME: Change to 3.1
+set(SOVERSION 1.0) # FIXME: Change to 3.0 or remove
 
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
@@ -28,27 +28,34 @@ if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES aarch64)
   set(MORPH_HOST_DEFINITION "${MORPH_HOST_DEFINITION} -D__AARCH64__")
 endif()
 
-# An option that's useful for Ubuntu 16.04 builds OR wxWidgets
+# An option that's useful for unusual/old Linux builds OR wxWidgets
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
-# Using c++-14 (calls to std::decay_t in number_type.h). c++-17
-# required to allow brace initializers for the morph::Vector class
-set (CMAKE_CXX_STANDARD 17)
+#
+# The base C++ version in morphologica is current C++-17.
+#
+set(CMAKE_CXX_STANDARD 17)
+
+#
+# C++-20 availability testing for optional examples
+#
+# Some morphologica examples use C++-20 features, and one or two use
+# the <format> library. Some library code uses C++-20 features. The
+# testing here will make use of C++-20 only if the build is using
+# gcc. Extension to testing for clang versions could be added to this.
+#
 
 # Load this module which is useful for checking for include files such
 # as <format>. Do this with:
 #  CHECK_INCLUDE_FILE_CXX(format, HAVE_STD_FORMAT)
 # then test on HAVE_STD_FORMAT to choose what/how to compile.
-include(CheckIncludeFileCXX)
+include(CheckIncludeFileCXX) # CHECK_INCLUDE_FILE_CXX will be used in later scripts
 
-# There's ONE class that requires C++-20. C++-20 support is available
-# in Gnu GCC so if we have a recent enough version of that, then go
-# ahead and compile the morph::Grid code.
-set (CXX_20_AVAILABLE 0)
+# C++-20 testing; GNU compiler support
+set(CXX_20_AVAILABLE 0)
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.0)
-    message(STATUS "C++-20 is available on Gnu GCC version 10.0 and up")
-    set (CXX_20_AVAILABLE 1) # Can do C++-20
+    set(CXX_20_AVAILABLE 1) # Can do C++-20.
   endif()
 endif()
 
@@ -58,13 +65,14 @@ if (APPLE)
 else()
   if(NOT CMAKE_SYSTEM MATCHES Win.*)
     # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
-    if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+    if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
+      message(WARNING "Intel compiler has not been tested for some time")
       set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
-    else () # GCC or Clang
+    else() # GCC or Clang
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-        # Add compiler version check, to ensure gcc is version 7 or later.
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.1)
-          message(FATAL_ERROR "GCC version must be at least 7.1! Use CXX=g++-7 cmake (options) and don't forget to clean out your build directory first!")
+        # Add compiler version check, to ensure gcc is version 11 or later.
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
+          message(FATAL_ERROR "GCC version must be at least 11")
         else()
           message(STATUS "GCC version ${CMAKE_CXX_COMPILER_VERSION} OK!")
         endif()
@@ -82,6 +90,7 @@ endif()
 
 # Tell clang to be quiet about brace initialisers
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  # FIXME: Add clang compiler test
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
 
@@ -96,6 +105,9 @@ find_package(OpenMP 3)
 if(OpenMP_CXX_FOUND)
   message(STATUS "Found OpenMP version ${OpenMP_C_VERSION}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  if(APPLE)
+    # FIXME: Check the OpenMP root environment variable, which is required on some Mac versions
+  endif()
 endif()
 
 # Following `cmake --help-policy CMP0072`
@@ -120,7 +132,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Lib finding
-find_package(OpenCV) # No longer required for morph::Visual, used by some tests
+find_package(OpenCV QUIET) # No longer required for morph::Visual, used by some tests
 if(APPLE)
   find_package(OpenGL REQUIRED)
 else()
@@ -162,11 +174,13 @@ find_package(Qt5 QUIET COMPONENTS Gui Core Widgets)
 set(FOUND_QT_AND_HAVE_NO_GLEW 0)
 if(Qt5_FOUND)
   if(USE_GLEW)
-    message(WARNING "Qt was found, but GLEW was requested with -DUSE_GLEW=ON. GLEW interferes with Qt, so not compiling the Qt examples")
+    message(WARNING "NOT compiling Qt examples. Qt was found, but GLEW was requested with -DUSE_GLEW=ON. GLEW *interferes* with Qt, so can not compile the Qt examples")
   else()
     set(FOUND_QT_AND_HAVE_NO_GLEW 1)
     message(STATUS "Compiling Qt examples")
   endif()
+else()
+  message(STATUS "NOT compiling Qt examples (Qt5 libraries not found)")
 endif()
 
 
@@ -179,8 +193,10 @@ if(wxWidgets_FOUND)
     message(STATUS "Compiling wx examples")
     set(FOUND_WX_AND_GLEW 1)
   else()
-    message(WARNING "The wxWidgets examples require GLEW. wxWidgets was found but USE_GLEW is OFF. You will need to call cmake with the -DUSE_GLEW=ON option to compile wxWidgets examples.")
+    message(STATUS "NOT compiling wx examples. wxWidgets *was* found but USE_GLEW is set to OFF. The wxWidgets examples require the OpenGL Extension Wrangler library GLEW. If you would like to compile wxWidgets examples, please re-run cmake with the -DUSE_GLEW=ON option.")
   endif()
+else()
+  message(STATUS "NOT compiling wx examples (no wxWidgets library found)")
 endif()
 
 # rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
@@ -214,8 +230,8 @@ add_subdirectory(fonts)
 add_subdirectory(examples)
 
 # first we can indicate the documentation build as an option and set it to ON by default
-option (BUILD_DOC "Build documentation" OFF)
-if (BUILD_DOC)
+option(BUILD_DOC "Build documentation" OFF)
+if(BUILD_DOC)
   # check if Doxygen is installed
   find_package(Doxygen)
   if(DOXYGEN_FOUND)
@@ -236,7 +252,7 @@ if (BUILD_DOC)
   else(DOXYGEN_FOUND)
     message("Need doxygen for documentation")
   endif(DOXYGEN_FOUND)
-endif (BUILD_DOC)
+endif(BUILD_DOC)
 
 # For debugging of variables:
 option(DEBUG_VARIABLES OFF)

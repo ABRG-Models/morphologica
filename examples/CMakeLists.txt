@@ -200,12 +200,9 @@ if(USE_GLEW)
   target_link_libraries(colourmaps GLEW::GLEW)
 endif()
 
-# Isn't correct on MacOS 13, which does NOT have std::format, but we end up in this if()
+# On MacOS 13 as a github runner, HAVE_STD_FORMAT is set to 1, but the compile fails.
 CHECK_INCLUDE_FILE_CXX(format HAVE_STD_FORMAT)
 if(HAVE_STD_FORMAT)
-
-  message(STATUS "HAVE_STD_FORMAT on this platform is: ${HAVE_STD_FORMAT}.")
-
   add_executable(colourmaps_mono colourmaps_mono.cpp)
   set_property(TARGET colourmaps_mono PROPERTY CXX_STANDARD 20)
   target_link_libraries(colourmaps_mono OpenGL::GL glfw Freetype::Freetype)
