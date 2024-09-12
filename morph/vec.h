@@ -1079,6 +1079,23 @@ namespace morph {
             return rtn;
         }
 
+        // Convert 3D Cartesian (x,y,z) to spherical coordinates (rho, theta, phi) where theta is
+        // the angle about the z axis (range [0, 2pi]) and phi is the azimuthal angle (range [0,
+        // pi]).  This is the naming convention in mathematical texts. YOU MAY NEED TO SWITCH theta
+        // AND phi because some functions, including boost::math for its spherical harmonics uses a
+        // different convention, swapping theta and phi!
+        template <std::size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
+        constexpr vec<S, _N> cartesian_to_spherical() const
+        {
+            vec<S, _N> spherical = {S{0}}; // { rho, theta, phi }
+            // Assuming *this is cartesian, convert to spherical coordinates.
+            S rho = this->length();
+            spherical[0] = rho;                                  // rho
+            spherical[1] = std::atan2 ((*this)[1], (*this)[0]);  // theta
+            spherical[2] = std::acos ((*this)[2] / rho);         // phi
+            return spherical;
+        }
+
         /*!
          * Return this angle between this vector and the other. Works for any N.
          */
