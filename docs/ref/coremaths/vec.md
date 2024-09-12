@@ -133,6 +133,12 @@ possible to assign **from** other types (I *did* try). For example, this will **
 std::array<float, 3> a1 = { 1, 2, 3 };
 morph::vec<float, 3> v1 = a1;           // Bad, doesn't compile
 ```
+In this case, you have to use `vec::set_from`:
+```c++
+std::array<float, 3> a1 = { 1, 2, 3 };
+morph::vec<float, 3> v1;
+v1.set_from (a1);
+```
 
 ## Comparison operators
 
