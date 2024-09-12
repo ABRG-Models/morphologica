@@ -81,6 +81,42 @@ namespace morph {
             }
         }
 
+        morph::vvec<morph::vec<float>> cart_centres;
+        morph::vvec<morph::vec<float>> sph_centres;
+        void vertexPositionsToFaces()
+        {
+            if (!this->n_faces) { throw std::runtime_error ("Call this after finalize()"); }
+            // Iterate through this->vertexPositions and indices, to compute the centres of each
+            // facet of the sphere, then project this onto the sphere. This gives an array of
+            // coordinates the same size as this->data/this->cdata. From these compute coordinates
+            // (r, theta, phi).
+            this->cart_centres.resize (this->n_faces);
+            this->sph_centres.resize (this->n_faces);
+            for (size_t i = 0; i < this->indices.size(); i+=3) {
+                int _vtx1 = this->indices[i];
+                int _vtx2 = this->indices[i+1];
+                int _vtx3 = this->indices[i+2];
+                morph::vec<float> v1 = {
+                    this->vertexPositions[3 * _vtx1],
+                    this->vertexPositions[3 * _vtx1 + 1],
+                    this->vertexPositions[3 * _vtx1+ 2]
+                };
+                morph::vec<float> v2 = {
+                    this->vertexPositions[3 * _vtx2],
+                    this->vertexPositions[3 * _vtx2 + 1],
+                    this->vertexPositions[3 * _vtx2+ 2]
+                };
+                morph::vec<float> v3 = {
+                    this->vertexPositions[3 * _vtx3],
+                    this->vertexPositions[3 * _vtx3 + 1],
+                    this->vertexPositions[3 * _vtx3+ 2]
+                };
+                this->cart_centres[i/3] = (v1 + v2 + v3) / 3.0f;
+                this->sph_centres[i/3] = this->cart_centres[i/3].cartesian_to_spherical();
+            }
+        }
+
+
         //! Update the colours based on vvec<T> data
         void updateColours()
         {
