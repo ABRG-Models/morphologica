@@ -29,6 +29,7 @@
 #include <morph/TransformMatrix.h>
 #include <morph/vvec.h>
 #include <morph/vec.h>
+#include <morph/range.h>
 #include <morph/mathconst.h>
 #include <morph/gl/util.h>
 #include <morph/VisualCommon.h>
@@ -522,6 +523,19 @@ namespace morph {
                 idx_bytes[b++] = i >> 24 & 0xff;
             }
             return base64::encode (idx_bytes);
+        }
+
+        /*!
+         * Find the extents of this VisualModel, returning it as the x range, the y range and the z range.
+         */
+        morph::vec<morph::range<float>, 3> extents()
+        {
+            morph::vec<morph::range<float>, 3> axis_extents;
+            for (unsigned int i = 0; i < 3; ++i) { axis_extents[i].search_init(); }
+            for (unsigned int j = 0; j < this->vertexPositions.size() - 2; j += 3) {
+                for (unsigned int i = 0; i < 3; ++i) { axis_extents[i].update (this->vertexPositions[j+i]); }
+            }
+            return axis_extents;
         }
 
         /*!
