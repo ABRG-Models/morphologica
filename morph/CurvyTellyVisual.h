@@ -87,10 +87,10 @@ namespace morph {
             unsigned long long int c_count = 0;
             for (unsigned int ri = 0; ri < nrect; ++ri) {
 
-                float T_border = false;
-                float B_border = false;
-                float L_border = false;
-                float R_border = false;
+                bool T_border = false;
+                bool B_border = false;
+                bool L_border = false;
+                bool R_border = false;
 
                 // Use a single colour for each rect, even though rectangle's z
                 // positions are interpolated. Do the _colour_ scaling:
