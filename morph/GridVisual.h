@@ -42,6 +42,42 @@ namespace morph {
             // Note: VisualModel::finalize() should be called before rendering
         }
 
+        //! The width of the ColourBar
+        float width = 0.1f;
+        //! The length of the ColourBar (the colours vary along this direction)
+        float length = 0.6f;
+        //! Position in z in model space. Default is just 0.
+        float z = 0.0f;
+        //! colour for the axis box/lines. Text also takes this colour.
+        std::array<float, 3> framecolour = morph::colour::black;
+        //! The line width of the colourbar frame
+        float framelinewidth = 0.006f;
+
+        void drawFrame()
+        {
+            // Use flat lines for the frame
+            morph::vec<float, 2> extents = { width, length };
+            // if (this->orientation == colourbar_orientation::horizontal) { extents = { length, width }; }
+
+            float z_frame = this->z + 0.01f;
+
+            this->computeFlatLine ({-this->framelinewidth,            -(this->framelinewidth*0.5f), z_frame},
+                                   {extents.x()+this->framelinewidth, -(this->framelinewidth*0.5f), z_frame},
+                                   this->uz, this->framecolour, this->framelinewidth);
+
+            this->computeFlatLine ({extents.x()+this->framelinewidth*0.5f, 0.0f,        z_frame},
+                                   {extents.x()+this->framelinewidth*0.5f, extents.y(), z_frame},
+                                   this->uz, this->framecolour, this->framelinewidth);
+
+            this->computeFlatLine ({extents.x()+this->framelinewidth, extents.y()+(this->framelinewidth*0.5f), z_frame},
+                                   {-this->framelinewidth,            extents.y()+(this->framelinewidth*0.5f), z_frame},
+                                   this->uz, this->framecolour, this->framelinewidth);
+
+            this->computeFlatLine ({-this->framelinewidth*0.5f, extents.y(), z_frame},
+                                   {-this->framelinewidth*0.5f, 0.0f,        z_frame},
+                                   this->uz, this->framecolour, this->framelinewidth);
+        }
+
         // Common function to setup scaling. Called by all initializeVertices subroutines. Also
         // checks size of scalar/vectorData and the Grid match.
         void setupScaling()
@@ -132,10 +168,10 @@ namespace morph {
                 float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
                 float bz = dx[0] / 10.0f;
                 float half_bthick = bthick/2.0f;
-                float left  = cg_extents[0] - half_bthick - (dx[0]/2.0f) + this->centering_offset[0];
-                float right = cg_extents[1] + half_bthick + (dx[0]/2.0f) + this->centering_offset[0];
-                float bot   = cg_extents[2] - half_bthick - (dx[1]/2.0f) + this->centering_offset[1];
-                float top   = cg_extents[3] + half_bthick + (dx[1]/2.0f) + this->centering_offset[1];
+                float left  = cg_extents[0] - half_bthick  + this->centering_offset[0];
+                float right = cg_extents[1] + half_bthick  + this->centering_offset[0];
+                float bot   = cg_extents[2] - half_bthick  + this->centering_offset[1];
+                float top   = cg_extents[3] + half_bthick  + this->centering_offset[1];
                 morph::vec<float> lb = {{left, bot, bz}}; // z?
                 morph::vec<float> lt = {{left, top, bz}};
                 morph::vec<float> rt = {{right, top, bz}};
@@ -145,6 +181,10 @@ namespace morph {
                 this->computeFlatLine(lt, rt, lb, rb, this->uz, this->border_colour, bthick);
                 this->computeFlatLine(rt, rb, lt, lb, this->uz, this->border_colour, bthick);
                 this->computeFlatLine(rb, lb, rt, lt, this->uz, this->border_colour, bthick);
+            }
+
+            if (this->showgrid == true) {
+              this->drawFrame();
             }
         }
 
@@ -646,6 +686,9 @@ namespace morph {
         //! Set this to true to adjust the positions that the GridVisual uses to plot the Grid so
         //! that the Grid is centralised around the VisualModel::mv_offset.
         bool centralize = false;
+
+        //! Set true to draw a border around each pixels
+        bool showgrid = true;
 
         //! Set true to draw a border around the outside
         bool showborder = false;
