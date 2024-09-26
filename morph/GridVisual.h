@@ -140,10 +140,11 @@ namespace morph {
                 morph::vec<float> lt = {{left, top, bz}};
                 morph::vec<float> rt = {{right, top, bz}};
                 morph::vec<float> rb = {{right, bot, bz}};
-                this->computeTube (lb, lt, this->border_colour, this->border_colour, bthick, 12);
-                this->computeTube (lt, rt, this->border_colour, this->border_colour, bthick, 12);
-                this->computeTube (rt, rb, this->border_colour, this->border_colour, bthick, 12);
-                this->computeTube (rb, lb, this->border_colour, this->border_colour, bthick, 12);
+
+                this->computeFlatLine(lb, lt, rb, rt, this->uz, this->border_colour, bthick);
+                this->computeFlatLine(lt, rt, lb, rb, this->uz, this->border_colour, bthick);
+                this->computeFlatLine(rt, rb, lt, lb, this->uz, this->border_colour, bthick);
+                this->computeFlatLine(rb, lb, rt, lt, this->uz, this->border_colour, bthick);
             }
         }
 
