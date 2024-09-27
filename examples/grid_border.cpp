@@ -111,6 +111,7 @@ int main()
     gv->finalize();
     v.addVisualModel (gv);
 
+    // 6) show both border and grid
     offset = { 3 * step * grid.width(), -step * grid.width(), 0.0f };
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
@@ -128,15 +129,42 @@ int main()
     gv->finalize();
     v.addVisualModel (gv);
 
-    // offset = { 3 * step * grid.width(), -step * grid.width(), 0.0f };
-    // gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
-    // v.bindmodel (gv);
-    // gv->gridVisMode = morph::GridVisMode::Pixels;
-    // gv->setVectorData (&data);
-    // gv->cm.setType (morph::ColourMapType::Twilight);
-    // gv->addLabel ("GridVisMode::Pixels", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05));
-    // gv->finalize();
-    // v.addVisualModel (gv);
+    // 7) show how to use the selected pixel option
+    offset = { step * grid.width(), -3 * step * grid.width(), 0.0f };
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::RectInterp;
+    gv->setVectorData (&data);
+    gv->cm.setType (morph::ColourMapType::Twilight);
+    gv->zScale.setParams(0.0f, 0.0f);
+    
+    gv->showselectedpixborder = true;
+    gv->selected_pix_indexes.reserve(9);
+    gv->selected_pix_indexes.push_back(6); 
+    gv->selected_pix_indexes.push_back(0);
+    gv->selected_pix_indexes.push_back(9);
+    gv->selected_pix_indexes.push_back(10); 
+    gv->selected_pix_indexes.push_back(45);
+    gv->selected_pix_indexes.push_back(46);
+    gv->selected_pix_indexes.push_back(49);
+    gv->selected_pix_indexes.push_back(90);
+    gv->selected_pix_indexes.push_back(99);
+
+    gv->grid_thickness = 0.2f;
+
+    gv->selected_pix_border_colour.push_back(morph::colour::forestgreen);
+    gv->selected_pix_border_colour.push_back(morph::colour::yellow3);
+    gv->selected_pix_border_colour.push_back({1,0.2431372549,0.5882352941});
+    gv->selected_pix_border_colour.push_back(morph::colour::skyblue);
+    gv->selected_pix_border_colour.push_back(morph::colour::tomato2);
+    gv->selected_pix_border_colour.push_back(morph::colour::gray55);
+    gv->selected_pix_border_colour.push_back(morph::colour::red2);
+    gv->selected_pix_border_colour.push_back(morph::colour::tan1);
+    gv->selected_pix_border_colour.push_back(morph::colour::gold);
+
+    gv->addLabel ("7) 2 + selected pixel borders", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
+    gv->finalize();
+    v.addVisualModel (gv);
 
     v.keepOpen();
 

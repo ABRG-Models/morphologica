@@ -42,13 +42,14 @@ namespace morph {
             // Note: VisualModel::finalize() should be called before rendering
         }
 
+        // function that draw a border around the whole image
         void drawBorder() 
         {
             // Draw around the outside.
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
-            float bz = dx[0] / 10.0f;
+            float bz = dx[0] * 0.01f;
             float left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
             float right = cg_extents[1] + (dx[0]/2.0f) + this->centering_offset[0];
             float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
@@ -71,7 +72,7 @@ namespace morph {
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
-            float bz = dx[0] / 20.0f;
+            float bz = dx[0] * 0.05f;
             // loop through each pixel
             for (float left = cg_extents[0] - (dx[0]/2.0f); left < cg_extents[1] + (dx[0]/2.0f); left += dx[0]) {
                 for (float bot = cg_extents[2] - (dx[1]/2.0f); bot < cg_extents[3] + (dx[1]/2.0f); bot += dx[1]) {
@@ -97,6 +98,54 @@ namespace morph {
                         this->computeFlatLine(lt, rt, lb, rb, this->uz, this->grid_colour, gridthick);
                     }
                 }
+            }
+        }
+
+        //! function to draw the border around selected pixels
+        void drawSelectedPixBorder()
+        {
+            // Draw around all pixels
+            morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
+            morph::vec<float, 2> dx = this->grid->get_dx();
+            float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
+            float bz = dx[0] * 0.075f;
+
+            unsigned int pix_width = static_cast<unsigned int>(std::round(cg_extents[1] + dx[0])/dx[0]);
+
+            // check if the size of selected_pix_border_colour is the same as the size of selected_pix_indexes
+            if (selected_pix_indexes.size()>selected_pix_border_colour.size()){
+              std::cerr << "[GridVisual::drawSelectedPixBorder] the number of pixel indices is higher than the number of colours," 
+                        << " the last color will be used for the remaining pixels" << std::endl;
+              while(selected_pix_border_colour.size() < selected_pix_indexes.size()) {
+                selected_pix_border_colour.push_back(selected_pix_border_colour.back());
+              }
+            }
+
+            float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
+            float grid_bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
+
+            // loop through each pixel
+            for (unsigned int i=0; i < selected_pix_indexes.size(); ++i ) {
+                unsigned int r = selected_pix_indexes[i] % pix_width;
+                unsigned int c = selected_pix_indexes[i] / pix_width;
+                
+                float left = grid_left + (r * dx[0]);
+                float right = left + dx[0];
+                float bot = grid_bot + (c * dx[1]);
+                float top = bot + dx[1];
+                morph::vec<float> lb = {{left, bot, bz}}; // z?
+                morph::vec<float> lt = {{left, top, bz}};
+                morph::vec<float> rt = {{right, top, bz}};
+                morph::vec<float> rb = {{right, bot, bz}};
+
+                // draw the vertical from bottom left to top left
+                this->computeFlatLine(lb, lt, rb, rt, this->uz, this->selected_pix_border_colour[i], gridthick);
+                // draw the horizontal from bottom left to bottom right
+                this->computeFlatLine(rb, lb, rt, lt, this->uz, this->selected_pix_border_colour[i], gridthick);
+                // draw the vertical from bottom right to top right
+                this->computeFlatLine(rt, rb, lt, lb, this->uz, this->selected_pix_border_colour[i], gridthick);
+                // draw the horizontal from top left to top right
+                this->computeFlatLine(lt, rt, lb, rb, this->uz, this->selected_pix_border_colour[i], gridthick);
             }
         }
 
@@ -186,9 +235,11 @@ namespace morph {
             if (this->showborder == true) {
                 this->drawBorder();
             }
-
             if (this->showgrid == true) {
                 this->drawGrid();
+            }
+            if (this->showselectedpixborder == true) {
+              this->drawSelectedPixBorder();
             }
         }
 
@@ -714,6 +765,16 @@ namespace morph {
 
         //! If you need to override the pixels-relationship to the border thickness, set it here
         float border_thickness_fixed = 0.0f;
+
+        //! new option for border around selected pixels
+        bool showselectedpixborder = false;
+
+        //! list of the pixel to have a border
+        std::vector<unsigned int> selected_pix_indexes;
+
+        //! The colour for the border
+        std::vector<std::array<float, 3>> selected_pix_border_colour;
+        
 
         // If true, interpolate the colour of the sides of columns on a column grid
         bool interpolate_colour_sides = false;
