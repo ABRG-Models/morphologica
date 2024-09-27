@@ -42,40 +42,40 @@ namespace morph {
             // Note: VisualModel::finalize() should be called before rendering
         }
 
-        //! The width of the ColourBar
-        float width = 0.1f;
-        //! The length of the ColourBar (the colours vary along this direction)
-        float length = 0.6f;
-        //! Position in z in model space. Default is just 0.
-        float z = 0.0f;
-        //! colour for the axis box/lines. Text also takes this colour.
-        std::array<float, 3> framecolour = morph::colour::black;
-        //! The line width of the colourbar frame
-        float framelinewidth = 0.006f;
-
-        void drawFrame()
+        //! function to draw the grid (border around each pixel)
+        void drawGrid()
         {
-            // Use flat lines for the frame
-            morph::vec<float, 2> extents = { width, length };
-            // if (this->orientation == colourbar_orientation::horizontal) { extents = { length, width }; }
+            // Draw around all pixels
+            morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
+            morph::vec<float, 2> dx = this->grid->get_dx();
+            float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
+            float bz = dx[0] / 20.0f;
+            // loop through each pixel
+            for (float left = cg_extents[0] - (dx[0]/2.0f); left < cg_extents[1] + (dx[0]/2.0f); left += dx[0]) {
+              for (float bot = cg_extents[2] - (dx[1]/2.0f); bot < cg_extents[3] + (dx[1]/2.0f); bot += dx[1]) {
+                float right = left + dx[0];
+                float top = bot + dx[1];
+                
+                morph::vec<float> lb = {{left + this->centering_offset[0], bot + this->centering_offset[0], bz}}; // z?
+                morph::vec<float> lt = {{left + this->centering_offset[0], top + this->centering_offset[0], bz}};
+                morph::vec<float> rt = {{right + this->centering_offset[0], top + this->centering_offset[0], bz}};
+                morph::vec<float> rb = {{right + this->centering_offset[0], bot + this->centering_offset[0], bz}};
 
-            float z_frame = this->z + 0.01f;
-
-            this->computeFlatLine ({-this->framelinewidth,            -(this->framelinewidth*0.5f), z_frame},
-                                   {extents.x()+this->framelinewidth, -(this->framelinewidth*0.5f), z_frame},
-                                   this->uz, this->framecolour, this->framelinewidth);
-
-            this->computeFlatLine ({extents.x()+this->framelinewidth*0.5f, 0.0f,        z_frame},
-                                   {extents.x()+this->framelinewidth*0.5f, extents.y(), z_frame},
-                                   this->uz, this->framecolour, this->framelinewidth);
-
-            this->computeFlatLine ({extents.x()+this->framelinewidth, extents.y()+(this->framelinewidth*0.5f), z_frame},
-                                   {-this->framelinewidth,            extents.y()+(this->framelinewidth*0.5f), z_frame},
-                                   this->uz, this->framecolour, this->framelinewidth);
-
-            this->computeFlatLine ({-this->framelinewidth*0.5f, extents.y(), z_frame},
-                                   {-this->framelinewidth*0.5f, 0.0f,        z_frame},
-                                   this->uz, this->framecolour, this->framelinewidth);
+                // draw the vertical from bottom left to top left
+                this->computeFlatLine(lb, lt, rb, rt, this->uz, this->grid_colour, gridthick);
+                // draw the horizontal from bottom left to bottom right
+                this->computeFlatLine(rb, lb, rt, lt, this->uz, this->grid_colour, gridthick);
+                
+                // complete the last right border (from bottom right to top right)
+                if (right >= cg_extents[1] + (dx[0]/2.0f)) {
+                  this->computeFlatLine(rt, rb, lt, lb, this->uz, this->grid_colour, gridthick);
+                }
+                // complete the last top border (from top left to top right)
+                if (top >= cg_extents[3] + (dx[1]/2.0f)) {
+                  this->computeFlatLine(lt, rt, lb, rb, this->uz, this->grid_colour, gridthick);
+                }
+              }
+            }
         }
 
         // Common function to setup scaling. Called by all initializeVertices subroutines. Also
@@ -167,11 +167,11 @@ namespace morph {
                 morph::vec<float, 2> dx = this->grid->get_dx();
                 float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
                 float bz = dx[0] / 10.0f;
-                float half_bthick = bthick/2.0f;
-                float left  = cg_extents[0] - half_bthick  + this->centering_offset[0];
-                float right = cg_extents[1] + half_bthick  + this->centering_offset[0];
-                float bot   = cg_extents[2] - half_bthick  + this->centering_offset[1];
-                float top   = cg_extents[3] + half_bthick  + this->centering_offset[1];
+                // float half_bthick = bthick/2.0f;
+                float left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
+                float right = cg_extents[1] + (dx[0]/2.0f) + this->centering_offset[0];
+                float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
+                float top   = cg_extents[3] + (dx[1]/2.0f) + this->centering_offset[1];
                 morph::vec<float> lb = {{left, bot, bz}}; // z?
                 morph::vec<float> lt = {{left, top, bz}};
                 morph::vec<float> rt = {{right, top, bz}};
@@ -184,7 +184,7 @@ namespace morph {
             }
 
             if (this->showgrid == true) {
-              this->drawFrame();
+              this->drawGrid();
             }
         }
 
@@ -687,8 +687,17 @@ namespace morph {
         //! that the Grid is centralised around the VisualModel::mv_offset.
         bool centralize = false;
 
-        //! Set true to draw a border around each pixels
-        bool showgrid = true;
+        //! Set true to draw a grid (border around each pixels)
+        bool showgrid = false;
+
+        //! The colour used for the grid (default is grey)
+        std::array<float, 3> grid_colour = morph::colour::grey80;
+
+        //! The grid thickness in multiples of a pixel in the Grid
+        float grid_thickness = 0.33f;
+
+        //! If you need to override the pixels-relationship to the grid thickness, set it here
+        float grid_thickness_fixed = 0.0f;
 
         //! Set true to draw a border around the outside
         bool showborder = false;
