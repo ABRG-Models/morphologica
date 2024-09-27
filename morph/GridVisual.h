@@ -42,6 +42,28 @@ namespace morph {
             // Note: VisualModel::finalize() should be called before rendering
         }
 
+        void drawBorder() 
+        {
+            // Draw around the outside.
+            morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
+            morph::vec<float, 2> dx = this->grid->get_dx();
+            float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
+            float bz = dx[0] / 10.0f;
+            float left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
+            float right = cg_extents[1] + (dx[0]/2.0f) + this->centering_offset[0];
+            float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
+            float top   = cg_extents[3] + (dx[1]/2.0f) + this->centering_offset[1];
+            morph::vec<float> lb = {{left, bot, bz}}; // z?
+            morph::vec<float> lt = {{left, top, bz}};
+            morph::vec<float> rt = {{right, top, bz}};
+            morph::vec<float> rb = {{right, bot, bz}};
+
+            this->computeFlatLine(lb, lt, rb, rt, this->uz, this->border_colour, bthick);
+            this->computeFlatLine(lt, rt, lb, rb, this->uz, this->border_colour, bthick);
+            this->computeFlatLine(rt, rb, lt, lb, this->uz, this->border_colour, bthick);
+            this->computeFlatLine(rb, lb, rt, lt, this->uz, this->border_colour, bthick);
+        }
+
         //! function to draw the grid (border around each pixel)
         void drawGrid()
         {
@@ -52,29 +74,29 @@ namespace morph {
             float bz = dx[0] / 20.0f;
             // loop through each pixel
             for (float left = cg_extents[0] - (dx[0]/2.0f); left < cg_extents[1] + (dx[0]/2.0f); left += dx[0]) {
-              for (float bot = cg_extents[2] - (dx[1]/2.0f); bot < cg_extents[3] + (dx[1]/2.0f); bot += dx[1]) {
-                float right = left + dx[0];
-                float top = bot + dx[1];
-                
-                morph::vec<float> lb = {{left + this->centering_offset[0], bot + this->centering_offset[0], bz}}; // z?
-                morph::vec<float> lt = {{left + this->centering_offset[0], top + this->centering_offset[0], bz}};
-                morph::vec<float> rt = {{right + this->centering_offset[0], top + this->centering_offset[0], bz}};
-                morph::vec<float> rb = {{right + this->centering_offset[0], bot + this->centering_offset[0], bz}};
+                for (float bot = cg_extents[2] - (dx[1]/2.0f); bot < cg_extents[3] + (dx[1]/2.0f); bot += dx[1]) {
+                    float right = left + dx[0];
+                    float top = bot + dx[1];
 
-                // draw the vertical from bottom left to top left
-                this->computeFlatLine(lb, lt, rb, rt, this->uz, this->grid_colour, gridthick);
-                // draw the horizontal from bottom left to bottom right
-                this->computeFlatLine(rb, lb, rt, lt, this->uz, this->grid_colour, gridthick);
-                
-                // complete the last right border (from bottom right to top right)
-                if (right >= cg_extents[1] + (dx[0]/2.0f)) {
-                  this->computeFlatLine(rt, rb, lt, lb, this->uz, this->grid_colour, gridthick);
+                    morph::vec<float> lb = {{left + this->centering_offset[0], bot + this->centering_offset[0], bz}}; // z?
+                    morph::vec<float> lt = {{left + this->centering_offset[0], top + this->centering_offset[0], bz}};
+                    morph::vec<float> rt = {{right + this->centering_offset[0], top + this->centering_offset[0], bz}};
+                    morph::vec<float> rb = {{right + this->centering_offset[0], bot + this->centering_offset[0], bz}};
+
+                    // draw the vertical from bottom left to top left
+                    this->computeFlatLine(lb, lt, rb, rt, this->uz, this->grid_colour, gridthick);
+                    // draw the horizontal from bottom left to bottom right
+                    this->computeFlatLine(rb, lb, rt, lt, this->uz, this->grid_colour, gridthick);
+
+                    // complete the last right border (from bottom right to top right)
+                    if (right >= cg_extents[1] + (dx[0]/2.0f)) {
+                        this->computeFlatLine(rt, rb, lt, lb, this->uz, this->grid_colour, gridthick);
+                    }
+                    // complete the last top border (from top left to top right)
+                    if (top >= cg_extents[3] + (dx[1]/2.0f)) {
+                        this->computeFlatLine(lt, rt, lb, rb, this->uz, this->grid_colour, gridthick);
+                    }
                 }
-                // complete the last top border (from top left to top right)
-                if (top >= cg_extents[3] + (dx[1]/2.0f)) {
-                  this->computeFlatLine(lt, rt, lb, rb, this->uz, this->grid_colour, gridthick);
-                }
-              }
             }
         }
 
@@ -162,29 +184,11 @@ namespace morph {
             }
 
             if (this->showborder == true) {
-                // Draw around the outside.
-                morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
-                morph::vec<float, 2> dx = this->grid->get_dx();
-                float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
-                float bz = dx[0] / 10.0f;
-                // float half_bthick = bthick/2.0f;
-                float left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
-                float right = cg_extents[1] + (dx[0]/2.0f) + this->centering_offset[0];
-                float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
-                float top   = cg_extents[3] + (dx[1]/2.0f) + this->centering_offset[1];
-                morph::vec<float> lb = {{left, bot, bz}}; // z?
-                morph::vec<float> lt = {{left, top, bz}};
-                morph::vec<float> rt = {{right, top, bz}};
-                morph::vec<float> rb = {{right, bot, bz}};
-
-                this->computeFlatLine(lb, lt, rb, rt, this->uz, this->border_colour, bthick);
-                this->computeFlatLine(lt, rt, lb, rb, this->uz, this->border_colour, bthick);
-                this->computeFlatLine(rt, rb, lt, lb, this->uz, this->border_colour, bthick);
-                this->computeFlatLine(rb, lb, rt, lt, this->uz, this->border_colour, bthick);
+                this->drawBorder();
             }
 
             if (this->showgrid == true) {
-              this->drawGrid();
+                this->drawGrid();
             }
         }
 
