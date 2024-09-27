@@ -185,7 +185,7 @@ int main()
     gv->selected_pix_indexes.push_back(0);
     gv->selected_pix_indexes.push_back(9);
     gv->selected_pix_indexes.push_back(10);
-    gv->selected_pix_indexes.push_back(45)
+    gv->selected_pix_indexes.push_back(45);
     gv->selected_pix_indexes.push_back(46);
     gv->selected_pix_indexes.push_back(49);
     gv->selected_pix_indexes.push_back(90);
