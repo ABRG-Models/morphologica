@@ -40,6 +40,13 @@ namespace morph {
             , y(_y)
             , z(_z) {}
 
+        // A constructor that sets up a unit quaternion then applies a rotation
+        constexpr Quaternion (morph::vec<Flt, 3> axis, Flt angle)
+            : w(Flt{1})
+            , x(Flt{0})
+            , y(Flt{0})
+            , z(Flt{0}) { this->rotate (axis, angle); }
+
         //! User-declared copy constructor
         constexpr Quaternion (const Quaternion<Flt>& rhs)
             : w(rhs.w)
@@ -149,6 +156,39 @@ namespace morph {
             q.y = this->w * q2.y - this->x * q2.z + this->y * q2.w + this->z * q2.x;
             q.z = this->w * q2.z + this->x * q2.y - this->y * q2.x + this->z * q2.w;
             return q;
+        }
+
+        //! Rotate a vector by this quaternion
+        template <typename F=Flt, std::size_t N = 3, std::enable_if_t<(N==3||N==4), int> = 0>
+        constexpr morph::vec<Flt, N> operator* (const morph::vec<F, N>& v_r) const
+        {
+            // Do the rotation by extracting the rotation matrix and then rotating.
+            std::array<Flt, 16> rotn_mat = { Flt{0} };
+            this->rotationMatrix (rotn_mat);
+            // Do matrix * vector
+            morph::vec<Flt, 4> v = { Flt{0} };
+            v[0] = rotn_mat[0] * v_r.x()
+                + rotn_mat[4] * v_r.y()
+                + rotn_mat[8] * v_r.z()
+                + rotn_mat[12]; // * 1
+            v[1] = rotn_mat[1] * v_r.x()
+                + rotn_mat[5] * v_r.y()
+                + rotn_mat[9] * v_r.z()
+                + rotn_mat[13];
+            v[2] = rotn_mat[2] * v_r.x()
+                + rotn_mat[6] * v_r.y()
+                + rotn_mat[10] * v_r.z()
+                + rotn_mat[14];
+            v[3] = rotn_mat[3] * v_r.x()
+                + rotn_mat[7] * v_r.y()
+                + rotn_mat[11] * v_r.z()
+                + rotn_mat[15];
+
+            if constexpr (N==3) {
+                return v.less_one_dim();
+            } else {
+                return v;
+            }
         }
 
         //! Overload / operator. q1 is 'this->', so this is q = q1 / q2
