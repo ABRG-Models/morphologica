@@ -149,6 +149,22 @@ if(ARMADILLO_FOUND)
     target_link_libraries(grid_ortho GLEW::GLEW)
   endif()
 
+  # similar to grid_simple but with a random value for the pixel which highlight better the different perspective
+  # morph::Grid is runtime-configured
+  add_executable(grid_simple_rand grid_simple_rand.cpp)
+  target_link_libraries(grid_simple_rand OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(grid_simple_rand GLEW::GLEW)
+  endif()
+
+  # grid_simple_rand, but orthographic view is the default
+  add_executable(grid_ortho_rand grid_simple_rand.cpp)
+  target_compile_definitions(grid_ortho_rand PUBLIC ORTHOGRAPHIC=1)
+  target_link_libraries(grid_ortho_rand OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(grid_ortho_rand GLEW::GLEW)
+  endif()
+
   add_executable(grid_image grid_image.cpp)
   target_link_libraries(grid_image OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
