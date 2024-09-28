@@ -9,10 +9,9 @@ constexpr int test_quat1()
     morph::Quaternion<float> q;
     q.renormalize();
 
-    morph::Quaternion<float> rotationQuaternion;
     float angularSpeed = 0.2;
     morph::vec<float> rotationAxis = {1.0f, 0.0f, 0.0f};
-    rotationQuaternion.initFromAxisAngle (rotationAxis, angularSpeed);
+    morph::Quaternion<float> rotationQuaternion (rotationAxis, angularSpeed);
 
     morph::Quaternion<float> p = q;
     if (p == q) {  } else { rtn++; }
@@ -26,11 +25,9 @@ constexpr int test_quat1()
     morph::Quaternion<float> qident;
     if (qident != qiqi) { --rtn; }
 
-    morph::Quaternion<float> q1;
-    morph::Quaternion<float> q2;
     using mc = morph::mathconst<float>;
-    q1.initFromAxisAngle (morph::vec<float>({1,0,0}), mc::pi_over_3);
-    q2.initFromAxisAngle (morph::vec<float>({0,1,0}), mc::pi_over_4);
+    morph::Quaternion<float> q1(morph::vec<float>({1,0,0}), mc::pi_over_3);
+    morph::Quaternion<float> q2(morph::vec<float>({0,1,0}), mc::pi_over_4);
     morph::Quaternion<float> q3 = q1 * q2;
     if (q3.x == 0) { q3.x += 0.1f; }
 

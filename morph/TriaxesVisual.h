@@ -264,8 +264,7 @@ namespace morph {
                         0.5f*this->axis_ends[1] - downshift, 0 }};
 
             if (geom.width() > 2*this->fontsize) {
-                morph::Quaternion<float> leftrot;
-                leftrot.initFromAxisAngle (this->uz, -90.0f);
+                morph::Quaternion<float> leftrot(this->uz, -morph::mathconst<float>::pi_over_2);
                 lbl->setupText (this->ylabel, leftrot, lblpos+this->mv_offset, this->axiscolour);
             } else {
                 lbl->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);

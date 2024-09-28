@@ -1436,7 +1436,7 @@ namespace morph {
 
                 // Rotation axis is perpendicular to the mouse position difference vector BUT we
                 // have to project into the model frame to determine how to rotate the model!
-                float rotamount = mouseMoveWorld.length() * 40.0f;
+                float rotamount = mouseMoveWorld.length() * 40.0f; // chosen in degrees
                 // Calculate new rotation axis as weighted sum
                 this->rotationAxis = (mouseMoveWorld * rotamount);
                 this->rotationAxis.renormalize();
@@ -1448,8 +1448,8 @@ namespace morph {
 
                 // Update rotation from the saved position.
                 this->rotation = this->savedRotation;
-                morph::Quaternion<float> rotationQuaternion;
-                rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
+                morph::Quaternion<float> rotationQuaternion(this->rotationAxis,
+                                                            rotamount * morph::mathconst<float>::deg2rad);
                 this->rotation.premultiply (rotationQuaternion); // combines rotations
                 needs_render = true;
 

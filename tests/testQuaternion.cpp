@@ -1,5 +1,6 @@
 #include "morph/Quaternion.h"
 #include "morph/vec.h"
+#include "morph/mathconst.h"
 
 int main()
 {
@@ -10,10 +11,9 @@ int main()
     q.renormalize();
     std::cout << q << std::endl;
 
-    morph::Quaternion<float> rotationQuaternion;
-    float angularSpeed = 0.2;
+    float angularSpeed = 0.2 * morph::mathconst<float>::deg2rad;
     morph::vec<float> rotationAxis = {1.0f, 0.0f, 0.0f};
-    rotationQuaternion.initFromAxisAngle (rotationAxis, angularSpeed);
+    morph::Quaternion<float> rotationQuaternion(rotationAxis, angularSpeed);
     std::cout << rotationQuaternion << std::endl;
 
     morph::Quaternion<float> p = q;
@@ -37,11 +37,9 @@ int main()
     }
     std::cout << "cf epsilon: " << std::numeric_limits<float>::epsilon() << std::endl;
 
-    morph::Quaternion<float> q1;
-    morph::Quaternion<float> q2;
     using mc = morph::mathconst<float>;
-    q1.initFromAxisAngle (morph::vec<float>({1,0,0}), mc::pi_over_3);
-    q2.initFromAxisAngle (morph::vec<float>({0,1,0}), mc::pi_over_4);
+    morph::Quaternion<float> q1(morph::vec<float>({1,0,0}), mc::pi_over_3);
+    morph::Quaternion<float> q2(morph::vec<float>({0,1,0}), mc::pi_over_4);
     morph::Quaternion<float> q3 = q1 * q2;
 
     std::cout << q3 << " = " << q1 << " * " << q2 << std::endl;
