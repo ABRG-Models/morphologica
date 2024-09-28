@@ -41,7 +41,7 @@ namespace morph {
             , z(_z) {}
 
         // A constructor that sets up a unit quaternion then applies a rotation
-        constexpr Quaternion (morph::vec<Flt, 3> axis, Flt angle)
+        constexpr Quaternion (const morph::vec<Flt, 3>& axis, const Flt angle)
             : w(Flt{1})
             , x(Flt{0})
             , y(Flt{0})
