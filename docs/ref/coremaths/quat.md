@@ -60,7 +60,7 @@ q1.renormalize();
 q1.checkunit();
 ```
 
-**Setting the value of the Quaternion**. This function sets a rotation (specified in radians) about the given three dimensional axis:
+**Setting the value of the Quaternion**. This (now deprecated) function sets a rotation (specified in degrees, not radians) about the given three dimensional axis:
 ```c++
 void initFromAxisAngle (const vec<Flt>& axis, const Flt& angle);
 ```
@@ -105,7 +105,7 @@ void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt ang
 ```
 Each method rotates the Quaternion by an angle in radians about a 3D axis specified by the axis array (or by the individual components of the axis).
 
-** Rotation Matrix **
+**Rotation Matrix**
 
 You can obtain the equivalent **rotation matrix** in column-major format (OpenGL friendly) from the Quaternion with
 ```c++
@@ -119,7 +119,7 @@ void unitRotationMatrix (std::array<Flt, 16>& mat) const;
 ```
 These involve slightly less computation.
 
-** Applying a Quaternion rotation to a `morph::vec` **
+**Applying a Quaternion rotation to a `morph::vec`**
 
 You have a vector (3D or '3+1'D) and you want to apply the rotation specified by a Quaternion? You use the multiplication `operator*`:
 
