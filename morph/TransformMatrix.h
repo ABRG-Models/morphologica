@@ -465,7 +465,8 @@ namespace morph {
 
         /*!
          * This algorithm was obtained from:
-         * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
+         * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54 (but was it transposed?
+         * seems so. See also https://www.songho.ca/opengl/gl_quaternion.html#overview)
          */
         template <typename T = float>
         constexpr void rotate (const Quaternion<T>& q)
