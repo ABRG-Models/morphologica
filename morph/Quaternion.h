@@ -27,20 +27,24 @@ namespace morph {
     class Quaternion
     {
     public:
-        // Note, we need a Quaternion which has magnitude 1 as the default.
+        //! A default Quaternion has magnitude 1.
         constexpr Quaternion()
             : w(Flt{1})
             , x(Flt{0})
             , y(Flt{0})
             , z(Flt{0}) {}
 
+        //! Initialize the Quaternion with explicit values for the elements
         constexpr Quaternion (Flt _w, Flt _x, Flt _y, Flt _z)
             : w(_w)
             , x(_x)
             , y(_y)
             , z(_z) {}
 
-        // A constructor that sets up a unit quaternion then applies a rotation
+        /*!
+         * A constructor that sets up a unit quaternion then applies a rotation (in
+         * radians) about an axis
+         */
         constexpr Quaternion (const morph::vec<Flt, 3>& axis, const Flt angle)
             : w(Flt{1})
             , x(Flt{0})
@@ -89,7 +93,7 @@ namespace morph {
          * The threshold outside of which the Quaternion is no longer considered to be a
          * unit Quaternion.
          */
-        static constexpr Flt unitThresh = 0.001;
+        static constexpr Flt unitThresh = Flt{0.001};
 
         //! Test to see if this Quaternion is a unit Quaternion.
         constexpr bool checkunit()
@@ -100,23 +104,6 @@ namespace morph {
                 rtn = false;
             }
             return rtn;
-        }
-
-        //! Initialize the Quaternion from the given axis and angle *in degrees*
-        constexpr void initFromAxisAngle (const vec<Flt>& axis, const Flt& angle)
-        {
-            Flt a = morph::mathconst<Flt>::pi_over_360 * angle; // angle/2 converted to rads
-            Flt s = std::sin(a);
-            Flt c = std::cos(a);
-            vec<Flt> ax = axis;
-            ax.renormalize();
-
-            this->w = c;
-            this->x = ax.x() * s;
-            this->y = ax.y() * s;
-            this->z = ax.z() * s;
-
-            this->renormalize();
         }
 
         //! Assignment operators
@@ -158,7 +145,7 @@ namespace morph {
             return q;
         }
 
-        //! Rotate a vector by this quaternion
+        //! Rotate a vector v_r by this quaternion, returning the resulting rotated vector
         template <typename F=Flt, std::size_t N = 3, std::enable_if_t<(N==3||N==4), int> = 0>
         constexpr morph::vec<Flt, N> operator* (const morph::vec<F, N>& v_r) const
         {
@@ -276,6 +263,24 @@ namespace morph {
             this->x = q1.w * q2_x + q1.x * q2_w + q1.y * q2_z - q1.z * q2_y;
             this->y = q1.w * q2_y - q1.x * q2_z + q1.y * q2_w + q1.z * q2_x;
             this->z = q1.w * q2_z + q1.x * q2_y - q1.y * q2_x + q1.z * q2_w;
+        }
+
+        //! Reset the Quaternion and set the rotation about the given axis and angle in
+        //! radians. This function was previously called initFromAxisAngle
+        constexpr void set_rotation (const vec<Flt>& axis, const Flt& angle)
+        {
+            Flt a = angle * Flt{0.5};
+            Flt s = std::sin(a);
+            Flt c = std::cos(a);
+            vec<Flt> ax = axis;
+            ax.renormalize();
+
+            this->w = c;
+            this->x = ax.x() * s;
+            this->y = ax.y() * s;
+            this->z = ax.z() * s;
+
+            this->renormalize();
         }
 
         /*!
