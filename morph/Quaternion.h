@@ -151,7 +151,13 @@ namespace morph {
         {
             // Do the rotation by extracting the rotation matrix and then rotating.
             std::array<Flt, 16> rotn_mat = { Flt{0} };
+#if 0
             this->rotationMatrix (rotn_mat);
+#else
+            morph::Quaternion<Flt> q = *this;
+            q.renormalize();
+            q.unitRotationMatrix (rotn_mat);
+#endif
             // Do matrix * vector
             morph::vec<Flt, 4> v = { Flt{0} };
             v[0] = rotn_mat[0] * v_r.x()
@@ -318,7 +324,10 @@ namespace morph {
             Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
             Flt sinHalf = std::sin (halfangle);
-            Quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
+            Quaternion<Flt> local(cosHalf,
+                                  axis[0] * sinHalf,
+                                  axis[1] * sinHalf,
+                                  axis[2] * sinHalf);
             this->premultiply (local);
         }
 
@@ -351,11 +360,11 @@ namespace morph {
 
             mat[4] = Flt{2}*x*y - Flt{2}*w*z;
             mat[5] = w*w - x*x + y*y - z*z;
-            mat[6] = Flt{2}*y*z - Flt{2}*w*x;
+            mat[6] = Flt{2}*y*z + Flt{2}*w*x;
             mat[7] = Flt{0};
 
             mat[8] = Flt{2}*x*z + Flt{2}*w*y;
-            mat[9] = Flt{2}*y*z + Flt{2}*w*x;
+            mat[9] = Flt{2}*y*z - Flt{2}*w*x;
             mat[10] = w*w - x*x - y*y + z*z;
             mat[11] = Flt{0};
 
@@ -383,11 +392,11 @@ namespace morph {
 
             mat[4] = Flt{2}*x*y - Flt{2}*w*z;
             mat[5] = 1.0 - Flt{2}*x*x - Flt{2}*z*z;
-            mat[6] = Flt{2}*y*z - Flt{2}*w*x;
+            mat[6] = Flt{2}*y*z + Flt{2}*w*x;
             mat[7] = Flt{0};
 
             mat[8] = Flt{2}*x*z + Flt{2}*w*y;
-            mat[9] = Flt{2}*y*z + Flt{2}*w*x;
+            mat[9] = Flt{2}*y*z - Flt{2}*w*x;
             mat[10] = Flt{1} - Flt{2}*x*x - Flt{2}*y*y;
             mat[11] = Flt{0};
 
