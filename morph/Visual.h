@@ -1449,7 +1449,7 @@ namespace morph {
                 // Update rotation from the saved position.
                 this->rotation = this->savedRotation;
                 morph::Quaternion<float> rotationQuaternion(this->rotationAxis,
-                                                            rotamount * morph::mathconst<float>::deg2rad);
+                                                            -rotamount * morph::mathconst<float>::deg2rad);
                 this->rotation.premultiply (rotationQuaternion); // combines rotations
                 needs_render = true;
 

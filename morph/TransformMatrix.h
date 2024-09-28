@@ -486,15 +486,15 @@ namespace morph {
             const T f2zz = f2z * q.z;
 
             m[0]  = T{1} - (f2yy + f2zz);
-            m[1]  =         f2xy - f2zw;
-            m[2]  =         f2xz + f2yw;
+            m[1]  =         f2xy + f2zw;
+            m[2]  =         f2xz - f2yw;
             m[3]  = T{0};
-            m[4]  =         f2xy + f2zw;
+            m[4]  =         f2xy - f2zw;
             m[5]  = T{1} - (f2xx + f2zz);
-            m[6]  =         f2yz - f2xw;
+            m[6]  =         f2yz + f2xw;
             m[7]  = T{0};
-            m[8]  =         f2xz - f2yw;
-            m[9]  =         f2yz + f2xw;
+            m[8]  =         f2xz + f2yw;
+            m[9]  =         f2yz - f2xw;
             m[10] = T{1} - (f2xx + f2yy);
             m[11] = T{0};
             m[12] = T{0};
