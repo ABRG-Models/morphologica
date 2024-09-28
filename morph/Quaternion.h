@@ -151,13 +151,8 @@ namespace morph {
         {
             // Do the rotation by extracting the rotation matrix and then rotating.
             std::array<Flt, 16> rotn_mat = { Flt{0} };
-#if 0
             this->rotationMatrix (rotn_mat);
-#else
-            morph::Quaternion<Flt> q = *this;
-            q.renormalize();
-            q.unitRotationMatrix (rotn_mat);
-#endif
+
             // Do matrix * vector
             morph::vec<Flt, 4> v = { Flt{0} };
             v[0] = rotn_mat[0] * v_r.x()
