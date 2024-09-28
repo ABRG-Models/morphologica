@@ -249,6 +249,9 @@ add_test(testConfig testConfig)
 add_executable(testQuaternion testQuaternion.cpp)
 add_test(testQuaternion testQuaternion)
 
+add_executable(testRotations testRotations.cpp)
+add_test(testRotations testRotations)
+
 # Note that we only compile the constexpr tests if compiler is not Clang. Clang doesn't like std::abs,
 # std::sin (etc) within a constexpr function.
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
