@@ -33,9 +33,10 @@ A newly created Quaternion will be an identity Quaternion (1,0,0,0) unless expli
 
 You can also create a Quaternion with a specified rotation about a given vector axis:
 ```c++
-morph::vec<float, 3> axis = { 0, 0, 1 };          // set a rotation about the z axis...
+morph::vec<float, 3> z_axis = { 0, 0, 1 };              // set a rotation about the z axis...
 float angle = morph::mathconst<float>::pi_over_2; // ...of pi/2 radians
-morph::Quaternion<float> q (axis, angle);
+
+morph::Quaternion<float> q (z_axis, angle);  // The (axis, angle) constructor
 ```
 
 
@@ -60,25 +61,18 @@ q1.renormalize();
 q1.checkunit();
 ```
 
-**Setting the value of the Quaternion**. This (now deprecated) function sets a rotation (specified in degrees, not radians) about the given three dimensional axis:
-```c++
-void initFromAxisAngle (const vec<Flt>& axis, const Flt& angle);
-```
-
 The Quaternion can be reset to the identity with `reset()`.
 
 **Manipulating rotations**. The most useful feature of Quaternions, and the reason for their popularity in computer programs is the fact that the rotations can be combined by **multiplication**.
 
 ```c++
-morph::Quaternion<float> q1;
-morph::Quaternion<float> q2;
 using mc = morph::mathconst<float>;
-q1.initFromAxisAngle (morph::vec<float>({1,0,0}), mc::pi_over_3);
-q2.initFromAxisAngle (morph::vec<float>({0,1,0}), mc::pi_over_4);
+morph::Quaternion<float> q1(morph::vec<float>({1,0,0}), mc::pi_over_3);
+morph::Quaternion<float> q2(morph::vec<float>({0,1,0}), mc::pi_over_4);
 morph::Quaternion<float> q3 = q1 * q2;
 ```
 
-To multiply one Quaternion by another, it's important to specify the multiplication order.
+To multiply one Quaternion by another, it's important to specify the multiplication order. The `postmultiply` and `premultiply` functions allow you to control this.
 ```c++
 q1.postmultiply (q2); // Places result of q1 * q2 into q1.
 q1.premultiply (q2);  // Places result of q2 * q1 into q1.
@@ -97,9 +91,20 @@ q.inverse(); // q^-1
 ```
 The conjugate is also obtainable with `q.conjugate();` and the magnitude of the Quaternion with `q.magnitude();`.
 
-**Rotate** the Quaternion with these methods:
+**Setting the rotation of the Quaternion**.
+
+The function `set_rotation` sets the values of the Quaternion to specify a rotation
+(specified in degrees, not radians) about the given three dimensional
+axis, starting from no rotation.
+
 ```c++
-void rotate (const vec<Flt, 3>& axis, const Flt angle);
+void set_rotation (const morph::vec<Flt>& axis, const Flt& angle);
+```
+
+**Rotate** the Quaternion further with these methods:
+
+```c++
+void rotate (const morph::vec<Flt, 3>& axis, const Flt angle);
 void rotate (const std::array<Flt, 3>& axis, const Flt angle);
 void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt angle)
 ```
@@ -107,7 +112,7 @@ Each method rotates the Quaternion by an angle in radians about a 3D axis specif
 
 **Rotation Matrix**
 
-You can obtain the equivalent **rotation matrix** in column-major format (OpenGL friendly) from the Quaternion with
+You can obtain the equivalent 4x4 **rotation matrix** in column-major format (OpenGL friendly) from the Quaternion with
 ```c++
 std::array<Flt, 16> rotationMatrix() const;           // Returns the rotation matrix
 void rotationMatrix (std::array<Flt, 16>& mat) const  // sets the values in the passed-in matrix
