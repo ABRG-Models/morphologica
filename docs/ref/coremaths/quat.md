@@ -31,6 +31,14 @@ morph::Quaternion<float> q(1, 0, 0, 0); // Explicit setting of elements
 ```
 A newly created Quaternion will be an identity Quaternion (1,0,0,0) unless explicity set otherwise.
 
+You can also create a Quaternion with a specified rotation about a given vector axis:
+```c++
+morph::vec<float, 3> axis = { 0, 0, 1 };          // set a rotation about the z axis...
+float angle = morph::mathconst<float>::pi_over_2; // ...of pi/2 radians
+morph::Quaternion<float> q (axis, angle);
+```
+
+
 **Copy** a Quaternion:
 ```c++
 morph::Quaternion<float> q1;
@@ -97,6 +105,8 @@ void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt ang
 ```
 Each method rotates the Quaternion by an angle in radians about a 3D axis specified by the axis array (or by the individual components of the axis).
 
+** Rotation Matrix **
+
 You can obtain the equivalent **rotation matrix** in column-major format (OpenGL friendly) from the Quaternion with
 ```c++
 std::array<Flt, 16> rotationMatrix() const;           // Returns the rotation matrix
@@ -108,3 +118,15 @@ std::array<Flt, 16> unitRotationMatrix() const;
 void unitRotationMatrix (std::array<Flt, 16>& mat) const;
 ```
 These involve slightly less computation.
+
+** Applying a Quaternion rotation to a `morph::vec` **
+
+You have a vector (3D or '3+1'D) and you want to apply the rotation specified by a Quaternion? You use the multiplication `operator*`:
+
+```c++
+using mc = morph::mathconst<float>;
+// Create Quaternion for a rotation of pi radians
+morph::Quaternion<float> q(morph::vec<float>{1, 0, 0}, mc::pi);
+morph::vec<float> v = { 1, 2, 3 };
+morph::vec<float> rotated = q * v; // rotates v by pi about the x axis
+```
