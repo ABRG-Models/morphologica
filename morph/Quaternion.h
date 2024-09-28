@@ -151,6 +151,7 @@ namespace morph {
         {
             // Do the rotation by extracting the rotation matrix and then rotating.
             std::array<Flt, 16> rotn_mat = { Flt{0} };
+            // We DON'T assume Quaternion is unit, in case user *wants* to pass in a non-unit Quaternion
             this->rotationMatrix (rotn_mat);
 
             // Do matrix * vector
@@ -286,7 +287,7 @@ namespace morph {
 
         /*!
          * Change this Quaternion to represent a new rotation by rotating it \a angle
-         * (radians) around the axis given by \a axis_x, \a axis_y, \a axis_z.
+         * (radians) around the axis given by \a axis_x, \a axis_y, \a axis_z. Renormalize to finish.
          */
         constexpr void rotate (const Flt& axis_x, const Flt& axis_y, const Flt& axis_z, const Flt& angle)
         {
@@ -295,11 +296,12 @@ namespace morph {
             Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis_x * sinHalf, axis_y * sinHalf, axis_z * sinHalf);
             this->premultiply (local);
+            this->renormalize();
         }
 
         /*!
          * Change this Quaternion to represent a new rotation by rotating it \a angle
-         * (radians) around the axis given by \a axis.
+         * (radians) around the axis given by \a axis. Renormalize to finish.
          */
         constexpr void rotate (const std::array<Flt, 3>& axis, const Flt& angle)
         {
@@ -308,22 +310,21 @@ namespace morph {
             Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
+            this->renormalize();
         }
 
         /*!
          * Change this Quaternion to represent a new rotation by rotating it \a angle
-         * (radians) around the axis given by \a axis.
+         * (radians) around the axis given by \a axis. Renormalize to finish.
          */
         constexpr void rotate (const vec<Flt, 3>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
             Flt sinHalf = std::sin (halfangle);
-            Quaternion<Flt> local(cosHalf,
-                                  axis[0] * sinHalf,
-                                  axis[1] * sinHalf,
-                                  axis[2] * sinHalf);
+            Quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
+            this->renormalize();
         }
 
         /*!
@@ -345,7 +346,8 @@ namespace morph {
             return mat;
         }
 
-        //! Rotate the matrix \a mat by this Quaternion witout assuming it's a unit Quaternion
+        //! Rotate the matrix \a mat by this Quaternion witout assuming it's a unit
+        //! Quaternion. If it's not unit, then the vector may become scaled in length.
         constexpr void rotationMatrix (std::array<Flt, 16>& mat) const
         {
             mat[0] = w*w + x*x - y*y - z*z;
