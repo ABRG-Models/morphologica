@@ -8,13 +8,31 @@ int main()
 
     morph::Quaternion<float> q;
     std::cout << q << std::endl;
+    morph::Quaternion<float> q_save = q;
     q.renormalize();
     std::cout << q << std::endl;
+
+    if (q != q_save) { rtn++; }
 
     float angularSpeed = 0.2 * morph::mathconst<float>::deg2rad;
     morph::vec<float> rotationAxis = {1.0f, 0.0f, 0.0f};
     morph::Quaternion<float> rotationQuaternion(rotationAxis, angularSpeed);
-    std::cout << rotationQuaternion << std::endl;
+    morph::Quaternion<float> rq_expected (float{1}, angularSpeed/float{2}, float{0}, float{0});
+    std::cout << "Quaternion(" << rotationAxis<< ", " << angularSpeed<< ") constructor generates\n"
+              << rotationQuaternion
+              << "\nvs expected:\n" << rq_expected
+              << std::endl;
+    morph::vec<float, 4> rqerr;
+    rqerr[0] = rq_expected.x - rotationQuaternion.x;
+    rqerr[1] = rq_expected.y - rotationQuaternion.y;
+    rqerr[2] = rq_expected.z - rotationQuaternion.z;
+    rqerr[3] = rq_expected.w - rotationQuaternion.w;
+    if (rqerr.abs().max() > float{15} * std::numeric_limits<float>::epsilon()) {
+        std::cout << "Failed on rotation. Errors: " << rqerr << " cf epsilon: "
+                  << std::numeric_limits<float>::epsilon() << std::endl;
+        rtn++;
+    }
+
 
     morph::Quaternion<float> p = q;
     if (p == q) {  } else { rtn++; }
@@ -22,9 +40,16 @@ int main()
 
     morph::Quaternion<float> qq1 (1.0f, -2.0f, 3.0f, -4.0f);
     std::cout << std::endl << qq1 << " conjugate (q*): " << qq1.conjugate() << std::endl << std::endl;
+    morph::Quaternion<float> qq1conj (1.0f, 2.0f, -3.0f, 4.0f);
+    if (qq1.conjugate() != qq1conj) { ++rtn; }
+
 
     morph::Quaternion<float> qq1i = qq1.inverse();
     std::cout << qq1 << " inverse (q^-1 or 1/q): " << qq1i << std::endl << std::endl;
+
+    morph::Quaternion<float> qq2 (1.0f, 0.0f, 0.0f, 0.0f);
+    morph::Quaternion<float> qq2i = qq2.inverse();
+    std::cout << qq2 << " inverse (q^-1 or 1/q): " << qq2i << std::endl << std::endl;
 
     morph::Quaternion<float> qiqi = qq1i * qq1;
     std::cout << "qq1i * qq1 = " << qiqi << std::endl << std::endl; // 1,0,0,0
@@ -60,5 +85,12 @@ int main()
     } else {
         --rtn;
     }
+
+    if (rtn == 0) {
+        std::cout << "Quaternion tests PASSED\n";
+    } else {
+        std::cout << "Quaternion tests FAILED\n";
+    }
+
     return rtn;
 }
