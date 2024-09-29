@@ -249,6 +249,23 @@ add_test(testConfig testConfig)
 add_executable(testQuaternion testQuaternion.cpp)
 add_test(testQuaternion testQuaternion)
 
+# Test Quaternion and TransformMatrix rotations in float and double precision
+add_executable(testRotations_float testRotations.cpp)
+target_compile_definitions(testRotations_float PUBLIC FLT=float)
+add_test(testRotations_float testRotations_float)
+
+add_executable(testRotations_double testRotations.cpp)
+target_compile_definitions(testRotations_double PUBLIC FLT=double)
+add_test(testRotations_double testRotations_double)
+
+add_executable(testRotationsQuat_float testRotationsQuat.cpp)
+target_compile_definitions(testRotationsQuat_float PUBLIC FLT=float)
+add_test(testRotationsQuat_float testRotationsQuat_float)
+
+add_executable(testRotationsQuat_double testRotationsQuat.cpp)
+target_compile_definitions(testRotationsQuat_double PUBLIC FLT=double)
+add_test(testRotationsQuat_double testRotationsQuat_double)
+
 # Note that we only compile the constexpr tests if compiler is not Clang. Clang doesn't like std::abs,
 # std::sin (etc) within a constexpr function.
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)

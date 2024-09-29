@@ -465,7 +465,9 @@ namespace morph {
 
         /*!
          * This algorithm was obtained from:
-         * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
+         * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54 (but was it transposed?
+         * seems so. See also https://www.songho.ca/opengl/gl_quaternion.html#overview
+         * and https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html)
          */
         template <typename T = float>
         constexpr void rotate (const Quaternion<T>& q)
@@ -486,15 +488,15 @@ namespace morph {
             const T f2zz = f2z * q.z;
 
             m[0]  = T{1} - (f2yy + f2zz);
-            m[1]  =         f2xy - f2zw;
-            m[2]  =         f2xz + f2yw;
+            m[1]  =         f2xy + f2zw;
+            m[2]  =         f2xz - f2yw;
             m[3]  = T{0};
-            m[4]  =         f2xy + f2zw;
+            m[4]  =         f2xy - f2zw;
             m[5]  = T{1} - (f2xx + f2zz);
-            m[6]  =         f2yz - f2xw;
+            m[6]  =         f2yz + f2xw;
             m[7]  = T{0};
-            m[8]  =         f2xz - f2yw;
-            m[9]  =         f2yz + f2xw;
+            m[8]  =         f2xz + f2yw;
+            m[9]  =         f2yz - f2xw;
             m[10] = T{1} - (f2xx + f2yy);
             m[11] = T{0};
             m[12] = T{0};

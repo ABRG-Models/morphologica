@@ -65,6 +65,7 @@ namespace morph {
             colourvec.renormalize();
             morph::ColourMap<float> cm (morph::ColourMapType::HSV);
             std::array<float, 3> clr = cm.convert (colourvec[0], colourvec[1]);
+            if (fixed_colour == true) { clr = single_colour; }
 
             // The right way to draw an arrow.
             vec<float> arrow_line = end - start;
@@ -98,6 +99,9 @@ namespace morph {
 
         // How much to lienarly scale the size of the vector
         float scale_factor = 1.0f;
+
+        bool fixed_colour = false;
+        std::array<float, 3> single_colour = morph::colour::black;
     };
 
 } // namespace morph

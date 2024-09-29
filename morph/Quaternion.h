@@ -133,7 +133,37 @@ namespace morph {
                     || std::abs(this->z - rhs.z) >= std::numeric_limits<Flt>::epsilon());
         }
 
-        //! Overload * operator. q1 is 'this->'
+        //! Multiply this quaternion by other as: this = this * q2, i.e. q1 is 'this->'
+        constexpr void postmultiply (const Quaternion<Flt>& q2)
+        {
+            // First make copies of w, x, y, z
+            Flt q1_w = this->w;
+            Flt q1_x = this->x;
+            Flt q1_y = this->y;
+            Flt q1_z = this->z;
+            // Now compute
+            this->w = q1_w * q2.w - q1_x * q2.x - q1_y * q2.y - q1_z * q2.z;
+            this->x = q1_w * q2.x + q1_x * q2.w + q1_y * q2.z - q1_z * q2.y;
+            this->y = q1_w * q2.y - q1_x * q2.z + q1_y * q2.w + q1_z * q2.x;
+            this->z = q1_w * q2.z + q1_x * q2.y - q1_y * q2.x + q1_z * q2.w;
+        }
+
+        //! Multiply this quaternion by other as: this = q1 * this
+        constexpr void premultiply (const Quaternion<Flt>& q1)
+        {
+            // First make copies of w, x, y, z
+            Flt q2_w = this->w;
+            Flt q2_x = this->x;
+            Flt q2_y = this->y;
+            Flt q2_z = this->z;
+            // Now compute
+            this->w = q1.w * q2_w - q1.x * q2_x - q1.y * q2_y - q1.z * q2_z;
+            this->x = q1.w * q2_x + q1.x * q2_w + q1.y * q2_z - q1.z * q2_y;
+            this->y = q1.w * q2_y - q1.x * q2_z + q1.y * q2_w + q1.z * q2_x;
+            this->z = q1.w * q2_z + q1.x * q2_y - q1.y * q2_x + q1.z * q2_w;
+        }
+
+        //! Overload * operator. q1 is 'this->'. Returns the Quaternion that would be written into this by this->postmultiply(q2)
         template <typename F=Flt>
         constexpr Quaternion<Flt> operator* (const Quaternion<F>& q2) const
         {
@@ -151,7 +181,9 @@ namespace morph {
         {
             // Do the rotation by extracting the rotation matrix and then rotating.
             std::array<Flt, 16> rotn_mat = { Flt{0} };
+
             this->rotationMatrix (rotn_mat);
+
             // Do matrix * vector
             morph::vec<Flt, 4> v = { Flt{0} };
             v[0] = rotn_mat[0] * v_r.x()
@@ -220,11 +252,15 @@ namespace morph {
         //! Compute the inverse, q^-1. Also known as the reciprocal, q^-1 * q = I.
         constexpr Quaternion<Flt> inverse() const
         {
-            return (this->conjugate() / (w*w + x*x + y*y + z*z));
+            return (this->conjugate() / this->norm_squared());
         }
 
-        //! Return the magnitude of the Quaternion
+        //! Return the magnitude of the Quaternion (aka the norm)
         constexpr Flt magnitude() const { return std::sqrt (w*w + x*x + y*y + z*z); }
+        //! Return the norm of the Quaternion (aka the magnitude)
+        constexpr Flt norm() const { return std::sqrt (w*w + x*x + y*y + z*z); }
+        //! Sometimes you'll want the norm squared. Save the std::sqrt and a multiplication.
+        constexpr Flt norm_squared() const { return (w*w + x*x + y*y + z*z); }
 
         //! Reset to a zero rotation
         constexpr void reset()
@@ -233,36 +269,6 @@ namespace morph {
             this->x = Flt{0};
             this->y = Flt{0};
             this->z = Flt{0};
-        }
-
-        //! Multiply this quaternion by other as: this = this * q2, i.e. q1 is 'this->'
-        constexpr void postmultiply (const Quaternion<Flt>& q2)
-        {
-            // First make copies of w, x, y, z
-            Flt q1_w = this->w;
-            Flt q1_x = this->x;
-            Flt q1_y = this->y;
-            Flt q1_z = this->z;
-            // Now compute
-            this->w = q1_w * q2.w - q1_x * q2.x - q1_y * q2.y - q1_z * q2.z;
-            this->x = q1_w * q2.x + q1_x * q2.w + q1_y * q2.z - q1_z * q2.y;
-            this->y = q1_w * q2.y - q1_x * q2.z + q1_y * q2.w + q1_z * q2.x;
-            this->z = q1_w * q2.z + q1_x * q2.y - q1_y * q2.x + q1_z * q2.w;
-        }
-
-        //! Multiply this quaternion by other as: this = q1 * this
-        constexpr void premultiply (const Quaternion<Flt>& q1)
-        {
-            // First make copies of w, x, y, z
-            Flt q2_w = this->w;
-            Flt q2_x = this->x;
-            Flt q2_y = this->y;
-            Flt q2_z = this->z;
-            // Now compute
-            this->w = q1.w * q2_w - q1.x * q2_x - q1.y * q2_y - q1.z * q2_z;
-            this->x = q1.w * q2_x + q1.x * q2_w + q1.y * q2_z - q1.z * q2_y;
-            this->y = q1.w * q2_y - q1.x * q2_z + q1.y * q2_w + q1.z * q2_x;
-            this->z = q1.w * q2_z + q1.x * q2_y - q1.y * q2_x + q1.z * q2_w;
         }
 
         //! Reset the Quaternion and set the rotation about the given axis and angle in
@@ -285,7 +291,7 @@ namespace morph {
 
         /*!
          * Change this Quaternion to represent a new rotation by rotating it \a angle
-         * (radians) around the axis given by \a axis_x, \a axis_y, \a axis_z.
+         * (radians) around the axis given by \a axis_x, \a axis_y, \a axis_z. Renormalize to finish.
          */
         constexpr void rotate (const Flt& axis_x, const Flt& axis_y, const Flt& axis_z, const Flt& angle)
         {
@@ -294,11 +300,12 @@ namespace morph {
             Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis_x * sinHalf, axis_y * sinHalf, axis_z * sinHalf);
             this->premultiply (local);
+            this->renormalize();
         }
 
         /*!
          * Change this Quaternion to represent a new rotation by rotating it \a angle
-         * (radians) around the axis given by \a axis.
+         * (radians) around the axis given by \a axis. Renormalize to finish.
          */
         constexpr void rotate (const std::array<Flt, 3>& axis, const Flt& angle)
         {
@@ -307,11 +314,12 @@ namespace morph {
             Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
+            this->renormalize();
         }
 
         /*!
          * Change this Quaternion to represent a new rotation by rotating it \a angle
-         * (radians) around the axis given by \a axis.
+         * (radians) around the axis given by \a axis. Renormalize to finish.
          */
         constexpr void rotate (const vec<Flt, 3>& axis, const Flt& angle)
         {
@@ -320,6 +328,7 @@ namespace morph {
             Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
+            this->renormalize();
         }
 
         /*!
@@ -341,7 +350,11 @@ namespace morph {
             return mat;
         }
 
-        //! Rotate the matrix \a mat by this Quaternion witout assuming it's a unit Quaternion
+        /*!
+         * Fill the matrix \a mat with the values to represent the rotation that is
+         * represented by this Quaternion. This function *does not assume that the
+         * Quaternion representing the rotation is a unit quaternion*.
+         */
         constexpr void rotationMatrix (std::array<Flt, 16>& mat) const
         {
             mat[0] = w*w + x*x - y*y - z*z;
@@ -351,11 +364,11 @@ namespace morph {
 
             mat[4] = Flt{2}*x*y - Flt{2}*w*z;
             mat[5] = w*w - x*x + y*y - z*z;
-            mat[6] = Flt{2}*y*z - Flt{2}*w*x;
+            mat[6] = Flt{2}*y*z + Flt{2}*w*x;
             mat[7] = Flt{0};
 
             mat[8] = Flt{2}*x*z + Flt{2}*w*y;
-            mat[9] = Flt{2}*y*z + Flt{2}*w*x;
+            mat[9] = Flt{2}*y*z - Flt{2}*w*x;
             mat[10] = w*w - x*x - y*y + z*z;
             mat[11] = Flt{0};
 
@@ -363,6 +376,10 @@ namespace morph {
             mat[13] = Flt{0};
             mat[14] = Flt{0};
             mat[15] = Flt{1};
+
+            // Without this renormalization, the Quaternion *would* have to be unit.
+            Flt one_over_norm_squared = Flt{1} / this->norm_squared();
+            for (auto& e : mat) { e *= one_over_norm_squared; }
         }
 
         //! Obtain rotation matrix assuming this IS a unit Quaternion
@@ -373,7 +390,8 @@ namespace morph {
             return mat;
         }
 
-        //! Rotate the matrix \a mat by this Quaternion, assuming it's a unit Quaternion
+        //! Rotate the matrix \a mat by this Quaternion, *assuming it's a unit
+        //! Quaternion*.
         constexpr void unitRotationMatrix (std::array<Flt, 16>& mat) const
         {
             mat[0] = Flt{1} - Flt{2}*y*y - Flt{2}*z*z;
@@ -382,12 +400,12 @@ namespace morph {
             mat[3] = Flt{0};
 
             mat[4] = Flt{2}*x*y - Flt{2}*w*z;
-            mat[5] = 1.0 - Flt{2}*x*x - Flt{2}*z*z;
-            mat[6] = Flt{2}*y*z - Flt{2}*w*x;
+            mat[5] = Flt{1} - Flt{2}*x*x - Flt{2}*z*z;
+            mat[6] = Flt{2}*y*z + Flt{2}*w*x;
             mat[7] = Flt{0};
 
             mat[8] = Flt{2}*x*z + Flt{2}*w*y;
-            mat[9] = Flt{2}*y*z + Flt{2}*w*x;
+            mat[9] = Flt{2}*y*z - Flt{2}*w*x;
             mat[10] = Flt{1} - Flt{2}*x*x - Flt{2}*y*y;
             mat[11] = Flt{0};
 
