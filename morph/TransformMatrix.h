@@ -512,10 +512,7 @@ namespace morph {
         {
             Quaternion<Flt> q;
             q.rotate (axis, theta);
-            // Two ways to get matrix. this->rotate does it as above.
             this->rotate<Flt> (q);
-            // Quaternion can write matrix into this->mat
-            // q.rotationMatrix (this->mat);
         }
 
         constexpr void rotate (const morph::vec<Flt, 3>& axis, const Flt& theta)

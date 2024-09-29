@@ -86,6 +86,42 @@ int main()
         --rtn;
     }
 
+    // Rotation matrices
+    morph::Quaternion<float> qfm (1, 2, -3, 4); // NOT unit.
+    std::array<float, 16> matA = qfm.rotationMatrix();
+    std::array<float, 16> matB = qfm.unitRotationMatrix();
+    //std::array<float, 16> matC;
+    //qfm.rotationMatrix2(matC);
+    morph::vec<float, 16> vmatA;
+    vmatA.set_from (matA);
+    morph::vec<float, 16> vmatB;
+    vmatB.set_from (matB);
+    //morph::vec<float, 16> vmatC;
+    //vmatC.set_from (matC);
+    std::cout << "Rotation matrices of non-unit qfm\n";
+    std::cout << "rotationMatrix:     " << vmatA << std::endl;
+    //std::cout << "unitRotationMatrix2: " << vmatC << std::endl;
+    std::cout << "unitRotationMatrix: " << vmatB << std::endl;
+
+
+    std::cout << "Rotation matrices of unit qfm\n";
+    qfm.renormalize();
+    std::array<float, 16> matAA = qfm.rotationMatrix();
+    std::array<float, 16> matBB = qfm.unitRotationMatrix();
+    //std::array<float, 16> matCC;
+    //qfm.rotationMatrix2(matCC);
+    morph::vec<float, 16> vmatAA;
+    vmatAA.set_from (matAA);
+    morph::vec<float, 16> vmatBB;
+    vmatBB.set_from (matBB);
+    //morph::vec<float, 16> vmatCC;
+    //vmatCC.set_from (matCC);
+    std::cout << "rotationMatrix:     " << vmatAA << std::endl;
+    //std::cout << "unitRotationMatrix2: " << vmatCC << std::endl;
+    std::cout << "unitRotationMatrix: " << vmatBB << std::endl;
+
+
+
     if (rtn == 0) {
         std::cout << "Quaternion tests PASSED\n";
     } else {
