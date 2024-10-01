@@ -52,6 +52,11 @@ namespace morph {
         {
             constexpr F phi = (F{1} + morph::mathconst<F>::root_5) / F{2};
 
+            // Unit vectors in 3D
+            constexpr morph::vec<F, 3> _ux = { F{1}, F{0}, F{0} };
+            constexpr morph::vec<F, 3> _uz = { F{0}, F{0}, F{1} };
+
+
             morph::geometry_ce::polyhedron<F, 12, 20> ico;
             // Arranged 'in spiral order', going with positive angle in x/y plane (i.e. around z axis)
             ico.vertices = morph::vec< morph::vec<F, 3>, 12> {
@@ -73,21 +78,14 @@ namespace morph {
             };
 
             // Set up the transform matrix for our rotation, made up of a rotation about the z axis...
-            morph::Quaternion<F> rotn1;
-            rotn1.rotate (F{0}, F{0}, F{1}, std::atan2(F{1}, phi));
+            morph::Quaternion<F> rotn1(_uz, -std::atan2(F{1}, phi));
             // ...and a rotation about the x axis:
-            morph::Quaternion<F> rotn2;
-            rotn2.rotate (F{1}, F{0}, F{0}, -morph::mathconst<F>::pi_over_2);
-            // We then translate the quaternions into a transform matrix:
-            morph::TransformMatrix<F> rmat;
-            rmat.rotate (rotn1 * rotn2);
+            morph::Quaternion<F> rotn2(_ux, morph::mathconst<F>::pi_over_2);
 
             // For each vertex, apply rotational transform and renormalize
-            morph::vec<F, 4> v4;
             for (auto& vertex : ico.vertices) {
-                v4 = rmat * vertex;         // Apply the rotation (returns 4D vector)
-                vertex = v4.less_one_dim(); // Extract 3D vector
-                vertex.renormalize();       // Make it length 1
+                vertex = rotn2 * rotn1 * vertex; // Apply the rotation
+                vertex.renormalize();            // Make it length 1
             }
             // after this, the vertex order is no longer spiral from top to bottom
 
