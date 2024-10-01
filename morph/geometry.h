@@ -15,7 +15,6 @@
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/Quaternion.h>
-#include <morph/TransformMatrix.h>
 
 namespace morph {
 
@@ -46,7 +45,7 @@ namespace morph {
 
         //! Return a geometry::polyhedron object containing vertices and face indices for an
         //! icosahedron. An initial set of vertices is created, then transformed with
-        //! Quaternion/TransformMatrix help.
+        //! morph::Quaternion
         template<typename F>
         constexpr polyhedron<F, 12, 20> icosahedron()
         {
