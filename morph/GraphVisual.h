@@ -1090,7 +1090,7 @@ namespace morph {
             }
 
             if (geom.width() > 2*this->fontsize) {
-                morph::Quaternion<float> leftrot(this->uz, -morph::mathconst<float>::pi_over_2);
+                morph::Quaternion<float> leftrot(this->uz, morph::mathconst<float>::pi_over_2);
                 lbl2->setupText (this->ylabel, leftrot, lblpos+this->mv_offset, this->axiscolour);
             } else {
                 lbl2->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);
@@ -1114,7 +1114,7 @@ namespace morph {
                             0.5f*this->height - downshift, 0 }};
 
                 if (geom.width() > 2*this->fontsize) {
-                    morph::Quaternion<float> leftrot(this->uz, -morph::mathconst<float>::pi_over_2);
+                    morph::Quaternion<float> leftrot(this->uz, morph::mathconst<float>::pi_over_2);
                     lbl3->setupText (this->ylabel2, leftrot, lblpos+this->mv_offset, this->axiscolour);
                 } else {
                     lbl3->setupText (this->ylabel2, lblpos+this->mv_offset, this->axiscolour);
