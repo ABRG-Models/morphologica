@@ -67,6 +67,16 @@ namespace morph {
         static constexpr T eight_pi = pi*T{8};
         static constexpr T nine_pi  = pi*T{9};
 
+        static constexpr T one_over_pi       = T{1}/pi;
+        static constexpr T one_over_two_pi   = T{1}/(T{2}*pi);
+        static constexpr T one_over_three_pi = T{1}/(T{3}*pi);
+        static constexpr T one_over_four_pi  = T{1}/(T{4}*pi);
+        static constexpr T one_over_five_pi  = T{1}/(T{5}*pi);
+        static constexpr T one_over_six_pi   = T{1}/(T{6}*pi);
+        static constexpr T one_over_seven_pi = T{1}/(T{7}*pi);
+        static constexpr T one_over_eight_pi = T{1}/(T{8}*pi);
+        static constexpr T one_over_nine_pi  = T{1}/(T{9}*pi);
+
         // multiplier to convert degrees to radians
         static constexpr T deg2rad  = two_pi/T{360};
         static constexpr T rad2deg  = T{360}/two_pi;
