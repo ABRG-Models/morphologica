@@ -31,6 +31,13 @@ namespace morph {
         // The maximum
         T max = T{0};
 
+        // Set the range to _min, _max
+        constexpr void set (const T& _min, const T& _max)
+        {
+            this->min = _min;
+            this->max = _max;
+        }
+
         // Initialise the range to participate in a search for the max and min through a range of data.
         //
         // Range can then be part of a loop through data with code like:

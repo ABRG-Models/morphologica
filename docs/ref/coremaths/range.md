@@ -40,6 +40,12 @@ r.update (100);      // range now 0 to 100
 r.update (-100);     // range now -100 to 100
 ```
 
+**Set** the range manually in a single function call
+```c++
+morph::range<int> r; // range initially 0 to 0
+r.set (-100, 100);   // range now -100 to 100
+```
+
 **Test a value** to see if the range **includes** this value
 ```c++
 r.includes (45);     // would return bool true, following on from previous example
