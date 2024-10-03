@@ -98,10 +98,14 @@ namespace morph {
             if (this->auto_rescale_y) {
                 if (this->datastyles[didx].axisside == morph::axisside::left) {
                     std::cout << "Update minmax y!\n";
-                    redraw_plot = redraw_plot || this->UpdateMinMax(this->ord1.back(), this->datamin_y, this->datamax_y, min_y, max_y);
+                    if(this->UpdateMinMax(this->ord1.back(), this->datamin_y, this->datamax_y, min_y, max_y)) {
+                        redraw_plot = true;
+                    }
                 } else {
                     std::cout << "Update minmax y2!\n";
-                    redraw_plot = redraw_plot || this->UpdateMinMax(this->ord2.back(), this->datamin_y2, this->datamax_y2, min_y2, max_y2);
+                    if(this->UpdateMinMax(this->ord2.back(), this->datamin_y2, this->datamax_y2, min_y2, max_y2)) {
+                        redraw_plot = true;
+                    }
                 }
             }
 
@@ -114,9 +118,6 @@ namespace morph {
 
                 this->ord1_scale.reset();
                 this->ord2_scale.reset();
-
-                this->setlimits(min_x, max_x, min_y, max_y);
-                this->ord1_scale.reset();
                 this->setlimits(min_x, max_x, min_y, max_y, min_y2, max_y2);
 
                 if (!this->ord1.empty()) {
