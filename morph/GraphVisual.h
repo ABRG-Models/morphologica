@@ -90,19 +90,16 @@ namespace morph {
 
             // check x axis
             if (this->auto_rescale_x) {
-                std::cout << "Update minmax x!\n";
                 redraw_plot = this->UpdateMinMax(_abscissa, this->datamin_x, this->datamax_x, min_x, max_x);
             }
 
             // check y axis
             if (this->auto_rescale_y) {
                 if (this->datastyles[didx].axisside == morph::axisside::left) {
-                    std::cout << "Update minmax y!\n";
                     if(this->UpdateMinMax(this->ord1.back(), this->datamin_y, this->datamax_y, min_y, max_y)) {
                         redraw_plot = true;
                     }
                 } else {
-                    std::cout << "Update minmax y2!\n";
                     if(this->UpdateMinMax(this->ord2.back(), this->datamin_y2, this->datamax_y2, min_y2, max_y2)) {
                         redraw_plot = true;
                     }
@@ -111,7 +108,6 @@ namespace morph {
 
             // update graph if necessary
             if (redraw_plot) {
-                std::cout << "redraw "<< std::endl;
                 this->clear_graph_data();
                 this->graphDataCoords.clear();
                 this->pendingAppended = true; // as the graph will be re-drawn
@@ -123,12 +119,9 @@ namespace morph {
                 if (!this->ord1.empty()) {
                     // vvec, vvec, datasetstyle
                     this->setdata (this->absc1, this->ord1, this->ds_ord1);
-                    std::cout << "y1 data done!\n";
-
                 }
                 if (!this->ord2.empty()) {
                     this->setdata (this->absc2, this->ord2, this->ds_ord2);
-                    std::cout << "y2 data done!\n";
                 }
             }
 
@@ -194,16 +187,10 @@ namespace morph {
                         this->ord1_scale.reset();
                         this->ord2_scale.reset();
 
-                        this->setlimits_x (this->datamin_x, this->datamax_x);  // just making sure the scale x is ready
-
                         // update the y axis
-                        if (y_val > this->datamax_y) {
-                            this->setlimits_y (this->datamin_y, y_val);
-                        } else if (y_val < this->datamin_y) {
-                            this->setlimits_y (y_val, this->datamax_y);
-                        } else {
-                            this->setlimits_y (this->datamin_y, this->datamax_y);
-                        }
+                        Flt min_y = this->datamin_y, max_y = this->datamax_y;
+                        this->UpdateMinMax(y_val, this->datamin_y, this->datamax_y, min_y, max_y);
+                        this->setlimits(this->datamin_x, this->datamax_x, min_y, max_y);
 
                         VisualModel<glver>::clear(); // Get rid of the vertices.
                         this->initializeVertices(); // Re-build
@@ -835,13 +822,10 @@ namespace morph {
             // The indices index
             this->idx = 0;
             this->drawAxes();
-            std::cout << "axes drawn \n";
             this->drawData();
-            std::cout << "data drawn \n";
             if (this->legend == true) { this->drawLegend(); }
             this->drawTickLabels(); // from which we can store the tick label widths
             this->drawAxisLabels();
-            std::cout << "axislabels drawn \n";
         }
 
         //! Is the passed in coordinate within the graph axes (in the x/y sense, ignoring z)?
@@ -1038,8 +1022,6 @@ namespace morph {
         void drawLegend()
         {
             unsigned int num_legends_max = this->graphDataCoords.size();
-
-            std:: cout << "num_legends_max = " << num_legends_max << std::endl;
 
             // Text offset from marker to text
             morph::vec<float> toffset = {this->fontsize, 0.0f, 0.0f};
