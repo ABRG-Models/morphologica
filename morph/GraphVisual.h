@@ -84,105 +84,52 @@ namespace morph {
             (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
 
             bool redraw_plot = false;
-
+            Flt min_x = this->datamin_x, max_x = this->datamax_x;
+            Flt min_y = this->datamin_y, max_y = this->datamax_y;
+            Flt min_y2 = this->datamin_y2, max_y2 = this->datamax_y2;
 
             // check x axis
-            if (!this->within_axes_x ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_x) {
-                std::cout << "RESCALE x!\n";
-                
+            if (this->auto_rescale_x) {
+                std::cout << "Update minmax x!\n";
+                redraw_plot = this->UpdateMinMax(_abscissa, this->datamin_x, this->datamax_x, min_x, max_x);
+            }
+
+            // check y axis
+            if (this->auto_rescale_y) {
+                if (this->datastyles[didx].axisside == morph::axisside::left) {
+                    std::cout << "Update minmax y!\n";
+                    redraw_plot = redraw_plot || this->UpdateMinMax(this->ord1.back(), this->datamin_y, this->datamax_y, min_y, max_y);
+                } else {
+                    std::cout << "Update minmax y2!\n";
+                    redraw_plot = redraw_plot || this->UpdateMinMax(this->ord2.back(), this->datamin_y2, this->datamax_y2, min_y2, max_y2);
+                }
+            }
+
+            // update graph if necessary
+            if (redraw_plot) {
+                std::cout << "redraw "<< std::endl;
                 this->clear_graph_data();
                 this->graphDataCoords.clear();
                 this->pendingAppended = true; // as the graph will be re-drawn
-                redraw_plot = true;
 
                 this->ord1_scale.reset();
                 this->ord2_scale.reset();
-                std::cout << "scale resetted!\n";
-                if (_abscissa > this->datamax_x) {
-                    this->setlimits_x (this->datamin_x, _abscissa);
-                    std::cout << "\t 1 -y rescale done!\n";
-                } else if (_abscissa < this->datamin_x) {
-                    this->setlimits_x (_abscissa, this->datamax_x);
-                    std::cout << "\t 2 -y rescale done!\n";
-                } else {
-                    this->setlimits_x (this->datamin_x, this->datamax_x);
-                    std::cout << "\t 3 -y rescale done!\n";
-                }
-            }
-            // check y axis
-            if (!this->within_axes_y ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_y) {
-                std::cout << "RESCALE y!\n";
-                
-                if (!redraw_plot)
-                {
-                    this->clear_graph_data();
-                    this->graphDataCoords.clear();
-                    this->pendingAppended = true; // as the graph will be re-drawn
-                    redraw_plot = true;
-                }
 
+                this->setlimits(min_x, max_x, min_y, max_y);
                 this->ord1_scale.reset();
-                this->ord2_scale.reset();
-                if (this->datastyles[didx].axisside == morph::axisside::left) {
-                  
-                  // this->setlimits_x (this->datamin_x, this->datamax_x);
-                  std::cout << "\tx1 rescale done!\n";
-                  if (this->ord1.back() > this->datamax_y) {
-                      this->setlimits_y (this->datamin_y, this->ord1.back());
-                      std::cout << "\t 1 -y rescale done!\n";
-                  } else if (this->ord1.back() < this->datamin_y) {
-                      this->setlimits_y (this->ord1.back(), this->datamax_y);
-                      std::cout << "\t 2 -y rescale done!\n";
-                  } else {
-                      this->setlimits_y (this->datamin_y, this->datamax_y);
-                      std::cout << "\t 3 -y rescale done!\n";
-                  }
+                this->setlimits(min_x, max_x, min_y, max_y, min_y2, max_y2);
 
-                  if (!ord2_scale.ready()) {  // useful if y is not in range at initialization
-                      this->ord1_scale.reset();
-                      this->ord2_scale.reset();
-                      std::cout << "\t set limit y2 if required\n";
-                      this->setlimits_y2 (this->datamin_y2, this->datamax_y2);
-                  }
-                } else {
-                  // this->setlimits_x (this->datamin_x, this->datamax_x);
-                  std::cout << "\tx2 rescale done!\n";
-                  if (this->ord2.back() > this->datamax_y2) {
-                      this->setlimits_y2 (this->datamin_y2, this->ord2.back());
-                      std::cout << "\t 1 -y2 rescale done!\n";
-                  } else if (this->ord2.back() < this->datamin_y2) {
-                      this->setlimits_y2 (this->ord2.back(), this->datamax_y2);
-                      std::cout << "\t 2 -y2 rescale done!\n";
-                  } else {
-                      this->setlimits_y2 (this->datamin_y2, this->datamax_y2);
-                      std::cout << "\t 3 -y2 rescale done!\n";
-                  }
+                if (!this->ord1.empty()) {
+                    // vvec, vvec, datasetstyle
+                    this->setdata (this->absc1, this->ord1, this->ds_ord1);
+                    std::cout << "y1 data done!\n";
 
-                  // if (!ord1_scale.ready()) {
-                  //     std::cout << "\t set limit y if required\n";
-                  //     this->setlimits_y (this->datamin_y, this->datamax_y);
-                  // }
+                }
+                if (!this->ord2.empty()) {
+                    this->setdata (this->absc2, this->ord2, this->ds_ord2);
+                    std::cout << "y2 data done!\n";
                 }
             }
-
-            std::cout << "ready? "<< ord1_scale.ready() << " " << ord2_scale.ready() << std::endl;
-            std::cout << ord1_scale.transform_str() << std::endl;
-            std::cout << ord2_scale.transform_str() << std::endl;
-
-
-            if (!this->ord1.empty()) {
-                std::cout << "y1 data update!\n";
-                // vvec, vvec, datasetstyle
-                this->setdata (this->absc1, this->ord1, this->ds_ord1);
-
-            }
-            if (!this->ord2.empty()) {
-                std::cout << "y2 data update!\n";
-                this->setdata (this->absc2, this->ord2, this->ds_ord2);
-                std::cout << "y2 data done!\n";
-            }
-
-            std::cout << "y rescale done!\n";
 
             VisualModel<glver>::clear(); // Get rid of the vertices.
             this->initializeVertices(); // Re-build
@@ -768,9 +715,27 @@ namespace morph {
             this->setsize (this->width, this->height);
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always width * height in size).
+            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
             this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
             this->ord2_scale.compute_autoscale (this->datamin_y2, this->datamax_y2);
-            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
+        }
+
+        //! function to test if a value is in a given range and update that range with new boundaries if required
+        bool UpdateMinMax (const Flt& val, const Flt& old_min, const Flt& old_max, Flt& new_min, Flt& new_max)
+        {
+            if (val > old_max) {
+                new_min = old_min;
+                new_max = val;
+                return true;
+            } else if (val < old_min) {
+                new_min = val;
+                new_max = old_max;
+                return true;
+            } else {
+                new_min = old_min;
+                new_max = old_max;
+                return false;
+            }
         }
 
         //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
@@ -869,10 +834,13 @@ namespace morph {
             // The indices index
             this->idx = 0;
             this->drawAxes();
+            std::cout << "axes drawn \n";
             this->drawData();
+            std::cout << "data drawn \n";
             if (this->legend == true) { this->drawLegend(); }
             this->drawTickLabels(); // from which we can store the tick label widths
             this->drawAxisLabels();
+            std::cout << "axislabels drawn \n";
         }
 
         //! Is the passed in coordinate within the graph axes (in the x/y sense, ignoring z)?
@@ -1069,6 +1037,8 @@ namespace morph {
         void drawLegend()
         {
             unsigned int num_legends_max = this->graphDataCoords.size();
+
+            std:: cout << "num_legends_max = " << num_legends_max << std::endl;
 
             // Text offset from marker to text
             morph::vec<float> toffset = {this->fontsize, 0.0f, 0.0f};
