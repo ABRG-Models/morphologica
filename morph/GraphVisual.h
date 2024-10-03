@@ -178,46 +178,32 @@ namespace morph {
             std::vector<Flt> ad (dsize, Flt{0});
             this->abscissa_scale.transform (_abscissae, ad);
 
-            std::vector<Flt> sd (dsize, Flt{0});
-            this->ord1_scale.transform (_data, sd);
-
             // check min and max of the y axis
             if (this->auto_rescale_y) {
                 for (auto y_val : _data) {
                     if (!(y_val >= this->datamin_y && y_val <= this->datamax_y)) {
-                        std::cout << "yval = " << y_val << ", for height = " << this->height << std::endl;
-                        std::cout << "RESCALE y, because of index " << data_idx << std::endl;
-                        std::cout << "ymax = " << this->datamax_y << ", ymin = " << this->datamin_y << std::endl;
-                        
-                        // this->clear_graph_data();
-                        // // this->graphDataCoords.clear();
-                        // this->pendingAppended = true; // as the graph will be re-drawn
                         
                         this->ord1_scale.reset();
                         this->ord2_scale.reset();
 
                         this->setlimits_x (this->datamin_x, this->datamax_x);  // just making sure the scale x is ready
 
-                        // if (y_val > this->datamax_y) {
-                        //     this->setlimits_y (this->datamin_y, y_val);
-                        // } else if (y_val < this->datamin_y) {
-                        //     this->setlimits_y (y_val, this->datamax_y);
-                        // } else {
-                        //   this->setlimits_y (this->datamin_y, this->datamax_y);
-                        // }
-                        this->setlimits_y (this->datamin_y, this->datamax_y);
+                        // update the y axis
+                        if (y_val > this->datamax_y) {
+                            this->setlimits_y (this->datamin_y, y_val);
+                        } else if (y_val < this->datamin_y) {
+                            this->setlimits_y (y_val, this->datamax_y);
+                        } else {
+                            this->setlimits_y (this->datamin_y, this->datamax_y);
+                        }
 
                         VisualModel<glver>::clear(); // Get rid of the vertices.
-                        
-                        std::cout << "param ord1 scale = " << this->ord1_scale.params_str() << std::endl;
-                        std::cout << "param abscissa scale = " << this->abscissa_scale.params_str() << std::endl;
-                        
                         this->initializeVertices(); // Re-build
                     }
                 }
-
-                this->ord1_scale.transform (_data, sd);
             }
+            std::vector<Flt> sd (dsize, Flt{0});
+            this->ord1_scale.transform (_data, sd);
 
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
@@ -632,7 +618,7 @@ namespace morph {
             this->abscissa_scale.output_range.min = _extra;
             this->abscissa_scale.output_range.max = this->width - _extra;
 
-            this->thickness *= this->width;
+            this->thickness = this->relative_thickness * this->width;
         }
 
         // Make all the bits of the graph - fonts, line thicknesses, etc, bigger by factor. Call before finalize().
@@ -728,7 +714,7 @@ namespace morph {
         }
 
         //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
-        void setthickness (float th) { this->thickness = th; }
+        void setthickness (float th) { this->relative_thickness = th; }
 
         //! Tell this GraphVisual that it's going to be rendered on a dark background. Updates axis colour.
         void setdarkbg()
@@ -1750,7 +1736,9 @@ namespace morph {
         //! lines) so that some objects (like a marker) is viewed 'on top' of another
         //! (such as a line). If it's too small, and the graph is far away in the scene,
         //! then precision errors can cause colour mixing.
-        float thickness = 0.002f;
+        float relative_thickness = 0.002f;  // reference thickness relative to width to compute the absolute thickness
+        float thickness = relative_thickness;
+
         //! width is how wide the graph axes will be, in 3D model coordinates
         float width = 1.0f;
         //! height is how high the graph axes will be, in 3D model coordinates
