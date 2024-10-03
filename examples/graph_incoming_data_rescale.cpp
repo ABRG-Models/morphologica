@@ -23,7 +23,7 @@ int main()
 
     try {
         morph::vvec<float> absc =  {-1.0, -.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0};
-        morph::vvec<float> data = absc.pow(3);
+        morph::vvec<float> data = 2.1f * absc.pow(3);
         morph::vvec<float> data2 = absc.pow(5);
         auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
         v.bindmodel (gv);
@@ -47,6 +47,8 @@ int main()
 
         // Enable auto-rescaling of the x axis
         gv->auto_rescale_x = true;
+        // Enable auto-rescaling of the y axis
+        gv->auto_rescale_y = true;
 
         gv->finalize();
 

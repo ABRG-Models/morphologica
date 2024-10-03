@@ -83,49 +83,109 @@ namespace morph {
             (*this->graphDataCoords[didx])[oldsz][1] = o;
             (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
 
+            bool redraw_plot = false;
+
+
+            // check x axis
             if (!this->within_axes_x ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_x) {
                 std::cout << "RESCALE x!\n";
+                
                 this->clear_graph_data();
                 this->graphDataCoords.clear();
                 this->pendingAppended = true; // as the graph will be re-drawn
+                redraw_plot = true;
+
                 this->ord1_scale.reset();
                 this->ord2_scale.reset();
-                this->setlimits_x (this->datamin_x, this->datamax_x*2.0f);
-                if (!this->ord1.empty()) {
-                    // vvec, vvec, datasetstyle
-                    this->setdata (this->absc1, this->ord1, this->ds_ord1);
+                std::cout << "scale resetted!\n";
+                if (_abscissa > this->datamax_x) {
+                    this->setlimits_x (this->datamin_x, _abscissa);
+                    std::cout << "\t 1 -y rescale done!\n";
+                } else if (_abscissa < this->datamin_x) {
+                    this->setlimits_x (_abscissa, this->datamax_x);
+                    std::cout << "\t 2 -y rescale done!\n";
+                } else {
+                    this->setlimits_x (this->datamin_x, this->datamax_x);
+                    std::cout << "\t 3 -y rescale done!\n";
                 }
-                if (!this->ord2.empty()) {
-                    this->setdata (this->absc2, this->ord2, this->ds_ord2);
-                }
-                VisualModel<glver>::clear(); // Get rid of the vertices.
-                this->initializeVertices(); // Re-build
             }
-
+            // check y axis
             if (!this->within_axes_y ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_y) {
                 std::cout << "RESCALE y!\n";
-                this->clear_graph_data();
-                this->graphDataCoords.clear();
-                this->pendingAppended = true; // as the graph will be re-drawn
+                
+                if (!redraw_plot)
+                {
+                    this->clear_graph_data();
+                    this->graphDataCoords.clear();
+                    this->pendingAppended = true; // as the graph will be re-drawn
+                    redraw_plot = true;
+                }
+
                 this->ord1_scale.reset();
                 this->ord2_scale.reset();
+                if (this->datastyles[didx].axisside == morph::axisside::left) {
+                  
+                  // this->setlimits_x (this->datamin_x, this->datamax_x);
+                  std::cout << "\tx1 rescale done!\n";
+                  if (this->ord1.back() > this->datamax_y) {
+                      this->setlimits_y (this->datamin_y, this->ord1.back());
+                      std::cout << "\t 1 -y rescale done!\n";
+                  } else if (this->ord1.back() < this->datamin_y) {
+                      this->setlimits_y (this->ord1.back(), this->datamax_y);
+                      std::cout << "\t 2 -y rescale done!\n";
+                  } else {
+                      this->setlimits_y (this->datamin_y, this->datamax_y);
+                      std::cout << "\t 3 -y rescale done!\n";
+                  }
 
-                if ((*this->graphDataCoords[didx])[oldsz][1] > this->datamax_y) {
-                    this->setlimits_y (this->datamin_y, (*this->graphDataCoords[didx])[oldsz][1]);
-                } else if ((*this->graphDataCoords[didx])[oldsz][1] < this->datamin_y) {
-                    this->setlimits_y ((*this->graphDataCoords[didx])[oldsz][1], this->datamax_y);
+                  if (!ord2_scale.ready()) {  // useful if y is not in range at initialization
+                      this->ord1_scale.reset();
+                      this->ord2_scale.reset();
+                      std::cout << "\t set limit y2 if required\n";
+                      this->setlimits_y2 (this->datamin_y2, this->datamax_y2);
+                  }
+                } else {
+                  // this->setlimits_x (this->datamin_x, this->datamax_x);
+                  std::cout << "\tx2 rescale done!\n";
+                  if (this->ord2.back() > this->datamax_y2) {
+                      this->setlimits_y2 (this->datamin_y2, this->ord2.back());
+                      std::cout << "\t 1 -y2 rescale done!\n";
+                  } else if (this->ord2.back() < this->datamin_y2) {
+                      this->setlimits_y2 (this->ord2.back(), this->datamax_y2);
+                      std::cout << "\t 2 -y2 rescale done!\n";
+                  } else {
+                      this->setlimits_y2 (this->datamin_y2, this->datamax_y2);
+                      std::cout << "\t 3 -y2 rescale done!\n";
+                  }
+
+                  // if (!ord1_scale.ready()) {
+                  //     std::cout << "\t set limit y if required\n";
+                  //     this->setlimits_y (this->datamin_y, this->datamax_y);
+                  // }
                 }
-                
-                if (!this->ord1.empty()) {
-                    // vvec, vvec, datasetstyle
-                    this->setdata (this->absc1, this->ord1, this->ds_ord1);
-                }
-                if (!this->ord2.empty()) {
-                    this->setdata (this->absc2, this->ord2, this->ds_ord2);
-                }
-                VisualModel<glver>::clear(); // Get rid of the vertices.
-                this->initializeVertices(); // Re-build
             }
+
+            std::cout << "ready? "<< ord1_scale.ready() << " " << ord2_scale.ready() << std::endl;
+            std::cout << ord1_scale.transform_str() << std::endl;
+            std::cout << ord2_scale.transform_str() << std::endl;
+
+
+            if (!this->ord1.empty()) {
+                std::cout << "y1 data update!\n";
+                // vvec, vvec, datasetstyle
+                this->setdata (this->absc1, this->ord1, this->ds_ord1);
+
+            }
+            if (!this->ord2.empty()) {
+                std::cout << "y2 data update!\n";
+                this->setdata (this->absc2, this->ord2, this->ds_ord2);
+                std::cout << "y2 data done!\n";
+            }
+
+            std::cout << "y rescale done!\n";
+
+            VisualModel<glver>::clear(); // Get rid of the vertices.
+            this->initializeVertices(); // Re-build
         }
 
         //! Before calling the base class's render method, check if we have any pending data
