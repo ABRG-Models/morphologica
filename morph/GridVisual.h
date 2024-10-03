@@ -49,7 +49,7 @@ namespace morph {
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
-            float bz = dx[0] * 0.01f;
+            float bz = 0.02f;
             float left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
             float right = cg_extents[1] + (dx[0]/2.0f) + this->centering_offset[0];
             float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
@@ -72,7 +72,7 @@ namespace morph {
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
-            float bz = dx[0] * 0.05f;
+            float bz = 0.01f;
             // loop through each pixel
             for (float left = cg_extents[0] - (dx[0]/2.0f); left < cg_extents[1] + (dx[0]/2.0f); left += dx[0]) {
                 for (float bot = cg_extents[2] - (dx[1]/2.0f); bot < cg_extents[3] + (dx[1]/2.0f); bot += dx[1]) {
@@ -108,9 +108,9 @@ namespace morph {
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
-            float bz = dx[0] * 0.075f;
+            float bz = 0.03f;
 
-            unsigned int pix_width = static_cast<unsigned int>(std::round(cg_extents[1] + dx[0])/dx[0]);
+            unsigned int pix_width = static_cast<unsigned int>(std::round(cg_extents[1] - cg_extents[0] + dx[0])/dx[0]);
 
             // check if the size of selected_pix_border_colour is the same as the size of selected_pix_indexes
             if (selected_pix_indexes.size()>selected_pix_border_colour.size()){

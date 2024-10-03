@@ -104,6 +104,27 @@ namespace morph {
 
             if (!this->within_axes_y ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_y) {
                 std::cout << "RESCALE y!\n";
+                this->clear_graph_data();
+                this->graphDataCoords.clear();
+                this->pendingAppended = true; // as the graph will be re-drawn
+                this->ord1_scale.reset();
+                this->ord2_scale.reset();
+
+                if ((*this->graphDataCoords[didx])[oldsz][1] > this->datamax_y) {
+                    this->setlimits_y (this->datamin_y, (*this->graphDataCoords[didx])[oldsz][1]);
+                } else if ((*this->graphDataCoords[didx])[oldsz][1] < this->datamin_y) {
+                    this->setlimits_y ((*this->graphDataCoords[didx])[oldsz][1], this->datamax_y);
+                }
+                
+                if (!this->ord1.empty()) {
+                    // vvec, vvec, datasetstyle
+                    this->setdata (this->absc1, this->ord1, this->ds_ord1);
+                }
+                if (!this->ord2.empty()) {
+                    this->setdata (this->absc2, this->ord2, this->ds_ord2);
+                }
+                VisualModel<glver>::clear(); // Get rid of the vertices.
+                this->initializeVertices(); // Re-build
             }
         }
 
@@ -153,13 +174,50 @@ namespace morph {
 
             // May need a re-autoscaling option somewhere in here.
 
-            // Transfor the data into temporary containers sd and ad
+            // Transform the data into temporary containers sd and ad
             std::vector<Flt> ad (dsize, Flt{0});
             this->abscissa_scale.transform (_abscissae, ad);
 
-
             std::vector<Flt> sd (dsize, Flt{0});
             this->ord1_scale.transform (_data, sd);
+
+            // check min and max of the y axis
+            if (this->auto_rescale_y) {
+                for (auto y_val : _data) {
+                    if (!(y_val >= this->datamin_y && y_val <= this->datamax_y)) {
+                        std::cout << "yval = " << y_val << ", for height = " << this->height << std::endl;
+                        std::cout << "RESCALE y, because of index " << data_idx << std::endl;
+                        std::cout << "ymax = " << this->datamax_y << ", ymin = " << this->datamin_y << std::endl;
+                        
+                        // this->clear_graph_data();
+                        // // this->graphDataCoords.clear();
+                        // this->pendingAppended = true; // as the graph will be re-drawn
+                        
+                        this->ord1_scale.reset();
+                        this->ord2_scale.reset();
+
+                        this->setlimits_x (this->datamin_x, this->datamax_x);  // just making sure the scale x is ready
+
+                        // if (y_val > this->datamax_y) {
+                        //     this->setlimits_y (this->datamin_y, y_val);
+                        // } else if (y_val < this->datamin_y) {
+                        //     this->setlimits_y (y_val, this->datamax_y);
+                        // } else {
+                        //   this->setlimits_y (this->datamin_y, this->datamax_y);
+                        // }
+                        this->setlimits_y (this->datamin_y, this->datamax_y);
+
+                        VisualModel<glver>::clear(); // Get rid of the vertices.
+                        
+                        std::cout << "param ord1 scale = " << this->ord1_scale.params_str() << std::endl;
+                        std::cout << "param abscissa scale = " << this->abscissa_scale.params_str() << std::endl;
+                        
+                        this->initializeVertices(); // Re-build
+                    }
+                }
+
+                this->ord1_scale.transform (_data, sd);
+            }
 
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
