@@ -195,7 +195,8 @@ namespace morph {
          * \param input_min The minimum value of the input data
          * \param input_max The maximum value of the input data
          */
-        virtual void compute_autoscale (T input_min, T input_max) = 0;
+        virtual void compute_autoscale (T input_min, T input_max) = 0; // deprecated name
+        virtual void set_input_range (const T input_min, const T input_max) = 0;
 
         /*!
          * \brief Autoscale from data
@@ -204,7 +205,7 @@ namespace morph {
          * container of data such that min(\a data) gives \b output_range.min as output
          * and max(\a data) gives \b output_range.max as output.
          *
-         * This method sub-calls #compute_autoscale, when then modifies ScaleImpl::params.
+         * This method sub-calls #set_input_range, when then modifies ScaleImpl::params.
          *
          * \tparam Container The STL container holding the data. Restricted to those containers
          * which take two arguments for construction. This includes std::vector, std::list but
@@ -222,7 +223,7 @@ namespace morph {
         autoscale_from (const Container& data)
         {
             morph::range<typename Container::value_type> mm = MathAlgo::maxmin (data);
-            this->compute_autoscale (mm.min, mm.max);
+            this->set_input_range (mm.min, mm.max);
         }
 
         //! Set to true to make the Scale object compute autoscaling when data is available, i.e. on
@@ -357,7 +358,13 @@ namespace morph {
             return rtn;
         }
 
+        // deprecated name. use set_input_range()
         virtual void compute_autoscale (T input_min, T input_max)
+        {
+            this->set_input_range (input_min, input_max);
+        }
+
+        virtual void set_input_range (const T input_min, const T input_max)
         {
             if (this->type != ScaleFn::Linear) {
                 throw std::runtime_error ("This autoscale function is for Linear scaling only");
@@ -511,12 +518,18 @@ namespace morph {
             return rtn;
         }
 
+        // deprecated name
         virtual void compute_autoscale (T input_min, T input_max)
         {
+            this->set_input_range (input_min, input_max);
+        }
+
+        virtual void set_input_range (const T input_min, const T input_max)
+        {
             if (this->type == ScaleFn::Logarithmic) {
-                this->compute_autoscale_log (input_min, input_max);
+                this->set_input_range_log (input_min, input_max);
             } else if (this->type == ScaleFn::Linear) {
-                this->compute_autoscale_linear (input_min, input_max);
+                this->set_input_range_linear (input_min, input_max);
             } else {
                 throw std::runtime_error ("Unknown scaling");
             }
@@ -578,7 +591,7 @@ namespace morph {
             return (std::exp (res));
         }
 
-        void compute_autoscale_linear (T input_min, T input_max)
+        void set_input_range_linear (T input_min, T input_max)
         {
             // Here, we need to use the output type for the computations. Does that mean
             // params is stored in the output type? I think it does.
@@ -594,7 +607,7 @@ namespace morph {
             }
         }
 
-        void compute_autoscale_log (T input_min, T input_max)
+        void set_input_range_log (T input_min, T input_max)
         {
             if (input_min <= T{0} || input_max <= T{0}) {
                 throw std::runtime_error ("Can't logarithmically autoscale a range which includes zeros or negatives");
@@ -602,7 +615,7 @@ namespace morph {
             T ln_imin = std::log(input_min);
             T ln_imax = std::log(input_max);
             // Now just scale linearly between ln_imin and ln_imax
-            this->compute_autoscale_linear (ln_imin, ln_imax);
+            this->set_input_range_linear (ln_imin, ln_imax);
         }
 
         //! The parameters for the scaling. If linear, this will contain two scalar values.
