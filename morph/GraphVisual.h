@@ -239,9 +239,6 @@ namespace morph {
                             Flt min_y2 = this->datamin_y2, max_y2 = this->datamax_y2;
                             this->UpdateMinMax(y_val, this->datamin_y2, this->datamax_y2, min_y2, max_y2);
                             this->setlimits(this->datamin_x, this->datamax_x, this->datamin_y, this->datamax_y, min_y2, max_y2);
-
-                            // VisualModel<glver>::clear(); // Get rid of the vertices.
-                            // this->initializeVertices(); // Re-build
                         }
                     }
                 }
@@ -1725,7 +1722,7 @@ namespace morph {
         bool auto_rescale_x = false;
         //! Auto-rescale y axis if data goes off the edge of the graph (by setting the out of range data as new boundary)
         bool auto_rescale_y = false;
-        //! in the update function, it fits the scale with the range of the data
+        //! in the update function, it fits the scale with the range of the data (/!\ will scope only on the last datasets per y axis)
         bool auto_rescale_fit = false;
         //! A vector of styles for the datasets to be displayed on this graph
         std::vector<DatasetStyle> datastyles;
