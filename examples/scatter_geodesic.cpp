@@ -125,7 +125,7 @@ int main()
                 v.bindmodel (vmp);
                 clrs.linspace (0, 0.66, vneighb_vertices[i].size());
                 vmp->scalarData = &clrs;
-                vmp->colourScale.compute_autoscale (0, 1);
+                vmp->colourScale.set_input_range (0, 1);
                 vmp->do_quiver_length_scaling = false; // Don't (auto)scale the lengths of the vectors
                 vmp->quiver_length_gain = 0.5f;        // Apply a fixed gain to the length of the quivers on screen
                 vmp->fixed_quiver_thickness = 0.01f/iterations;  // Fixed quiver thickness

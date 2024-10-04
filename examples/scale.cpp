@@ -54,12 +54,12 @@ int main()
     std::cout << "Manual scaling\n------------------\n";
     // Use this method to set the scaling if you know min and max of the range of your input
     // data. This computes the scaling parameters given an assumption of a min of 1 and a max of 32:
-    s.compute_autoscale (1.0f, 32.0f);
+    s.set_input_range (1.0f, 32.0f);
 
     morph::vvec<float> vv1 = {1,2,3,4,5,8,9,32};
     morph::vvec<float> vvresult(vv1);
     s.transform (vv1, vvresult);
-    std::cout << "With Scale::compute_autoscale (1, 32), " << vv1 << " scales to: " << vvresult << "\n";
+    std::cout << "With Scale::set_input_range (1, 32), " << vv1 << " scales to: " << vvresult << "\n";
 
     // To compute a scale which transforms every number to 1, you can do this:
     s.setParams(0, 1); // For a linear morph::Scale, the parameters are gradient, offset
@@ -77,10 +77,10 @@ int main()
     std::cout << "With Scale::setParams(0,0) " << vv1 << " scales to: " << vvresult << "\n";
 
     // DON'T try to use compute autoscale to allow you to scale any number to zero. Here's what you
-    // get with compute_autoscale (0,0)
-    s.compute_autoscale (0.0f, 0.0f);
+    // get with set_input_range (0,0)
+    s.set_input_range (0.0f, 0.0f);
     s.transform (vv1, vvresult);
-    std::cout << "With Scale::compute_autoscale(0,0) " << vv1 << " scales to: " << vvresult << "\n";
+    std::cout << "With Scale::set_input_range(0,0) " << vv1 << " scales to: " << vvresult << "\n";
 
     // You can scale numbers between two different number types.
     morph::Scale<int,float> si;
