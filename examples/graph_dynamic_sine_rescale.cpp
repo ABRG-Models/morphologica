@@ -28,11 +28,16 @@ int main()
     ds_right.datalabel = "sine right";
     gv->setdata (x, (x+dx).sin() -0.5, ds_right);
 
+    // set style of the axis
     gv->axisstyle = morph::axisstyle::twinax;
+    
     // Enable auto-rescaling of the x axis
     gv->auto_rescale_x = true;
     // Enable auto-rescaling of the y axis
     gv->auto_rescale_y = true;
+
+    // rescale to fit data along the y axis
+    gv->auto_rescale_fit = true;
 
     gv->finalize();
 
