@@ -344,6 +344,12 @@ if(USE_GLEW)
   target_link_libraries(graph_dynamic_sine GLEW::GLEW)
 endif()
 
+add_executable(graph_dynamic_sine_rescale graph_dynamic_sine_rescale.cpp)
+target_link_libraries(graph_dynamic_sine_rescale OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph_dynamic_sine_rescale GLEW::GLEW)
+endif()
+
 add_executable(graph_bar graph_bar.cpp)
 target_link_libraries(graph_bar OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)

@@ -179,26 +179,62 @@ namespace morph {
             std::vector<Flt> ad (dsize, Flt{0});
             this->abscissa_scale.transform (_abscissae, ad);
 
-            // check min and max of the y axis
-            if (this->auto_rescale_y) {
-                for (auto y_val : _data) {
-                    if (!(y_val >= this->datamin_y && y_val <= this->datamax_y)) {
-                        
-                        this->ord1_scale.reset();
-                        this->ord2_scale.reset();
+            // check x axis
+            if (this->auto_rescale_x) {
+              for (auto x_val : _abscissae) {
+                this->ord1_scale.reset();
+                this->ord2_scale.reset();
 
-                        // update the y axis
-                        Flt min_y = this->datamin_y, max_y = this->datamax_y;
-                        this->UpdateMinMax(y_val, this->datamin_y, this->datamax_y, min_y, max_y);
-                        this->setlimits(this->datamin_x, this->datamax_x, min_y, max_y);
+                Flt min_x = this->datamin_x, max_x = this->datamax_x;
+                this->UpdateMinMax(x_val, this->datamin_x, this->datamax_x, min_x, max_x);
+                this->setlimits_x(min_x, max_x);
+              }
+            }
 
-                        VisualModel<glver>::clear(); // Get rid of the vertices.
-                        this->initializeVertices(); // Re-build
+            std::vector<Flt> sd (dsize, Flt{0});
+            if(this->datastyles[data_idx].axisside == morph::axisside::left) {
+                // check min and max of the y axis
+                if (this->auto_rescale_y) {
+                    for (auto y_val : _data) {
+                        if (!(y_val >= this->datamin_y && y_val <= this->datamax_y)) {
+                            this->ord1_scale.reset();
+                            this->ord2_scale.reset();
+
+                            // update the y axis
+                            Flt min_y = this->datamin_y, max_y = this->datamax_y;
+                            this->UpdateMinMax(y_val, this->datamin_y, this->datamax_y, min_y, max_y);
+                            this->setlimits(this->datamin_x, this->datamax_x, min_y, max_y);
+
+                            // VisualModel<glver>::clear(); // Get rid of the vertices.
+                            // this->initializeVertices(); // Re-build
+                        }
                     }
                 }
+
+                // scale data with the axis
+                this->ord1_scale.transform (_data, sd);
+            } else {
+                // check min and max of the y2 axis
+                if (this->auto_rescale_y) {
+                    for (auto y_val : _data) {
+                        if (!(y_val >= this->datamin_y2 && y_val <= this->datamax_y2)) {
+                            this->ord1_scale.reset();
+                            this->ord2_scale.reset();
+
+                            // update the y axis
+                            Flt min_y2 = this->datamin_y2, max_y2 = this->datamax_y2;
+                            this->UpdateMinMax(y_val, this->datamin_y2, this->datamax_y2, min_y2, max_y2);
+                            this->setlimits(this->datamin_x, this->datamax_x, this->datamin_y, this->datamax_y, min_y2, max_y2);
+
+                            // VisualModel<glver>::clear(); // Get rid of the vertices.
+                            // this->initializeVertices(); // Re-build
+                        }
+                    }
+                }
+
+                // scale data with the axis
+                this->ord2_scale.transform (_data, sd);
             }
-            std::vector<Flt> sd (dsize, Flt{0});
-            this->ord1_scale.transform (_data, sd);
 
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
@@ -1671,9 +1707,9 @@ namespace morph {
         //! If required, the second ordinate's minimum/max data values (twinax)
         Flt datamin_y2 = Flt{0};
         Flt datamax_y2 = Flt{1};
-        //! Auto-rescale x axis if data goes off the edge of the graph (by doubling range?)
+        //! Auto-rescale x axis if data goes off the edge of the graph (by setting the out of range data as new boundary)
         bool auto_rescale_x = false;
-        //! Auto-rescale y axis if data goes off the edge of the graph
+        //! Auto-rescale y axis if data goes off the edge of the graph (by setting the out of range data as new boundary)
         bool auto_rescale_y = false;
         //! A vector of styles for the datasets to be displayed on this graph
         std::vector<DatasetStyle> datastyles;
