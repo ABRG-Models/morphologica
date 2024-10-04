@@ -23,7 +23,7 @@ int main()
 
     try {
         morph::vvec<float> absc =  {-1.0, -.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0};
-        morph::vvec<float> data = 2.1f * absc.pow(1);
+        morph::vvec<float> data = 2.1f * absc.pow(3);
         morph::vvec<float> data2 = 1.5f * absc.pow(5);
         auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
         v.bindmodel (gv);
@@ -41,9 +41,9 @@ int main()
         gv->prepdata ("Fifth power", morph::axisside::right);
 
         using morph::unicode;
-        gv->ylabel = "f(x) = x" + unicode::toUtf8(unicode::ss3);
+        gv->ylabel = "f(x) = 2.1x" + unicode::toUtf8(unicode::ss3);
         // ylabel2 is the right hand y axis label
-        gv->ylabel2 = "f(x) = x" + unicode::toUtf8(unicode::ss5);
+        gv->ylabel2 = "f(x) = 1.5x" + unicode::toUtf8(unicode::ss5);
 
         // Enable auto-rescaling of the x axis
         gv->auto_rescale_x = true;
