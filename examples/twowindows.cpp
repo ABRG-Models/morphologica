@@ -73,7 +73,7 @@ int main()
         auto qvp = std::make_unique<morph::QuiverVisual<float>>(&coords, offset, &quivs, morph::ColourMapType::Jet);
         v.bindmodel (qvp);
         qvp->quiver_length_gain = 1.0f; // Scale the length of the quivers on screen
-        qvp->colourScale.compute_autoscale(0, qlens.max());
+        qvp->colourScale.set_input_range(0, qlens.max());
         qvp->quiver_thickness_gain = 0.02f; // Scale thickness of the quivers
         qvp->finalize();
         v.addVisualModel (qvp);
