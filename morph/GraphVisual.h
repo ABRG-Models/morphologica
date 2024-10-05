@@ -561,23 +561,23 @@ namespace morph {
             switch (this->scalingpolicy_x) {
             case morph::scalingpolicy::manual:
             {
-                this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
+                this->abscissa_scale.compute_scaling (this->datamin_x, this->datamax_x);
                 break;
             }
             case morph::scalingpolicy::manual_min:
             {
-                this->abscissa_scale.compute_autoscale (this->datamin_x, absc_maxmin.max);
+                this->abscissa_scale.compute_scaling (this->datamin_x, absc_maxmin.max);
                 break;
             }
             case morph::scalingpolicy::manual_max:
             {
-                this->abscissa_scale.compute_autoscale (absc_maxmin.min, this->datamax_x);
+                this->abscissa_scale.compute_scaling (absc_maxmin.min, this->datamax_x);
                 break;
             }
             case morph::scalingpolicy::autoscale:
             default:
             {
-                this->abscissa_scale.compute_autoscale (absc_maxmin.min, absc_maxmin.max);
+                this->abscissa_scale.compute_scaling (absc_maxmin.min, absc_maxmin.max);
                 break;
             }
             }
@@ -587,27 +587,27 @@ namespace morph {
             case morph::scalingpolicy::manual:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
+                    this->ord1_scale.compute_scaling (this->datamin_y, this->datamax_y);
                 } else {
-                    this->ord2_scale.compute_autoscale (this->datamin_y2, this->datamax_y2);
+                    this->ord2_scale.compute_scaling (this->datamin_y2, this->datamax_y2);
                 }
                 break;
             }
             case morph::scalingpolicy::manual_min:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_autoscale (this->datamin_y, data_maxmin.max);
+                    this->ord1_scale.compute_scaling (this->datamin_y, data_maxmin.max);
                 } else {
-                    this->ord2_scale.compute_autoscale (this->datamin_y2, data_maxmin.max);
+                    this->ord2_scale.compute_scaling (this->datamin_y2, data_maxmin.max);
                 }
                 break;
             }
             case morph::scalingpolicy::manual_max:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_autoscale (data_maxmin.min, this->datamax_y);
+                    this->ord1_scale.compute_scaling (data_maxmin.min, this->datamax_y);
                 } else {
-                    this->ord2_scale.compute_autoscale (data_maxmin.min, this->datamax_y2);
+                    this->ord2_scale.compute_scaling (data_maxmin.min, this->datamax_y2);
                 }
                 break;
             }
@@ -615,9 +615,9 @@ namespace morph {
             default:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_autoscale (data_maxmin.min, data_maxmin.max);
+                    this->ord1_scale.compute_scaling (data_maxmin.min, data_maxmin.max);
                 } else {
-                    this->ord2_scale.compute_autoscale (data_maxmin.min, data_maxmin.max);
+                    this->ord2_scale.compute_scaling (data_maxmin.min, data_maxmin.max);
                 }
                 break;
             }
@@ -688,7 +688,7 @@ namespace morph {
             this->datamin_x = _xmin;
             this->datamax_x = _xmax;
             this->setsize (this->width, this->height);
-            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
+            this->abscissa_scale.compute_scaling (this->datamin_x, this->datamax_x);
         }
 
         //! Set manual limits for the y axis (ordinate)
@@ -698,7 +698,7 @@ namespace morph {
             this->datamin_y = _ymin;
             this->datamax_y = _ymax;
             this->setsize (this->width, this->height);
-            this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
+            this->ord1_scale.compute_scaling (this->datamin_y, this->datamax_y);
         }
 
         //! Set manual limits for the second y axis (ordinate)
@@ -708,7 +708,7 @@ namespace morph {
             this->datamin_y2 = _ymin;
             this->datamax_y2 = _ymax;
             this->setsize (this->width, this->height);
-            this->ord2_scale.compute_autoscale (this->datamin_y2, this->datamax_y2);
+            this->ord2_scale.compute_scaling (this->datamin_y2, this->datamax_y2);
         }
 
         // Axis ranges. The length of each axis could be determined from the data and
@@ -729,8 +729,8 @@ namespace morph {
             this->setsize (this->width, this->height);
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always width * height in size).
-            this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
-            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
+            this->ord1_scale.compute_scaling (this->datamin_y, this->datamax_y);
+            this->abscissa_scale.compute_scaling (this->datamin_x, this->datamax_x);
         }
 
         //! setlimits overload that sets BOTH left and right axes limits
@@ -750,9 +750,9 @@ namespace morph {
             this->setsize (this->width, this->height);
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always width * height in size).
-            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
-            this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
-            this->ord2_scale.compute_autoscale (this->datamin_y2, this->datamax_y2);
+            this->abscissa_scale.compute_scaling (this->datamin_x, this->datamax_x);
+            this->ord1_scale.compute_scaling (this->datamin_y, this->datamax_y);
+            this->ord2_scale.compute_scaling (this->datamin_y2, this->datamax_y2);
         }
 
         //! function to test if a value is in a given range and update that range with new boundaries if required
@@ -1681,7 +1681,7 @@ namespace morph {
         //! The input vectors are scaled in length to the range [0, 1], which is then modified by the
         //! user using quiver_length_gain. This scaling can be made logarithmic by calling
         //! GraphVisual::quiver_setlog() before calling finalize(). The scaling can be ignored by calling
-        //! GraphVisual::quiver_length_scale.compute_autoscale (0, 1); before finalize().
+        //! GraphVisual::quiver_length_scale.compute_scaling (0, 1); before finalize().
         morph::Scale<float> quiver_length_scale;
         //! Linear scaling for any quivers, which is independent from the length scaling and can be used for colours
         morph::Scale<float> quiver_linear_scale;
