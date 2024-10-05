@@ -83,14 +83,39 @@ namespace morph {
             (*this->graphDataCoords[didx])[oldsz][1] = o;
             (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
 
-            if (!this->within_axes_x ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_x) {
-                std::cout << "RESCALE x!\n";
+            bool redraw_plot = false;
+            Flt min_x = this->datamin_x, max_x = this->datamax_x;
+            Flt min_y = this->datamin_y, max_y = this->datamax_y;
+            Flt min_y2 = this->datamin_y2, max_y2 = this->datamax_y2;
+
+            // check x axis
+            if (this->auto_rescale_x) {
+                redraw_plot = this->UpdateMinMax(_abscissa, this->datamin_x, this->datamax_x, min_x, max_x);
+            }
+
+            // check y axis
+            if (this->auto_rescale_y) {
+                if (this->datastyles[didx].axisside == morph::axisside::left) {
+                    if(this->UpdateMinMax(this->ord1.back(), this->datamin_y, this->datamax_y, min_y, max_y)) {
+                        redraw_plot = true;
+                    }
+                } else {
+                    if(this->UpdateMinMax(this->ord2.back(), this->datamin_y2, this->datamax_y2, min_y2, max_y2)) {
+                        redraw_plot = true;
+                    }
+                }
+            }
+
+            // update graph if necessary
+            if (redraw_plot) {
                 this->clear_graph_data();
                 this->graphDataCoords.clear();
                 this->pendingAppended = true; // as the graph will be re-drawn
+
                 this->ord1_scale.reset();
                 this->ord2_scale.reset();
-                this->setlimits_x (this->datamin_x, this->datamax_x*2.0f);
+                this->setlimits(min_x, max_x, min_y, max_y, min_y2, max_y2);
+
                 if (!this->ord1.empty()) {
                     // vvec, vvec, datasetstyle
                     this->setdata (this->absc1, this->ord1, this->ds_ord1);
@@ -98,13 +123,10 @@ namespace morph {
                 if (!this->ord2.empty()) {
                     this->setdata (this->absc2, this->ord2, this->ds_ord2);
                 }
-                VisualModel<glver>::clear(); // Get rid of the vertices.
-                this->initializeVertices(); // Re-build
             }
 
-            if (!this->within_axes_y ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_y) {
-                std::cout << "RESCALE y!\n";
-            }
+            VisualModel<glver>::clear(); // Get rid of the vertices.
+            this->initializeVertices(); // Re-build
         }
 
         //! Before calling the base class's render method, check if we have any pending data
@@ -153,13 +175,77 @@ namespace morph {
 
             // May need a re-autoscaling option somewhere in here.
 
-            // Transfor the data into temporary containers sd and ad
+            // Transform the data into temporary containers sd and ad
             std::vector<Flt> ad (dsize, Flt{0});
             this->abscissa_scale.transform (_abscissae, ad);
 
+            // check x axis
+            if (this->auto_rescale_x) {
+              for (auto x_val : _abscissae) {
+                this->ord1_scale.reset();
+                this->ord2_scale.reset();
+
+                Flt min_x = this->datamin_x, max_x = this->datamax_x;
+                this->UpdateMinMax(x_val, this->datamin_x, this->datamax_x, min_x, max_x);
+                this->setlimits(min_x, max_x, this->datamin_y, this->datamax_y, this->datamin_y2, this->datamax_y2);
+              }
+            }
 
             std::vector<Flt> sd (dsize, Flt{0});
-            this->ord1_scale.transform (_data, sd);
+            if(this->datastyles[data_idx].axisside == morph::axisside::left) {
+                // check min and max of the y axis
+                if (this->auto_rescale_y && this->auto_rescale_fit) {
+                  this->ord1_scale.reset();
+                  this->ord2_scale.reset();
+                  Flt min_y = _data[0], max_y = _data[0];
+                  for (auto y_val : _data) {
+                    this->UpdateMinMax(y_val, min_y, max_y, min_y, max_y);
+                  }
+                  this->setlimits_y(min_y, max_y);
+                } else if (this->auto_rescale_y) {
+                    for (auto y_val : _data) {
+                        if (!(y_val >= this->datamin_y && y_val <= this->datamax_y)) {
+                            this->ord1_scale.reset();
+                            this->ord2_scale.reset();
+
+                            // update the y axis
+                            Flt min_y = this->datamin_y, max_y = this->datamax_y;
+                            this->UpdateMinMax(y_val, this->datamin_y, this->datamax_y, min_y, max_y);
+                            this->setlimits(this->datamin_x, this->datamax_x, min_y, max_y);
+
+                        }
+                    }
+                }
+
+                // scale data with the axis
+                this->ord1_scale.transform (_data, sd);
+            } else {
+                // check min and max of the y2 axis
+                if (this->auto_rescale_y && this->auto_rescale_fit) {
+                  this->ord1_scale.reset();
+                  this->ord2_scale.reset();
+                  Flt min_y2 = _data[0], max_y2 = _data[0];
+                  for (auto y_val : _data) {
+                    this->UpdateMinMax(y_val, min_y2, max_y2, min_y2, max_y2);
+                  }
+                  this->setlimits(this->datamin_x, this->datamax_x, this->datamin_y, this->datamax_y, min_y2, max_y2);
+                } else if (this->auto_rescale_y) {
+                    for (auto y_val : _data) {
+                        if (!(y_val >= this->datamin_y2 && y_val <= this->datamax_y2)) {
+                            this->ord1_scale.reset();
+                            this->ord2_scale.reset();
+
+                            // update the y axis
+                            Flt min_y2 = this->datamin_y2, max_y2 = this->datamax_y2;
+                            this->UpdateMinMax(y_val, this->datamin_y2, this->datamax_y2, min_y2, max_y2);
+                            this->setlimits(this->datamin_x, this->datamax_x, this->datamin_y, this->datamax_y, min_y2, max_y2);
+                        }
+                    }
+                }
+
+                // scale data with the axis
+                this->ord2_scale.transform (_data, sd);
+            }
 
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
@@ -574,7 +660,7 @@ namespace morph {
             this->abscissa_scale.output_range.min = _extra;
             this->abscissa_scale.output_range.max = this->width - _extra;
 
-            this->thickness *= this->width;
+            this->thickness = this->relative_thickness * this->width;
         }
 
         // Make all the bits of the graph - fonts, line thicknesses, etc, bigger by factor. Call before finalize().
@@ -664,13 +750,31 @@ namespace morph {
             this->setsize (this->width, this->height);
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always width * height in size).
+            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
             this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
             this->ord2_scale.compute_autoscale (this->datamin_y2, this->datamax_y2);
-            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
+        }
+
+        //! function to test if a value is in a given range and update that range with new boundaries if required
+        bool UpdateMinMax (const Flt& val, const Flt& old_min, const Flt& old_max, Flt& new_min, Flt& new_max)
+        {
+            if (val > old_max) {
+                new_min = old_min;
+                new_max = val;
+                return true;
+            } else if (val < old_min) {
+                new_min = val;
+                new_max = old_max;
+                return true;
+            } else {
+                new_min = old_min;
+                new_max = old_max;
+                return false;
+            }
         }
 
         //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
-        void setthickness (float th) { this->thickness = th; }
+        void setthickness (float th) { this->relative_thickness = th; }
 
         //! Tell this GraphVisual that it's going to be rendered on a dark background. Updates axis colour.
         void setdarkbg()
@@ -1614,10 +1718,12 @@ namespace morph {
         //! If required, the second ordinate's minimum/max data values (twinax)
         Flt datamin_y2 = Flt{0};
         Flt datamax_y2 = Flt{1};
-        //! Auto-rescale x axis if data goes off the edge of the graph (by doubling range?)
+        //! Auto-rescale x axis if data goes off the edge of the graph (by setting the out of range data as new boundary)
         bool auto_rescale_x = false;
-        //! Auto-rescale y axis if data goes off the edge of the graph
+        //! Auto-rescale y axis if data goes off the edge of the graph (by setting the out of range data as new boundary)
         bool auto_rescale_y = false;
+        //! in the update function, it fits the scale with the range of the data (/!\ will scope only on the last datasets per y axis)
+        bool auto_rescale_fit = false;
         //! A vector of styles for the datasets to be displayed on this graph
         std::vector<DatasetStyle> datastyles;
         //! A default policy for showing datasets - lines, markers or both
@@ -1692,7 +1798,9 @@ namespace morph {
         //! lines) so that some objects (like a marker) is viewed 'on top' of another
         //! (such as a line). If it's too small, and the graph is far away in the scene,
         //! then precision errors can cause colour mixing.
-        float thickness = 0.002f;
+        float relative_thickness = 0.002f;  // reference thickness relative to width to compute the absolute thickness
+        float thickness = relative_thickness;
+
         //! width is how wide the graph axes will be, in 3D model coordinates
         float width = 1.0f;
         //! height is how high the graph axes will be, in 3D model coordinates
