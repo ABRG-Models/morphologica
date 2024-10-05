@@ -41,10 +41,10 @@ int main()
     // Set a fixed scaling for the data value to colour conversion. This ensures that
     // the range of the data (which is about -0.42 to 0.42) maps to the range 0->1 which
     // is then passed into the morph::ColourMap. With the right scaling, we get the full
-    // range of colours in the colour map. set_input_range() is the easiest way to do
+    // range of colours in the colour map. compute_scaling() is the easiest way to do
     // this - you just pass in the min and max of the expected range. colourScale is an
     // object of type morph::Scale.
-    svp->colourScale.set_input_range (-0.45f, 0.45f);
+    svp->colourScale.compute_scaling (-0.45f, 0.45f);
 
     unsigned int q = 0;
     while (!v.readyToFinish) {

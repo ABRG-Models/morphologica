@@ -38,9 +38,9 @@ namespace morph {
             this->y_scale.output_range.max = this->axis_ends[1];
             this->z_scale.output_range.max = this->axis_ends[2];
 
-            this->x_scale.set_input_range (this->input_min[0], this->input_max[0]);
-            this->y_scale.set_input_range (this->input_min[1], this->input_max[1]);
-            this->z_scale.set_input_range (this->input_min[2], this->input_max[2]);
+            this->x_scale.compute_scaling (this->input_min[0], this->input_max[0]);
+            this->y_scale.compute_scaling (this->input_min[1], this->input_max[1]);
+            this->z_scale.compute_scaling (this->input_min[2], this->input_max[2]);
 
             // Now ensure that this->[x/y/z]tick_posns/[x/y/z]ticks are populated
             this->computeTickPositions();

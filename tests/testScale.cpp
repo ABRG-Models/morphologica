@@ -231,7 +231,7 @@ int main () {
     Scale<double> d;
     double rmin = -3.0;
     double rmax = 5.0;
-    d.set_input_range (rmin, rmax);
+    d.compute_scaling (rmin, rmax);
     std::cout << "Scale output for rmin: " << d.transform_one (rmin) << std::endl;
     std::cout << "Scale output for rmin: " << d.transform_one (rmax) << std::endl;
 

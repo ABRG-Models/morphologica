@@ -139,7 +139,15 @@ You can only set the params if you already know the gradient and offset for your
 morph::Scale<int, float> s;
 s.output_range.min = 0;
 s.output_range.max = 5;
-s.set_input_range (-10, 10); // s.transform_one();
+s.compute_scaling (-10, 10);
+```
+
+You can also trigger the computation of the scaling function if you have a container of data by using `compute_scaling_from`, which is the function that is automatically called by `transform` when `do_autoscale` is `true`.
+
+```c++
+morph::Scale<int, float> s;
+std::vector<int> input_data = { 1, 2, 3, 6, 100 };
+s.compute_scaling_from (input_data);
 ```
 
 ### Logarithmic scaling
