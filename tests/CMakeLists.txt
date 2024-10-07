@@ -526,6 +526,9 @@ add_test(testGrid testGrid)
 add_executable(testGridRowCol testGridRowCol.cpp)
 add_test(testGridRowCol testGridRowCol)
 
+add_executable(testGridIndexLookup testGridIndexLookup.cpp)
+add_test(testGridIndexLookup testGridIndexLookup)
+
 add_executable(testGridNeighbours testGridNeighbours.cpp)
 add_test(testGridNeighbours testGridNeighbours)
 

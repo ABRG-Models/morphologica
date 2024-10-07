@@ -241,31 +241,33 @@ namespace morph {
         }
 
         //! A function to find the index of the grid that is closest to the given coordinate
-        I index_lookup (morph::vec<C, 2>& _coord)
+        I index_lookup (const morph::vec<C, 2>& _coord)
         {
-            throw std::runtime_error ("FIXME: This will require thinking about Grid::rowmaj and Grid::order");
-
             I index = I{0};
-
             morph::vec<C, 2> xyf = ((_coord - this->offset) / this->dx);
             xyf[0] = std::round (xyf[0]); // theres no vec::round() function at the time of writing
             xyf[1] = std::round (xyf[1]);
-            morph::vec<I, 2> xyi = xyf.as<I>();
 
-            if (order == morph::GridOrder::bottomleft_to_topright) {
-                index = this->w * xyi[1] + xyi[0];
-
-            } else if (order == morph::GridOrder::topleft_to_bottomright) {
-                index = this->w * -xyi[0] + xyi[1];
-                throw std::runtime_error ("FIXME: Not fit - I may not be a signed type");
-
-            } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
-                index = this->w * xyi[1] + xyi[0];
-
-            } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
-                index = this->w * xyi[0] - xyi[1]; // WARNING What if I is not signed???
-                throw std::runtime_error ("FIXME: Not fit - I may not be a signed type");
+            if (order == morph::GridOrder::topleft_to_bottomright
+                || order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                // In case I is not signed, we have to check that xyf[1] is <= 0
+                if (xyf[1] > C{0}) {
+                    throw std::runtime_error ("Grid y coordinate should be negative with increasing index");
+                }
+                // Negate xyf[1] before converting to index
+                xyf[1] = -xyf[1];
             }
+            morph::vec<I, 2> xyi = xyf.template as<I>();
+
+            if (order == morph::GridOrder::bottomleft_to_topright
+                || order == morph::GridOrder::topleft_to_bottomright) {
+                index = this->w * xyi[1] + xyi[0];
+            } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj
+                       || order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                index = this->h * xyi[0] + xyi[1];
+            }
+
+            if (index >= this->w * this->h) { throw std::runtime_error ("Coordinate is off-grid"); }
 
             return index;
         }
