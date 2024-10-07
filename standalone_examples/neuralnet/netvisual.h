@@ -53,7 +53,7 @@ public:
         morph::Scale<float> s;
         float min_act = this->nn->min_neuron_activation();
         float max_act = this->nn->max_neuron_activation();
-        s.compute_autoscale (min_act, max_act);
+        s.compute_scaling (min_act, max_act);
 
         // Our colour map
         morph::ColourMap<float> cm(morph::ColourMapType::Plasma);
@@ -100,7 +100,7 @@ public:
         // Connection lines from "neuron location" to "neuron location 2" (nloc2)
         float min_weight = -1;
         float max_weight = 1;
-        s.compute_autoscale (min_weight, max_weight);
+        s.compute_scaling (min_weight, max_weight);
         morph::vec<float,3> nloc2 = {0,0,0};
         nloc = {0,0,0};
         auto sl = startlocs.begin();

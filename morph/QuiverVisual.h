@@ -197,7 +197,7 @@ namespace morph {
         // The input vectors are scaled in length to the range [0, 1], which is then modified by the
         // user using quiver_length_gain. This scaling can be made logarithmic by calling
         // QuiverVisual::setlog() before calling finalize(). The scaling can be ignored by calling
-        // QuiverVisual::length_scale.compute_autoscale (0, 1); before finalize().
+        // QuiverVisual::length_scale.compute_scaling (0, 1); before finalize().
         morph::Scale<Flt, float> length_scale;
         // Set this false to avoid applying length_scale to quiver lengths and also and
         // colourScale (in the absence of ScalarData).

@@ -132,14 +132,22 @@ morph::vvec<S> getParams() { return this->params; }
 
 It is the scaling parameters that determine if the `morph::Scale` object is `ready()` (returns true if params size is > 1) and `reset()` simply calls `clear()` on `Scale::params`.
 
-You can only set the params if you already know the gradient and offset for your scaling. If you only know the expected *range* of values for your scaling, you can use these to 'compute an autoscale':
+You can only set the params if you already know the gradient and offset for your scaling. If you only know the expected *range* of input values for your scaling, you can use these to compute the scaling for the output range:
 
 ```c++
 // Set up linear scaling so that numbers in range [-10, 10] get scaled to [0,5]
 morph::Scale<int, float> s;
 s.output_range.min = 0;
 s.output_range.max = 5;
-s.compute_autoscale (-10, 10); // s.transform_one();
+s.compute_scaling (-10, 10);
+```
+
+You can also trigger the computation of the scaling function if you have a container of data by using `compute_scaling_from_data`, which is the function that is automatically called by `transform` when `do_autoscale` is `true`.
+
+```c++
+morph::Scale<int, float> s;
+std::vector<int> input_data = { 1, 2, 3, 6, 100 };
+s.compute_scaling_from_data (input_data);
 ```
 
 ### Logarithmic scaling

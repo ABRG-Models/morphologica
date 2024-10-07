@@ -21,7 +21,7 @@ int main()
     v.setSceneTrans (morph::vec<float,3>{ float{-0.755619}, float{-0.236617}, float{-1.9} });
 
     morph::Scale<float> scale1;
-    scale1.compute_autoscale (0, 1); // Simply maps 0->1 to 0->1!
+    scale1.compute_scaling (0, 1); // Simply maps 0->1 to 0->1!
 
     morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
 

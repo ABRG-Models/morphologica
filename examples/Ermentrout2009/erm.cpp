@@ -219,9 +219,9 @@ int main (int argc, char **argv)
             // Plot n and c
             if (do_autoscale == true) {
                 mm = morph::MathAlgo::maxmin (RD.n[0]);
-                hgv1p->colourScale.compute_autoscale (mm.min, mm.max);
+                hgv1p->colourScale.compute_scaling (mm.min, mm.max);
                 mm = morph::MathAlgo::maxmin (RD.c[0]);
-                hgv2p->colourScale.compute_autoscale (mm.min, mm.max);
+                hgv2p->colourScale.compute_scaling (mm.min, mm.max);
             }
 
             if constexpr (debug_ranges) {

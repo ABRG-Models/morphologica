@@ -151,7 +151,7 @@ struct SimpsonGoodhill
         // Visualise the branches with a custom VisualModel
         auto bvup = std::make_unique<BranchVisual<T>> (offset, &this->branches);
         v->bindmodel (bvup);
-        bvup->EphA_scale.compute_autoscale (EphA_min, EphA_max);
+        bvup->EphA_scale.compute_scaling (EphA_min, EphA_max);
         bvup->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
         bvup->finalize();
         this->bv = v->addVisualModel (bvup);

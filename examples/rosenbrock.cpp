@@ -76,7 +76,7 @@ int main()
     hgv->cm.setType (morph::ColourMapType::Viridis);
     hgv->setScalarData (&banana_vals);
     hgv->zScale.setParams (0.001f, 0.0f);
-    hgv->colourScale.compute_autoscale (0.01f, 5.0f);
+    hgv->colourScale.compute_scaling (0.01f, 5.0f);
     hgv->setAlpha (0.4f);
     hgv->finalize();
     v.addVisualModel (hgv);

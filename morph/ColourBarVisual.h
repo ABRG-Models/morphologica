@@ -63,11 +63,11 @@ namespace morph {
         void initializeVertices()
         {
             // If client code provided no scale, then show colour bar from 0->1
-            if (!this->scale.ready()) { this->tickscale.compute_autoscale (0, 1); }
+            if (!this->scale.ready()) { this->tickscale.compute_scaling (0, 1); }
 
             this->tickscale.output_range.max = this->length;
-            this->tickscale.compute_autoscale (this->scale.inverse_one (this->scale.output_range.min),
-                                               this->scale.inverse_one (this->scale.output_range.max));
+            this->tickscale.compute_scaling (this->scale.inverse_one (this->scale.output_range.min),
+                                             this->scale.inverse_one (this->scale.output_range.max));
 
             this->computeTickPositions();
             this->drawFrame();
