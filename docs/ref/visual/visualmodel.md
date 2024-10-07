@@ -6,11 +6,18 @@ permalink: /ref/visual/visualmodel
 layout: page
 nav_order: 2
 ---
+# `VisualModel`: The base class for objects
+{: .no_toc}
+
 ```c++
 #include <morph/VisualModel.h>
 ```
+**Table of Contents**
 
-# `VisualModel`: The base class for objects
+- TOC
+{:toc}
+
+# Overview
 
 `morph::VisualModel` is the base class for graphical objects in your
 `morph::Visual` scene. This page describes the base class and then

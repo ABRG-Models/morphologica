@@ -7,6 +7,13 @@ permalink: /ref/coremaths/quaternion/
 nav_order: 7
 ---
 ## A Quaternion implementation
+{: .no_toc }
+
+- TOC
+{:toc}
+
+## Header
+
 ```c++
 #include <morph/Quaternion.h>
 ```
@@ -24,7 +31,7 @@ where `Flt` hints that the template arg is a floating point type. The Hamiltonia
 
 
 
-## Create a Quaternion:
+## Create a Quaternion
 
 ```c++
 morph::Quaternion<float> q;             // By default w=1, and x, y, z = 0;
@@ -41,7 +48,7 @@ morph::Quaternion<float> q (z_axis, angle);  // The (axis, angle) constructor
 ```
 
 
-## Copy a Quaternion:
+## Copying
 ```c++
 morph::Quaternion<float> q1;
 morph::Quaternion<float> q2 = q1; // Assignment works as expected
@@ -49,7 +56,9 @@ morph::Quaternion<float> q2 = q1; // Assignment works as expected
 
 You can use **equality** and **inequality operators** on a Quaternion: `q1 == q2` and `q1 != q2`.
 
-## Stream a Quaternion:
+## Streaming
+
+You can stream a Quaternion object:
 ```c++
 morph::Quaternion<float> q1(1, 0, 0, 0);
 std::cout << q1 << std::endl;

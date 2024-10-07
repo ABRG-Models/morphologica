@@ -6,10 +6,18 @@ layout: page
 permalink: /ref/coremaths/scale
 nav_order: 5
 ---
+# morph::Scale
+{: .no_toc}
+
 ```c++
 #include <morph/Scale.h>
 ```
 Header file: [morph/Scale.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/Scale.h). Test code:  [tests/testScale](https://github.com/ABRG-Models/morphologica/blob/main/tests/testScale.cpp)  [tests/testScaleVector](https://github.com/ABRG-Models/morphologica/blob/main/tests/testScaleVector.cpp)
+
+**Table of Contents**
+
+- TOC
+{:toc}
 
 ## Summary
 
@@ -82,13 +90,13 @@ morph::vvec<float> result(vi.size());     // Output/transformed data in float ty
 s.transform (vi, result);
 ```
 
-You can autoscale from a data set, finding the scaling parameters, without also transforming the data with `autoscale_from`:
+You can autoscale from a data set, finding the scaling parameters, without also transforming the data with `compute_scaling_from_data`:
 
 ```c++
 morph::Scale<int, float> s;
 s.do_autoscale = true;
 morph::vvec<int> vi = {1,2,3,4,5,8,9,18};
-s.autoscale_from (vi); // s.transform (anydata) can now be called
+s.compute_scaling_from_data (vi); // s.transform (anydata) can now be called
 ```
 
 Note that subsequent calls to `transform` will use the scaling parameters obtained from the first call! If you want to autoscale each new data set, then you have to reset `do_autoscale` back to true with `reset`:
@@ -113,7 +121,7 @@ You may not always wish to scale your input data to the range [0,1]. To modify t
 morph::Scale<int, float> s;
 s.output_range.min = 1.0f;
 s.output_range.max = 2.0f;
-s.do_autoscale = true;      // autoscale_from() or transform() will scale output to range [1,2]
+s.do_autoscale = true;      // transform() will scale output to range [1,2] by calling compute_scaling_from_data()
 ```
 
 ### Manually setting the scaling parameters

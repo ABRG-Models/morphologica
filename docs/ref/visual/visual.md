@@ -6,9 +6,17 @@ permalink: /ref/visual/visual
 layout: page
 nav_order: 0
 ---
+# `morph::Visual` -- the scene class
+{: .no_toc}
+
 ```c++
 #include <morph/Visual.h>
 ```
+
+**Table of contents**
+
+- TOC
+{:toc}
 
 # Overview
 

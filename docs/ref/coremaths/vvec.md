@@ -15,23 +15,8 @@ Header file: [morph/vvec.h](https://github.com/ABRG-Models/morphologica/blob/mai
 
 **Table of contents**
 
-* [Summary](/morphologica/ref/coremaths/vvec/#summary)
-* [Design](/morphologica/ref/coremaths/vvec/#design)
-* [Arithmetic operators](/morphologica/ref/coremaths/vvec/#arithmetic-operators)
-* [Assignment operators](/morphologica/ref/coremaths/vvec/#assignment-operators)
-* [Comparison operators](/morphologica/ref/coremaths/vvec/#comparison-operators)
-* [Member functions](/morphologica/ref/coremaths/vvec/#member-functions)
-  - [Setter functions](/morphologica/ref/coremaths/vvec/#setter-functions)
-  - [Numpy-like functions](/morphologica/ref/coremaths/vvec/#numpy-clones)
-  - [Random numbers](/morphologica/ref/coremaths/vvec/#random-numbers)
-  - [Re-ordering elements](/morphologica/ref/coremaths/vvec/#re-ordering-elements)
-  - [Type conversions](/morphologica/ref/coremaths/vvec/#type-conversions)
-  - [String output](/morphologica/ref/coremaths/vvec/#string-output)
-  - [Length/lengthen/shorten](/morphologica/ref/coremaths/vvec/#length-lengthen-shorten)
-  - [Range and renormalization](/morphologica/ref/coremaths/vvec/#the-range-and-rescaling-or-renormalizing)
-  - [Finding elements](/morphologica/ref/coremaths/vvec/#finding-elements)
-  - [Simple statistics](/morphologica/ref/coremaths/vvec/#simple-statistics)
-  - [Maths functions](/morphologica/ref/coremaths/vvec/#maths-functions)
+- TOC
+{:toc}
 
 ## Summary
 
