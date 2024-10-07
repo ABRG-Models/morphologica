@@ -458,12 +458,8 @@ namespace morph {
 
             // Allocate memory for the new data coords, add the data style info and the
             // starting index for dataCoords
-#ifdef __ICC__
-            morph::vec<float> dummyzero = {{0.0f, 0.0f, 0.0f}};
-            this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, dummyzero));
-#else
             this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, {0,0,0}));
-#endif
+
             this->datastyles.push_back (ds);
 
             // Compute the ord1_scale and asbcissa_scale for the first added dataset only
