@@ -25,11 +25,11 @@ namespace morph {
         Twilight,
         Greyscale,    // Greyscale is any hue; saturation=0; *value* varies. High signal (datum ->1) gives dark greys to black
         GreyscaleInv, // Inverted Greyscale. High signal gives light greys to white
-        Monochrome,   // Monochrome is 'monohue': fixed hue; vary the *saturation* with value fixed at 1.
+        Monochrome,   // Monochrome is 'monohue': fixed hue and value; vary the *saturation* from 0 to this->sat.
         MonochromeRed,
         MonochromeBlue,
         MonochromeGreen,
-        Monoval,      // Monoval varies the *value* of the colour
+        Monoval,      // Monoval varies the *value* of the colour with fixed hue and saturation.
         MonovalRed,
         MonovalBlue,
         MonovalGreen,
@@ -85,9 +85,9 @@ namespace morph {
         ColourMapType type = ColourMapType::Plasma;
         //! The hue (range 0 to 1.0f) as used in HSV colour values for Monochrome maps.
         float hue = 0.0f;
-        //! The saturation, used for ColourMapType::Fixed only
+        //! The saturation
         float sat = 1.0f;
-        //! The value, used for ColourMapType::Fixed only
+        //! The value
         float val = 1.0f;
 
         // Used by Duochrome
@@ -725,18 +725,24 @@ namespace morph {
             case ColourMapType::MonovalRed:
             {
                 this->hue = 1.0f;
+                this->val = 1.0f;
+                this->sat = 1.0f;
                 break;
             }
             case ColourMapType::MonochromeBlue:
             case ColourMapType::MonovalBlue:
             {
                 this->hue = 0.667f;
+                this->val = 1.0f;
+                this->sat = 1.0f;
                 break;
             }
             case ColourMapType::MonochromeGreen:
             case ColourMapType::MonovalGreen:
             {
                 this->hue = 0.333f;
+                this->val = 1.0f;
+                this->sat = 1.0f;
                 break;
             }
             case ColourMapType::HSV1D:
@@ -901,8 +907,8 @@ namespace morph {
         //! but for fixed, it allows you to have white, with hue=anything, sat=0, val=1
         void setSat (const float& _s)
         {
-            if (this->type != ColourMapType::Fixed) {
-                throw std::runtime_error ("Only ColourMapType::Fixed allows setting of saturation");
+            if (this->type != ColourMapType::Fixed && this->type != ColourMapType::Monochrome && this->type != ColourMapType::Monoval) {
+                throw std::runtime_error ("Only ColourMapType::Fixed ::Monochrome and ::Monoval allow setting of saturation");
             }
             this->sat = _s;
         }
@@ -910,17 +916,22 @@ namespace morph {
         //! Set just the colour's value (ColourMapType::Fixed/HSV only)
         void setVal (const float& _v)
         {
-            if (this->type != ColourMapType::Fixed && this->type != ColourMapType::HSV) {
-                throw std::runtime_error ("Only ColourMapType::Fixed and ColourMapType::HSV allow setting of value");
+            if (this->type != ColourMapType::Fixed && this->type != ColourMapType::HSV
+                && this->type != ColourMapType::Monochrome && this->type != ColourMapType::Monoval) {
+                throw std::runtime_error ("Only ColourMapType::Fixed ::HSV ::Monochrome and ::Monoval allow setting of value");
             }
             this->val = _v;
         }
 
+        float getHue() const { return this->hue; }
+        float getSat() const { return this->sat; }
+        float getVal() const { return this->val; }
+
         //! Set the colour by hue, saturation and value (ColourMapType::Fixed only)
         void setHSV (const float& h, const float& s, const float& v)
         {
-            if (this->type != ColourMapType::Fixed) {
-                throw std::runtime_error ("Only ColourMapType::Fixed allows setting of saturation/value");
+            if (this->type != ColourMapType::Fixed && this->type != ColourMapType::Monochrome && this->type != ColourMapType::Monoval) {
+                throw std::runtime_error ("Only ColourMapType::Fixed/Monochrome/Monoval allows setting of saturation/value");
             }
             this->hue = h;
             this->sat = s;
@@ -929,6 +940,15 @@ namespace morph {
 
         //! Set the colour by hue, saturation and value (defined in an array) (ColourMapType::Fixed only)
         void setHSV (const std::array<float,3> hsv) { this->setHSV (hsv[0],hsv[1],hsv[2]); }
+
+        //! Set this->hue, sat and val from the passed in RGB triplet
+        void setRGB (const std::array<float,3> rgb)
+        {
+            std::array<float,3> hsv = ColourMap<T>::rgb2hsv (rgb);
+            this->hue = hsv[0];
+            this->sat = hsv[1];
+            this->val = hsv[2];
+        }
 
         //! Get the hue, in its most saturated form
         std::array<float, 3> getHueRGB() const { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
@@ -1077,6 +1097,8 @@ namespace morph {
 
             if (hsv[0] < 0.0f) { hsv[0] += 360.0f; }
 
+            hsv[0] /= 360.0f; // Finally convert back to a range 0 to 1, compatible with this->hue.
+
             return hsv;
         }
 
@@ -1084,11 +1106,15 @@ namespace morph {
         /*!
          * @param datum gray value from 0.0 to 1.0
          *
+         * The idea is to range from the value hsv to white. That means as datum nears 0, val should go from val towards 1.0 (max white)
+         *
          * @returns RGB value in a mono-colour map, with main colour this->hue; varying saturation.
          */
         std::array<float,3> monochrome (float datum) const
         {
-            return ColourMap::hsv2rgb (this->hue, datum, 1.0f);
+            float _datum = datum * this->sat; // _datum ranges between 0 and this->sat for input [0, 1]
+            float _val = this->val + (1.0f - this->val) * (1.0f - datum); // val goes to 1 as input nears 0 (ensuring white)
+            return ColourMap::hsv2rgb (this->hue, _datum, _val);
         }
 
         /*!
@@ -1098,7 +1124,8 @@ namespace morph {
          */
         std::array<float,3> monoval (float datum) const
         {
-            return ColourMap::hsv2rgb (this->hue, 1.0f, datum);
+            float _datum = datum * this->val;
+            return ColourMap::hsv2rgb (this->hue, this->sat, _datum);
         }
 
         /*!
