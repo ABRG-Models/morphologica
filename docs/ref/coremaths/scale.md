@@ -142,12 +142,12 @@ s.output_range.max = 5;
 s.compute_scaling (-10, 10);
 ```
 
-You can also trigger the computation of the scaling function if you have a container of data by using `compute_scaling_from`, which is the function that is automatically called by `transform` when `do_autoscale` is `true`.
+You can also trigger the computation of the scaling function if you have a container of data by using `compute_scaling_from_data`, which is the function that is automatically called by `transform` when `do_autoscale` is `true`.
 
 ```c++
 morph::Scale<int, float> s;
 std::vector<int> input_data = { 1, 2, 3, 6, 100 };
-s.compute_scaling_from (input_data);
+s.compute_scaling_from_data (input_data);
 ```
 
 ### Logarithmic scaling

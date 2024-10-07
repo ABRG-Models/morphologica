@@ -45,7 +45,7 @@ int main()
     }
 
     // If you need to reset the scaling in s (our Scale object), then you can do this:
-    s.compute_scaling_from (vf2); // will immediately compute the scaling function from the container of values vf2.
+    s.compute_scaling_from_data (vf2); // will immediately compute the scaling function from the container of values vf2.
 
     // OR you can do this, which forces automatic scaling when s.transform() is next
     // called (as long as s.do_autoscale is true).

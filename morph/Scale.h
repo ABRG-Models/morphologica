@@ -157,7 +157,7 @@ namespace morph {
                 throw std::runtime_error ("ScaleImplBase::transform(): Ensure data.size()==output.size()");
             }
             if (this->do_autoscale == true && !this->ready()) {
-                this->compute_scaling_from<Container> (data); // not const
+                this->compute_scaling_from_data<Container> (data); // not const
             } else if (this->do_autoscale == false && !this->ready()) {
                 throw std::runtime_error ("ScaleImplBase::transform(): Params are not set and do_autoscale is set false. Can't transform.");
             }
@@ -221,7 +221,7 @@ namespace morph {
          */
         template <typename Container>
         std::enable_if_t<morph::is_copyable_container<Container>::value, void>
-        compute_scaling_from (const Container& data)
+        compute_scaling_from_data (const Container& data)
         {
             morph::range<typename Container::value_type> mm = MathAlgo::maxmin (data);
             this->compute_scaling (mm.min, mm.max);
