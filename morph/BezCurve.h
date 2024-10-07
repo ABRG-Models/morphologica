@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <cstddef>
+// This is left as a hint in case anyone tries to compile this with Intel's compiler:
 #ifdef __ICC__
 # define ARMA_ALLOW_FAKE_GCC 1
 #endif
