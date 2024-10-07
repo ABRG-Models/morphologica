@@ -85,7 +85,7 @@ namespace morph {
         //! you start on the top row or the bottom row (the default)?
         GridOrder order = morph::GridOrder::bottomleft_to_topright;
         //! Record whether ordering is row-major (true) or column-major (false)
-        bool rowmaj = true;
+        bool rowmaj = true; // FIXME: Should probably be a function call getting rowmaj from GridOrder
 
     public:
         //! Setter for w
@@ -238,6 +238,36 @@ namespace morph {
         {
             return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}
             : morph::vec<C, 2>{ this->v_x[index], this->v_y[index] };
+        }
+
+        //! A function to find the index of the grid that is closest to the given coordinate
+        I index_lookup (morph::vec<C, 2>& _coord)
+        {
+            throw std::runtime_error ("FIXME: This will require thinking about Grid::rowmaj and Grid::order");
+
+            I index = I{0};
+
+            morph::vec<C, 2> xyf = ((_coord - this->offset) / this->dx);
+            xyf[0] = std::round (xyf[0]); // theres no vec::round() function at the time of writing
+            xyf[1] = std::round (xyf[1]);
+            morph::vec<I, 2> xyi = xyf.as<I>();
+
+            if (order == morph::GridOrder::bottomleft_to_topright) {
+                index = this->w * xyi[1] + xyi[0];
+
+            } else if (order == morph::GridOrder::topleft_to_bottomright) {
+                index = this->w * -xyi[0] + xyi[1];
+                throw std::runtime_error ("FIXME: Not fit - I may not be a signed type");
+
+            } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
+                index = this->w * xyi[1] + xyi[0];
+
+            } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                index = this->w * xyi[0] - xyi[1]; // WARNING What if I is not signed???
+                throw std::runtime_error ("FIXME: Not fit - I may not be a signed type");
+            }
+
+            return index;
         }
 
         //! A named function that does the same as operator[]
