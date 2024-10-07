@@ -29,7 +29,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        brew install libomp glfw armadillo hdf5@1.10 # removed brew update
+        brew unlink python@3.12 && brew link --overwrite python@3.12 # Hack to prevent brew-installed python from interfering with preinstalled python
+        brew install libomp glfw armadillo hdf5@1.10
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
