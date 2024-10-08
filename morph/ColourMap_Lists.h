@@ -1834,14 +1834,14 @@ namespace morph {
     const std::size_t cm_twilight_len = sizeof(cm_twilight)/(sizeof(float)*3);
 
     /*!
-     * The 'Planck' cosmic microwave background radiation colour map, created by Matthew
-     * Petrov and used with thanks.
+     * The cosmic microwave background radiation colour map created by Matthew Petrov as
+     * an enhancement to the Plank map and used with thanks.
      *
      * This map is described in detail here: https://mpetroff.net/2023/05/an-improved-cmb-map-colormap/
      *
      * The map data were obtained from https://cdn0.mpetroff.net/wp-content/uploads/2023/05/colormap.py
      */
-    const float cm_planck[][3] = { {0.36564336,0.03824246,0.6703986 },
+    const float cm_petrov[][3] = { {0.36564336,0.03824246,0.6703986 },
                                    {0.36619884,0.06164569,0.67734225},
                                    {0.36686374,0.08007549,0.68427124},
                                    {0.36746875,0.09594009,0.69128012},
@@ -2098,6 +2098,6 @@ namespace morph {
                                    {0.50697827,0.00643002,0.07930752},
                                    {0.49739886,0.00948432,0.08058416} };
 
-    const std::size_t cm_planck_len = sizeof(cm_planck)/(sizeof(float)*3);
+    const std::size_t cm_petrov_len = sizeof(cm_petrov)/(sizeof(float)*3);
 
 } // namespace morph
