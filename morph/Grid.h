@@ -252,6 +252,7 @@ namespace morph {
                 || order == morph::GridOrder::topleft_to_bottomright_colmaj) {
                 // In case I is not signed, we have to check that xyf[1] is <= 0
                 if (xyf[1] > C{0}) {
+                    std::cout << "xyf[1] is >0: " << xyf[1] << std::endl;
                     throw std::runtime_error ("Grid y coordinate should be negative with increasing index");
                 }
                 // Negate xyf[1] before converting to index
