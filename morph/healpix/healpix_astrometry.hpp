@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <morph/vec.h>
-#include <morph/healpix_bare.h> // the t_hpd type is used from healpix_bare.h, as it is essentially the same thing.
+#include <morph/healpix/healpix_bare.hpp> // the t_hpd type is used from healpix_bare.h, as it is essentially the same thing.
 
 namespace hp {
     // The code in namespace hp::am (am for AstroMetry) originates from
