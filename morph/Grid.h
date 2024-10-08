@@ -240,7 +240,8 @@ namespace morph {
             : morph::vec<C, 2>{ this->v_x[index], this->v_y[index] };
         }
 
-        //! A function to find the index of the grid that is closest to the given coordinate
+        //! A function to find the index of the grid that is closest to the given coordinate.
+        //! If the coordinate is off the grid, return std::numeric_limits<I>::max().
         I index_lookup (const morph::vec<C, 2>& _coord)
         {
             I index = I{0};
@@ -268,7 +269,10 @@ namespace morph {
                 index = this->h * xyi[0] + xyi[1];
             }
 
-            if (index >= this->w * this->h) { throw std::runtime_error ("Coordinate is off-grid"); }
+            if (index >= this->w * this->h) {
+                std::cout << "Coordinate " << _coord << " is off-grid (index " << index << ")\n";
+                return std::numeric_limits<I>::max();
+            }
 
             return index;
         }
