@@ -23,6 +23,7 @@ namespace morph {
         Viridis,
         Cividis,
         Twilight,
+        Planck,       // The cosmic microwave background radiation colourmap created by Matthew Petrov.
         Greyscale,    // Greyscale is any hue; saturation=0; *value* varies. High signal (datum ->1) gives dark greys to black
         GreyscaleInv, // Inverted Greyscale. High signal gives light greys to white
         Monochrome,   // Monochrome is 'monohue': fixed hue and value; vary the *saturation* from 0 to this->sat.
@@ -162,6 +163,8 @@ namespace morph {
                 cmt = morph::ColourMapType::GreyscaleInv;
             } else if (_s == "twilight") {
                 cmt = morph::ColourMapType::Twilight;
+            } else if (_s == "planck") {
+                cmt = morph::ColourMapType::Planck;
             } else if (_s == "cividis") {
                 cmt = morph::ColourMapType::Cividis;
             } else if (_s == "viridis") {
@@ -284,6 +287,11 @@ namespace morph {
                 s = "twilight";
                 break;
             }
+            case morph::ColourMapType::Planck:
+            {
+                s = "planck";
+                break;
+            }
             case morph::ColourMapType::Cividis:
             {
                 s = "cividis";
@@ -388,6 +396,11 @@ namespace morph {
                 break;
             }
             case ColourMapType::Twilight:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Planck:
             {
                 c = {1.0, 0.0f, 0.0f};
                 break;
@@ -636,6 +649,11 @@ namespace morph {
             case ColourMapType::Twilight:
             {
                 c = ColourMap::twilight (datum);
+                break;
+            }
+            case ColourMapType::Planck:
+            {
+                c = ColourMap::planck (datum);
                 break;
             }
             case ColourMapType::Greyscale:
@@ -1316,6 +1334,14 @@ namespace morph {
             // let's just try the closest colour from the map, with no interpolation
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_twilight_len-1))));
             std::array<float,3> c = {morph::cm_twilight[datum_i][0], morph::cm_twilight[datum_i][1], morph::cm_twilight[datum_i][2]};
+            return c;
+        }
+
+        //! The 'Planck' cosmic microwave background radiation map by Matthew Petrov
+        std::array<float,3> planck (float datum) const
+        {
+            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_planck_len-1))));
+            std::array<float,3> c = {morph::cm_planck[datum_i][0], morph::cm_planck[datum_i][1], morph::cm_planck[datum_i][2]};
             return c;
         }
     };
