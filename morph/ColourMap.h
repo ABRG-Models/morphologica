@@ -24,6 +24,7 @@ namespace morph {
         Cividis,
         Twilight,
         Petrov,       // The cosmic microwave background radiation colourmap created by Matthew Petrov
+        Vik,          // Fabio Crameri's vik colourmap
         Greyscale,    // Greyscale is any hue; saturation=0; *value* varies. High signal (datum ->1) gives dark greys to black
         GreyscaleInv, // Inverted Greyscale. High signal gives light greys to white
         Monochrome,   // Monochrome is 'monohue': fixed hue and value; vary the *saturation* from 0 to this->sat.
@@ -165,6 +166,8 @@ namespace morph {
                 cmt = morph::ColourMapType::Twilight;
             } else if (_s == "petrov") {
                 cmt = morph::ColourMapType::Petrov;
+            } else if (_s == "vik") {
+                cmt = morph::ColourMapType::Vik;
             } else if (_s == "cividis") {
                 cmt = morph::ColourMapType::Cividis;
             } else if (_s == "viridis") {
@@ -292,6 +295,11 @@ namespace morph {
                 s = "petrov";
                 break;
             }
+            case morph::ColourMapType::Vik:
+            {
+                s = "vik";
+                break;
+            }
             case morph::ColourMapType::Cividis:
             {
                 s = "cividis";
@@ -401,6 +409,11 @@ namespace morph {
                 break;
             }
             case ColourMapType::Petrov:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Vik:
             {
                 c = {1.0, 0.0f, 0.0f};
                 break;
@@ -654,6 +667,11 @@ namespace morph {
             case ColourMapType::Petrov:
             {
                 c = ColourMap::petrov (datum);
+                break;
+            }
+            case ColourMapType::Vik:
+            {
+                c = ColourMap::vik (datum);
                 break;
             }
             case ColourMapType::Greyscale:
@@ -1342,6 +1360,14 @@ namespace morph {
         {
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_petrov_len-1))));
             std::array<float,3> c = {morph::cm_petrov[datum_i][0], morph::cm_petrov[datum_i][1], morph::cm_petrov[datum_i][2]};
+            return c;
+        }
+
+        //! Fabio Crameri's vik colourmap (See https://zenodo.org/records/8409685)
+        std::array<float,3> vik (float datum) const
+        {
+            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_vik_len-1))));
+            std::array<float,3> c = {morph::cm_vik[datum_i][0], morph::cm_vik[datum_i][1], morph::cm_vik[datum_i][2]};
             return c;
         }
     };

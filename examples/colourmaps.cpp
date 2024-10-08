@@ -36,6 +36,7 @@ int main()
     cmap_types.push_back (morph::ColourMapType::Cividis);
     cmap_types.push_back (morph::ColourMapType::Twilight);
     cmap_types.push_back (morph::ColourMapType::Petrov);
+    cmap_types.push_back (morph::ColourMapType::Vik);
     cmap_types.push_back (morph::ColourMapType::Greyscale);
     cmap_types.push_back (morph::ColourMapType::GreyscaleInv);
     cmap_types.push_back (morph::ColourMapType::Monochrome);
