@@ -675,6 +675,8 @@ namespace morph {
 
             this->ticklength *= factor;
             this->axislinewidth *= factor;
+
+            this->relative_thickness *= factor;
         }
 
         //! Set manual limits for the x axis (abscissa)

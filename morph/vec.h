@@ -283,6 +283,16 @@ namespace morph {
             return ss.str();
         }
 
+        //! Output in a form that can be used as an initializer list
+        std::string str_initializer() const
+        {
+            std::stringstream ss;
+            ss << "{";
+            this->str_comma_separated (ss);
+            ss << "}";
+            return ss.str();
+        }
+
         //! Renormalize the vector to length 1.0. Only for S types that are floating point.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         constexpr void renormalize()
