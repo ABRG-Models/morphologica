@@ -8,6 +8,7 @@
 
 #include <morph/mathconst.h>
 #include <algorithm>
+#include <stdexcept>
 #include <cmath>
 #include <cassert>
 #include <stdio.h>
@@ -598,20 +599,18 @@ namespace hp {
                     h--;
                 x = (v + h) / 2;
                 y = (v - h) / 2;
-                //fprintf(stderr, "bighp=%i, frow=%i, F1=%i, F2=%i, s=%i, v=%i, h=%i, x=%i, y=%i.\n", bighp, frow, F1, F2, s, v, h, x, y);
 
                 if ((v != (x+y)) || (h != (x-y))) {
                     h++;
                     x = (v + h) / 2;
                     y = (v - h) / 2;
-                    //fprintf(stderr, "tweak h=%i, x=%i, y=%i\n", h, x, y);
 
                     if ((v != (x+y)) || (h != (x-y))) {
-                        //fprintf(stderr, "still not right.\n");
+                        // There was just a comment in here
+                        throw std::runtime_error ("This is still not right");
                     }
                 }
                 hp = healpix_compose_xy(bighp, x, y, Nside);
-                //fprintf(stderr, "hp %i\n", hp);
                 return hp;
             } else {
                 int ind;
@@ -695,7 +694,6 @@ namespace hp {
                 // handle healpix #4 wrap-around
                 if ((bighp == 4) && (y > x))
                     index += (4 * Nside - 1);
-                //fprintf(stderr, "frow=%i, F1=%i, v=%i, ringind=%i, s=%i, F2=%i, h=%i, longind=%i.\n", frow, F1, v, ring, s, F2, h, (F2*(int)Nside+h+s)/2);
             }
             return index;
         }
@@ -936,8 +934,6 @@ namespace hp {
                     std::swap(nx, ny);
             }
 
-            //printf("(+ +): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
-
             if (nbase != -1) {
                 neighbour[nn].bighp = nbase;
                 neighbour[nn].x = nx;
@@ -956,8 +952,6 @@ namespace hp {
                 }
             } else
                 nbase = base;
-
-            //printf("(0 +): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             neighbour[nn].bighp = nbase;
             neighbour[nn].x = nx;
@@ -987,8 +981,6 @@ namespace hp {
             } else
                 nbase = base;
 
-            //printf("(- +): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
-
             if (nbase != -1) {
                 neighbour[nn].bighp = nbase;
                 neighbour[nn].x = nx;
@@ -1007,8 +999,6 @@ namespace hp {
                 }
             } else
                 nbase = base;
-
-            //printf("(- 0): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             neighbour[nn].bighp = nbase;
             neighbour[nn].x = nx;
@@ -1039,8 +1029,6 @@ namespace hp {
                     std::swap(nx, ny);
             }
 
-            //printf("(- -): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
-
             if (nbase != -1) {
                 neighbour[nn].bighp = nbase;
                 neighbour[nn].x = nx;
@@ -1059,8 +1047,6 @@ namespace hp {
                 }
             } else
                 nbase = base;
-
-            //printf("(0 -): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             neighbour[nn].bighp = nbase;
             neighbour[nn].x = nx;
@@ -1090,8 +1076,6 @@ namespace hp {
                 }
             } else
                 nbase = base;
-
-            //printf("(+ -): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             if (nbase != -1) {
                 neighbour[nn].bighp = nbase;
@@ -1145,10 +1129,10 @@ namespace hp {
             assert(Nside > 0);
 
             /* Convert our point into cylindrical coordinates for middle ring */
-            phi = atan2(vy, vx);
+            phi = std::atan2(vy, vx);
             if (phi < 0.0)
                 phi += morph::mathconst<double>::two_pi;
-            phi_t = fmod(phi, morph::mathconst<double>::pi_over_2);
+            phi_t = std::fmod(phi, morph::mathconst<double>::pi_over_2);
             assert (phi_t >= 0.0);
 
             // North or south polar cap.
@@ -1198,7 +1182,7 @@ namespace hp {
 
                 sector = (phi - phi_t) / (morph::mathconst<double>::pi_over_2);
                 offset = (int)std::round(sector);
-                assert(fabs(sector - offset) < EPS);
+                assert(std::abs(sector - offset) < EPS);
                 offset = ((offset % 4) + 4) % 4;
                 assert(offset >= 0);
                 assert(offset <= 3);
@@ -1238,7 +1222,7 @@ namespace hp {
                 // very close to one of the boundaries.)
                 sector = (phi - phi_t) / (morph::mathconst<double>::pi_over_2);
                 offset = (int)std::round(sector);
-                assert(fabs(sector - offset) < EPS);
+                assert(std::abs(sector - offset) < EPS);
                 offset = ((offset % 4) + 4) % 4;
                 assert(offset >= 0);
                 assert(offset <= 3);
@@ -1495,9 +1479,9 @@ namespace hp {
                 } else {
                     z = 1.0 - mysquare(morph::mathconst<double>::pi * (Nside - y) / (2.0 * phi_t * Nside)) / 3.0;
                 }
-                assert(0.0 <= fabs(z) && fabs(z) <= 1.0);
+                assert(0.0 <= std::abs(z) && std::abs(z) <= 1.0);
                 z *= zfactor;
-                assert(0.0 <= fabs(z) && fabs(z) <= 1.0);
+                assert(0.0 <= std::abs(z) && std::abs(z) <= 1.0);
 
                 // The big healpix determines the phi offset
                 if (issouthpolar(chp))
@@ -1802,12 +1786,12 @@ namespace hp {
                 dxmid = (dxA + dxB) / 2.0;
                 dymid = (dyA + dyB) / 2.0;
                 // converged to EPS?
-                if ((dxA != dxB && (fabs(dxmid - dxA) < EPS || fabs(dxmid - dxB) < EPS)) ||
-                    (dyA != dyB && (fabs(dymid - dyA) < EPS || fabs(dymid - dyB) < EPS)))
+                if ((dxA != dxB && (std::abs(dxmid - dxA) < EPS || std::abs(dxmid - dxB) < EPS)) ||
+                    (dyA != dyB && (std::abs(dymid - dyA) < EPS || std::abs(dymid - dyB) < EPS)))
                     break;
                 healpix_to_xyzarr(hp, Nside, dxmid, dymid, midxyz);
                 dist2mid = distsq(xyz, midxyz, 3);
-                //printf("  dx,dy (%g,%g) %g  (%g,%g) %g  (%g,%g) %g\n", dxA, dyA, dist2A, dxmid, dymid, dist2mid, dxB, dyB, dist2B);
+
                 if ((dist2mid >= dist2A) && (dist2mid >= dist2B))
                     break;
                 if (dist2A < dist2B) {
