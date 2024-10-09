@@ -377,7 +377,7 @@ namespace morph {
             auto _abscissae = g.get_abscissae();
             auto _data = g.get_ordinates();
 
-            // From g.v_x and g.v_y we get coordinates. These have to be copied into graphDataCoords
+            // From g.v_c we get coordinates. These have to be copied into graphDataCoords
             // with the appropriate scaling.
             // from grid get absc1 and ord1
             if (ds.axisside == morph::axisside::left) {
@@ -406,16 +406,23 @@ namespace morph {
                 // Transform the coordinate data into temporary containers
                 std::vector<Flt> ad (g.n, Flt{0});
                 std::vector<Flt> sd (g.n, Flt{0});
+                // Extract x coordinates and y coordinates from Grid
+                morph::vvec<Flt> g_v_x (g.n, Flt{0});
+                morph::vvec<Flt> g_v_y (g.n, Flt{0});
+                for (unsigned int i = 0; i < g.n; i++) {
+                    g_v_x[i] = g.v_c[i][0];
+                    g_v_y[i] = g.v_c[i][1];
+                }
 
                 auto _dx = g.get_dx();
                 if (ds.axisside == morph::axisside::left) {
-                    this->ord1_scale.transform (g.v_y, sd);
+                    this->ord1_scale.transform (g_v_y, sd);
                     this->quiver_grid_spacing[1] = _dx[1] * this->ord1_scale.getParams(0);
                 } else {
-                    this->ord2_scale.transform (g.v_y, sd);
+                    this->ord2_scale.transform (g_v_y, sd);
                     this->quiver_grid_spacing[1] = _dx[1] * this->ord2_scale.getParams(0);
                 }
-                this->abscissa_scale.transform (g.v_x, ad);
+                this->abscissa_scale.transform (g_v_x, ad);
                 this->quiver_grid_spacing[0] = _dx[0] * this->abscissa_scale.getParams(0);
 
                 // Now sd and ad can be used to construct dataCoords x/y. They are used to
