@@ -35,7 +35,6 @@ int do_test (morph::GridDomainWrap wrap, const morph::vec<float, 2>& coord_shift
         }
     }
 
-
     //std::cout << "part 2\n";
     idx_expected = 0;
     for (int xii = 0; xii < g_bltr.get_w(); xii++) {
@@ -109,42 +108,78 @@ int main()
     //
     // morph::GridDomainWrap::None tests
     //
-    for (float shift = 0.0f; shift < 0.25f; shift += 0.01f) {
-        std::cout << "Test batch for shift = " << shift << std::endl;
-        rtn += do_test (wrap, morph::vec<float, 2>{shift, 0.0f});
-        rtn += do_test (wrap, morph::vec<float, 2>{-shift, 0.0f});
-        rtn += do_test (wrap, morph::vec<float, 2>{0.0f, shift});
-        rtn += do_test (wrap, morph::vec<float, 2>{0.0f, -shift});
+    try {
+        for (float shift = 0.0f; shift < 0.25f; shift += 0.01f) {
+            std::cout << "Test batch for shift = " << shift << std::endl;
+            rtn += do_test (wrap, morph::vec<float, 2>{shift, 0.0f});
+            rtn += do_test (wrap, morph::vec<float, 2>{-shift, 0.0f});
+            rtn += do_test (wrap, morph::vec<float, 2>{0.0f, shift});
+            rtn += do_test (wrap, morph::vec<float, 2>{0.0f, -shift});
+        }
+    } catch (const std::exception& e) {
+        std::cout << "Exception running test batch: " << e.what() << "\n";
+        --rtn;
     }
 
     float shift = 0.25f;  // expect fail
-    int fail_rtn = do_test (wrap, morph::vec<float, 2>{shift, 0.0f});
-    std::cout << "fail_rtn = " << fail_rtn << std::endl; // What should fail_rtn BE?
-    if (fail_rtn > -24) { --rtn; }
+    try {
+        do_test (wrap, morph::vec<float, 2>{shift, 0.0f});
+        --rtn;
+    } catch (const std::exception& e) {
+        std::cout << "Expected exception: " << e.what() << "\n";
+    }
 
     //
     // morph::GridDomainWrap::Horizontal tests should work exactly the same
     //
     wrap = morph::GridDomainWrap::Horizontal;
-    for (float shift = 0.0f; shift < 0.25f; shift += 0.01f) {
-        std::cout << "Test batch for shift = " << shift << std::endl;
-        rtn += do_test (wrap, morph::vec<float, 2>{shift, 0.0f});
-        rtn += do_test (wrap, morph::vec<float, 2>{-shift, 0.0f});
-        rtn += do_test (wrap, morph::vec<float, 2>{0.0f, shift});
-        rtn += do_test (wrap, morph::vec<float, 2>{0.0f, -shift});
+    try {
+        for (float shift = 0.0f; shift < 0.25f; shift += 0.01f) {
+            std::cout << "Test batch for shift = " << shift << std::endl;
+            rtn += do_test (wrap, morph::vec<float, 2>{shift, 0.0f});
+            rtn += do_test (wrap, morph::vec<float, 2>{-shift, 0.0f});
+            rtn += do_test (wrap, morph::vec<float, 2>{0.0f, shift});
+            rtn += do_test (wrap, morph::vec<float, 2>{0.0f, -shift});
+        }
+    } catch (const std::exception& e) {
+        std::cout << "Exception running test batch: " << e.what() << "\n";
+        --rtn;
     }
 
     shift = 0.25f;  // expect fail
-    fail_rtn = do_test (wrap, morph::vec<float, 2>{shift, 0.0f});
-    std::cout << "fail_rtn = " << fail_rtn << std::endl; // What should fail_rtn BE?
-    if (fail_rtn > -24) { --rtn; }
-
-
+    try {
+        do_test (wrap, morph::vec<float, 2>{shift, 0.0f});
+        --rtn;
+        std::cout << "Unexpected pass 1\n";
+    } catch (const std::exception& e) {
+        std::cout << "Expected exception: " << e.what() << "\n";
+    }
+    try {
+        do_test (wrap, morph::vec<float, 2>{-0.51f, 0.0f});
+        --rtn;
+        std::cout << "Unexpected pass 2\n";
+    } catch (const std::exception& e) {
+        std::cout << "Expected exception: " << e.what() << "\n";
+    }
+    try {
+        do_test (wrap, morph::vec<float, 2>{0.0f, shift});
+        --rtn;
+        std::cout << "Unexpected pass 3\n";
+    } catch (const std::exception& e) {
+        std::cout << "Expected exception: " << e.what() << "\n";
+    }
+    try {
+        do_test (wrap, morph::vec<float, 2>{0.0f, -shift});
+        --rtn;
+        std::cout << "Unexpected pass 4\n";
+    } catch (const std::exception& e) {
+        std::cout << "Expected exception: " << e.what() << "\n";
+    }
 
     if (rtn == 0) {
         std::cout << "All tests PASSED\n";
     } else {
-        std::cout << "Some tests failed\n";
+        std::cout << "Some tests failed (rtn = " << rtn << ")\n";
     }
     return rtn;
 }
