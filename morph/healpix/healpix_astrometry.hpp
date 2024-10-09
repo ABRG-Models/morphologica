@@ -6,14 +6,13 @@
  */
 #pragma once
 
-#include <math.h>
-#include <assert.h>
+#include <morph/mathconst.h>
+#include <algorithm>
+#include <stdexcept>
+#include <cmath>
+#include <cassert>
 #include <stdio.h>
-#include <string.h>
-
-// healpix.h included in-line:
-#include <sys/types.h>
-#include <stdint.h>
+#include <cstdint>
 
 /**
    The HEALPix paper is here:
@@ -355,6 +354,7 @@ namespace hp { // Healpix
         double healpix_distance_to_radec(int hp, int Nside, double ra, double dec,
                                          double* closestradec);
 
+#ifdef ENABLE_FUNCTIONS_REQUIRING_QSORT
         /**
            Returns the minimum distance (in degrees) between the given healpix
            and the given xyz (point on unit sphere).
@@ -379,6 +379,7 @@ namespace hp { // Healpix
         void healpix_radec_bounds(int hp, int nside,
                                   double* ralo, double* rahi,
                                   double* declo, double* dechi);
+#endif
     }
 }
 
@@ -426,12 +427,9 @@ namespace hp {
         }
 
         static void hp_decompose(hp_t* hp, int* php, int* px, int* py) {
-            if (php)
-                *php = hp->bighp;
-            if (px)
-                *px = hp->x;
-            if (py)
-                *py = hp->y;
+            if (php) { *php = hp->bighp; }
+            if (px) { *px = hp->x; }
+            if (py) { *py = hp->y; }
         }
 
         const static double mysquare(double d) { return d*d; }
@@ -601,20 +599,18 @@ namespace hp {
                     h--;
                 x = (v + h) / 2;
                 y = (v - h) / 2;
-                //fprintf(stderr, "bighp=%i, frow=%i, F1=%i, F2=%i, s=%i, v=%i, h=%i, x=%i, y=%i.\n", bighp, frow, F1, F2, s, v, h, x, y);
 
                 if ((v != (x+y)) || (h != (x-y))) {
                     h++;
                     x = (v + h) / 2;
                     y = (v - h) / 2;
-                    //fprintf(stderr, "tweak h=%i, x=%i, y=%i\n", h, x, y);
 
                     if ((v != (x+y)) || (h != (x-y))) {
-                        //fprintf(stderr, "still not right.\n");
+                        // There was just a comment in here
+                        throw std::runtime_error ("This is still not right");
                     }
                 }
                 hp = healpix_compose_xy(bighp, x, y, Nside);
-                //fprintf(stderr, "hp %i\n", hp);
                 return hp;
             } else {
                 int ind;
@@ -698,33 +694,18 @@ namespace hp {
                 // handle healpix #4 wrap-around
                 if ((bighp == 4) && (y > x))
                     index += (4 * Nside - 1);
-                //fprintf(stderr, "frow=%i, F1=%i, v=%i, ringind=%i, s=%i, F2=%i, h=%i, longind=%i.\n", frow, F1, v, ring, s, F2, h, (F2*(int)Nside+h+s)/2);
             }
             return index;
         }
 
         const double healpix_side_length_arcmin(int Nside) {
-            return sqrt((4.0 * M_PI * mysquare(180.0 * 60.0 / M_PI)) /
-                        (12.0 * Nside * Nside));
+            return std::sqrt((morph::mathconst<double>::four_pi * mysquare(180.0 * 60.0 / morph::mathconst<double>::pi)) /
+                             (12.0 * Nside * Nside));
         }
 
         double healpix_nside_for_side_length_arcmin(double arcmin) {
             // arcmin2rad: a*pi/10800.0
-            return sqrt(4.0*M_PI / (mysquare(arcmin*M_PI/10800.0) * 12.0));
-        }
-
-        static void swap(int* i1, int* i2) {
-            int tmp;
-            tmp = *i1;
-            *i1 = *i2;
-            *i2 = tmp;
-        }
-
-        static void swap_double(double* i1, double* i2) {
-            double tmp;
-            tmp = *i1;
-            *i1 = *i2;
-            *i2 = tmp;
+            return std::sqrt(morph::mathconst<double>::four_pi / (mysquare(arcmin*morph::mathconst<double>::pi/10800.0) * 12.0));
         }
 
         static bool ispolar(int healpix)
@@ -919,7 +900,7 @@ namespace hp {
                 nbase = healpix_get_neighbour(base, 1, 0);
                 if (isnorthpolar(base)) {
                     nx = x;
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
                 }
             } else
                 nbase = base;
@@ -950,10 +931,8 @@ namespace hp {
                 if (y == (Nside - 1))
                     ny = Nside - 1;
                 if ((x == (Nside - 1)) || (y == (Nside - 1)))
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
             }
-
-            //printf("(+ +): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             if (nbase != -1) {
                 neighbour[nn].bighp = nbase;
@@ -969,12 +948,10 @@ namespace hp {
                 nbase = healpix_get_neighbour(base, 0, 1);
                 if (isnorthpolar(base)) {
                     ny = y;
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
                 }
             } else
                 nbase = base;
-
-            //printf("(0 +): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             neighbour[nn].bighp = nbase;
             neighbour[nn].x = nx;
@@ -993,18 +970,16 @@ namespace hp {
                 nbase = healpix_get_neighbour(base, -1, 0);
                 if (issouthpolar(base)) {
                     nx = 0;
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
                 }
             } else if (y == (Nside - 1)) {
                 nbase = healpix_get_neighbour(base, 0, 1);
                 if (isnorthpolar(base)) {
                     ny = y;
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
                 }
             } else
                 nbase = base;
-
-            //printf("(- +): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             if (nbase != -1) {
                 neighbour[nn].bighp = nbase;
@@ -1020,12 +995,10 @@ namespace hp {
                 nbase = healpix_get_neighbour(base, -1, 0);
                 if (issouthpolar(base)) {
                     nx = 0;
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
                 }
             } else
                 nbase = base;
-
-            //printf("(- 0): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             neighbour[nn].bighp = nbase;
             neighbour[nn].x = nx;
@@ -1053,10 +1026,8 @@ namespace hp {
                 if (y == 0)
                     ny = 0;
                 if ((x == 0) || (y == 0))
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
             }
-
-            //printf("(- -): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             if (nbase != -1) {
                 neighbour[nn].bighp = nbase;
@@ -1072,12 +1043,10 @@ namespace hp {
                 nbase = healpix_get_neighbour(base, 0, -1);
                 if (issouthpolar(base)) {
                     ny = y;
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
                 }
             } else
                 nbase = base;
-
-            //printf("(0 -): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             neighbour[nn].bighp = nbase;
             neighbour[nn].x = nx;
@@ -1097,18 +1066,16 @@ namespace hp {
                 nbase = healpix_get_neighbour(base, 1, 0);
                 if (isnorthpolar(base)) {
                     nx = x;
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
                 }
             } else if (y == 0) {
                 nbase = healpix_get_neighbour(base, 0, -1);
                 if (issouthpolar(base)) {
                     ny = y;
-                    swap(&nx, &ny);
+                    std::swap(nx, ny);
                 }
             } else
                 nbase = base;
-
-            //printf("(+ -): nbase=%i, nx=%i, ny=%i, pix=%i\n", nbase, nx, ny, nbase*Ns2+xy_to_pnprime(nx,ny,Nside));
 
             if (nbase != -1) {
                 neighbour[nn].bighp = nbase;
@@ -1147,10 +1114,7 @@ namespace hp {
         static hp_t xyztohp(double vx, double vy, double vz, int Nside,
                             double* p_dx, double* p_dy) {
             double phi;
-            double twothirds = 2.0 / 3.0;
-            double pi = M_PI;
-            double twopi = 2.0 * M_PI;
-            double halfpi = 0.5 * M_PI;
+            constexpr double twothirds = 2.0 / 3.0;
             double dx, dy;
             int basehp;
             int x, y;
@@ -1165,10 +1129,10 @@ namespace hp {
             assert(Nside > 0);
 
             /* Convert our point into cylindrical coordinates for middle ring */
-            phi = atan2(vy, vx);
+            phi = std::atan2(vy, vx);
             if (phi < 0.0)
-                phi += twopi;
-            phi_t = fmod(phi, halfpi);
+                phi += morph::mathconst<double>::two_pi;
+            phi_t = std::fmod(phi, morph::mathconst<double>::pi_over_2);
             assert (phi_t >= 0.0);
 
             // North or south polar cap.
@@ -1189,12 +1153,12 @@ namespace hp {
                 }
 
                 // solve eqn 20: k = Ns - xx (in the northern hemi)
-                root = (1.0 - vz*zfactor) * 3.0 * mysquare(Nside * (2.0 * phi_t - pi) / pi);
-                kx = (root <= 0.0) ? 0.0 : sqrt(root);
+                root = (1.0 - vz*zfactor) * 3.0 * mysquare(Nside * (2.0 * phi_t - morph::mathconst<double>::pi) / morph::mathconst<double>::pi);
+                kx = (root <= 0.0) ? 0.0 : std::sqrt(root);
 
                 // solve eqn 19 for k = Ns - yy
-                root = (1.0 - vz*zfactor) * 3.0 * mysquare(Nside * 2.0 * phi_t / pi);
-                ky = (root <= 0.0) ? 0.0 : sqrt(root);
+                root = (1.0 - vz*zfactor) * 3.0 * mysquare(Nside * 2.0 * phi_t / morph::mathconst<double>::pi);
+                ky = (root <= 0.0) ? 0.0 : std::sqrt(root);
 
                 if (north) {
                     xx = Nside - kx;
@@ -1216,9 +1180,9 @@ namespace hp {
                 dx = xx - x;
                 dy = yy - y;
 
-                sector = (phi - phi_t) / (halfpi);
+                sector = (phi - phi_t) / (morph::mathconst<double>::pi_over_2);
                 offset = (int)std::round(sector);
-                assert(fabs(sector - offset) < EPS);
+                assert(std::abs(sector - offset) < EPS);
                 offset = ((offset % 4) + 4) % 4;
                 assert(offset >= 0);
                 assert(offset <= 3);
@@ -1239,7 +1203,7 @@ namespace hp {
 
                 // project into the unit square z=[-2/3, 2/3], phi=[0, pi/2]
                 zunits = (vz + twothirds) / (4.0 / 3.0);
-                phiunits = phi_t / halfpi;
+                phiunits = phi_t / morph::mathconst<double>::pi_over_2;
                 // convert into diagonal units
                 // (add 1 to u2 so that they both cover the range [0,2].
                 u1 = zunits + phiunits;
@@ -1256,9 +1220,9 @@ namespace hp {
                 // (note that we subtract off the modded portion used to
                 // compute the position within the healpix, so this should be
                 // very close to one of the boundaries.)
-                sector = (phi - phi_t) / (halfpi);
+                sector = (phi - phi_t) / (morph::mathconst<double>::pi_over_2);
                 offset = (int)std::round(sector);
-                assert(fabs(sector - offset) < EPS);
+                assert(std::abs(sector - offset) < EPS);
                 offset = ((offset % 4) + 4) % 4;
                 assert(offset >= 0);
                 assert(offset <= 3);
@@ -1339,15 +1303,13 @@ namespace hp {
         auto radec2y (auto r, auto d) { return std::cos (d) * std::sin (r); }
         auto radec2z (auto r, auto d) { return std::sin (d); }
 
-        auto deg2rad (auto d) { return d * 2.0 * M_PI / 360.0; }
-        auto rad2deg (auto r) { return r * 360.0 / 2.0 * M_PI; }
+        auto deg2rad (auto d) { return d * morph::mathconst<double>::deg2rad; }
+        auto rad2deg (auto r) { return r * morph::mathconst<double>::rad2deg; }
 
-        double z2dec(double z) {
-            return asin(z);
-        }
+        double z2dec(double z) { return std::asin(z); }
         double xy2ra(double x, double y) {
             double a = std::atan2(y, x);
-            if (a < 0) { a += 2.0 * M_PI; }
+            if (a < 0) { a += morph::mathconst<double>::two_pi; }
             return a;
         }
         void xyz2radec(double x, double y, double z, double *ra, double *dec) {
@@ -1434,7 +1396,7 @@ namespace hp {
             double zfactor = 1.0;
             int xp, yp;
             double x, y, z;
-            double pi = M_PI, phi;
+            double phi;
             double rad;
 
             hp_decompose(hp, &chp, &xp, &yp);
@@ -1480,7 +1442,7 @@ namespace hp {
                 }
 
                 z = 2.0/3.0*(x + y + zoff);
-                phi = pi/4*(x - y + phioff + 2*chp);
+                phi = morph::mathconst<double>::pi_over_4*(x - y + phioff + 2*chp);
 
             } else {
                 /*
@@ -1501,38 +1463,39 @@ namespace hp {
                 double phi_t;
 
                 if (zfactor == -1.0) {
-                    swap_double(&x, &y);
+                    std::swap (x, y);
                     x = (Nside - x);
                     y = (Nside - y);
                 }
 
-                if (y == Nside && x == Nside)
+                if (y == Nside && x == Nside) {
                     phi_t = 0.0;
-                else
-                    phi_t = pi * (Nside-y) / (2.0 * ((Nside-x) + (Nside-y)));
-
-                if (phi_t < pi/4.) {
-                    z = 1.0 - mysquare(pi * (Nside - x) / ((2.0 * phi_t - pi) * Nside)) / 3.0;
                 } else {
-                    z = 1.0 - mysquare(pi * (Nside - y) / (2.0 * phi_t * Nside)) / 3.0;
+                    phi_t = morph::mathconst<double>::pi * (Nside-y) / (2.0 * ((Nside-x) + (Nside-y)));
                 }
-                assert(0.0 <= fabs(z) && fabs(z) <= 1.0);
+
+                if (phi_t < morph::mathconst<double>::pi_over_4) {
+                    z = 1.0 - mysquare(morph::mathconst<double>::pi * (Nside - x) / ((2.0 * phi_t - morph::mathconst<double>::pi) * Nside)) / 3.0;
+                } else {
+                    z = 1.0 - mysquare(morph::mathconst<double>::pi * (Nside - y) / (2.0 * phi_t * Nside)) / 3.0;
+                }
+                assert(0.0 <= std::abs(z) && std::abs(z) <= 1.0);
                 z *= zfactor;
-                assert(0.0 <= fabs(z) && fabs(z) <= 1.0);
+                assert(0.0 <= std::abs(z) && std::abs(z) <= 1.0);
 
                 // The big healpix determines the phi offset
                 if (issouthpolar(chp))
-                    phi = pi/2.0* (chp-8) + phi_t;
+                    phi = morph::mathconst<double>::pi_over_2 * (chp-8) + phi_t;
                 else
-                    phi = pi/2.0 * chp + phi_t;
+                    phi = morph::mathconst<double>::pi_over_2 * chp + phi_t;
             }
 
             if (phi < 0.0)
-                phi += 2*pi;
+                phi += morph::mathconst<double>::two_pi;
 
-            rad = sqrt(1.0 - z*z);
-            *rx = rad * cos(phi);
-            *ry = rad * sin(phi);
+            rad = std::sqrt(1.0 - z*z);
+            *rx = rad * std::cos(phi);
+            *ry = rad * std::sin(phi);
             *rz = z;
         }
 
@@ -1763,7 +1726,8 @@ namespace hp {
             return nhp;
         }
 
-#if 0 // Avoiding permuted sort code, hiding these functions
+#ifdef ENABLE_FUNCTIONS_REQUIRING_QSORT // Avoiding permuted sort code, hiding these functions
+
         double healpix_distance_to_xyz(int hp, int Nside, const double* xyz,
                                        double* closestxyz) {
             int thehp;
@@ -1822,12 +1786,12 @@ namespace hp {
                 dxmid = (dxA + dxB) / 2.0;
                 dymid = (dyA + dyB) / 2.0;
                 // converged to EPS?
-                if ((dxA != dxB && (fabs(dxmid - dxA) < EPS || fabs(dxmid - dxB) < EPS)) ||
-                    (dyA != dyB && (fabs(dymid - dyA) < EPS || fabs(dymid - dyB) < EPS)))
+                if ((dxA != dxB && (std::abs(dxmid - dxA) < EPS || std::abs(dxmid - dxB) < EPS)) ||
+                    (dyA != dyB && (std::abs(dymid - dyA) < EPS || std::abs(dymid - dyB) < EPS)))
                     break;
                 healpix_to_xyzarr(hp, Nside, dxmid, dymid, midxyz);
                 dist2mid = distsq(xyz, midxyz, 3);
-                //printf("  dx,dy (%g,%g) %g  (%g,%g) %g  (%g,%g) %g\n", dxA, dyA, dist2A, dxmid, dymid, dist2mid, dxB, dyB, dist2B);
+
                 if ((dist2mid >= dist2A) && (dist2mid >= dist2B))
                     break;
                 if (dist2A < dist2B) {
@@ -1852,14 +1816,7 @@ namespace hp {
 
             if (closestxyz)
                 memcpy(closestxyz, midxyz, 3*sizeof(double));
-            /*{
-              double ra,dec;
-              double close[2];
-              xyzarr2radecdeg(xyz, &ra,&dec);
-              xyzarr2radecdegarr(midxyz, close);
-              printf("healpix_distance_to_xyz: %.4f,%.4f, hp %i -> closest %.4f, %.4f -> dist %g deg\n",
-              ra, dec, hp, close[0],close[1], distsq2deg(dist2mid));
-              }*/
+
             return distsq2deg(dist2mid);
         }
 
