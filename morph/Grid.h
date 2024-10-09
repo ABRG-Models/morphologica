@@ -193,7 +193,7 @@ namespace morph {
             this->init();
         }
 
-        //! Set up memory and populate v_x/v_y. Called if parameters w, h, offset
+        //! Set up memory and populate v_c. Called if parameters w, h, offset
         //! or order change. Does not need to change if wrap changes, as neighbour
         //! relationships are always runtime computed.
         void init()
@@ -223,21 +223,14 @@ namespace morph {
             }
 
             this->n = this->w * this->h;
-            this->v_x.resize (this->n);
-            this->v_y.resize (this->n);
-            morph::vec<C, 2> c = { C{0}, C{0} };
-            for (I i = 0; i < this->n; ++i) {
-                c = this->coord (i);
-                this->v_x[i] = c[I{0}];
-                this->v_y[i] = c[I{1}];
-            }
+            this->v_c.resize (this->n);
+            for (I i = 0; i < this->n; ++i) { this->v_c[i] = this->coord (i); }
         }
 
         //! Indexing the grid will return a memorized vec location.
         morph::vec<C, 2> operator[] (const I index) const
         {
-            return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}
-            : morph::vec<C, 2>{ this->v_x[index], this->v_y[index] };
+            return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()} : this->v_c[index];
         }
 
         //! A function to find the index of the grid that is closest to the given coordinate.
@@ -280,8 +273,7 @@ namespace morph {
         //! A named function that does the same as operator[]
         morph::vec<C, 2> coord_lookup (const I index) const
         {
-            return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}
-            : morph::vec<C, 2>{ this->v_x[index], this->v_y[index] };
+            return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()} : this->v_c[index];
         }
 
         //! Compute and return the coordinate with the given index
@@ -589,10 +581,10 @@ namespace morph {
             morph::vvec<C> abscissae (w, C{0});
             if (order == GridOrder::bottomleft_to_topright || order == GridOrder::topleft_to_bottomright) {
                 // abscissae is just the first width values.
-                for (I i = I{0}; i < w; ++i) { abscissae[i] = v_x[i]; }
+                for (I i = I{0}; i < w; ++i) { abscissae[i] = v_c[i][0]; }
             } else {
                 // For column major, we have to skip each row
-                for (I i = I{0}; i < w; ++i) { abscissae[i] = v_x[i*h]; }
+                for (I i = I{0}; i < w; ++i) { abscissae[i] = v_c[i*h][0]; }
             }
             return abscissae;
         }
@@ -602,10 +594,10 @@ namespace morph {
         {
             morph::vvec<C> ordinates (h, C{0});
             if (order == GridOrder::bottomleft_to_topright || order == GridOrder::topleft_to_bottomright) {
-                for (I i = I{0}; i < h; ++i) { ordinates[i] = v_y[i*w]; }
+                for (I i = I{0}; i < h; ++i) { ordinates[i] = v_c[i*w][1]; }
             } else {
                 // For column major, ordinates is just the first height values
-                for (I i = I{0}; i < h; ++i) { ordinates[i] = v_y[i]; }
+                for (I i = I{0}; i < h; ++i) { ordinates[i] = v_c[i][1]; }
             }
             return ordinates;
         }
@@ -689,7 +681,7 @@ namespace morph {
             morph::vec<float, 2> threesig = 3.0f * dist_per_pix;
 
 #pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
-            for (typename std::vector<float>::size_type xi = 0u; xi < this->v_x.size(); ++xi) {
+            for (typename std::vector<float>::size_type xi = 0u; xi < this->v_c.size(); ++xi) {
                 float expr = 0.0f;
                 for (unsigned int i = 0; i < csz; ++i) {
                     // Get x/y pixel coords:
@@ -697,11 +689,10 @@ namespace morph {
                     // Get the coordinates of the input pixel at index idx (in target units):
                     morph::vec<float, 2> posn = (dist_per_pix * idx) + image_offset;
                     // Distance from input pixel to output pixel:
-                    float _v_x = this->v_x[xi] - posn[0];
-                    float _v_y = this->v_y[xi] - posn[1];
+                    morph::vec<float, 2> _v_c = this->v_c[xi] - posn;
                     // Compute contributions to each Grid pixel, using 2D (elliptical) Gaussian
-                    if (_v_x < threesig[0] && _v_y < threesig[1]) { // Testing for distance gives slight speedup
-                        expr += std::exp ( - ( (params[0] * _v_x * _v_x) + (params[1] * _v_y * _v_y) ) ) * image_data[i];
+                    if (_v_c < threesig) { // Testing for distance gives slight speedup
+                        expr += std::exp ( - ( (params[0] * _v_c[0] * _v_c[0]) + (params[1] * _v_c[1] * _v_c[1]) ) ) * image_data[i];
                     }
                 }
                 expr_resampled[xi] = expr;
@@ -711,10 +702,9 @@ namespace morph {
             return expr_resampled;
         }
 
-        //! Two vector structures that contains the coords for this grid. v_x is a vector of the x coordinates
-        morph::vvec<C> v_x;
-        //! v_y is a vector of the y coordinates
-        morph::vvec<C> v_y;
+        //! This vector structure contains the coords for this grid. Note that it is public and so
+        //! acccessible by client code
+        morph::vvec<morph::vec<C, 2>> v_c;
     };
 
 } // namespace morph
