@@ -19,12 +19,14 @@
 
 int main()
 {
-    morph::Visual v(1600, 1000, "Colourbar test");
+    morph::Visual v(1600, 1000, "Colourbar perceptual uniformity test");
 
     // Create a grid for the colourmaps
     constexpr unsigned int Nside_w = 256;
-    constexpr unsigned int Nside_h = 100;
-    constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.005f};
+    constexpr unsigned int Nside_h = 32;
+    constexpr float barw = 2.56f;
+    constexpr float barh = 0.5f;
+    constexpr morph::vec<float, 2> grid_spacing = {barw/static_cast<float>(Nside_w), barh/static_cast<float>(Nside_h)};
     morph::Grid grid(Nside_w, Nside_h, grid_spacing);
 
     // Our data is a ramp with a sine wave embossed on it
