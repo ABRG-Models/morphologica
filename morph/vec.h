@@ -283,7 +283,7 @@ namespace morph {
             return ss.str();
         }
 
-        //! Output in a form that can be used as an initializer list
+        //! Output in a form that can be used as an initializer list in C++
         std::string str_initializer() const
         {
             std::stringstream ss;
