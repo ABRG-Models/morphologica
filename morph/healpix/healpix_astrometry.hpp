@@ -6,14 +6,14 @@
  */
 #pragma once
 
-#include <math.h>
-#include <assert.h>
+#include <cmath>
+#include <cassert>
 #include <stdio.h>
 #include <string.h>
 
 // healpix.h included in-line:
 #include <sys/types.h>
-#include <stdint.h>
+#include <cstdint>
 
 /**
    The HEALPix paper is here:
