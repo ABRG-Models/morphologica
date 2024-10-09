@@ -691,7 +691,7 @@ namespace morph {
                     // Distance from input pixel to output pixel:
                     morph::vec<float, 2> _v_c = this->v_c[xi] - posn;
                     // Compute contributions to each Grid pixel, using 2D (elliptical) Gaussian
-                    if (_v_c[0] < threesig[0] && _v_c[1] < threesig[1]) { // Testing for distance gives slight speedup // FIXME: if (_v_c < threesig) { may work
+                    if (_v_c < threesig) { // Testing for distance gives slight speedup
                         expr += std::exp ( - ( (params[0] * _v_c[0] * _v_c[0]) + (params[1] * _v_c[1] * _v_c[1]) ) ) * image_data[i];
                     }
                 }
