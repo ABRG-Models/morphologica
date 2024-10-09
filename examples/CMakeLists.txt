@@ -141,6 +141,12 @@ if(ARMADILLO_FOUND)
     target_link_libraries(grid_simple GLEW::GLEW)
   endif()
 
+  add_executable(colourbar_test colourbar_test.cpp)
+  target_link_libraries(colourbar_test OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(colourbar_test GLEW::GLEW)
+  endif()
+
   # grid_simple, but orthographic view is the default
   add_executable(grid_ortho grid_simple.cpp)
   target_compile_definitions(grid_ortho PUBLIC ORTHOGRAPHIC=1)
