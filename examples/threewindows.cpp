@@ -16,20 +16,20 @@ int main()
 {
     int rtn = -1;
 
+    // Demonstrates use of offset (left at 0,0,0), lengths (3,2,1) and the 'thickness'
+    // scaling factor (0.5) for the coordinate arrows. Defines, and makes current a new
+    // window and OpenGL context.
+    morph::Visual v(1024, 768, "Close Window 1 and Window 3 briefly appears then program exits", {0.8,-0.8}, {.1,.05,.05}, 3.0f, 0.01f);
+    v.showCoordArrows = true;
+    v.showTitle = true;
+    v.backgroundWhite();
+    v.lightingEffects();
+
     { // I create two morph::Visuals here in their own scope, so that I can demonstrate the creation
       // of a new, follow-on morph::Visual at the end
 
-        // Demonstrates use of offset (left at 0,0,0), lengths (3,2,1) and the 'thickness'
-        // scaling factor (0.5) for the coordinate arrows. Defines, and makes current a new
-        // window and OpenGL context.
-        morph::Visual v(1024, 768, "Window 1", {0.8,-0.8}, {.1,.05,.05}, 3.0f, 0.01f);
-        v.showCoordArrows = true;
-        v.showTitle = true;
-        v.backgroundWhite();
-        v.lightingEffects();
-
         // v2 is a second window and OpenGL context
-        morph::Visual v2(768, 768, "Graph on Window 2", {0.8,-0.8}, {.05,.05,.1}, 2.0f, 0.01f);
+        morph::Visual v2(768, 768, "Close Window 2 and Window 3 appears", {0.8,-0.8}, {.05,.05,.1}, 2.0f, 0.01f);
         v2.showCoordArrows = true;
         v2.showTitle = true;
         v2.backgroundWhite();
@@ -69,9 +69,10 @@ int main()
 
             while (v.readyToFinish == false && v2.readyToFinish == false) {
                 v.waitevents (0.018);
-                v.render();
                 v2.render();
+                v.render();
             }
+            v.render();
 
         } catch (const std::exception& e) {
             std::cerr << "Caught exception: " << e.what() << std::endl;
@@ -79,15 +80,21 @@ int main()
         }
     }
 
+    v.render();
+
     // Both old windows have now gone out of scope. Right at the end, I re-create a morph::Visual to
     // prove that it can be done (until March 11 2024, this would fail).
-    morph::Visual v(1024, 768, "This is the third (empty) window", {0.8,-0.8}, {.1,.05,.05}, 3.0f, 0.01f);
-    v.showCoordArrows = true;
-    v.showTitle = true;
-    v.backgroundWhite();
-    v.lightingEffects();
+    morph::Visual v3(1024, 768, "This is the third (empty) window", {0.8,-0.8}, {.1,.05,.05}, 3.0f, 0.01f);
+    v3.showCoordArrows = true;
+    v3.showTitle = true;
+    v3.backgroundWhite();
+    v3.lightingEffects();
 
-    v.keepOpen();
+    while (v3.readyToFinish == false && v.readyToFinish == false) {
+        v3.waitevents (0.018);
+        v.render();
+        v3.render();
+    }
 
     return rtn;
 }
