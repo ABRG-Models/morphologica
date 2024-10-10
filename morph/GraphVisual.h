@@ -1249,6 +1249,30 @@ namespace morph {
             }
 
             if (!this->omit_x_tick_labels) {
+
+                // Pre-test the xtick labels to see if the length of the labels would make the text too crowded. If so, reduce font size
+                float x_font_factor = 1.0f;
+                float label_lengths = 0.0f;
+                {
+                    std::string allticktext("");
+                    for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
+                        std::string s = this->graphNumberFormat (this->xticks[i]);
+                        allticktext += s;
+                    }
+                    // Create a temporary VisualTextModel to find the length of all the tick text
+                    morph::VisualTextModel<glver> lbl (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
+                    morph::TextGeometry geom = lbl.getTextGeometry (allticktext);
+                    label_lengths += geom.width();
+                }
+                std::cout << "Label lengths = " << label_lengths << " cf graph width: " << this->width << std::endl;
+                if (label_lengths > this->width) {
+                    // Make font smaller
+                    x_font_factor = 0.5f;
+                } else if (label_lengths > 0.75f * this->width) {
+                    // Make font smaller
+                    x_font_factor = 0.75f;
+                }
+
                 for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
 
                     // Omit the 0 for 'cross' axes (or maybe shift its position)
@@ -1259,7 +1283,7 @@ namespace morph {
 
                     // Issue: I need the width of the text ss.str() before I can create the
                     // VisualTextModel, so need a static method like this:
-                    auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
+                    auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->font, x_font_factor * this->fontsize, this->fontres);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->xtick_label_height = geom.height() > this->xtick_label_height ? geom.height() : this->xtick_label_height;
                     morph::vec<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
