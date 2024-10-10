@@ -169,6 +169,7 @@ namespace morph {
         //! Deconstructor destroys GLFW/Qt window and deregisters access to VisualResources
         virtual ~Visual()
         {
+            this->setContext();
 #ifndef OWNED_MODE
             glfwDestroyWindow (this->window);
 #endif
