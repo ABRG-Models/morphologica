@@ -7,14 +7,15 @@
 #include <morph/tools.h>
 #include <morph/vec.h>
 #include <morph/mathconst.h>
+#include <morph/lenthe_colormap.hpp>
 
 namespace morph {
 
     //! Different colour maps types.
     enum class ColourMapType
     {
-        Jet,
-        Rainbow,
+        Jet,        // The Jet colour map. This is a poor choice in most cases because it is not perceptually uniform.
+        Rainbow,    // Very poor perceptual uniformity!
         RainbowZeroBlack, // As Rainbow, but if datum is 0, then colour is pure black.
         RainbowZeroWhite, // As Rainbow, but if datum is 0, then colour is pure white.
         Magma,      // Like matplotlib's magma
@@ -25,14 +26,18 @@ namespace morph {
         Twilight,
         Petrov,       // The cosmic microwave background radiation colourmap created by Matthew Petrov
         Vik,          // Fabio Crameri's vik colourmap
+        Fire,         // Fire from William Lenthe's UniformBicone code (https://github.com/wlenthe/UniformBicone)
+        Ocean,        // The Ocean map from William Lenthe's UniformBicone code (https://github.com/wlenthe/UniformBicone)
+        Ice,          // Ice from UniformBicone (https://github.com/wlenthe/UniformBicone)
+        DivBlueRed,   // Blue->Red divergent colour map from UniformBicone (https://github.com/wlenthe/UniformBicone)
         Greyscale,    // Greyscale is any hue; saturation=0; *value* varies. High signal (datum ->1) gives dark greys to black
         GreyscaleInv, // Inverted Greyscale. High signal gives light greys to white
         Monochrome,   // Monochrome is 'monohue': fixed hue and value; vary the *saturation* from 0 to this->sat.
-        MonochromeRed,
-        MonochromeBlue,
+        MonochromeRed,  // Note that Monochrome maps do not have very good perceptual uniformity
+        MonochromeBlue, // though the blue one isn't too bad
         MonochromeGreen,
         Monoval,      // Monoval varies the *value* of the colour with fixed hue and saturation.
-        MonovalRed,
+        MonovalRed,   // Monoval maps have better perceptual uniformity than Monochrome maps
         MonovalBlue,
         MonovalGreen,
         Duochrome,    // Two fixed hues, vary saturation of each with two input numbers.
@@ -44,8 +49,8 @@ namespace morph {
         RGBGrey,      // Takes RGB input and outputs a greyscale version
         HSV,          // A special map in which two input numbers are used to compute a hue and a saturation.
         HSV1D,        // A 1D version of HSV, traverses a line across the HSV circle for a set value of hue,
-                      // which determines what colour the value 1 will return. Useful for positive/negative ranges.
-                      // Map the negative portion of our input to the rnage 0->0.5 and the positive to 0.5->1
+                      // which determines what colour the value 1 will return. Useful for positive/negative ranges, but
+                      // perceptual uniformity is not great.
         Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
 
@@ -168,6 +173,14 @@ namespace morph {
                 cmt = morph::ColourMapType::Petrov;
             } else if (_s == "vik") {
                 cmt = morph::ColourMapType::Vik;
+            } else if (_s == "fire") {
+                cmt = morph::ColourMapType::Fire;
+            } else if (_s == "ocean") {
+                cmt = morph::ColourMapType::Ocean;
+            } else if (_s == "ice") {
+                cmt = morph::ColourMapType::Ice;
+            } else if (_s == "divbluered") {
+                cmt = morph::ColourMapType::DivBlueRed;
             } else if (_s == "cividis") {
                 cmt = morph::ColourMapType::Cividis;
             } else if (_s == "viridis") {
@@ -300,6 +313,26 @@ namespace morph {
                 s = "vik";
                 break;
             }
+            case morph::ColourMapType::Fire:
+            {
+                s = "fire";
+                break;
+            }
+            case morph::ColourMapType::Ocean:
+            {
+                s = "ocean";
+                break;
+            }
+            case morph::ColourMapType::Ice:
+            {
+                s = "ice";
+                break;
+            }
+            case morph::ColourMapType::DivBlueRed:
+            {
+                s = "divbluered";
+                break;
+            }
             case morph::ColourMapType::Cividis:
             {
                 s = "cividis";
@@ -361,91 +394,55 @@ namespace morph {
             case ColourMapType::Jet:
             {
                 // Red is part of Jet, but purple isn't
-                c = {1.0, 0.0f, 1.0f};
+                c = {1.0, 0.0f, 1.0f}; // purple
                 break;
             }
             case ColourMapType::Rainbow:
-            {
-                c = {1.0, 1.0f, 1.0f};
-                break;
-            }
             case ColourMapType::RainbowZeroBlack:
+            case ColourMapType::Magma:
             {
-                c = {1.0, 1.0f, 1.0f};
+                c = {1.0, 1.0f, 1.0f}; // white
                 break;
             }
             case ColourMapType::RainbowZeroWhite:
             {
-                break;
-            }
-            case ColourMapType::Magma:
-            {
-                c = {1.0, 1.0f, 1.0f};
-                break;
+                break; // c is { 0, 0, 0 } black
             }
             case ColourMapType::Inferno:
-            {
-                c = {1.0, 0.0f, 0.0f};
-                break;
-            }
             case ColourMapType::Plasma:
-            {
-                c = {1.0, 0.0f, 0.0f};
-                break;
-            }
             case ColourMapType::Viridis:
-            {
-                c = {1.0, 0.0f, 0.0f};
-                break;
-            }
             case ColourMapType::Cividis:
-            {
-                c = {1.0, 0.0f, 0.0f};
-                break;
-            }
             case ColourMapType::Twilight:
-            {
-                c = {1.0, 0.0f, 0.0f};
-                break;
-            }
             case ColourMapType::Petrov:
-            {
-                c = {1.0, 0.0f, 0.0f};
-                break;
-            }
             case ColourMapType::Vik:
+            case ColourMapType::Fire:
+            case ColourMapType::Ocean:
+            case ColourMapType::Ice:
+            case ColourMapType::Greyscale:
+            case ColourMapType::Monochrome:
+            case ColourMapType::MonochromeBlue:
+            case ColourMapType::MonochromeGreen:
+            case ColourMapType::Monoval:
+            case ColourMapType::MonovalBlue:
+            case ColourMapType::MonovalGreen:
+            case ColourMapType::RGBMono:
+            case ColourMapType::RGBGrey:
+            case ColourMapType::Fixed:
             {
-                c = {1.0, 0.0f, 0.0f};
+                c = {1.0, 0.0f, 0.0f}; // red
                 break;
             }
-            case ColourMapType::Greyscale:
+            case ColourMapType::MonochromeRed:
+            case ColourMapType::MonovalRed:
+            case ColourMapType::DivBlueRed:
             {
-                c = {1.0, 0.0f, 0.0f};
+                c = {0.0, 1.0f, 0.0f}; // green
                 break;
             }
             case ColourMapType::GreyscaleInv:
             {
                 // The 'inverted' greyscale tends to white for maximum signal
                 c = {1.0, 1.0f, 1.0f};
-                break;
-            }
-            case ColourMapType::Monochrome:
-            case ColourMapType::MonochromeRed:
-            case ColourMapType::MonochromeBlue:
-            case ColourMapType::MonochromeGreen:
-            case ColourMapType::Monoval:
-            case ColourMapType::MonovalRed:
-            case ColourMapType::MonovalBlue:
-            case ColourMapType::MonovalGreen:
-            case ColourMapType::RGBMono:
-            case ColourMapType::RGBGrey:
-            {
-                c = {1.0, 0.0f, 0.0f};
-                break;
-            }
-            case ColourMapType::Fixed:
-            {
-                c = {1.0, 0.0f, 0.0f};
                 break;
             }
             default:
@@ -672,6 +669,26 @@ namespace morph {
             case ColourMapType::Vik:
             {
                 c = ColourMap::vik (datum);
+                break;
+            }
+            case ColourMapType::Fire:
+            {
+                lenthe::colormap::ramp::fire<float> (datum, c.data());
+                break;
+            }
+            case ColourMapType::Ocean:
+            {
+                lenthe::colormap::ramp::ocean<float> (datum, c.data());
+                break;
+            }
+            case ColourMapType::Ice:
+            {
+                lenthe::colormap::ramp::ice<float> (datum, c.data());
+                break;
+            }
+            case ColourMapType::DivBlueRed:
+            {
+                lenthe::colormap::ramp::div<float> (datum, c.data());
                 break;
             }
             case ColourMapType::Greyscale:

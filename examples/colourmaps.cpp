@@ -37,6 +37,10 @@ int main()
     cmap_types.push_back (morph::ColourMapType::Twilight);
     cmap_types.push_back (morph::ColourMapType::Petrov);
     cmap_types.push_back (morph::ColourMapType::Vik);
+    cmap_types.push_back (morph::ColourMapType::Fire);
+    cmap_types.push_back (morph::ColourMapType::Ocean);
+    cmap_types.push_back (morph::ColourMapType::Ice);
+    cmap_types.push_back (morph::ColourMapType::DivBlueRed);
     cmap_types.push_back (morph::ColourMapType::Greyscale);
     cmap_types.push_back (morph::ColourMapType::GreyscaleInv);
     cmap_types.push_back (morph::ColourMapType::Monochrome);
