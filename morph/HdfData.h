@@ -387,11 +387,23 @@ namespace morph {
                                  || std::is_same<typename std::decay<T>::type, std::pair<int, int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
+            } else if constexpr (std::is_same<std::decay_t<T>, short int>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::array<short int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::vec<short int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::pair<short int, short int>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_SHORT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::array<unsigned int,2>>::value == true
                                  || std::is_same<typename std::decay<T>::type, morph::vec<unsigned int,2>>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::pair<unsigned int, unsigned int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned short int>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::array<unsigned short int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::vec<unsigned short int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::pair<unsigned short int, unsigned short int>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_USHORT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned long long int>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::array<unsigned long long int,2>>::value == true
