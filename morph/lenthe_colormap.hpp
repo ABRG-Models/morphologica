@@ -40,10 +40,13 @@
 #pragma once
 
 #include <array>
-#include <algorithm>   //copy, rotate, transform
-#include <type_traits> //is_floating_point
-#include <stdexcept>   //out_of_range
-#include <functional>  //function
+#include <algorithm>
+#include <type_traits>
+#include <stdexcept>
+#include <functional>
+#include <numeric>
+#include <cmath>
+#include <cstdint>
 #include <vector>
 
 namespace lenthe {
