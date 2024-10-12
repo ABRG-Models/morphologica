@@ -514,7 +514,12 @@ namespace lenthe {
                         const Real w = clamped ? (tt - ui) / (uiKk - ui) : (tt - i) / (K - k) ;//compute weight
                         const Real x = Real(1) - w;//1 - weight
                         Real * const iter = work + (i+K-s) * D;//determine offset once
-                        std::transform(iter, iter + D, iter - D, iter, [w, x](const Real& i, const Real& j) {return i * w + j * x;});//recursive calculation
+                        // compiler complains about (iter - D) here as 0 - 3 is an issue
+                        if (iter != nullptr) {
+                            std::transform(iter, iter + D, iter - D, iter, [w, x](const Real& i, const Real& j) {
+                                return i * w + j * x;
+                            });//recursive calculation
+                        }
                     }
                 }
                 std::copy(work + K * D, work + K * D + D, pt);
