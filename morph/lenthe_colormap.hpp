@@ -463,7 +463,7 @@ namespace lenthe {
             //               Uniform Spline Implementation                //
             ////////////////////////////////////////////////////////////////
 
-            template <typename Real, size_t N, size_t K, size_t D>
+            template <typename Real, size_t N, size_t K, size_t D=0>
             struct UniformSpline
             {
             public:
