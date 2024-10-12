@@ -48,7 +48,7 @@ int main (int argc, char** argv)
     ifile.clear();
     ifile.seekg(0);
 
-    std::cout << "constexpr std::array<std::array<float, 3>, " << nlines << "> cm_" << name << " = {{\n";
+    std::cout << "\n    constexpr std::array<std::array<float, 3>, " << nlines << "> cm_" << name << " = {{\n";
     unsigned int cline = 0;
     unsigned int lastline = nlines - 1;
     for (std::string line; std::getline(ifile, line);) {
@@ -58,10 +58,10 @@ int main (int argc, char** argv)
             std::cerr << "text format error: != 3 values in line '" << line << "', (got "<< tokens.size() << ")\n";
             return -1;
         }
-        std::cout << "                                          {"
-                  << tokens[0] << "," << tokens[1] << "," << tokens[2] << (cline < lastline  ? "},\n" : "}\n");
+        std::cout << "            {"
+                  << tokens[0] << "," << tokens[1] << "," << tokens[2] << (cline++ < lastline ? "},\n" : "}\n");
     }
-    std::cout << "}};\n";
+    std::cout << "        }}; // cm_" << name << "\n";
 
     return 0;
 }

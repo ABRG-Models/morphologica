@@ -1,7 +1,7 @@
 #pragma once
 
 #include <morph/ColourMap_Lists.h>   // Colour map tables from matplotlib
-#include <morph/ColourMap_Crameri.h> // Colour map tables from Fabio Crameri
+#include <morph/colourmaps_crameri.h> // Colour map tables from Fabio Crameri
 #include <morph/lenthe_colormap.hpp> // William Lenthe's implementation of perceptually uniform colour maps
 
 #include <stdexcept>
@@ -23,8 +23,48 @@ namespace morph {
         Cividis,
         Twilight,
 
-        // Crameri maps, which include colourblind-accessible maps
-        Vik,          // Fabio Crameri's vik colourmap
+        // Fabio Crameri's maps, which include colourblind-accessible maps.
+        // See https://www.fabiocrameri.ch/colourmaps/ or https://zenodo.org/records/8409685
+        Devon,
+        NaviaW,
+        BrocO,
+        Acton,
+        Batlow,
+        Berlin,
+        Tofino,
+        Broc,
+        CorkO,
+        Lapaz,
+        BamO,
+        Vanimo,
+        Lajolla,
+        Lisbon,
+        GrayC,
+        Roma,
+        Vik,
+        Navia,
+        Bilbao,
+        Turku,
+        Lipari,
+        VikO,
+        BatlowK,
+        Oslo,
+        Oleron,
+        Davos,
+        Fes,
+        Managua,
+        Glasgow,
+        Tokyo,
+        Bukavu,
+        Bamako,
+        BatlowW,
+        Nuuk,
+        Cork,
+        Hawaii,
+        Bam,
+        Imola,
+        RomaO,
+        Buda,
 
         // Maps which generate from William Lenthe's UniformBicone code (https://github.com/wlenthe/UniformBicone)
         Fire,
@@ -183,8 +223,90 @@ namespace morph {
                 cmt = morph::ColourMapType::Twilight;
             } else if (_s == "petrov") {
                 cmt = morph::ColourMapType::Petrov;
+
+            // Crameri
+            } else if (_s == "devon") {
+                cmt = morph::ColourMapType::Devon;
+            } else if (_s == "naviaw") {
+                cmt = morph::ColourMapType::NaviaW;
+            } else if (_s == "broco") {
+                cmt = morph::ColourMapType::BrocO;
+            } else if (_s == "acton") {
+                cmt = morph::ColourMapType::Acton;
+            } else if (_s == "batlow") {
+                cmt = morph::ColourMapType::Batlow;
+            } else if (_s == "berlin") {
+                cmt = morph::ColourMapType::Berlin;
+            } else if (_s == "tofino") {
+                cmt = morph::ColourMapType::Tofino;
+            } else if (_s == "broc") {
+                cmt = morph::ColourMapType::Broc;
+            } else if (_s == "corko") {
+                cmt = morph::ColourMapType::CorkO;
+            } else if (_s == "lapaz") {
+                cmt = morph::ColourMapType::Lapaz;
+            } else if (_s == "bamo") {
+                cmt = morph::ColourMapType::BamO;
+            } else if (_s == "vanimo") {
+                cmt = morph::ColourMapType::Vanimo;
+            } else if (_s == "lajolla") {
+                cmt = morph::ColourMapType::Lajolla;
+            } else if (_s == "lisbon") {
+                cmt = morph::ColourMapType::Lisbon;
+            } else if (_s == "grayc") {
+                cmt = morph::ColourMapType::GrayC;
+            } else if (_s == "roma") {
+                cmt = morph::ColourMapType::Roma;
             } else if (_s == "vik") {
                 cmt = morph::ColourMapType::Vik;
+            } else if (_s == "navia") {
+                cmt = morph::ColourMapType::Navia;
+            } else if (_s == "bilbao") {
+                cmt = morph::ColourMapType::Bilbao;
+            } else if (_s == "turku") {
+                cmt = morph::ColourMapType::Turku;
+            } else if (_s == "lipari") {
+                cmt = morph::ColourMapType::Lipari;
+            } else if (_s == "viko") {
+                cmt = morph::ColourMapType::VikO;
+            } else if (_s == "batlowk") {
+                cmt = morph::ColourMapType::BatlowK;
+            } else if (_s == "oslo") {
+                cmt = morph::ColourMapType::Oslo;
+            } else if (_s == "oleron") {
+                cmt = morph::ColourMapType::Oleron;
+            } else if (_s == "davos") {
+                cmt = morph::ColourMapType::Davos;
+            } else if (_s == "fes") {
+                cmt = morph::ColourMapType::Fes;
+            } else if (_s == "managua") {
+                cmt = morph::ColourMapType::Managua;
+            } else if (_s == "glasgow") {
+                cmt = morph::ColourMapType::Glasgow;
+            } else if (_s == "tokyo") {
+                cmt = morph::ColourMapType::Tokyo;
+            } else if (_s == "bukavu") {
+                cmt = morph::ColourMapType::Bukavu;
+            } else if (_s == "bamako") {
+                cmt = morph::ColourMapType::Bamako;
+            } else if (_s == "batloww") {
+                cmt = morph::ColourMapType::BatlowW;
+            } else if (_s == "nuuk") {
+                cmt = morph::ColourMapType::Nuuk;
+            } else if (_s == "cork") {
+                cmt = morph::ColourMapType::Cork;
+            } else if (_s == "hawaii") {
+                cmt = morph::ColourMapType::Hawaii;
+            } else if (_s == "bam") {
+                cmt = morph::ColourMapType::Bam;
+            } else if (_s == "imola") {
+                cmt = morph::ColourMapType::Imola;
+            } else if (_s == "romao") {
+                cmt = morph::ColourMapType::RomaO;
+            } else if (_s == "buda") {
+                cmt = morph::ColourMapType::Buda;
+
+            // Lenthe
             } else if (_s == "fire") {
                 cmt = morph::ColourMapType::Fire;
             } else if (_s == "ocean") {
@@ -193,6 +315,7 @@ namespace morph {
                 cmt = morph::ColourMapType::Ice;
             } else if (_s == "divbluered") {
                 cmt = morph::ColourMapType::DivBlueRed;
+
             } else if (_s == "cividis") {
                 cmt = morph::ColourMapType::Cividis;
             } else if (_s == "viridis") {
@@ -320,11 +443,208 @@ namespace morph {
                 s = "petrov";
                 break;
             }
+
+            case morph::ColourMapType::Devon:
+            {
+                s = "devon";
+                break;
+            }
+            case morph::ColourMapType::NaviaW:
+            {
+                s = "naviaw";
+                break;
+            }
+            case morph::ColourMapType::BrocO:
+            {
+                s = "broco";
+                break;
+            }
+            case morph::ColourMapType::Acton:
+            {
+                s = "acton";
+                break;
+            }
+            case morph::ColourMapType::Batlow:
+            {
+                s = "batlow";
+                break;
+            }
+            case morph::ColourMapType::Berlin:
+            {
+                s = "berlin";
+                break;
+            }
+            case morph::ColourMapType::Tofino:
+            {
+                s = "tofino";
+                break;
+            }
+            case morph::ColourMapType::Broc:
+            {
+                s = "broc";
+                break;
+            }
+            case morph::ColourMapType::CorkO:
+            {
+                s = "corko";
+                break;
+            }
+            case morph::ColourMapType::Lapaz:
+            {
+                s = "lapaz";
+                break;
+            }
+            case morph::ColourMapType::BamO:
+            {
+                s = "bamo";
+                break;
+            }
+            case morph::ColourMapType::Vanimo:
+            {
+                s = "vanimo";
+                break;
+            }
+            case morph::ColourMapType::Lajolla:
+            {
+                s = "lajolla";
+                break;
+            }
+            case morph::ColourMapType::Lisbon:
+            {
+                s = "lisbon";
+                break;
+            }
+            case morph::ColourMapType::GrayC:
+            {
+                s = "grayc";
+                break;
+            }
+            case morph::ColourMapType::Roma:
+            {
+                s = "roma";
+                break;
+            }
             case morph::ColourMapType::Vik:
             {
                 s = "vik";
                 break;
             }
+            case morph::ColourMapType::Navia:
+            {
+                s = "navia";
+                break;
+            }
+            case morph::ColourMapType::Bilbao:
+            {
+                s = "bilbao";
+                break;
+            }
+            case morph::ColourMapType::Turku:
+            {
+                s = "turku";
+                break;
+            }
+            case morph::ColourMapType::Lipari:
+            {
+                s = "lipari";
+                break;
+            }
+            case morph::ColourMapType::VikO:
+            {
+                s = "viko";
+                break;
+            }
+            case morph::ColourMapType::BatlowK:
+            {
+                s = "batlowk";
+                break;
+            }
+            case morph::ColourMapType::Oslo:
+            {
+                s = "oslo";
+                break;
+            }
+            case morph::ColourMapType::Oleron:
+            {
+                s = "oleron";
+                break;
+            }
+            case morph::ColourMapType::Davos:
+            {
+                s = "davos";
+                break;
+            }
+            case morph::ColourMapType::Fes:
+            {
+                s = "fes";
+                break;
+            }
+            case morph::ColourMapType::Managua:
+            {
+                s = "managua";
+                break;
+            }
+            case morph::ColourMapType::Glasgow:
+            {
+                s = "glasgow";
+                break;
+            }
+            case morph::ColourMapType::Tokyo:
+            {
+                s = "tokyo";
+                break;
+            }
+            case morph::ColourMapType::Bukavu:
+            {
+                s = "bukavu";
+                break;
+            }
+            case morph::ColourMapType::Bamako:
+            {
+                s = "bamako";
+                break;
+            }
+            case morph::ColourMapType::BatlowW:
+            {
+                s = "batloww";
+                break;
+            }
+            case morph::ColourMapType::Nuuk:
+            {
+                s = "nuuk";
+                break;
+            }
+            case morph::ColourMapType::Cork:
+            {
+                s = "cork";
+                break;
+            }
+            case morph::ColourMapType::Hawaii:
+            {
+                s = "hawaii";
+                break;
+            }
+            case morph::ColourMapType::Bam:
+            {
+                s = "bam";
+                break;
+            }
+            case morph::ColourMapType::Imola:
+            {
+                s = "imola";
+                break;
+            }
+            case morph::ColourMapType::RomaO:
+            {
+                s = "romao";
+                break;
+            }
+            case morph::ColourMapType::Buda:
+            {
+                s = "buda";
+                break;
+            }
+
             case morph::ColourMapType::Fire:
             {
                 s = "fire";
@@ -420,33 +740,10 @@ namespace morph {
             {
                 break; // c is { 0, 0, 0 } black
             }
-            case ColourMapType::Inferno:
-            case ColourMapType::Plasma:
-            case ColourMapType::Viridis:
-            case ColourMapType::Cividis:
-            case ColourMapType::Twilight:
-            case ColourMapType::Petrov:
-            case ColourMapType::Vik:
-            case ColourMapType::Fire:
-            case ColourMapType::Ocean:
-            case ColourMapType::Ice:
-            case ColourMapType::Greyscale:
-            case ColourMapType::Monochrome:
-            case ColourMapType::MonochromeBlue:
-            case ColourMapType::MonochromeGreen:
-            case ColourMapType::Monoval:
-            case ColourMapType::MonovalBlue:
-            case ColourMapType::MonovalGreen:
-            case ColourMapType::RGBMono:
-            case ColourMapType::RGBGrey:
-            case ColourMapType::Fixed:
-            {
-                c = {1.0, 0.0f, 0.0f}; // red
-                break;
-            }
             case ColourMapType::MonochromeRed:
             case ColourMapType::MonovalRed:
             case ColourMapType::DivBlueRed:
+            case ColourMapType::Acton:
             {
                 c = {0.0, 1.0f, 0.0f}; // green
                 break;
@@ -459,6 +756,8 @@ namespace morph {
             }
             default:
             {
+                // Default to red as the NaN colour
+                c = {1.0, 0.0f, 0.0f};
                 break;
             }
             }
@@ -678,11 +977,248 @@ namespace morph {
                 c = ColourMap::petrov (datum);
                 break;
             }
-            case ColourMapType::Vik:
+
+            case ColourMapType::Devon:
             {
-                c = ColourMap::vik (datum);
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_devon.size()-1))));
+                c = morph::crameri::cm_devon[datum_i];
                 break;
             }
+            case ColourMapType::NaviaW:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_naviaW.size()-1))));
+                c = morph::crameri::cm_naviaW[datum_i];
+                break;
+            }
+            case ColourMapType::BrocO:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_brocO.size()-1))));
+                c = morph::crameri::cm_brocO[datum_i];
+                break;
+            }
+            case ColourMapType::Acton:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_acton.size()-1))));
+                c = morph::crameri::cm_acton[datum_i];
+                break;
+            }
+            case ColourMapType::Batlow:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_batlow.size()-1))));
+                c = morph::crameri::cm_batlow[datum_i];
+                break;
+            }
+            case ColourMapType::Berlin:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_berlin.size()-1))));
+                c = morph::crameri::cm_berlin[datum_i];
+                break;
+            }
+            case ColourMapType::Tofino:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_tofino.size()-1))));
+                c = morph::crameri::cm_tofino[datum_i];
+                break;
+            }
+            case ColourMapType::Broc:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_broc.size()-1))));
+                c = morph::crameri::cm_broc[datum_i];
+                break;
+            }
+            case ColourMapType::CorkO:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_corkO.size()-1))));
+                c = morph::crameri::cm_corkO[datum_i];
+                break;
+            }
+            case ColourMapType::Lapaz:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_lapaz.size()-1))));
+                c = morph::crameri::cm_lapaz[datum_i];
+                break;
+            }
+            case ColourMapType::BamO:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_bamO.size()-1))));
+                c = morph::crameri::cm_bamO[datum_i];
+                break;
+            }
+            case ColourMapType::Vanimo:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_vanimo.size()-1))));
+                c = morph::crameri::cm_vanimo[datum_i];
+                break;
+            }
+            case ColourMapType::Lajolla:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_lajolla.size()-1))));
+                c = morph::crameri::cm_lajolla[datum_i];
+                break;
+            }
+            case ColourMapType::Lisbon:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_lisbon.size()-1))));
+                c = morph::crameri::cm_lisbon[datum_i];
+                break;
+            }
+            case ColourMapType::GrayC:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_grayC.size()-1))));
+                c = morph::crameri::cm_grayC[datum_i];
+                break;
+            }
+            case ColourMapType::Roma:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_roma.size()-1))));
+                c = morph::crameri::cm_roma[datum_i];
+                break;
+            }
+            case ColourMapType::Vik:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_vik.size()-1))));
+                c = morph::crameri::cm_vik[datum_i];
+                break;
+            }
+            case ColourMapType::Navia:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_navia.size()-1))));
+                c = morph::crameri::cm_navia[datum_i];
+                break;
+            }
+            case ColourMapType::Bilbao:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_bilbao.size()-1))));
+                c = morph::crameri::cm_bilbao[datum_i];
+                break;
+            }
+            case ColourMapType::Turku:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_turku.size()-1))));
+                c = morph::crameri::cm_turku[datum_i];
+                break;
+            }
+            case ColourMapType::Lipari:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_lipari.size()-1))));
+                c = morph::crameri::cm_lipari[datum_i];
+                break;
+            }
+            case ColourMapType::VikO:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_vikO.size()-1))));
+                c = morph::crameri::cm_vikO[datum_i];
+                break;
+            }
+            case ColourMapType::BatlowK:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_batlowK.size()-1))));
+                c = morph::crameri::cm_batlowK[datum_i];
+                break;
+            }
+            case ColourMapType::Oslo:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_oslo.size()-1))));
+                c = morph::crameri::cm_oslo[datum_i];
+                break;
+            }
+            case ColourMapType::Oleron:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_oleron.size()-1))));
+                c = morph::crameri::cm_oleron[datum_i];
+                break;
+            }
+            case ColourMapType::Davos:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_davos.size()-1))));
+                c = morph::crameri::cm_davos[datum_i];
+                break;
+            }
+            case ColourMapType::Fes:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_fes.size()-1))));
+                c = morph::crameri::cm_fes[datum_i];
+                break;
+            }
+            case ColourMapType::Managua:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_managua.size()-1))));
+                c = morph::crameri::cm_managua[datum_i];
+                break;
+            }
+            case ColourMapType::Glasgow:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_glasgow.size()-1))));
+                c = morph::crameri::cm_glasgow[datum_i];
+                break;
+            }
+            case ColourMapType::Tokyo:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_tokyo.size()-1))));
+                c = morph::crameri::cm_tokyo[datum_i];
+                break;
+            }
+            case ColourMapType::Bukavu:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_bukavu.size()-1))));
+                c = morph::crameri::cm_bukavu[datum_i];
+                break;
+            }
+            case ColourMapType::Bamako:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_bamako.size()-1))));
+                c = morph::crameri::cm_bamako[datum_i];
+                break;
+            }
+            case ColourMapType::BatlowW:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_batlowW.size()-1))));
+                c = morph::crameri::cm_batlowW[datum_i];
+                break;
+            }
+            case ColourMapType::Nuuk:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_nuuk.size()-1))));
+                c = morph::crameri::cm_nuuk[datum_i];
+                break;
+            }
+            case ColourMapType::Cork:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_cork.size()-1))));
+                c = morph::crameri::cm_cork[datum_i];
+                break;
+            }
+            case ColourMapType::Hawaii:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_hawaii.size()-1))));
+                c = morph::crameri::cm_hawaii[datum_i];
+                break;
+            }
+            case ColourMapType::Bam:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_bam.size()-1))));
+                c = morph::crameri::cm_bam[datum_i];
+                break;
+            }
+            case ColourMapType::Imola:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_imola.size()-1))));
+                c = morph::crameri::cm_imola[datum_i];
+                break;
+            }
+            case ColourMapType::RomaO:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_romaO.size()-1))));
+                c = morph::crameri::cm_romaO[datum_i];
+                break;
+            }
+            case ColourMapType::Buda:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::crameri::cm_buda.size()-1))));
+                c = morph::crameri::cm_buda[datum_i];
+                break;
+            }
+
             case ColourMapType::Fire:
             {
                 lenthe::colormap::ramp::fire<float> (datum, c.data());
@@ -1390,13 +1926,6 @@ namespace morph {
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_petrov_len-1))));
             std::array<float,3> c = {morph::cm_petrov[datum_i][0], morph::cm_petrov[datum_i][1], morph::cm_petrov[datum_i][2]};
             return c;
-        }
-
-        //! Fabio Crameri's vik colourmap (See https://zenodo.org/records/8409685)
-        std::array<float,3> vik (float datum) const
-        {
-            size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cm_vik.size()-1))));
-            return morph::cm_vik[datum_i];
         }
     };
 

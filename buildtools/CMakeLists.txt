@@ -5,3 +5,4 @@ endif()
 
 # Colourmap processing
 add_executable(process_colourmap process_colourmap.cpp)
+add_executable(process_crameri process_crameri.cpp)
