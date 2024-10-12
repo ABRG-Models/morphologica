@@ -229,6 +229,12 @@ if(USE_GLEW)
   target_link_libraries(colourmaps_crameri GLEW::GLEW)
 endif()
 
+add_executable(colourmaps_cet colourmaps_cet.cpp)
+target_link_libraries(colourmaps_cet OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(colourmaps_cet GLEW::GLEW)
+endif()
+
 # On MacOS 13 as a github runner, HAVE_STD_FORMAT gets set to 1, but
 # the compile still fails. Odd. The build of these targets *does* work
 # on MacOS 14. Nevertheless, I have excluded APPLE builds for these

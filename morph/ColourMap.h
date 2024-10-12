@@ -1,8 +1,9 @@
 #pragma once
 
-#include <morph/ColourMap_Lists.h>   // Colour map tables from matplotlib
+#include <morph/ColourMap_Lists.h>    // Colour map tables from matplotlib
 #include <morph/colourmaps_crameri.h> // Colour map tables from Fabio Crameri
-#include <morph/lenthe_colormap.hpp> // William Lenthe's implementation of perceptually uniform colour maps
+#include <morph/lenthe_colormap.hpp>  // William Lenthe's implementation of perceptually uniform colour maps
+#include <morph/colourmaps_cet.h>     // Colour map tables from CET
 
 #include <stdexcept>
 #include <cmath>
@@ -71,6 +72,68 @@ namespace morph {
         Ocean,
         Ice,
         DivBlueRed,
+
+        // CET lookup tables
+        // Section for ColourMapType enum
+        CET_L02,
+        CET_L13,
+        CET_C4,
+        CET_D04,
+        CET_L12,
+        CET_C1s,
+        CET_L01,
+        CET_C5,
+        CET_D11,
+        CET_L04,
+        CET_CBL2,
+        CET_C4s,
+        CET_L15,
+        CET_L20,
+        CET_CBD1,
+        CET_D06,
+        CET_I3,
+        CET_D01A,
+        CET_L16,
+        CET_L06,
+        CET_C2s,
+        CET_I1,
+        CET_C7s,
+        CET_I2,
+        CET_C6s,
+        CET_C6,
+        CET_L05,
+        CET_D08,
+        CET_L03,
+        CET_L14,
+        CET_C2,
+        CET_R3,
+        CET_D01,
+        CET_C1,
+        CET_D02,
+        CET_CBC1,
+        CET_D09,
+        CET_L10,
+        CET_R1,
+        CET_C3,
+        CET_CBL1,
+        CET_C3s,
+        CET_C5s,
+        CET_L08,
+        CET_R4,
+        CET_R2,
+        CET_L11,
+        CET_D10,
+        CET_D07,
+        CET_L17,
+        CET_D12,
+        CET_CBC2,
+        CET_D13,
+        CET_D03,
+        CET_C7,
+        CET_L07,
+        CET_L09,
+        CET_L18,
+        CET_L19,
 
         // Other sources
         Petrov,       // The cosmic microwave background radiation colourmap created by Matthew Petrov
@@ -315,6 +378,126 @@ namespace morph {
                 cmt = morph::ColourMapType::Ice;
             } else if (_s == "divbluered") {
                 cmt = morph::ColourMapType::DivBlueRed;
+
+            // CET
+            } else if (_s == "cet-l02") {
+                cmt = morph::ColourMapType::CET_L02;
+            } else if (_s == "cet-l13") {
+                cmt = morph::ColourMapType::CET_L13;
+            } else if (_s == "cet-c4") {
+                cmt = morph::ColourMapType::CET_C4;
+            } else if (_s == "cet-d04") {
+                cmt = morph::ColourMapType::CET_D04;
+            } else if (_s == "cet-l12") {
+                cmt = morph::ColourMapType::CET_L12;
+            } else if (_s == "cet-c1s") {
+                cmt = morph::ColourMapType::CET_C1s;
+            } else if (_s == "cet-l01") {
+                cmt = morph::ColourMapType::CET_L01;
+            } else if (_s == "cet-c5") {
+                cmt = morph::ColourMapType::CET_C5;
+            } else if (_s == "cet-d11") {
+                cmt = morph::ColourMapType::CET_D11;
+            } else if (_s == "cet-l04") {
+                cmt = morph::ColourMapType::CET_L04;
+            } else if (_s == "cet-cbl2") {
+                cmt = morph::ColourMapType::CET_CBL2;
+            } else if (_s == "cet-c4s") {
+                cmt = morph::ColourMapType::CET_C4s;
+            } else if (_s == "cet-l15") {
+                cmt = morph::ColourMapType::CET_L15;
+            } else if (_s == "cet-l20") {
+                cmt = morph::ColourMapType::CET_L20;
+            } else if (_s == "cet-cbd1") {
+                cmt = morph::ColourMapType::CET_CBD1;
+            } else if (_s == "cet-d06") {
+                cmt = morph::ColourMapType::CET_D06;
+            } else if (_s == "cet-i3") {
+                cmt = morph::ColourMapType::CET_I3;
+            } else if (_s == "cet-d01a") {
+                cmt = morph::ColourMapType::CET_D01A;
+            } else if (_s == "cet-l16") {
+                cmt = morph::ColourMapType::CET_L16;
+            } else if (_s == "cet-l06") {
+                cmt = morph::ColourMapType::CET_L06;
+            } else if (_s == "cet-c2s") {
+                cmt = morph::ColourMapType::CET_C2s;
+            } else if (_s == "cet-i1") {
+                cmt = morph::ColourMapType::CET_I1;
+            } else if (_s == "cet-c7s") {
+                cmt = morph::ColourMapType::CET_C7s;
+            } else if (_s == "cet-i2") {
+                cmt = morph::ColourMapType::CET_I2;
+            } else if (_s == "cet-c6s") {
+                cmt = morph::ColourMapType::CET_C6s;
+            } else if (_s == "cet-c6") {
+                cmt = morph::ColourMapType::CET_C6;
+            } else if (_s == "cet-l05") {
+                cmt = morph::ColourMapType::CET_L05;
+            } else if (_s == "cet-d08") {
+                cmt = morph::ColourMapType::CET_D08;
+            } else if (_s == "cet-l03") {
+                cmt = morph::ColourMapType::CET_L03;
+            } else if (_s == "cet-l14") {
+                cmt = morph::ColourMapType::CET_L14;
+            } else if (_s == "cet-c2") {
+                cmt = morph::ColourMapType::CET_C2;
+            } else if (_s == "cet-r3") {
+                cmt = morph::ColourMapType::CET_R3;
+            } else if (_s == "cet-d01") {
+                cmt = morph::ColourMapType::CET_D01;
+            } else if (_s == "cet-c1") {
+                cmt = morph::ColourMapType::CET_C1;
+            } else if (_s == "cet-d02") {
+                cmt = morph::ColourMapType::CET_D02;
+            } else if (_s == "cet-cbc1") {
+                cmt = morph::ColourMapType::CET_CBC1;
+            } else if (_s == "cet-d09") {
+                cmt = morph::ColourMapType::CET_D09;
+            } else if (_s == "cet-l10") {
+                cmt = morph::ColourMapType::CET_L10;
+            } else if (_s == "cet-r1") {
+                cmt = morph::ColourMapType::CET_R1;
+            } else if (_s == "cet-c3") {
+                cmt = morph::ColourMapType::CET_C3;
+            } else if (_s == "cet-cbl1") {
+                cmt = morph::ColourMapType::CET_CBL1;
+            } else if (_s == "cet-c3s") {
+                cmt = morph::ColourMapType::CET_C3s;
+            } else if (_s == "cet-c5s") {
+                cmt = morph::ColourMapType::CET_C5s;
+            } else if (_s == "cet-l08") {
+                cmt = morph::ColourMapType::CET_L08;
+            } else if (_s == "cet-r4") {
+                cmt = morph::ColourMapType::CET_R4;
+            } else if (_s == "cet-r2") {
+                cmt = morph::ColourMapType::CET_R2;
+            } else if (_s == "cet-l11") {
+                cmt = morph::ColourMapType::CET_L11;
+            } else if (_s == "cet-d10") {
+                cmt = morph::ColourMapType::CET_D10;
+            } else if (_s == "cet-d07") {
+                cmt = morph::ColourMapType::CET_D07;
+            } else if (_s == "cet-l17") {
+                cmt = morph::ColourMapType::CET_L17;
+            } else if (_s == "cet-d12") {
+                cmt = morph::ColourMapType::CET_D12;
+            } else if (_s == "cet-cbc2") {
+                cmt = morph::ColourMapType::CET_CBC2;
+            } else if (_s == "cet-d13") {
+                cmt = morph::ColourMapType::CET_D13;
+            } else if (_s == "cet-d03") {
+                cmt = morph::ColourMapType::CET_D03;
+            } else if (_s == "cet-c7") {
+                cmt = morph::ColourMapType::CET_C7;
+            } else if (_s == "cet-l07") {
+                cmt = morph::ColourMapType::CET_L07;
+            } else if (_s == "cet-l09") {
+                cmt = morph::ColourMapType::CET_L09;
+            } else if (_s == "cet-l18") {
+                cmt = morph::ColourMapType::CET_L18;
+            } else if (_s == "cet-l19") {
+                cmt = morph::ColourMapType::CET_L19;
 
             } else if (_s == "cividis") {
                 cmt = morph::ColourMapType::Cividis;
@@ -665,6 +848,303 @@ namespace morph {
                 s = "divbluered";
                 break;
             }
+
+            case morph::ColourMapType::CET_L02:
+            {
+                s = "cet-l02";
+                break;
+            }
+            case morph::ColourMapType::CET_L13:
+            {
+                s = "cet-l13";
+                break;
+            }
+            case morph::ColourMapType::CET_C4:
+            {
+                s = "cet-c4";
+                break;
+            }
+            case morph::ColourMapType::CET_D04:
+            {
+                s = "cet-d04";
+                break;
+            }
+            case morph::ColourMapType::CET_L12:
+            {
+                s = "cet-l12";
+                break;
+            }
+            case morph::ColourMapType::CET_C1s:
+            {
+                s = "cet-c1s";
+                break;
+            }
+            case morph::ColourMapType::CET_L01:
+            {
+                s = "cet-l01";
+                break;
+            }
+            case morph::ColourMapType::CET_C5:
+            {
+                s = "cet-c5";
+                break;
+            }
+            case morph::ColourMapType::CET_D11:
+            {
+                s = "cet-d11";
+                break;
+            }
+            case morph::ColourMapType::CET_L04:
+            {
+                s = "cet-l04";
+                break;
+            }
+            case morph::ColourMapType::CET_CBL2:
+            {
+                s = "cet-cbl2";
+                break;
+            }
+            case morph::ColourMapType::CET_C4s:
+            {
+                s = "cet-c4s";
+                break;
+            }
+            case morph::ColourMapType::CET_L15:
+            {
+                s = "cet-l15";
+                break;
+            }
+            case morph::ColourMapType::CET_L20:
+            {
+                s = "cet-l20";
+                break;
+            }
+            case morph::ColourMapType::CET_CBD1:
+            {
+                s = "cet-cbd1";
+                break;
+            }
+            case morph::ColourMapType::CET_D06:
+            {
+                s = "cet-d06";
+                break;
+            }
+            case morph::ColourMapType::CET_I3:
+            {
+                s = "cet-i3";
+                break;
+            }
+            case morph::ColourMapType::CET_D01A:
+            {
+                s = "cet-d01a";
+                break;
+            }
+            case morph::ColourMapType::CET_L16:
+            {
+                s = "cet-l16";
+                break;
+            }
+            case morph::ColourMapType::CET_L06:
+            {
+                s = "cet-l06";
+                break;
+            }
+            case morph::ColourMapType::CET_C2s:
+            {
+                s = "cet-c2s";
+                break;
+            }
+            case morph::ColourMapType::CET_I1:
+            {
+                s = "cet-i1";
+                break;
+            }
+            case morph::ColourMapType::CET_C7s:
+            {
+                s = "cet-c7s";
+                break;
+            }
+            case morph::ColourMapType::CET_I2:
+            {
+                s = "cet-i2";
+                break;
+            }
+            case morph::ColourMapType::CET_C6s:
+            {
+                s = "cet-c6s";
+                break;
+            }
+            case morph::ColourMapType::CET_C6:
+            {
+                s = "cet-c6";
+                break;
+            }
+            case morph::ColourMapType::CET_L05:
+            {
+                s = "cet-l05";
+                break;
+            }
+            case morph::ColourMapType::CET_D08:
+            {
+                s = "cet-d08";
+                break;
+            }
+            case morph::ColourMapType::CET_L03:
+            {
+                s = "cet-l03";
+                break;
+            }
+            case morph::ColourMapType::CET_L14:
+            {
+                s = "cet-l14";
+                break;
+            }
+            case morph::ColourMapType::CET_C2:
+            {
+                s = "cet-c2";
+                break;
+            }
+            case morph::ColourMapType::CET_R3:
+            {
+                s = "cet-r3";
+                break;
+            }
+            case morph::ColourMapType::CET_D01:
+            {
+                s = "cet-d01";
+                break;
+            }
+            case morph::ColourMapType::CET_C1:
+            {
+                s = "cet-c1";
+                break;
+            }
+            case morph::ColourMapType::CET_D02:
+            {
+                s = "cet-d02";
+                break;
+            }
+            case morph::ColourMapType::CET_CBC1:
+            {
+                s = "cet-cbc1";
+                break;
+            }
+            case morph::ColourMapType::CET_D09:
+            {
+                s = "cet-d09";
+                break;
+            }
+            case morph::ColourMapType::CET_L10:
+            {
+                s = "cet-l10";
+                break;
+            }
+            case morph::ColourMapType::CET_R1:
+            {
+                s = "cet-r1";
+                break;
+            }
+            case morph::ColourMapType::CET_C3:
+            {
+                s = "cet-c3";
+                break;
+            }
+            case morph::ColourMapType::CET_CBL1:
+            {
+                s = "cet-cbl1";
+                break;
+            }
+            case morph::ColourMapType::CET_C3s:
+            {
+                s = "cet-c3s";
+                break;
+            }
+            case morph::ColourMapType::CET_C5s:
+            {
+                s = "cet-c5s";
+                break;
+            }
+            case morph::ColourMapType::CET_L08:
+            {
+                s = "cet-l08";
+                break;
+            }
+            case morph::ColourMapType::CET_R4:
+            {
+                s = "cet-r4";
+                break;
+            }
+            case morph::ColourMapType::CET_R2:
+            {
+                s = "cet-r2";
+                break;
+            }
+            case morph::ColourMapType::CET_L11:
+            {
+                s = "cet-l11";
+                break;
+            }
+            case morph::ColourMapType::CET_D10:
+            {
+                s = "cet-d10";
+                break;
+            }
+            case morph::ColourMapType::CET_D07:
+            {
+                s = "cet-d07";
+                break;
+            }
+            case morph::ColourMapType::CET_L17:
+            {
+                s = "cet-l17";
+                break;
+            }
+            case morph::ColourMapType::CET_D12:
+            {
+                s = "cet-d12";
+                break;
+            }
+            case morph::ColourMapType::CET_CBC2:
+            {
+                s = "cet-cbc2";
+                break;
+            }
+            case morph::ColourMapType::CET_D13:
+            {
+                s = "cet-d13";
+                break;
+            }
+            case morph::ColourMapType::CET_D03:
+            {
+                s = "cet-d03";
+                break;
+            }
+            case morph::ColourMapType::CET_C7:
+            {
+                s = "cet-c7";
+                break;
+            }
+            case morph::ColourMapType::CET_L07:
+            {
+                s = "cet-l07";
+                break;
+            }
+            case morph::ColourMapType::CET_L09:
+            {
+                s = "cet-l09";
+                break;
+            }
+            case morph::ColourMapType::CET_L18:
+            {
+                s = "cet-l18";
+                break;
+            }
+            case morph::ColourMapType::CET_L19:
+            {
+                s = "cet-l19";
+                break;
+            }
+
             case morph::ColourMapType::Cividis:
             {
                 s = "cividis";
@@ -1239,6 +1719,363 @@ namespace morph {
                 lenthe::colormap::ramp::div<float> (datum, c.data());
                 break;
             }
+
+            case ColourMapType::CET_L02:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L02.size()-1))));
+                c = morph::cet::cm_CET_L02[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L13:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L13.size()-1))));
+                c = morph::cet::cm_CET_L13[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C4:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C4.size()-1))));
+                c = morph::cet::cm_CET_C4[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D04:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D04.size()-1))));
+                c = morph::cet::cm_CET_D04[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L12:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L12.size()-1))));
+                c = morph::cet::cm_CET_L12[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C1s:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C1s.size()-1))));
+                c = morph::cet::cm_CET_C1s[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L01:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L01.size()-1))));
+                c = morph::cet::cm_CET_L01[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C5:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C5.size()-1))));
+                c = morph::cet::cm_CET_C5[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D11:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D11.size()-1))));
+                c = morph::cet::cm_CET_D11[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L04:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L04.size()-1))));
+                c = morph::cet::cm_CET_L04[datum_i];
+                break;
+            }
+            case ColourMapType::CET_CBL2:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_CBL2.size()-1))));
+                c = morph::cet::cm_CET_CBL2[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C4s:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C4s.size()-1))));
+                c = morph::cet::cm_CET_C4s[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L15:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L15.size()-1))));
+                c = morph::cet::cm_CET_L15[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L20:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L20.size()-1))));
+                c = morph::cet::cm_CET_L20[datum_i];
+                break;
+            }
+            case ColourMapType::CET_CBD1:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_CBD1.size()-1))));
+                c = morph::cet::cm_CET_CBD1[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D06:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D06.size()-1))));
+                c = morph::cet::cm_CET_D06[datum_i];
+                break;
+            }
+            case ColourMapType::CET_I3:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_I3.size()-1))));
+                c = morph::cet::cm_CET_I3[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D01A:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D01A.size()-1))));
+                c = morph::cet::cm_CET_D01A[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L16:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L16.size()-1))));
+                c = morph::cet::cm_CET_L16[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L06:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L06.size()-1))));
+                c = morph::cet::cm_CET_L06[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C2s:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C2s.size()-1))));
+                c = morph::cet::cm_CET_C2s[datum_i];
+                break;
+            }
+            case ColourMapType::CET_I1:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_I1.size()-1))));
+                c = morph::cet::cm_CET_I1[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C7s:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C7s.size()-1))));
+                c = morph::cet::cm_CET_C7s[datum_i];
+                break;
+            }
+            case ColourMapType::CET_I2:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_I2.size()-1))));
+                c = morph::cet::cm_CET_I2[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C6s:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C6s.size()-1))));
+                c = morph::cet::cm_CET_C6s[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C6:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C6.size()-1))));
+                c = morph::cet::cm_CET_C6[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L05:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L05.size()-1))));
+                c = morph::cet::cm_CET_L05[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D08:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D08.size()-1))));
+                c = morph::cet::cm_CET_D08[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L03:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L03.size()-1))));
+                c = morph::cet::cm_CET_L03[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L14:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L14.size()-1))));
+                c = morph::cet::cm_CET_L14[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C2:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C2.size()-1))));
+                c = morph::cet::cm_CET_C2[datum_i];
+                break;
+            }
+            case ColourMapType::CET_R3:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_R3.size()-1))));
+                c = morph::cet::cm_CET_R3[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D01:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D01.size()-1))));
+                c = morph::cet::cm_CET_D01[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C1:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C1.size()-1))));
+                c = morph::cet::cm_CET_C1[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D02:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D02.size()-1))));
+                c = morph::cet::cm_CET_D02[datum_i];
+                break;
+            }
+            case ColourMapType::CET_CBC1:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_CBC1.size()-1))));
+                c = morph::cet::cm_CET_CBC1[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D09:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D09.size()-1))));
+                c = morph::cet::cm_CET_D09[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L10:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L10.size()-1))));
+                c = morph::cet::cm_CET_L10[datum_i];
+                break;
+            }
+            case ColourMapType::CET_R1:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_R1.size()-1))));
+                c = morph::cet::cm_CET_R1[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C3:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C3.size()-1))));
+                c = morph::cet::cm_CET_C3[datum_i];
+                break;
+            }
+            case ColourMapType::CET_CBL1:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_CBL1.size()-1))));
+                c = morph::cet::cm_CET_CBL1[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C3s:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C3s.size()-1))));
+                c = morph::cet::cm_CET_C3s[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C5s:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C5s.size()-1))));
+                c = morph::cet::cm_CET_C5s[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L08:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L08.size()-1))));
+                c = morph::cet::cm_CET_L08[datum_i];
+                break;
+            }
+            case ColourMapType::CET_R4:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_R4.size()-1))));
+                c = morph::cet::cm_CET_R4[datum_i];
+                break;
+            }
+            case ColourMapType::CET_R2:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_R2.size()-1))));
+                c = morph::cet::cm_CET_R2[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L11:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L11.size()-1))));
+                c = morph::cet::cm_CET_L11[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D10:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D10.size()-1))));
+                c = morph::cet::cm_CET_D10[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D07:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D07.size()-1))));
+                c = morph::cet::cm_CET_D07[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L17:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L17.size()-1))));
+                c = morph::cet::cm_CET_L17[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D12:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D12.size()-1))));
+                c = morph::cet::cm_CET_D12[datum_i];
+                break;
+            }
+            case ColourMapType::CET_CBC2:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_CBC2.size()-1))));
+                c = morph::cet::cm_CET_CBC2[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D13:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D13.size()-1))));
+                c = morph::cet::cm_CET_D13[datum_i];
+                break;
+            }
+            case ColourMapType::CET_D03:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_D03.size()-1))));
+                c = morph::cet::cm_CET_D03[datum_i];
+                break;
+            }
+            case ColourMapType::CET_C7:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_C7.size()-1))));
+                c = morph::cet::cm_CET_C7[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L07:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L07.size()-1))));
+                c = morph::cet::cm_CET_L07[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L09:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L09.size()-1))));
+                c = morph::cet::cm_CET_L09[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L18:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L18.size()-1))));
+                c = morph::cet::cm_CET_L18[datum_i];
+                break;
+            }
+            case ColourMapType::CET_L19:
+            {
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_L19.size()-1))));
+                c = morph::cet::cm_CET_L19[datum_i];
+                break;
+            }
+
+
             case ColourMapType::Greyscale:
             {
                 // The standard Greyscale Colourmap is best (and matches python Greys
