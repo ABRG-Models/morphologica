@@ -1424,37 +1424,44 @@ namespace morph {
             }
             case ColourMapType::Magma:
             {
-                c = ColourMap::magma (datum);
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cm_magma.size()-1))));
+                c = morph::cm_magma[datum_i];
                 break;
             }
             case ColourMapType::Inferno:
             {
-                c = ColourMap::inferno (datum);
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cm_inferno.size()-1))));
+                c = morph::cm_inferno[datum_i];
                 break;
             }
             case ColourMapType::Plasma:
             {
-                c = ColourMap::plasma (datum);
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cm_plasma.size()-1))));
+                c = morph::cm_plasma[datum_i];
                 break;
             }
             case ColourMapType::Viridis:
             {
-                c = ColourMap::viridis (datum);
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cm_viridis.size()-1))));
+                c = morph::cm_viridis[datum_i];
                 break;
             }
             case ColourMapType::Cividis:
             {
-                c = ColourMap::cividis (datum);
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cm_cividis.size()-1))));
+                c = morph::cm_cividis[datum_i];
                 break;
             }
             case ColourMapType::Twilight:
             {
-                c = ColourMap::twilight (datum);
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cm_twilight.size()-1))));
+                c = morph::cm_twilight[datum_i];
                 break;
             }
             case ColourMapType::Petrov:
             {
-                c = ColourMap::petrov (datum);
+                size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cm_petrov.size()-1))));
+                c = morph::cm_petrov[datum_i];
                 break;
             }
 
@@ -2701,68 +2708,6 @@ namespace morph {
         std::array<float,3> rainbow (float datum) const
         {
             return ColourMap::hsv2rgb (datum, 1.0f, 1.0f);
-        }
-
-        //! A copy of matplotlib's magma colourmap
-        std::array<float,3> magma (float datum) const
-        {
-            // let's just try the closest colour from the map, with no interpolation
-            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_magma_len-1))));
-            std::array<float,3> c = {morph::cm_magma[datum_i][0], morph::cm_magma[datum_i][1], morph::cm_magma[datum_i][2]};
-            return c;
-        }
-
-        //! A copy of matplotlib's inferno colourmap
-        std::array<float,3> inferno (float datum) const
-        {
-            // let's just try the closest colour from the map, with no interpolation
-            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_inferno_len-1))));
-            std::array<float,3> c = {morph::cm_inferno[datum_i][0], morph::cm_inferno[datum_i][1], morph::cm_inferno[datum_i][2]};
-            return c;
-        }
-
-        //! A copy of matplotlib's plasma colourmap
-        std::array<float,3> plasma (float datum) const
-        {
-            // let's just try the closest colour from the map, with no interpolation
-            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_plasma_len-1))));
-            std::array<float,3> c = {morph::cm_plasma[datum_i][0], morph::cm_plasma[datum_i][1], morph::cm_plasma[datum_i][2]};
-            return c;
-        }
-
-        //! A copy of matplotlib's viridis colourmap
-        std::array<float,3> viridis (float datum) const
-        {
-            // let's just try the closest colour from the map, with no interpolation
-            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_viridis_len-1))));
-            std::array<float,3> c = {morph::cm_viridis[datum_i][0], morph::cm_viridis[datum_i][1], morph::cm_viridis[datum_i][2]};
-            return c;
-        }
-
-        //! A copy of matplotlib's cividis colourmap
-        std::array<float,3> cividis (float datum) const
-        {
-            // let's just try the closest colour from the map, with no interpolation
-            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_cividis_len-1))));
-            std::array<float,3> c = {morph::cm_cividis[datum_i][0], morph::cm_cividis[datum_i][1], morph::cm_cividis[datum_i][2]};
-            return c;
-        }
-
-        //! A copy of matplotlib's twilight colourmap
-        std::array<float,3> twilight (float datum) const
-        {
-            // let's just try the closest colour from the map, with no interpolation
-            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_twilight_len-1))));
-            std::array<float,3> c = {morph::cm_twilight[datum_i][0], morph::cm_twilight[datum_i][1], morph::cm_twilight[datum_i][2]};
-            return c;
-        }
-
-        //! The enhanced cosmic microwave background radiation map by Matthew Petrov
-        std::array<float,3> petrov (float datum) const
-        {
-            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_petrov_len-1))));
-            std::array<float,3> c = {morph::cm_petrov[datum_i][0], morph::cm_petrov[datum_i][1], morph::cm_petrov[datum_i][2]};
-            return c;
         }
     };
 
