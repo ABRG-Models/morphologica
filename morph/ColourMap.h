@@ -86,7 +86,7 @@ namespace morph {
      *
      * A simple use of a ColourMap might look like this:
      *
-     * // Instantiate a colourmap which will convert a range of floats from [0,1] into colours from the well known plasma colour map.
+     * // Instantiate a colourmap which will convert floats (range [0,1]) into colours from the 'Plasma' colour map.
      * morph::ColourMap<float> cm1(morph::ColourMapType::Plasma);
      *
      * // Convert floats into colours using the ColourMap::convert function:
