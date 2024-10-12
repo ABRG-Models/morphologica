@@ -463,7 +463,7 @@ namespace lenthe {
             //               Uniform Spline Implementation                //
             ////////////////////////////////////////////////////////////////
 
-            template <typename Real, size_t N, size_t K, size_t D=0>
+            template <typename Real, size_t N, size_t K, size_t D>
             struct UniformSpline
             {
             public:
@@ -496,7 +496,7 @@ namespace lenthe {
             template<typename Real, size_t N, size_t K, size_t D>
             void UniformSpline<Real, N, K, D>::interpolate(const Real t, const bool clamped, Real * const pt) const {
                 //remap t to knot domain and find segment t falls in
-                if(t < Real(0) || t > Real(1)) throw std::out_of_range("spline parameter out of bounds [0,1]");
+                if(t < Real{0} || t > Real{1}) throw std::out_of_range("spline parameter out of bounds [0,1]");
                 static const size_t uMax = N - K;//maximum knot value for clamped knots
                 const Real tt = clamped ? t * uMax : t * (N - K) + K;
                 const size_t s = std::min((clamped ? K : 0) + (size_t)tt, N - 1);
@@ -512,14 +512,16 @@ namespace lenthe {
                         const size_t ui = i > K ? i - K : 0;//knots[i] for clamped knots
                         const size_t uiKk = iKk > K ? iKk - K : 0;//knots[iKk] for clamped knots
                         const Real w = clamped ? (tt - ui) / (uiKk - ui) : (tt - i) / (K - k) ;//compute weight
-                        const Real x = Real(1) - w;//1 - weight
-                        Real * const iter = work + (i+K-s) * D;//determine offset once
-                        // compiler complains about (iter - D) here as 0 - 3 is an issue
-                        if (iter != nullptr) {
-                            std::transform(iter, iter + D, iter - D, iter, [w, x](const Real& i, const Real& j) {
-                                return i * w + j * x;
-                            });//recursive calculation
-                        }
+                        const Real x = Real{1} - w;//1 - weight
+                        Real * const iter = work;
+                        const size_t os = (i+K-s) * D; // determine offset
+                                                       // once. Computing a separate
+                                                       // offset in this line avoids
+                                                       // array-offset warnings with
+                                                       // some compilers
+                        std::transform(iter + os, iter + os + D, iter + os - D, iter + os, [w, x](const Real& i, const Real& j) {
+                            return i * w + j * x;
+                        });//recursive calculation
                     }
                 }
                 std::copy(work + K * D, work + K * D + D, pt);
