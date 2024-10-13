@@ -107,6 +107,7 @@ int main()
     std::vector<morph::ColourMapType> cmap_2d_types;
     cmap_2d_types.push_back (morph::ColourMapType::HSV);
     cmap_2d_types.push_back (morph::ColourMapType::Duochrome);
+    cmap_2d_types.push_back (morph::ColourMapType::DiscSixWhite);
 
     constexpr float pw = 0.03f; // pixel width
     constexpr int N = 20;
@@ -125,6 +126,19 @@ int main()
     gv->cm.setType (cmap_2d_types[0]);
     gv->zScale.setParams(0,0);
     gv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_2d_types[0]), {0, -0.1, 0}, morph::TextFeatures(0.05f));
+    gv->twodimensional = true;
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    offset[0] += 0.8f;
+
+    gv = std::make_unique<morph::GridVisual<float, int>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Triangles;
+    gv->setVectorData (&data);
+    gv->cm.setType (cmap_2d_types[2]);
+    gv->zScale.setParams(0,0);
+    gv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_2d_types[2]), {0, -0.1, 0}, morph::TextFeatures(0.05f));
     gv->twodimensional = true;
     gv->finalize();
     v.addVisualModel (gv);

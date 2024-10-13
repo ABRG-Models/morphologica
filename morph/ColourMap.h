@@ -76,6 +76,10 @@ namespace morph {
         CyclicFour, // Almost identical to CET_C2
         CyclicSix,
         CyclicDivBlueRed,
+        DiscFourWhite,
+        DiscFourBlack,
+        DiscSixWhite,  // This is the perceptually invariant HSV equivalent
+        DiscSixBlack,
 
         // CET lookup tables
         // Section for ColourMapType enum
@@ -389,6 +393,14 @@ namespace morph {
                 cmt = morph::ColourMapType::CyclicSix;
             } else if (_s == "cyclicdivbluered") {
                 cmt = morph::ColourMapType::CyclicDivBlueRed;
+            } else if (_s == "discfourwhite") {
+                cmt = morph::ColourMapType::DiscFourWhite;
+            } else if (_s == "discfourblack") {
+                cmt = morph::ColourMapType::DiscFourBlack;
+            } else if (_s == "discsixwhite") {
+                cmt = morph::ColourMapType::DiscSixWhite;
+            } else if (_s == "discsixblack") {
+                cmt = morph::ColourMapType::DiscSixBlack;
 
             // CET
             } else if (_s == "cet-l02") {
@@ -879,6 +891,26 @@ namespace morph {
                 s = "cyclicdivbluered";
                 break;
             }
+            case morph::ColourMapType::DiscFourWhite:
+            {
+                s = "discfourwhite";
+                break;
+            }
+            case morph::ColourMapType::DiscFourBlack:
+            {
+                s = "discfourblack";
+                break;
+            }
+            case morph::ColourMapType::DiscSixWhite:
+            {
+                s = "discsixwhite";
+                break;
+            }
+            case morph::ColourMapType::DiscSixBlack:
+            {
+                s = "discsixblack";
+                break;
+            }
 
             case morph::ColourMapType::CET_L02:
             {
@@ -1292,6 +1324,10 @@ namespace morph {
             }
             case ColourMapType::Duochrome:
             case ColourMapType::HSV:
+            case ColourMapType::DiscFourWhite:
+            case ColourMapType::DiscFourBlack:
+            case ColourMapType::DiscSixWhite:
+            case ColourMapType::DiscSixBlack:
             {
                 n = 2;
                 break;
@@ -1335,13 +1371,39 @@ namespace morph {
         //! An overload of convert for DuoChrome and HSV ColourMaps
         std::array<float, 3> convert (T _datum1, T _datum2) const
         {
-            if (this->type != ColourMapType::Duochrome && this->type != ColourMapType::HSV) {
-                throw std::runtime_error ("Set ColourMapType to Duochrome or HSV.");
+            if (this->type != ColourMapType::Duochrome && this->type != ColourMapType::HSV
+                && this->type != ColourMapType::DiscFourWhite && this->type != ColourMapType::DiscFourBlack
+                && this->type != ColourMapType::DiscSixWhite && this->type != ColourMapType::DiscSixBlack) {
+                throw std::runtime_error ("Set ColourMapType to Duochrome, HSV DiscFourWhite/Black or DiscSixWhite/Black.");
             }
             if (this->type == ColourMapType::Duochrome) {
                 return this->duochrome (_datum1, _datum2);
-            } else {
+            } else if (this->type == ColourMapType::DiscFourWhite) {
+                std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+                // Convert two inputs to radius and angle
+                std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
+                //                                radius[0,1] theta [0,1]  true:white sym None Azimuth or Polar
+                lenthe::colormap::disk::four<float> (static_cast<float>(ra[0]), static_cast<float>(ra[1]), c.data(), true, lenthe::colormap::Sym::None);
+                return c;
+            } else if (this->type == ColourMapType::DiscFourBlack) {
+                std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+                std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
+                lenthe::colormap::disk::four<float> (static_cast<float>(ra[0]), static_cast<float>(ra[1]), c.data(), false, lenthe::colormap::Sym::None);
+                return c;
+            } else if (this->type == ColourMapType::DiscSixWhite) {
+                std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+                std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
+                lenthe::colormap::disk::six<float> (static_cast<float>(ra[0]), static_cast<float>(ra[1]), c.data(), true, lenthe::colormap::Sym::None);
+                return c;
+            } else if (this->type == ColourMapType::DiscSixBlack) {
+                std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+                std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
+                lenthe::colormap::disk::six<float> (static_cast<float>(ra[0]), static_cast<float>(ra[1]), c.data(), false, lenthe::colormap::Sym::None);
+                return c;
+            } else if (this->type == ColourMapType::HSV) {
                 return this->hsv_2d (_datum1, _datum2);
+            } else {
+                throw std::runtime_error ("unknown colour map type");
             }
         }
 
@@ -2640,6 +2702,27 @@ namespace morph {
             return clr1;
         }
 
+        // Convert 'x' and 'y' data values into a radius and angle. Both returned radius
+        // angle are in the range [0,1] (NOT 0, 2pi, for angle)
+        std::array<T, 2> xy_to_radius_angle (T x, T y) const
+        {
+            std::array<T, 2> radius_angle;
+            // Get the datums centralised about 0 & scale so that for datum1/2 both equal to 1 we get max saturation
+            x = (x - T{0.5}) * morph::mathconst<T>::root_2;
+            y = (y - T{0.5}) * morph::mathconst<T>::root_2;
+
+            radius_angle[0] = std::sqrt(x * x + y * y);
+            radius_angle[0] = radius_angle[0] > T{1} ? T{1} : radius_angle[0];
+            radius_angle[0] = radius_angle[0] < T{0} ? T{0} : radius_angle[0];
+
+            radius_angle[1] = std::atan2 (y, x) + this->hue_rotation;
+            radius_angle[1] = radius_angle[1] < T{0} ? radius_angle[1] + morph::mathconst<T>::two_pi : radius_angle[1];
+            radius_angle[1] = radius_angle[1] > morph::mathconst<T>::two_pi ? radius_angle[1] - morph::mathconst<T>::two_pi : radius_angle[1];
+            radius_angle[1] /= morph::mathconst<T>::two_pi;
+
+            return radius_angle;
+        }
+
         /*!
          * @param datum1 gray value from 0.0 to 1.0
          * @param datum2 gray value from 0.0 to 1.0
@@ -2651,19 +2734,8 @@ namespace morph {
             // Convert _datum1 ('x'), _datum2 ('y') into r, phi. Each datum is expected to have a range [0,1]
 
             // Get the datums centralised about 0 & scale so that for datum1/2 both equal to 1 we get max saturation
-            datum1 = (datum1 - T{0.5}) * morph::mathconst<T>::root_2;
-            datum2 = (datum2 - T{0.5}) * morph::mathconst<T>::root_2;
-
-            T r_sat = std::sqrt(datum1 * datum1 + datum2 * datum2);
-            r_sat = r_sat > T{1} ? T{1} : r_sat;
-            r_sat = r_sat < T{0} ? T{0} : r_sat;
-
-            T phi_hue = std::atan2 (datum2, datum1) + this->hue_rotation;
-            phi_hue = phi_hue < T{0} ? phi_hue + morph::mathconst<T>::two_pi : phi_hue;
-            phi_hue = phi_hue > morph::mathconst<T>::two_pi ? phi_hue - morph::mathconst<T>::two_pi : phi_hue;
-            phi_hue /= morph::mathconst<T>::two_pi;
-            float phi_hue_f = static_cast<float>(phi_hue);
-            return ColourMap::hsv2rgb (this->hue_reverse_direction ? (1.0f-phi_hue_f) : phi_hue_f, static_cast<float>(r_sat), this->val);
+            std::array<T, 2> radius_angle = this->xy_to_radius_angle (datum1, datum2);
+            return ColourMap::hsv2rgb (this->hue_reverse_direction ? (1.0f-static_cast<float>(radius_angle[1])) : static_cast<float>(radius_angle[1]), static_cast<float>(radius_angle[0]), this->val);
         }
 
         /*!
