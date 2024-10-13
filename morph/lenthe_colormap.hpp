@@ -732,7 +732,6 @@ namespace lenthe {
                 static const Real bc = -tc * 3 * ac;
                 static const Real cc = (tc * 6 - 3) * ac;
                 static const Real dc = -tc * tc * tc * ac;
-                static const Real mc = Real(3) / (tc + 2);
                 if(fc > tc && smooth) {
                     const Real fcfc = fc * fc;//compute fc^2 once
                     fc = ac * fcfc * fc + bc * fcfc + cc * fc + dc;//compute f2(fc)
