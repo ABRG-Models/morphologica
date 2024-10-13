@@ -41,6 +41,10 @@ int main()
     cmap_types.push_back (morph::ColourMapType::Ocean);
     cmap_types.push_back (morph::ColourMapType::Ice);
     cmap_types.push_back (morph::ColourMapType::DivBlueRed);
+    cmap_types.push_back (morph::ColourMapType::CyclicGrey);
+    cmap_types.push_back (morph::ColourMapType::CyclicFour);
+    cmap_types.push_back (morph::ColourMapType::CyclicSix);
+    cmap_types.push_back (morph::ColourMapType::CyclicDivBlueRed);
     cmap_types.push_back (morph::ColourMapType::Greyscale);
     cmap_types.push_back (morph::ColourMapType::GreyscaleInv);
     cmap_types.push_back (morph::ColourMapType::Monochrome);
