@@ -10,7 +10,7 @@ int main ()
     int rtn = 0;
 
     std::array<float,3> c = {0,0,0};
-    std::array<float,3> mid_jet = {0.5f, 1.0f, 0.5f};
+    std::array<float,3> mid_jet = {0.541f, 0.76f, 0.018f};
 
     // NB: This test assumes that all colour maps default to Jet
 

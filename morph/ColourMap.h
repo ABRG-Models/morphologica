@@ -2469,6 +2469,17 @@ namespace morph {
             this->hue_reverse_direction = rev;
         }
 
+        /*!
+         * @param datum gray value from 0.0 to 1.0
+         *
+         * @returns RGB value in pseudo-jet colormap, which is really CET-R4
+         */
+        static std::array<float,3> jetcolour (float datum)
+        {
+            size_t datum_i = static_cast<size_t>( std::abs (std::round (datum * static_cast<float>(morph::cet::cm_CET_R4.size()-1))));
+            return morph::cet::cm_CET_R4[datum_i];
+        }
+
         //! HSB to RGB. std::array input/output
         static std::array<float, 3> hsv2rgb (const std::array<float, 3>& hsv)
         {
