@@ -35,7 +35,7 @@ int main()
     // You can set the background (white, black, or any other colour)
     v.backgroundWhite();
     // You can switch on the "lighting shader" which puts diffuse light into the scene
-    v.lightingEffects();
+    //v.lightingEffects();
     // Add some text labels to the scene
     v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
@@ -60,6 +60,7 @@ int main()
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
     auto hgv = std::make_unique<morph::HexGridVisual<float,morph::gl::version_4_1>>(&hg, offset);
     v.bindmodel (hgv);
+    hgv->cm.setType (morph::ColourMapType::Ice);
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot
     hgv->finalize();

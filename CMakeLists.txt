@@ -220,9 +220,7 @@ enable_testing()
 add_subdirectory(tests)
 
 # incbin for Visual Studio
-if(WIN32)
 add_subdirectory(buildtools)
-endif()
 
 # Install the font files, for the examples, which seek to work with an
 # *installed* morphologica, as opposed to an in-tree morphologica.

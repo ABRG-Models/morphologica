@@ -49,8 +49,8 @@ int main()
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::Triangles;
     gv->setScalarData (&data);
-    gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->addLabel ("GridVisMode::Triangles", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
+    gv->cm.setType (morph::ColourMapType::Cork);
+    gv->addLabel (std::string("GridVisMode::Triangles, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -59,8 +59,8 @@ int main()
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setScalarData (&data);
-    gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->addLabel ("GridVisMode::RectInterp", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
+    gv->cm.setType (morph::ColourMapType::Buda);
+    gv->addLabel (std::string("GridVisMode::RectInterp, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -70,8 +70,8 @@ int main()
     gv->gridVisMode = morph::GridVisMode::Columns;
     gv->interpolate_colour_sides = true;
     gv->setScalarData (&data);
-    gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->addLabel ("GridVisMode::Columns, interpolated sides", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
+    gv->cm.setType (morph::ColourMapType::Imola);
+    gv->addLabel (std::string("GridVisMode::Columns, interpolated sides, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -83,8 +83,8 @@ int main()
     //gv->clr_east_column = morph::colour::black; // These are defaults but you can change them
     //gv->clr_north_column = morph::colour::black;
     gv->setScalarData (&data);
-    gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->addLabel ("GridVisMode::Columns, black sides", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->cm.setType (morph::ColourMapType::Managua);
+    gv->addLabel (std::string("GridVisMode::Columns, black sides, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -93,8 +93,8 @@ int main()
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::Pixels;
     gv->setScalarData (&data);
-    gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->addLabel ("GridVisMode::Pixels", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->cm.setType (morph::ColourMapType::Navia);
+    gv->addLabel (std::string("GridVisMode::Pixels, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03));
     gv->finalize();
     v.addVisualModel (gv);
 
