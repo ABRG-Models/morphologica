@@ -16,9 +16,9 @@ int main()
 {
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
-    std::string title_str = "ColourMaps";
-    morph::Visual v(1000, 1400, title_str);
-    v.setSceneTrans (morph::vec<float,3>{ float{-1.17245}, float{1.24502}, float{-7.7} });
+    std::string title_str = "ColourMaps, misc";
+    morph::Visual v(1500, 750, title_str);
+    v.setSceneTrans (morph::vec<float,3>{ float{-1.6529}, float{0.232221}, float{-3.6} });
 
     morph::Scale<float> scale1;
     scale1.compute_scaling (0, 1); // Simply maps 0->1 to 0->1!
@@ -27,26 +27,7 @@ int main()
 
     // 1D maps
     std::vector<morph::ColourMapType> cmap_types;
-    cmap_types.push_back (morph::ColourMapType::Jet);
-    cmap_types.push_back (morph::ColourMapType::Rainbow);
-    cmap_types.push_back (morph::ColourMapType::Magma);
-    cmap_types.push_back (morph::ColourMapType::Inferno);
-    cmap_types.push_back (morph::ColourMapType::Plasma);
-    cmap_types.push_back (morph::ColourMapType::Viridis);
-    cmap_types.push_back (morph::ColourMapType::Cividis);
-    cmap_types.push_back (morph::ColourMapType::Twilight);
     cmap_types.push_back (morph::ColourMapType::Petrov);
-    cmap_types.push_back (morph::ColourMapType::Vik);
-    cmap_types.push_back (morph::ColourMapType::Fire);
-    cmap_types.push_back (morph::ColourMapType::Ocean);
-    cmap_types.push_back (morph::ColourMapType::Ice);
-    cmap_types.push_back (morph::ColourMapType::DivBlueRed);
-    cmap_types.push_back (morph::ColourMapType::CyclicGrey);
-    cmap_types.push_back (morph::ColourMapType::CyclicFour);
-    cmap_types.push_back (morph::ColourMapType::CyclicSix);
-    cmap_types.push_back (morph::ColourMapType::CyclicDivBlueRed);
-    cmap_types.push_back (morph::ColourMapType::Greyscale);
-    cmap_types.push_back (morph::ColourMapType::GreyscaleInv);
     cmap_types.push_back (morph::ColourMapType::Monochrome);
     cmap_types.push_back (morph::ColourMapType::Monoval);
 
@@ -107,7 +88,6 @@ int main()
     std::vector<morph::ColourMapType> cmap_2d_types;
     cmap_2d_types.push_back (morph::ColourMapType::HSV);
     cmap_2d_types.push_back (morph::ColourMapType::Duochrome);
-    cmap_2d_types.push_back (morph::ColourMapType::DiscSixWhite);
 
     constexpr float pw = 0.03f; // pixel width
     constexpr int N = 20;
@@ -126,19 +106,6 @@ int main()
     gv->cm.setType (cmap_2d_types[0]);
     gv->zScale.setParams(0,0);
     gv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_2d_types[0]), {0, -0.1, 0}, morph::TextFeatures(0.05f));
-    gv->twodimensional = true;
-    gv->finalize();
-    v.addVisualModel (gv);
-
-    offset[0] += 0.8f;
-
-    gv = std::make_unique<morph::GridVisual<float, int>>(&grid, offset);
-    v.bindmodel (gv);
-    gv->gridVisMode = morph::GridVisMode::Triangles;
-    gv->setVectorData (&data);
-    gv->cm.setType (cmap_2d_types[2]);
-    gv->zScale.setParams(0,0);
-    gv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_2d_types[2]), {0, -0.1, 0}, morph::TextFeatures(0.05f));
     gv->twodimensional = true;
     gv->finalize();
     v.addVisualModel (gv);

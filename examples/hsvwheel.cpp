@@ -10,6 +10,8 @@
 #include <morph/ColourMap.h>
 #include <morph/HSVWheelVisual.h>
 
+constexpr morph::ColourMapType disctype = morph::ColourMapType::DiscSixWhite; // or morph::ColourMapType::HSV
+
 // In this example, I'll create a special visual to show hsv colours.
 struct SquareGridVisual : public morph::VisualModel<>
 {
@@ -17,7 +19,7 @@ struct SquareGridVisual : public morph::VisualModel<>
         : morph::VisualModel<> (_offset)
     {
         // In the constructor set up the colour map
-        this->colourMap.setType (morph::ColourMapType::HSV);
+        this->colourMap.setType (disctype);
 
         // I think it's easier to think of rotating the hues by some number of radians
         this->colourMap.setHueRotation (hue_rotn);
@@ -76,7 +78,8 @@ struct SquareGridVisual : public morph::VisualModel<>
 int main()
 {
     // The main function is simple. Create a morph::Visual, add a single SquareGridVisual and then 'keep it open'
-    morph::Visual v(1600, 1000, "The HSV colour map with 2D inputs", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    std::string titlestr = "The " + morph::ColourMap<float>::colourMapTypeToStr (disctype) + " colour map with 2D inputs";
+    morph::Visual v(1600, 1000, titlestr, {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
     v.backgroundBlack();
     v.setSceneTrans (-5.60868263,-5.17123413,-29.2000771); // numbers obtained by pressing 'z' and seeing stdout
 
@@ -96,6 +99,7 @@ int main()
     hsv_vis->finalize();
     auto hsv_visp = v.addVisualModel (hsv_vis);
 
+    std::cout << "1st Grid done, now wheel...\n";
     // HSVWHeel for Grid1
     morph::vec<float, 3> woffset = offset;
     woffset[0] += 5.5f;

@@ -169,8 +169,8 @@ namespace morph {
         float ticklabelgap = 0.05f;
         //! The number of segments to make in each ring of the colourmap fill
         unsigned int numsegs = 128;
-        //! How many rings of colour? Colours blend perfectly, so only need 1! Any other number will look the same.
-        unsigned int numrings = 1;
+        //! How many rings of colour?
+        unsigned int numrings = 64;
     protected:
         //! tick label height
         float ticklabelheight = 0.0f;

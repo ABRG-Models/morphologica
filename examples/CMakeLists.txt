@@ -217,10 +217,10 @@ if(ARMADILLO_FOUND)
 
 endif(ARMADILLO_FOUND)
 
-add_executable(colourmaps colourmaps.cpp)
-target_link_libraries(colourmaps OpenGL::GL glfw Freetype::Freetype)
+add_executable(colourmaps_other colourmaps_other.cpp)
+target_link_libraries(colourmaps_other OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
-  target_link_libraries(colourmaps GLEW::GLEW)
+  target_link_libraries(colourmaps_other GLEW::GLEW)
 endif()
 
 add_executable(colourmaps_crameri colourmaps_crameri.cpp)
@@ -233,6 +233,18 @@ add_executable(colourmaps_cet colourmaps_cet.cpp)
 target_link_libraries(colourmaps_cet OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(colourmaps_cet GLEW::GLEW)
+endif()
+
+add_executable(colourmaps_lenthe colourmaps_lenthe.cpp)
+target_link_libraries(colourmaps_lenthe OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(colourmaps_lenthe GLEW::GLEW)
+endif()
+
+add_executable(colourmaps_matplotlib colourmaps_matplotlib.cpp)
+target_link_libraries(colourmaps_matplotlib OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(colourmaps_matplotlib GLEW::GLEW)
 endif()
 
 # On MacOS 13 as a github runner, HAVE_STD_FORMAT gets set to 1, but

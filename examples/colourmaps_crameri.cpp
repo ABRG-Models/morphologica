@@ -16,7 +16,7 @@ int main()
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
     std::string title_str = "ColourMaps";
     morph::Visual v(1000, 1400, title_str);
-    v.setSceneTrans (morph::vec<float,3>{ float{-1.17245}, float{1.24502}, float{-7.7} });
+    v.setSceneTrans (morph::vec<float,3>{ float{-1.52137}, float{1.74665}, float{-9.60001} });
 
     morph::Scale<float> scale1;
     scale1.compute_scaling (0, 1); // Simply maps 0->1 to 0->1!
@@ -84,7 +84,7 @@ int main()
         v.addVisualModel (cbv);
         // Update location
         offset[0] += 0.4f;
-        if (i % 6 == 0) {
+        if (i % 8 == 0) {
             offset[0] = 0.0f;
             offset[1] -= 1.0f;
         }

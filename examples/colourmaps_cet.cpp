@@ -15,8 +15,8 @@ int main()
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
     std::string title_str = "ColourMaps from CET";
-    morph::Visual v(1000, 1400, title_str);
-    v.setSceneTrans (morph::vec<float,3>{ float{-1.17245}, float{1.24502}, float{-7.7} });
+    morph::Visual v(1400, 1250, title_str);
+    v.setSceneTrans (morph::vec<float,3>{ float{-2.45365}, float{1.74889}, float{-9} });
 
     morph::Scale<float> scale1;
     scale1.compute_scaling (0, 1); // Simply maps 0->1 to 0->1!
@@ -25,6 +25,8 @@ int main()
 
     // 1D maps
     std::vector<morph::ColourMapType> cmap_types;
+    cmap_types.push_back (morph::ColourMapType::Jet);
+    cmap_types.push_back (morph::ColourMapType::Rainbow);
     cmap_types.push_back (morph::ColourMapType::CET_L02);
     cmap_types.push_back (morph::ColourMapType::CET_L13);
     cmap_types.push_back (morph::ColourMapType::CET_C4);
@@ -103,7 +105,7 @@ int main()
         v.addVisualModel (cbv);
         // Update location
         offset[0] += 0.4f;
-        if (i % 6 == 0) {
+        if (i % 13 == 0) {
             offset[0] = 0.0f;
             offset[1] -= 1.0f;
         }
