@@ -23,14 +23,15 @@ int main()
 #endif
 
     // Create a grid to show in the scene
-    constexpr unsigned int Nside = 10;
+    constexpr unsigned int N_pix_w = 25;
+    constexpr unsigned int N_pix_h = 8;
     constexpr morph::vec<float, 2> grid_spacing = {0.2f, 0.2f};
 
     // The simplest declaration of Grid is:
     //   morph::Grid g(size_t n_x, size_t n_y);
     // grid_spacing, grid_zero, use of memory, wrapping and ordering are all possible arguments to
     // the constructor.
-    morph::Grid grid(Nside, Nside, grid_spacing);
+    morph::Grid<unsigned int, float> grid(N_pix_w, N_pix_h, grid_spacing);
 
     std::cout << "Number of pixels in grid:" << grid.n << std::endl;
 
@@ -41,9 +42,9 @@ int main()
         data[ri][0] =  static_cast<double>(std::rand()) / RAND_MAX ; // Range 0->1
     }
 
-    float step = 0.6f;
+    float step = 0.64f;
     // Add a GridVisual to display the Grid within the morph::Visual scene
-    morph::vec<float, 3> offset = { -step * grid.width(), step * grid.width(), 0.0f };
+    morph::vec<float, 3> offset = { -step * grid.width(), step * grid.height(), 0.0f };
 
     // 1) visualizing vector with GridVisMode = RectInterp
     auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
@@ -56,7 +57,7 @@ int main()
     v.addVisualModel (gv);
 
     // 2) same as 1 with zScale set to 0
-    offset = { step * grid.width(), step * grid.width(), 0.0f };
+    offset = { step * grid.width(), step * grid.height(), 0.0f };
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
@@ -68,7 +69,7 @@ int main()
     v.addVisualModel (gv);
 
     // 3) same as 2 with border ON and border colour set to cyan
-    offset = { 3 * step * grid.width(), step * grid.width(), 0.0f };
+    offset = { 3 * step * grid.width(), step * grid.height(), 0.0f };
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
@@ -83,7 +84,7 @@ int main()
     v.addVisualModel (gv);
 
     // 4) same as 2 with border ON and border colour set to cyan
-    offset = { 5 * step * grid.width(), step * grid.width(), 0.0f };
+    offset = { 5 * step * grid.width(), step * grid.height(), 0.0f };
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
@@ -97,7 +98,7 @@ int main()
     v.addVisualModel (gv);
 
     // 5) same as 2 + grid
-    offset = { step * grid.width(), -step * grid.width(), 0.0f };
+    offset = { step * grid.width(), -step * grid.height(), 0.0f };
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
@@ -112,7 +113,7 @@ int main()
     v.addVisualModel (gv);
 
     // 6) show both border and grid
-    offset = { 3 * step * grid.width(), -step * grid.width(), 0.0f };
+    offset = { 3 * step * grid.width(), -step * grid.height(), 0.0f };
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
@@ -130,7 +131,7 @@ int main()
     v.addVisualModel (gv);
 
     // 7) show how to use the selected pixel option
-    offset = { step * grid.width(), -3 * step * grid.width(), 0.0f };
+    offset = { step * grid.width(), -3 * step * grid.height(), 0.0f };
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
@@ -144,8 +145,8 @@ int main()
     gv->selected_pix_indexes.push_back(0);
     gv->selected_pix_indexes.push_back(9);
     gv->selected_pix_indexes.push_back(10);
-    gv->selected_pix_indexes.push_back(45);
-    gv->selected_pix_indexes.push_back(46);
+    gv->selected_pix_indexes.push_back(124);
+    gv->selected_pix_indexes.push_back(125);
     gv->selected_pix_indexes.push_back(49);
     gv->selected_pix_indexes.push_back(90);
     gv->selected_pix_indexes.push_back(99);
@@ -167,14 +168,14 @@ int main()
     v.addVisualModel (gv);
 
     // 8) show how to use the selected pixel option with grid
-    offset = { 3 * step * grid.width(), -3 * step * grid.width(), 0.0f };
+    offset = { 3 * step * grid.width(), -3 * step * grid.height(), 0.0f };
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
-    
+
     gv->showgrid = true;
     gv->grid_colour = morph::colour::red;
     gv->grid_thickness = 0.2f;
@@ -185,8 +186,8 @@ int main()
     gv->selected_pix_indexes.push_back(0);
     gv->selected_pix_indexes.push_back(9);
     gv->selected_pix_indexes.push_back(10);
-    gv->selected_pix_indexes.push_back(45);
-    gv->selected_pix_indexes.push_back(46);
+    gv->selected_pix_indexes.push_back(124);
+    gv->selected_pix_indexes.push_back(125);
     gv->selected_pix_indexes.push_back(49);
     gv->selected_pix_indexes.push_back(90);
     gv->selected_pix_indexes.push_back(99);

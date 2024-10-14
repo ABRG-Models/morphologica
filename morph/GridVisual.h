@@ -74,7 +74,7 @@ namespace morph {
             float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
             float bz = 0.01f;
             // loop through each pixel
-            for (float left = cg_extents[0] - (dx[0]/2.0f); left < cg_extents[1] + (dx[0]/2.0f); left += dx[0]) {
+            for (float left = cg_extents[0] - (dx[0]/2.0f); left < cg_extents[1]; left += dx[0]) {
                 for (float bot = cg_extents[2] - (dx[1]/2.0f); bot < cg_extents[3] + (dx[1]/2.0f); bot += dx[1]) {
                     float right = left + dx[0];
                     float top = bot + dx[1];
@@ -90,7 +90,7 @@ namespace morph {
                     this->computeFlatLine(rb, lb, rt, lt, this->uz, this->grid_colour, gridthick);
 
                     // complete the last right border (from bottom right to top right)
-                    if (right >= cg_extents[1] + (dx[0]/2.0f)) {
+                    if (right >= cg_extents[1]) {
                         this->computeFlatLine(rt, rb, lt, lb, this->uz, this->grid_colour, gridthick);
                     }
                     // complete the last top border (from top left to top right)
@@ -108,9 +108,9 @@ namespace morph {
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
-            float bz = 0.03f;
+            float bz = 0.05f;
 
-            unsigned int pix_width = static_cast<unsigned int>(std::round(cg_extents[1] - cg_extents[0] + dx[0])/dx[0]);
+            unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
 
             // check if the size of selected_pix_border_colour is the same as the size of selected_pix_indexes
             if (selected_pix_indexes.size()>selected_pix_border_colour.size()){
