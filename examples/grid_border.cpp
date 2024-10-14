@@ -42,7 +42,7 @@ int main()
         data[ri][0] =  static_cast<double>(std::rand()) / RAND_MAX ; // Range 0->1
     }
 
-    float step = 0.6f;
+    float step = 0.64f;
     // Add a GridVisual to display the Grid within the morph::Visual scene
     morph::vec<float, 3> offset = { -step * grid.width(), step * grid.height(), 0.0f };
 
@@ -175,7 +175,7 @@ int main()
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
-    
+
     gv->showgrid = true;
     gv->grid_colour = morph::colour::red;
     gv->grid_thickness = 0.2f;
