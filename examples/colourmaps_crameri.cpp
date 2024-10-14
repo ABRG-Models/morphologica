@@ -14,7 +14,7 @@ int main()
 {
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
-    std::string title_str = "ColourMaps";
+    std::string title_str = "ColourMaps from Fabio Crameri";
     morph::Visual v(1000, 1400, title_str);
     v.setSceneTrans (morph::vec<float,3>{ float{-1.52137}, float{1.74665}, float{-9.60001} });
 

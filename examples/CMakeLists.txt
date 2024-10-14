@@ -203,10 +203,10 @@ if(ARMADILLO_FOUND)
     target_link_libraries(hexgrid GLEW::GLEW)
   endif()
 
-  add_executable(colourbars colourbars.cpp)
-  target_link_libraries(colourbars OpenGL::GL glfw Freetype::Freetype)
+  add_executable(colourbar colourbar.cpp)
+  target_link_libraries(colourbar OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
-    target_link_libraries(colourbars GLEW::GLEW)
+    target_link_libraries(colourbar GLEW::GLEW)
   endif()
 
   add_executable(unicode_coordaxes unicode_coordaxes.cpp)
