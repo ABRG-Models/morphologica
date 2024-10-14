@@ -12,16 +12,25 @@ nav_order: 8
 # Introduction
 
 Colour is one of the most important ways you can indicate value in a
-visualization. `morph::ColourMap` is the class that provides mappings
-of values to graded colours.
+visualization. `morph::ColourMap` is the class that provides many
+mappings of values to graded colours.
 
-The class exists to convert an input number (usually a `float`) in the
-range [0, 1] into an RGB colour triplet, returned as (usually)
-`std::array<float, 3>`. The examples below show several colour maps
-which will be familiar to those who have used colour maps in Python or
-MATLAB (the maps are shown as [morph::ColourBarVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/ColourBarVisual.h) objects).
+The class `ColourMap` exists to provide the function of converting an
+input number (usually a `float`) in the range [0, 1] into an RGB
+colour triplet, returned as (usually) `std::array<float, 3>`. The
+examples below show several colour maps which will be familiar to
+those who have used colour maps in Python or MATLAB (the maps are
+shown as
+[morph::ColourBarVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/ColourBarVisual.h)
+objects).
 
 ![A selection of colour maps available in morph::ColourMap](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/ColourMaps.png?raw=true)
+
+Morphologica now includes a wide variety of colour maps, most of which
+are [perceptually
+uniform](https://www.fabiocrameri.ch/visualisation/). Thanks to Fabio
+Crameri, William Lenthe and the teams at CET and Matplotlib for
+providing open source code and tables for these maps.
 
 As well as the one dimensional colour maps shown above,
 `morph::ColourMap` can convert two (and three) dimensional
