@@ -14,7 +14,7 @@
 namespace morph {
 
     //! Different colour maps types.
-    enum class ColourMapType
+    enum class ColourMapType : uint32_t
     {
         // Python matplotlib maps
         Magma,
@@ -174,8 +174,21 @@ namespace morph {
         RGBMono,      // Takes RGB input and outputs a coloured monochrome version (datum varies value)
         RGBGrey,      // Takes RGB input and outputs a greyscale version
         HSV,          // A special map in which two input numbers are used to compute a hue and a saturation.
-        Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
+        Fixed,        // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
+
+        N_entries
     };
+    // Define prefix increment and decrement operators for the ColourMapType enum class.
+    morph::ColourMapType& operator++(morph::ColourMapType& a)
+    {
+        a = static_cast<morph::ColourMapType>((static_cast<uint32_t>(a) + 1u) % static_cast<uint32_t>(morph::ColourMapType::N_entries));
+        return a;
+    }
+    morph::ColourMapType& operator--(morph::ColourMapType& a)
+    {
+        a = static_cast<morph::ColourMapType>((static_cast<uint32_t>(a) - 1u) % static_cast<uint32_t>(morph::ColourMapType::N_entries));
+        return a;
+    }
 
     enum class ColourMapFlags {
         one_d = 0x1,
