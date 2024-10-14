@@ -403,123 +403,123 @@ namespace morph {
                 cmt = morph::ColourMapType::DiscSixBlack;
 
             // CET
-            } else if (_s == "cet-l02") {
+            } else if (_s == "cet_l02") {
                 cmt = morph::ColourMapType::CET_L02;
-            } else if (_s == "cet-l13") {
+            } else if (_s == "cet_l13") {
                 cmt = morph::ColourMapType::CET_L13;
-            } else if (_s == "cet-c4") {
+            } else if (_s == "cet_c4") {
                 cmt = morph::ColourMapType::CET_C4;
-            } else if (_s == "cet-d04") {
+            } else if (_s == "cet_d04") {
                 cmt = morph::ColourMapType::CET_D04;
-            } else if (_s == "cet-l12") {
+            } else if (_s == "cet_l12") {
                 cmt = morph::ColourMapType::CET_L12;
-            } else if (_s == "cet-c1s") {
+            } else if (_s == "cet_c1s") {
                 cmt = morph::ColourMapType::CET_C1s;
-            } else if (_s == "cet-l01") {
+            } else if (_s == "cet_l01") {
                 cmt = morph::ColourMapType::CET_L01;
-            } else if (_s == "cet-c5") {
+            } else if (_s == "cet_c5") {
                 cmt = morph::ColourMapType::CET_C5;
-            } else if (_s == "cet-d11") {
+            } else if (_s == "cet_d11") {
                 cmt = morph::ColourMapType::CET_D11;
-            } else if (_s == "cet-l04") {
+            } else if (_s == "cet_l04") {
                 cmt = morph::ColourMapType::CET_L04;
-            } else if (_s == "cet-cbl2") {
+            } else if (_s == "cet_cbl2") {
                 cmt = morph::ColourMapType::CET_CBL2;
-            } else if (_s == "cet-c4s") {
+            } else if (_s == "cet_c4s") {
                 cmt = morph::ColourMapType::CET_C4s;
-            } else if (_s == "cet-l15") {
+            } else if (_s == "cet_l15") {
                 cmt = morph::ColourMapType::CET_L15;
-            } else if (_s == "cet-l20") {
+            } else if (_s == "cet_l20") {
                 cmt = morph::ColourMapType::CET_L20;
-            } else if (_s == "cet-cbd1") {
+            } else if (_s == "cet_cbd1") {
                 cmt = morph::ColourMapType::CET_CBD1;
-            } else if (_s == "cet-d06") {
+            } else if (_s == "cet_d06") {
                 cmt = morph::ColourMapType::CET_D06;
-            } else if (_s == "cet-i3") {
+            } else if (_s == "cet_i3") {
                 cmt = morph::ColourMapType::CET_I3;
-            } else if (_s == "cet-d01a") {
+            } else if (_s == "cet_d01a") {
                 cmt = morph::ColourMapType::CET_D01A;
-            } else if (_s == "cet-l16") {
+            } else if (_s == "cet_l16") {
                 cmt = morph::ColourMapType::CET_L16;
-            } else if (_s == "cet-l06") {
+            } else if (_s == "cet_l06") {
                 cmt = morph::ColourMapType::CET_L06;
-            } else if (_s == "cet-c2s") {
+            } else if (_s == "cet_c2s") {
                 cmt = morph::ColourMapType::CET_C2s;
-            } else if (_s == "cet-i1") {
+            } else if (_s == "cet_i1") {
                 cmt = morph::ColourMapType::CET_I1;
-            } else if (_s == "cet-c7s") {
+            } else if (_s == "cet_c7s") {
                 cmt = morph::ColourMapType::CET_C7s;
-            } else if (_s == "cet-i2") {
+            } else if (_s == "cet_i2") {
                 cmt = morph::ColourMapType::CET_I2;
-            } else if (_s == "cet-c6s") {
+            } else if (_s == "cet_c6s") {
                 cmt = morph::ColourMapType::CET_C6s;
-            } else if (_s == "cet-c6") {
+            } else if (_s == "cet_c6") {
                 cmt = morph::ColourMapType::CET_C6;
-            } else if (_s == "cet-l05") {
+            } else if (_s == "cet_l05") {
                 cmt = morph::ColourMapType::CET_L05;
-            } else if (_s == "cet-d08") {
+            } else if (_s == "cet_d08") {
                 cmt = morph::ColourMapType::CET_D08;
-            } else if (_s == "cet-l03") {
+            } else if (_s == "cet_l03") {
                 cmt = morph::ColourMapType::CET_L03;
-            } else if (_s == "cet-l14") {
+            } else if (_s == "cet_l14") {
                 cmt = morph::ColourMapType::CET_L14;
-            } else if (_s == "cet-c2") {
+            } else if (_s == "cet_c2") {
                 cmt = morph::ColourMapType::CET_C2;
-            } else if (_s == "cet-r3") {
+            } else if (_s == "cet_r3") {
                 cmt = morph::ColourMapType::CET_R3;
-            } else if (_s == "cet-d01") {
+            } else if (_s == "cet_d01") {
                 cmt = morph::ColourMapType::CET_D01;
-            } else if (_s == "cet-c1") {
+            } else if (_s == "cet_c1") {
                 cmt = morph::ColourMapType::CET_C1;
-            } else if (_s == "cet-d02") {
+            } else if (_s == "cet_d02") {
                 cmt = morph::ColourMapType::CET_D02;
-            } else if (_s == "cet-cbc1") {
+            } else if (_s == "cet_cbc1") {
                 cmt = morph::ColourMapType::CET_CBC1;
-            } else if (_s == "cet-d09") {
+            } else if (_s == "cet_d09") {
                 cmt = morph::ColourMapType::CET_D09;
-            } else if (_s == "cet-l10") {
+            } else if (_s == "cet_l10") {
                 cmt = morph::ColourMapType::CET_L10;
-            } else if (_s == "cet-r1") {
+            } else if (_s == "cet_r1") {
                 cmt = morph::ColourMapType::CET_R1;
-            } else if (_s == "cet-c3") {
+            } else if (_s == "cet_c3") {
                 cmt = morph::ColourMapType::CET_C3;
-            } else if (_s == "cet-cbl1") {
+            } else if (_s == "cet_cbl1") {
                 cmt = morph::ColourMapType::CET_CBL1;
-            } else if (_s == "cet-c3s") {
+            } else if (_s == "cet_c3s") {
                 cmt = morph::ColourMapType::CET_C3s;
-            } else if (_s == "cet-c5s") {
+            } else if (_s == "cet_c5s") {
                 cmt = morph::ColourMapType::CET_C5s;
-            } else if (_s == "cet-l08") {
+            } else if (_s == "cet_l08") {
                 cmt = morph::ColourMapType::CET_L08;
-            } else if (_s == "cet-r4") {
+            } else if (_s == "cet_r4") {
                 cmt = morph::ColourMapType::CET_R4;
-            } else if (_s == "cet-r2") {
+            } else if (_s == "cet_r2") {
                 cmt = morph::ColourMapType::CET_R2;
-            } else if (_s == "cet-l11") {
+            } else if (_s == "cet_l11") {
                 cmt = morph::ColourMapType::CET_L11;
-            } else if (_s == "cet-d10") {
+            } else if (_s == "cet_d10") {
                 cmt = morph::ColourMapType::CET_D10;
-            } else if (_s == "cet-d07") {
+            } else if (_s == "cet_d07") {
                 cmt = morph::ColourMapType::CET_D07;
-            } else if (_s == "cet-l17") {
+            } else if (_s == "cet_l17") {
                 cmt = morph::ColourMapType::CET_L17;
-            } else if (_s == "cet-d12") {
+            } else if (_s == "cet_d12") {
                 cmt = morph::ColourMapType::CET_D12;
-            } else if (_s == "cet-cbc2") {
+            } else if (_s == "cet_cbc2") {
                 cmt = morph::ColourMapType::CET_CBC2;
-            } else if (_s == "cet-d13") {
+            } else if (_s == "cet_d13") {
                 cmt = morph::ColourMapType::CET_D13;
-            } else if (_s == "cet-d03") {
+            } else if (_s == "cet_d03") {
                 cmt = morph::ColourMapType::CET_D03;
-            } else if (_s == "cet-c7") {
+            } else if (_s == "cet_c7") {
                 cmt = morph::ColourMapType::CET_C7;
-            } else if (_s == "cet-l07") {
+            } else if (_s == "cet_l07") {
                 cmt = morph::ColourMapType::CET_L07;
-            } else if (_s == "cet-l09") {
+            } else if (_s == "cet_l09") {
                 cmt = morph::ColourMapType::CET_L09;
-            } else if (_s == "cet-l18") {
+            } else if (_s == "cet_l18") {
                 cmt = morph::ColourMapType::CET_L18;
-            } else if (_s == "cet-l19") {
+            } else if (_s == "cet_l19") {
                 cmt = morph::ColourMapType::CET_L19;
 
             } else if (_s == "cividis") {
@@ -551,706 +551,706 @@ namespace morph {
             switch (_t) {
             case morph::ColourMapType::Fixed:
             {
-                s = "fixed";
+                s = "Fixed";
                 break;
             }
             case morph::ColourMapType::Trichrome:
             {
-                s = "trichrome";
+                s = "Trichrome";
                 break;
             }
             case morph::ColourMapType::Duochrome:
             {
-                s = "duochrome";
+                s = "Duochrome";
                 break;
             }
             case morph::ColourMapType::RGB:
             {
-                s = "rgb";
+                s = "RGB";
                 break;
             }
             case morph::ColourMapType::RGBMono:
             {
-                s = "rgbmono";
+                s = "RGBMono";
                 break;
             }
             case morph::ColourMapType::RGBGrey:
             {
-                s = "rgbgrey";
+                s = "RGBGrey";
                 break;
             }
             case morph::ColourMapType::HSV:
             {
-                s = "hsv";
+                s = "HSV";
                 break;
             }
             case morph::ColourMapType::HSV1D:
             {
-                s = "hsv1d";
+                s = "HSV1D";
                 break;
             }
             case morph::ColourMapType::MonochromeGreen:
             {
-                s = "monochromegreen";
+                s = "MonochromeGreen";
                 break;
             }
             case morph::ColourMapType::MonochromeBlue:
             {
-                s = "monochromeblue";
+                s = "MonochromeBlue";
                 break;
             }
             case morph::ColourMapType::MonochromeRed:
             {
-                s = "monochromered";
+                s = "MonochromeRed";
                 break;
             }
             case morph::ColourMapType::Monochrome:
             {
-                s = "monochrome";
+                s = "Monochrome";
                 break;
             }
             case morph::ColourMapType::MonovalGreen:
             {
-                s = "monovalgreen";
+                s = "MonovalGreen";
                 break;
             }
             case morph::ColourMapType::MonovalBlue:
             {
-                s = "monovalblue";
+                s = "MonovalBlue";
                 break;
             }
             case morph::ColourMapType::MonovalRed:
             {
-                s = "monovalred";
+                s = "MonovalRed";
                 break;
             }
             case morph::ColourMapType::Monoval:
             {
-                s = "monoval";
+                s = "Monoval";
                 break;
             }
             case morph::ColourMapType::Greyscale:
             {
-                s = "greyscale";
+                s = "Greyscale";
                 break;
             }
             case morph::ColourMapType::GreyscaleInv:
             {
-                s = "greyscaleinv";
+                s = "GreyscaleInv";
                 break;
             }
             case morph::ColourMapType::Twilight:
             {
-                s = "twilight";
+                s = "Twilight";
                 break;
             }
             case morph::ColourMapType::Petrov:
             {
-                s = "petrov";
+                s = "Petrov";
                 break;
             }
 
             case morph::ColourMapType::Devon:
             {
-                s = "devon";
+                s = "Devon";
                 break;
             }
             case morph::ColourMapType::NaviaW:
             {
-                s = "naviaw";
+                s = "NaviaW";
                 break;
             }
             case morph::ColourMapType::BrocO:
             {
-                s = "broco";
+                s = "BrocO";
                 break;
             }
             case morph::ColourMapType::Acton:
             {
-                s = "acton";
+                s = "Acton";
                 break;
             }
             case morph::ColourMapType::Batlow:
             {
-                s = "batlow";
+                s = "Batlow";
                 break;
             }
             case morph::ColourMapType::Berlin:
             {
-                s = "berlin";
+                s = "Berlin";
                 break;
             }
             case morph::ColourMapType::Tofino:
             {
-                s = "tofino";
+                s = "Tofino";
                 break;
             }
             case morph::ColourMapType::Broc:
             {
-                s = "broc";
+                s = "Broc";
                 break;
             }
             case morph::ColourMapType::CorkO:
             {
-                s = "corko";
+                s = "CorkO";
                 break;
             }
             case morph::ColourMapType::Lapaz:
             {
-                s = "lapaz";
+                s = "Lapaz";
                 break;
             }
             case morph::ColourMapType::BamO:
             {
-                s = "bamo";
+                s = "BamO";
                 break;
             }
             case morph::ColourMapType::Vanimo:
             {
-                s = "vanimo";
+                s = "Vanimo";
                 break;
             }
             case morph::ColourMapType::Lajolla:
             {
-                s = "lajolla";
+                s = "Lajolla";
                 break;
             }
             case morph::ColourMapType::Lisbon:
             {
-                s = "lisbon";
+                s = "Lisbon";
                 break;
             }
             case morph::ColourMapType::GrayC:
             {
-                s = "grayc";
+                s = "GrayC";
                 break;
             }
             case morph::ColourMapType::Roma:
             {
-                s = "roma";
+                s = "Roma";
                 break;
             }
             case morph::ColourMapType::Vik:
             {
-                s = "vik";
+                s = "Vik";
                 break;
             }
             case morph::ColourMapType::Navia:
             {
-                s = "navia";
+                s = "Navia";
                 break;
             }
             case morph::ColourMapType::Bilbao:
             {
-                s = "bilbao";
+                s = "Bilbao";
                 break;
             }
             case morph::ColourMapType::Turku:
             {
-                s = "turku";
+                s = "Turku";
                 break;
             }
             case morph::ColourMapType::Lipari:
             {
-                s = "lipari";
+                s = "Lipari";
                 break;
             }
             case morph::ColourMapType::VikO:
             {
-                s = "viko";
+                s = "VikO";
                 break;
             }
             case morph::ColourMapType::BatlowK:
             {
-                s = "batlowk";
+                s = "BatlowK";
                 break;
             }
             case morph::ColourMapType::Oslo:
             {
-                s = "oslo";
+                s = "Oslo";
                 break;
             }
             case morph::ColourMapType::Oleron:
             {
-                s = "oleron";
+                s = "Oleron";
                 break;
             }
             case morph::ColourMapType::Davos:
             {
-                s = "davos";
+                s = "Davos";
                 break;
             }
             case morph::ColourMapType::Fes:
             {
-                s = "fes";
+                s = "Fes";
                 break;
             }
             case morph::ColourMapType::Managua:
             {
-                s = "managua";
+                s = "Managua";
                 break;
             }
             case morph::ColourMapType::Glasgow:
             {
-                s = "glasgow";
+                s = "Glasgow";
                 break;
             }
             case morph::ColourMapType::Tokyo:
             {
-                s = "tokyo";
+                s = "Tokyo";
                 break;
             }
             case morph::ColourMapType::Bukavu:
             {
-                s = "bukavu";
+                s = "Bukavu";
                 break;
             }
             case morph::ColourMapType::Bamako:
             {
-                s = "bamako";
+                s = "Bamako";
                 break;
             }
             case morph::ColourMapType::BatlowW:
             {
-                s = "batloww";
+                s = "BatlowW";
                 break;
             }
             case morph::ColourMapType::Nuuk:
             {
-                s = "nuuk";
+                s = "Nuuk";
                 break;
             }
             case morph::ColourMapType::Cork:
             {
-                s = "cork";
+                s = "Cork";
                 break;
             }
             case morph::ColourMapType::Hawaii:
             {
-                s = "hawaii";
+                s = "Hawaii";
                 break;
             }
             case morph::ColourMapType::Bam:
             {
-                s = "bam";
+                s = "Bam";
                 break;
             }
             case morph::ColourMapType::Imola:
             {
-                s = "imola";
+                s = "Imola";
                 break;
             }
             case morph::ColourMapType::RomaO:
             {
-                s = "romao";
+                s = "RomaO";
                 break;
             }
             case morph::ColourMapType::Buda:
             {
-                s = "buda";
+                s = "Buda";
                 break;
             }
 
             case morph::ColourMapType::Fire:
             {
-                s = "fire";
+                s = "Fire";
                 break;
             }
             case morph::ColourMapType::Ocean:
             {
-                s = "ocean";
+                s = "Ocean";
                 break;
             }
             case morph::ColourMapType::Ice:
             {
-                s = "ice";
+                s = "Ice";
                 break;
             }
             case morph::ColourMapType::DivBlueRed:
             {
-                s = "divbluered";
+                s = "DivBlueRed";
                 break;
             }
             case morph::ColourMapType::CyclicGrey:
             {
-                s = "cyclicgrey";
+                s = "CyclicGrey";
                 break;
             }
             case morph::ColourMapType::CyclicFour:
             {
-                s = "cyclicfour";
+                s = "CyclicFour";
                 break;
             }
             case morph::ColourMapType::CyclicSix:
             {
-                s = "cyclicsix";
+                s = "CyclicSix";
                 break;
             }
             case morph::ColourMapType::CyclicDivBlueRed:
             {
-                s = "cyclicdivbluered";
+                s = "CyclicDivBlueRed";
                 break;
             }
             case morph::ColourMapType::DiscFourWhite:
             {
-                s = "discfourwhite";
+                s = "DiscFourWhite";
                 break;
             }
             case morph::ColourMapType::DiscFourBlack:
             {
-                s = "discfourblack";
+                s = "DiscFourBlack";
                 break;
             }
             case morph::ColourMapType::DiscSixWhite:
             {
-                s = "discsixwhite";
+                s = "DiscSixWhite";
                 break;
             }
             case morph::ColourMapType::DiscSixBlack:
             {
-                s = "discsixblack";
+                s = "DiscSixBlack";
                 break;
             }
 
             case morph::ColourMapType::CET_L02:
             {
-                s = "cet-l02";
+                s = "CET_L02";
                 break;
             }
             case morph::ColourMapType::CET_L13:
             {
-                s = "cet-l13";
+                s = "CET_L13";
                 break;
             }
             case morph::ColourMapType::CET_C4:
             {
-                s = "cet-c4";
+                s = "CET_C4";
                 break;
             }
             case morph::ColourMapType::CET_D04:
             {
-                s = "cet-d04";
+                s = "CET_D04";
                 break;
             }
             case morph::ColourMapType::CET_L12:
             {
-                s = "cet-l12";
+                s = "CET_L12";
                 break;
             }
             case morph::ColourMapType::CET_C1s:
             {
-                s = "cet-c1s";
+                s = "CET_C1S";
                 break;
             }
             case morph::ColourMapType::CET_L01:
             {
-                s = "cet-l01";
+                s = "CET_L01";
                 break;
             }
             case morph::ColourMapType::CET_C5:
             {
-                s = "cet-c5";
+                s = "CET_C5";
                 break;
             }
             case morph::ColourMapType::CET_D11:
             {
-                s = "cet-d11";
+                s = "CET_D11";
                 break;
             }
             case morph::ColourMapType::CET_L04:
             {
-                s = "cet-l04";
+                s = "CET_L04";
                 break;
             }
             case morph::ColourMapType::CET_CBL2:
             {
-                s = "cet-cbl2";
+                s = "CET_CBL2";
                 break;
             }
             case morph::ColourMapType::CET_C4s:
             {
-                s = "cet-c4s";
+                s = "CET_C4S";
                 break;
             }
             case morph::ColourMapType::CET_L15:
             {
-                s = "cet-l15";
+                s = "CET_L15";
                 break;
             }
             case morph::ColourMapType::CET_L20:
             {
-                s = "cet-l20";
+                s = "CET_L20";
                 break;
             }
             case morph::ColourMapType::CET_CBD1:
             {
-                s = "cet-cbd1";
+                s = "CET_CBD1";
                 break;
             }
             case morph::ColourMapType::CET_D06:
             {
-                s = "cet-d06";
+                s = "CET_D06";
                 break;
             }
             case morph::ColourMapType::CET_I3:
             {
-                s = "cet-i3";
+                s = "CET_I3";
                 break;
             }
             case morph::ColourMapType::CET_D01A:
             {
-                s = "cet-d01a";
+                s = "CET_D01A";
                 break;
             }
             case morph::ColourMapType::CET_L16:
             {
-                s = "cet-l16";
+                s = "CET_L16";
                 break;
             }
             case morph::ColourMapType::CET_L06:
             {
-                s = "cet-l06";
+                s = "CET_L06";
                 break;
             }
             case morph::ColourMapType::CET_C2s:
             {
-                s = "cet-c2s";
+                s = "CET_C2S";
                 break;
             }
             case morph::ColourMapType::CET_I1:
             {
-                s = "cet-i1";
+                s = "CET_I1";
                 break;
             }
             case morph::ColourMapType::CET_C7s:
             {
-                s = "cet-c7s";
+                s = "CET_C7S";
                 break;
             }
             case morph::ColourMapType::CET_I2:
             {
-                s = "cet-i2";
+                s = "CET_I2";
                 break;
             }
             case morph::ColourMapType::CET_C6s:
             {
-                s = "cet-c6s";
+                s = "CET_C6S";
                 break;
             }
             case morph::ColourMapType::CET_C6:
             {
-                s = "cet-c6";
+                s = "CET_C6";
                 break;
             }
             case morph::ColourMapType::CET_L05:
             {
-                s = "cet-l05";
+                s = "CET_L05";
                 break;
             }
             case morph::ColourMapType::CET_D08:
             {
-                s = "cet-d08";
+                s = "CET_D08";
                 break;
             }
             case morph::ColourMapType::CET_L03:
             {
-                s = "cet-l03";
+                s = "CET_L03";
                 break;
             }
             case morph::ColourMapType::CET_L14:
             {
-                s = "cet-l14";
+                s = "CET_L14";
                 break;
             }
             case morph::ColourMapType::CET_C2:
             {
-                s = "cet-c2";
+                s = "CET_C2";
                 break;
             }
             case morph::ColourMapType::CET_R3:
             {
-                s = "cet-r3";
+                s = "CET_R3";
                 break;
             }
             case morph::ColourMapType::CET_D01:
             {
-                s = "cet-d01";
+                s = "CET_D01";
                 break;
             }
             case morph::ColourMapType::CET_C1:
             {
-                s = "cet-c1";
+                s = "CET_C1";
                 break;
             }
             case morph::ColourMapType::CET_D02:
             {
-                s = "cet-d02";
+                s = "CET_D02";
                 break;
             }
             case morph::ColourMapType::CET_CBC1:
             {
-                s = "cet-cbc1";
+                s = "CET_CBC1";
                 break;
             }
             case morph::ColourMapType::CET_D09:
             {
-                s = "cet-d09";
+                s = "CET_D09";
                 break;
             }
             case morph::ColourMapType::CET_L10:
             {
-                s = "cet-l10";
+                s = "CET_L10";
                 break;
             }
             case morph::ColourMapType::CET_R1:
             {
-                s = "cet-r1";
+                s = "CET_R1";
                 break;
             }
             case morph::ColourMapType::CET_C3:
             {
-                s = "cet-c3";
+                s = "CET_C3";
                 break;
             }
             case morph::ColourMapType::CET_CBL1:
             {
-                s = "cet-cbl1";
+                s = "CET_CBL1";
                 break;
             }
             case morph::ColourMapType::CET_C3s:
             {
-                s = "cet-c3s";
+                s = "CET_C3S";
                 break;
             }
             case morph::ColourMapType::CET_C5s:
             {
-                s = "cet-c5s";
+                s = "CET_C5S";
                 break;
             }
             case morph::ColourMapType::CET_L08:
             {
-                s = "cet-l08";
+                s = "CET_L08";
                 break;
             }
             case morph::ColourMapType::CET_R4:
             {
-                s = "cet-r4";
+                s = "CET_R4";
                 break;
             }
             case morph::ColourMapType::CET_R2:
             {
-                s = "cet-r2";
+                s = "CET_R2";
                 break;
             }
             case morph::ColourMapType::CET_L11:
             {
-                s = "cet-l11";
+                s = "CET_L11";
                 break;
             }
             case morph::ColourMapType::CET_D10:
             {
-                s = "cet-d10";
+                s = "CET_D10";
                 break;
             }
             case morph::ColourMapType::CET_D07:
             {
-                s = "cet-d07";
+                s = "CET_D07";
                 break;
             }
             case morph::ColourMapType::CET_L17:
             {
-                s = "cet-l17";
+                s = "CET_L17";
                 break;
             }
             case morph::ColourMapType::CET_D12:
             {
-                s = "cet-d12";
+                s = "CET_D12";
                 break;
             }
             case morph::ColourMapType::CET_CBC2:
             {
-                s = "cet-cbc2";
+                s = "CET_CBC2";
                 break;
             }
             case morph::ColourMapType::CET_D13:
             {
-                s = "cet-d13";
+                s = "CET_D13";
                 break;
             }
             case morph::ColourMapType::CET_D03:
             {
-                s = "cet-d03";
+                s = "CET_D03";
                 break;
             }
             case morph::ColourMapType::CET_C7:
             {
-                s = "cet-c7";
+                s = "CET_C7";
                 break;
             }
             case morph::ColourMapType::CET_L07:
             {
-                s = "cet-l07";
+                s = "CET_L07";
                 break;
             }
             case morph::ColourMapType::CET_L09:
             {
-                s = "cet-l09";
+                s = "CET_L09";
                 break;
             }
             case morph::ColourMapType::CET_L18:
             {
-                s = "cet-l18";
+                s = "CET_L18";
                 break;
             }
             case morph::ColourMapType::CET_L19:
             {
-                s = "cet-l19";
+                s = "CET_L19";
                 break;
             }
 
             case morph::ColourMapType::Cividis:
             {
-                s = "cividis";
+                s = "Cividis";
                 break;
             }
             case morph::ColourMapType::Viridis:
             {
-                s = "viridis";
+                s = "Viridis";
                 break;
             }
             case morph::ColourMapType::Plasma:
             {
-                s = "plasma";
+                s = "Plasma";
                 break;
             }
             case morph::ColourMapType::Inferno:
             {
-                s = "inferno";
+                s = "Inferno";
                 break;
             }
             case morph::ColourMapType::Magma:
             {
-                s = "magma";
+                s = "Magma";
                 break;
             }
             case morph::ColourMapType::RainbowZeroWhite:
             {
-                s = "rainbowzerowhite";
+                s = "RainbowZeroWhite";
                 break;
             }
             case morph::ColourMapType::RainbowZeroBlack:
             {
-                s = "rainbowzeroblack";
+                s = "RainbowZeroBlack";
                 break;
             }
             case morph::ColourMapType::Rainbow:
             {
-                s = "rainbow";
+                s = "Rainbow";
                 break;
             }
             case morph::ColourMapType::Jet:
             {
-                s = "jet";
+                s = "Jet";
                 break;
             }
             default:
@@ -2563,7 +2563,7 @@ namespace morph {
         /*!
          * @param datum gray value from 0.0 to 1.0
          *
-         * @returns RGB value in pseudo-jet colormap, which is really CET-R4
+         * @returns RGB value in pseudo-jet colormap, which is really CET_R4
          */
         static std::array<float,3> jetcolour (float datum)
         {

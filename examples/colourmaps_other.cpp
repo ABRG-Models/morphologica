@@ -67,7 +67,7 @@ int main()
         // Set the 'hue' angle (range 0 to 1)
         cbv->cm.setHue (hue);
         cbv->scale = scale1;
-        cbv->addLabel ("hsv1d " + std::to_string(static_cast<int>(hue * 360)), {0, -0.1, 0}, morph::TextFeatures(0.05f));
+        cbv->addLabel ("HSV1D " + std::to_string(static_cast<int>(hue * 360)), {0, -0.1, 0}, morph::TextFeatures(0.05f));
         cbv->finalize();
         v.addVisualModel (cbv);
         // Increment hue
@@ -118,7 +118,7 @@ int main()
     gv->setVectorData (&data);
     gv->cm.setType (cmap_2d_types[1]);
     gv->zScale.setParams(0,0);
-    gv->addLabel ("duochrome red-green", {0, -0.1, 0}, morph::TextFeatures(0.05f));
+    gv->addLabel ("Duochrome red-green", {0, -0.1, 0}, morph::TextFeatures(0.05f));
     gv->twodimensional = true;
     gv->finalize();
     v.addVisualModel (gv);
@@ -132,7 +132,7 @@ int main()
     gv->cm.setType (cmap_2d_types[1]);
     gv->cm.setHueRB();
     gv->zScale.setParams(0,0);
-    gv->addLabel ("duochrome red-blue", {0, -0.1, 0}, morph::TextFeatures(0.05f));
+    gv->addLabel ("Duochrome red-blue", {0, -0.1, 0}, morph::TextFeatures(0.05f));
     gv->twodimensional = true;
     gv->finalize();
     v.addVisualModel (gv);

@@ -1,5 +1,5 @@
 /*
- * Process all of Fabio Crameri's tables into a header file and also output text for
+ * Process all of Fabio Crameri's OR the CET tables into a header file and also output text for
  * ColourMap.h's various functions
  *
  * Author: Seb James
@@ -150,7 +150,7 @@ int main ()
 
         cpp_content1 << "            case morph::ColourMapType::" << name_upperfirst << ":\n"
                      << "            {\n"
-                     << "                s = \"" << name_lower << "\";\n"
+                     << "                s = \"" << name_upperfirst << "\";\n"
                      << "                break;\n"
                      << "            }\n";
 
