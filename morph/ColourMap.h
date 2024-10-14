@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <cmath>
+#include <cstdint>
 #include <morph/tools.h>
 #include <morph/vec.h>
 #include <morph/mathconst.h>
@@ -179,24 +180,66 @@ namespace morph {
         N_entries
     };
     // Define prefix increment and decrement operators for the ColourMapType enum class.
-    morph::ColourMapType& operator++(morph::ColourMapType& a)
+    morph::ColourMapType& operator++(morph::ColourMapType& t)
     {
-        a = static_cast<morph::ColourMapType>((static_cast<uint32_t>(a) + 1u) % static_cast<uint32_t>(morph::ColourMapType::N_entries));
-        return a;
+        t = static_cast<morph::ColourMapType>((static_cast<uint32_t>(t) + 1u) % static_cast<uint32_t>(morph::ColourMapType::N_entries));
+        return t;
     }
-    morph::ColourMapType& operator--(morph::ColourMapType& a)
+    morph::ColourMapType& operator--(morph::ColourMapType& t)
     {
-        a = static_cast<morph::ColourMapType>((static_cast<uint32_t>(a) - 1u) % static_cast<uint32_t>(morph::ColourMapType::N_entries));
-        return a;
+        uint32_t ti = static_cast<uint32_t>(t);
+        ti = (ti == 0u ? static_cast<uint32_t>(morph::ColourMapType::N_entries) - 1u : ti - 1u);
+        t = static_cast<morph::ColourMapType>(ti);
+        return t;
     }
 
-    enum class ColourMapFlags {
-        one_d = 0x1,
-        cyclic = 0x2,
-        two_d = 0x4,
-        perceptually_invariant = 0x8,
-        colourblind = 0xa
+    // A flags class for ColourMaps, to flag features
+    enum class ColourMapFlags : uint32_t
+    {
+        none                   =  0x0,
+        one_d                  =  0x1,
+        two_d                  =  0x2,
+        three_d                =  0x4,
+        cyclic                 =  0x8,
+        disc                   = 0x10,
+        perceptually_uniform   = 0x20,
+        colourblind_friendly   = 0x40
     };
+    // Bitwise operators for ColourMapFlags
+    ColourMapFlags operator| (const ColourMapFlags& lhs, const ColourMapFlags& rhs)
+    {
+        return static_cast<ColourMapFlags>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+    }
+    bool operator&(const ColourMapFlags& lhs, const ColourMapFlags& rhs)
+    {
+        return 0x0 != (static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
+    }
+
+    // A sort of constructor
+    morph::ColourMapFlags makeColourMapFlags (const morph::ColourMapType t)
+    {
+        // Logic to create ColourMapFlags
+        morph::ColourMapFlags f = ColourMapFlags::none;
+        if (t == ColourMapType::DiscFourWhite
+            || t == ColourMapType::DiscFourBlack
+            || t == ColourMapType::DiscSixWhite
+            || t == ColourMapType::DiscSixBlack
+            || t == ColourMapType::HSV
+            || t == ColourMapType::Duochrome) {
+            f = f | ColourMapFlags::two_d;
+        } else if (t == ColourMapType::Trichrome
+                   || t == ColourMapType::RGB
+                   || t == ColourMapType::RGBMono
+                   || t == ColourMapType::RGBGrey) {
+            f = f | ColourMapFlags::three_d;
+        } else {
+            f = f | ColourMapFlags::one_d;
+        }
+
+        // Additional logic to come
+
+        return f;
+    }
 
     /*!
      * Colour mapping
@@ -222,6 +265,9 @@ namespace morph {
     template <typename T>
     class ColourMap
     {
+    public:
+        //! Flags associated with the type (generated in setType)
+        ColourMapFlags flags = ColourMapFlags::one_d | ColourMapFlags::perceptually_uniform;
     private:
         //! Type of map
         ColourMapType type = ColourMapType::Plasma;
@@ -2319,6 +2365,7 @@ namespace morph {
         void setType (const ColourMapType& tp)
         {
             this->type = tp;
+            this->flags = morph::makeColourMapFlags (this->type);
             // Set hue if necessary
             switch (tp) {
             case ColourMapType::MonochromeRed:

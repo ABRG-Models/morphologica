@@ -21,22 +21,26 @@ struct myvisual final : public morph::Visual<>
 {
     myvisual (int width, int height, const std::string& title) : morph::Visual<> (width, height, title) {}
     morph::ColourMapType curr_map_type = morph::ColourMapType::Plasma;
+    bool forwards = true;
 protected:
     void key_callback_extra (int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) override
     {
-        if (key == morph::key::d && action == morph::keyaction::press) {
-            std::cout << "Next map. Change from " << morph::ColourMap<float>::colourMapTypeToStr (this->curr_map_type) << " to ";
+        if (key == morph::key::right && (action == morph::keyaction::press || action == morph::keyaction::repeat)) {
             ++this->curr_map_type;
-            std::cout << morph::ColourMap<float>::colourMapTypeToStr (this->curr_map_type) << std::endl;
+            this->forwards = true;
         }
-        if (key == morph::key::a && action == morph::keyaction::press) { --this->curr_map_type; }
+        if (key == morph::key::left && (action == morph::keyaction::press || action == morph::keyaction::repeat)) {
+            --this->curr_map_type;
+            this->forwards = false;
+        }
         if (key == morph::key::h && action == morph::keyaction::press) { std::cout << "left/right switch maps\n"; }
     }
 };
 
 int main()
 {
-    myvisual v(1600, 1000, "Colourbar perceptual uniformity test");
+    myvisual v(2100, 575, "Colourbar perceptual uniformity test");
+    v.setSceneTrans (morph::vec<float,3>{ float{-0.00636619}, float{0.0518834}, float{-1.4} });
 
     // Create a grid for the colourmaps
     constexpr unsigned int Nside_w = 512;
@@ -69,17 +73,23 @@ int main()
         v.render();
         v.waitevents (0.017);
         if (gvp->cm.getType() != v.curr_map_type) {
-            // Update
-            v.removeVisualModel (gvp);
-            gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
-            v.bindmodel (gv);
-            gv->gridVisMode = morph::GridVisMode::Triangles;
-            gv->setScalarData (&data);
-            gv->cm.setType (v.curr_map_type);
-            gv->zScale.setParams (0, 0);
-            gv->addLabel (gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
-            gv->finalize();
-            gvp = v.addVisualModel (gv);
+            gvp->cm.setType (v.curr_map_type);
+            if ((gvp->cm.flags & morph::ColourMapFlags::one_d) == true) {
+                // Update the map
+                v.removeVisualModel (gvp);
+                gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+                v.bindmodel (gv);
+                gv->gridVisMode = morph::GridVisMode::Triangles;
+                gv->setScalarData (&data);
+                gv->cm.setType (v.curr_map_type);
+                gv->zScale.setParams (0, 0);
+                gv->addLabel (gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
+                gv->finalize();
+                gvp = v.addVisualModel (gv);
+            } else {
+                // The map wasn't 1D, so skip
+                if (v.forwards) { ++v.curr_map_type; } else { --v.curr_map_type; }
+            }
         }
     }
 
