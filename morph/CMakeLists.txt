@@ -12,6 +12,7 @@ add_subdirectory(nn) # 'nn' for neural network code
 add_subdirectory(bn) # 'bn' for boolean net code
 add_subdirectory(gl) # GL common and compute code
 add_subdirectory(linuxos) # One Linux-specific file
+add_subdirectory(healpix) # Public, but slightly modified HEALPix headers
 
 # And the nlohmann/json.hpp header
 add_subdirectory(nlohmann)

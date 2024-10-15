@@ -1,7 +1,7 @@
 # AUTOMOC requires 2.8.6. The CMAKE_CXX_STANDARD variable requires 3.1.
 cmake_minimum_required(VERSION 3.8)
 project(morphologica)
-set(VERSION 3.1)
+set(VERSION 3.2)
 
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
