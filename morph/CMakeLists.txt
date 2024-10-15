@@ -19,7 +19,7 @@ add_subdirectory(nlohmann)
 
 # Graphics headers
 install(
-  FILES VisualCommon.h Visual.h lodepng.h loadpng.h VisualModel.h VisualDataModel.h VisualTextModel.h TextGeometry.h TextFeatures.h VisualResources.h VisualFace.h CoordArrows.h HexGridVisual.h CartGridVisual.h GridVisual.h QuadsVisual.h QuadsMeshVisual.h graphstyles.h DatasetStyle.h GraphVisual.h PointRowsVisual.h PointRowsMeshVisual.h ScatterVisual.h QuiverVisual.h RodVisual.h PolygonVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h ColourBarVisual.h CurvyTellyVisual.h HSVWheelVisual.h RhomboVisual.h TriaxesVisual.h TriFrameVisual.h TxtVisual.h VectorVisual.h ConfigVisual.h
+  FILES VisualCommon.h Visual.h lodepng.h loadpng.h VisualModel.h VisualDataModel.h VisualTextModel.h TextGeometry.h TextFeatures.h VisualResources.h VisualFace.h CoordArrows.h HexGridVisual.h CartGridVisual.h GridVisual.h QuadsVisual.h QuadsMeshVisual.h graphstyles.h DatasetStyle.h GraphVisual.h PointRowsVisual.h PointRowsMeshVisual.h ScatterVisual.h QuiverVisual.h RodVisual.h PolygonVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h ColourBarVisual.h CurvyTellyVisual.h HSVWheelVisual.h RhomboVisual.h TriaxesVisual.h TriFrameVisual.h TxtVisual.h VectorVisual.h ConfigVisual.h HealpixVisual.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
 # The Visual-in-a-Qt-Widget code
