@@ -356,6 +356,12 @@ if(USE_GLEW)
   target_link_libraries(graph_dynamic_sine_rescale GLEW::GLEW)
 endif()
 
+add_executable(graph_change_xaxis graph_change_xaxis.cpp)
+target_link_libraries(graph_change_xaxis OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph_change_xaxis GLEW::GLEW)
+endif()
+
 add_executable(graph_bar graph_bar.cpp)
 target_link_libraries(graph_bar OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
