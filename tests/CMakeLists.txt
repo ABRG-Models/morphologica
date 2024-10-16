@@ -329,6 +329,9 @@ add_test(testvvec_rescale testvvec_rescale)
 add_executable(testvvec_set_from testvvec_set_from.cpp)
 add_test(testvvec_set_from testvvec_set_from)
 
+add_executable(testvvec_at_signed testvvec_at_signed.cpp)
+add_test(testvvec_at_signed testvvec_at_signed)
+
 add_executable(test_trait_tests test_trait_tests.cpp)
 add_test(test_trait_tests test_trait_tests)
 

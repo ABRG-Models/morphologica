@@ -79,6 +79,41 @@ namespace morph {
         S w() const { return (*this)[3]; }
 
         /*!
+         * An array access operator that accepts negative indices, using these to access from the
+         * end of the array. This allows you to define an array of size 2n+1 and access elements
+         * from .at_idx(-n) through to .at_idx(n), as is possible in some other languages.
+         */
+        template<typename I, typename std::enable_if< std::is_integral<I>{} && std::is_signed<I>{}, bool>::type = true >
+        S& at_signed (const I idx)
+        {
+            if (idx > I{-1}) {
+                // Note that this will allow positive indexing all the way up to the end of the
+                // vector, returning elements that could also be returned by a negative idx.
+                return this->at (idx);
+            } else {
+                // Check bounds of idx and throw std::out_of_range if necessary. Allow negative
+                // indices all the way to the start of the vector.
+                if (-idx > static_cast<I>(this->size())) { throw std::out_of_range ("vvec::at_signed: idx is too negative"); }
+                return *(this->end() + idx);
+            }
+        }
+
+        /*!
+         * A const array access operator that accepts negative indices. The const version of
+         * vvec::at_signed
+         */
+        template<typename I, typename std::enable_if< std::is_integral<I>{} && std::is_signed<I>{}, bool>::type = true >
+        const S& c_at_signed (const I idx) const
+        {
+            if (idx > I{-1}) {
+                return this->at (idx);
+            } else {
+                if (-idx > static_cast<I>(this->size())) { throw std::out_of_range ("vvec::c_at_signed: idx is too negative"); }
+                return *(this->cend() + idx);
+            }
+        }
+
+        /*!
          * Traits-based set_from that can work with sequential containers like std::array, deque, vector,
          * morph::vvec, morph::vec etc and even with std::set (though not with std::map).
          *
