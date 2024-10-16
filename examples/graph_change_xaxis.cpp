@@ -20,17 +20,9 @@ int main()
     morph::DatasetStyle ds_left;
     ds_left.datalabel = "sine left";
     gv->setdata (x, (x+dx).sin(), ds_left);
-
-    gv->fontsize *= 2.0f;
-
+    gv->fontsize *= 2.0f; // Bigger fonts to encourage more font size auto-adjustment
     // Enable auto-rescaling of the x axis
     gv->auto_rescale_x = true;
-    // Enable auto-rescaling of the y axis
-    gv->auto_rescale_y = true;
-
-    // rescale to fit data along the y axis
-    gv->auto_rescale_fit = true;
-
     gv->finalize();
 
     auto gvp = v.addVisualModel (gv);
@@ -39,15 +31,14 @@ int main()
     int64_t count = 0;
     double f = 1.0;
     while (v.readyToFinish == false) {
-        v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
-        v.render();
-        if (count++ % 60 == 0) {
-            //dx *= 2.0;
+        v.waitevents (2); // 16.67 ms ~ 60 Hz
+        if (count++ % 5 == 0) {
             x *= 2.0;
             f /= 2.0;
         }
         dx += dx_step;
         gvp->update (x+dx, (f*x+dx).sin(), 0);
+        v.render();
     }
 
     return 0;
