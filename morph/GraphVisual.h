@@ -175,12 +175,9 @@ namespace morph {
 
             // May need a re-autoscaling option somewhere in here.
 
-            // Transform the data into temporary containers sd and ad
-            std::vector<Flt> ad (dsize, Flt{0});
-            this->abscissa_scale.transform (_abscissae, ad);
-
             // check x axis
             if (this->auto_rescale_x) {
+                this->abscissa_scale.reset();
                 for (auto x_val : _abscissae) {
                     this->ord1_scale.reset();
                     this->ord2_scale.reset();
@@ -190,6 +187,11 @@ namespace morph {
                     this->setlimits (min_x, max_x, this->datamin_y, this->datamax_y, this->datamin_y2, this->datamax_y2);
                 }
             }
+
+            // Transform the data into temporary containers sd and ad. Note call of
+            // abscissa_scale.transform comes AFTER the auto_rescale_x logic
+            std::vector<Flt> ad (dsize, Flt{0});
+            this->abscissa_scale.transform (_abscissae, ad);
 
             std::vector<Flt> sd (dsize, Flt{0});
             if (this->datastyles[data_idx].axisside == morph::axisside::left) {
