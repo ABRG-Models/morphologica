@@ -54,11 +54,13 @@ namespace morph {
             this->max = std::numeric_limits<T>::lowest();
         }
 
-        // Extend the range to include the given datum
-        constexpr void update (const T& d)
+        // Extend the range to include the given datum. Return true if the range changed.
+        constexpr bool update (const T& d)
         {
-            this->min = d < this->min ? d : this->min;
-            this->max = d > this->max ? d : this->max;
+            bool changed = false;
+            this->min = d < this->min ? changed = true, d : this->min;
+            this->max = d > this->max ? changed = true, d : this->max;
+            return changed;
         }
 
         // Does the range include v?

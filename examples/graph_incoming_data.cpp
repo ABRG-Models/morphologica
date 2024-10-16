@@ -58,9 +58,12 @@ int main()
             // Slowly update the content of the graph
             if (rcount++ % 20 == 0 && idx < absc.size()) {
                 // Append to dataset 0
+                std::cout << "Append 0\n";
                 gvp->append (absc[idx], data[idx], 0);
                 // Append to dataset 1
+                std::cout << "Append 1\n";
                 gvp->append (absc[idx], data2[idx], 1);
+                std::cout << "Appended\n";
                 ++idx;
             }
             v.render();
