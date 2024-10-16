@@ -813,7 +813,7 @@ namespace morph {
          * GraphVisual::dataaxisdist
          */
         static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
-                                          const Flt max_num_ticks = 10, const Flt min_num_ticks = 3)
+                                          const Flt _max_num_ticks = 10, const Flt _min_num_ticks = 3)
         {
             std::deque<Flt> ticks;
 
@@ -822,16 +822,16 @@ namespace morph {
             Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
             Flt numticks = floor(range/trytick);
             if constexpr (gv_debug) {
-                std::cout << "initial trytick = " << trytick << ", numticks = " << numticks << " max_num_ticks = " << max_num_ticks << std::endl;
+                std::cout << "initial trytick = " << trytick << ", numticks = " << numticks << " max_num_ticks = " << _max_num_ticks << std::endl;
             }
-            if (numticks > max_num_ticks) {
-                while (numticks > max_num_ticks && numticks > min_num_ticks) {
-                    trytick = trytick * 2; // bigger tick spacing means fewer ticks
+            if (numticks > _max_num_ticks) {
+                while (numticks > _max_num_ticks && numticks > _min_num_ticks) {
+                    trytick = trytick * Flt{2}; // bigger tick spacing means fewer ticks
                     numticks = floor(range/trytick);
                 }
-            } else {
-                while (numticks < min_num_ticks && numticks < max_num_ticks) {
-                    trytick = trytick * 0.5;
+            } else if (numticks < _min_num_ticks) {
+                while (numticks < _min_num_ticks && numticks < _max_num_ticks) {
+                    trytick = trytick * Flt{0.5};
                     numticks = floor(range/trytick);
                     if constexpr (gv_debug) {
                         std::cout << "Trying reduced spacing to increase numticks. trytick = " << trytick << " and numticks= " << numticks << "\n";
@@ -1232,6 +1232,8 @@ namespace morph {
             }
         }
 
+        static constexpr float max_label_prop = 0.9f;
+
         //! Add the tick labels: 0, 1, 2 etc
         void drawTickLabels()
         {
@@ -1250,27 +1252,31 @@ namespace morph {
 
             if (!this->omit_x_tick_labels) {
 
-                // Pre-test the xtick labels to see if the length of the labels would make the text too crowded. If so, reduce font size
+                // Pre-test the xtick labels to see if the length of the labels would make the text
+                // too crowded. If so, reduce font size. The combined length of the longest tick
+                // label should be less than the proportion 'max_label_prop' of the xtick
+                // spacing. Note that this comes AFTER the logic in maketicks() which could in
+                // principle be changed to reduce the number of ticks when the number of ticks
+                // combined with the font size and tick label string length might cause problems.
                 float x_font_factor = 1.0f;
-                float label_lengths = 0.0f;
+                float max_label_length = 0.0f;
+                float xtick_spacing = this->width;
                 {
-                    std::string allticktext("");
+                    if (this->xtick_posns.size() >= 2) { xtick_spacing = this->xtick_posns[1] - this->xtick_posns[0]; }
+                    // Create a temporary VisualTextModel to find the length of all the tick text
+                    morph::VisualTextModel<glver> lbl (this->parentVis, this->get_tprog(this->parentVis),
+                                                       this->font, this->fontsize, this->fontres);
+                    // Find longest string (more or less)
                     for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
                         std::string s = this->graphNumberFormat (this->xticks[i]);
-                        allticktext += s;
+                        morph::TextGeometry geom = lbl.getTextGeometry (s);
+                        max_label_length = geom.width() > max_label_length ? geom.width() : max_label_length;
                     }
-                    // Create a temporary VisualTextModel to find the length of all the tick text
-                    morph::VisualTextModel<glver> lbl (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
-                    morph::TextGeometry geom = lbl.getTextGeometry (allticktext);
-                    label_lengths += geom.width();
                 }
-                std::cout << "Label lengths = " << label_lengths << " cf graph width: " << this->width << std::endl;
-                if (label_lengths > this->width) {
-                    // Make font smaller
-                    x_font_factor = 0.5f;
-                } else if (label_lengths > 0.75f * this->width) {
-                    // Make font smaller
-                    x_font_factor = 0.75f;
+
+                if (max_label_length > max_label_prop * xtick_spacing) {
+                    // Labels are too long, compute the adjustment factor
+                    x_font_factor = (xtick_spacing * max_label_prop) / max_label_length;
                 }
 
                 for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
@@ -1672,26 +1678,23 @@ namespace morph {
                     std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
                     std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
                 }
+
                 float realmin = this->abscissa_scale.inverse_one (0);
                 float realmax = this->abscissa_scale.inverse_one (this->width);
                 this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
+                this->xtick_posns.resize (this->xticks.size());
+                this->abscissa_scale.transform (xticks, xtick_posns);
+
                 realmin = this->ord1_scale.inverse_one (0);
                 realmax = this->ord1_scale.inverse_one (this->height);
                 this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
+                this->ytick_posns.resize (this->yticks.size());
+                this->ord1_scale.transform (yticks, ytick_posns);
 
                 if (this->ord2_scale.ready()) {
                     realmin = this->ord2_scale.inverse_one (0);
                     realmax = this->ord2_scale.inverse_one (this->height);
                     this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
-                }
-
-                this->xtick_posns.resize (this->xticks.size());
-                this->abscissa_scale.transform (xticks, xtick_posns);
-
-                this->ytick_posns.resize (this->yticks.size());
-                this->ord1_scale.transform (yticks, ytick_posns);
-
-                if (this->ord2_scale.ready()) {
                     this->ytick_posns2.resize (this->yticks2.size());
                     this->ord2_scale.transform (yticks2, ytick_posns2);
                 }
