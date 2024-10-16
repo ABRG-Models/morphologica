@@ -23,6 +23,7 @@ int main()
     gv->fontsize *= 2.0f; // Bigger fonts to encourage more font size auto-adjustment
     // Enable auto-rescaling of the x axis
     gv->auto_rescale_x = true;
+    gv->auto_rescale_y = true;
     gv->finalize();
 
     auto gvp = v.addVisualModel (gv);
@@ -31,8 +32,8 @@ int main()
     int64_t count = 0;
     double f = 1.0;
     while (v.readyToFinish == false) {
-        v.waitevents (2); // 16.67 ms ~ 60 Hz
-        if (count++ % 5 == 0) {
+        v.waitevents (0.016); // 16.67 ms ~ 60 Hz
+        if (count++ % 60 == 0) {
             x *= 2.0;
             f /= 2.0;
         }
