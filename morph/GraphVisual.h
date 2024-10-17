@@ -198,9 +198,7 @@ namespace morph {
             // Ensure the vector at data_idx has enough capacity for the updated data
             this->graphDataCoords[data_idx]->resize (dsize);
 
-            // May need a re-autoscaling option somewhere in here.
-
-            // check x axis
+            // Are we auto-rescaling the x axis?
             if (this->auto_rescale_x) {
                 this->abscissa_scale.reset();
                 datarange = this->datarange_x;
@@ -228,31 +226,24 @@ namespace morph {
                     // Starting with datarange_y, update datarange.
                     datarange = this->datarange_y;
                     for (auto y_val : _data) { datarange.update (y_val); }
-                    // update the y axis (maybe only if datarange changed?)
                     this->setlimits_y (datarange);
                 }
-
                 // scale data with the axis
                 this->ord1_scale.transform (_data, sd);
             } else {
-                // check min and max of the y2 axis
+                // Similar to the above, for the y2 axis
                 if (this->auto_rescale_y && this->auto_rescale_fit) {
                     this->ord2_scale.reset();
-
                     datarange.search_init();
                     for (auto y_val : _data) { datarange.update (y_val); }
                     this->setlimits_y2 (datarange);
 
                 } else if (this->auto_rescale_y) {
-
                     this->ord2_scale.reset();
-                    // Starting with datarange_y, update datarange.
                     datarange = this->datarange_y2;
                     for (auto y_val : _data) { datarange.update (y_val); }
-                    // update the y axis (maybe only if datarange changed?)
                     this->setlimits_y2 (datarange);
                 }
-
                 // scale data with the axis
                 this->ord2_scale.transform (_data, sd);
             }
