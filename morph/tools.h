@@ -352,9 +352,8 @@ namespace morph
          */
         static int convertCHexCharSequences (std::string& input)
         {
-            // This converts a string containing C style hex sequences
-            // like "\x41\x42\x43" into the corresponding characters
-            // ("ABC" for the example).
+            // This converts a string containing C style hex sequences like
+            // "\x41\x42\x43" into the corresponding characters ("ABC" for the example).
 
             std::string::iterator readPos = input.begin();
             std::string::iterator writePos = input.begin();
@@ -557,10 +556,9 @@ namespace morph
                     data.insert (ptr, replaceTerm);
                     count++;
                     if (ptr >= stl) {
-                        // This is a move backwards along the
-                        // string far enough that we don't
-                        // match a substring of the last
-                        // replaceTerm in the next search.
+                        // This is a move backwards along the string far enough that we
+                        // don't match a substring of the last replaceTerm in the next
+                        // search.
                         pos = ptr - stl;
                     } else {
                         break;
@@ -579,8 +577,7 @@ namespace morph
         }
 
         /*!
-         * Return the number of instances of the character c
-         * in line.
+         * Return the number of instances of the character c in line.
          */
         static unsigned int countChars (const std::string& line, const char c)
         {
@@ -627,8 +624,8 @@ namespace morph
             // 1) Replace chars which are disallowed in an XML tag
             std::string::size_type ptr = std::string::npos;
 
-            // We allow numeric and alpha chars, the underscore and the
-            // hyphen. colon strictly allowed, but best avoided.
+            // We allow numeric and alpha chars, the underscore and the hyphen. colon
+            // strictly allowed, but best avoided.
             while ((ptr = str.find_last_not_of (CHARS_NUMERIC_ALPHA"_-", ptr)) != std::string::npos) {
                 // Replace the char with an underscore:
                 str[ptr] = '_';
@@ -656,54 +653,10 @@ namespace morph
         }
 
         /*!
-         * split csv into a vector
-         */
-        static std::vector<std::string> csvToVector (const std::string& csvList,
-                                                     const char separator = ',',
-                                                     const bool ignoreTrailingEmptyVal = true);
-
-        /*!
-         * split csv into a list
-         */
-        static std::list<std::string> csvToList (const std::string& csvList,
-                                                 const char separator = ',');
-        /*!
-         * split csv into a set
-         */
-        static std::set<std::string> csvToSet (const std::string& csvList,
-                                               const char separator = ',');
-
-        /*!
-         * Output a vector of strings as a csv string.
-         */
-        static std::string vectorToCsv (const std::vector<std::string>& vecList,
-                                        const char separator = ',');
-
-        /*!
-         * Output a list of strings as a csv string.
-         */
-        static std::string listToCsv (const std::list<std::string>& listList,
-                                      const char separator = ',');
-
-        /*!
-         * Output a set of strings as a csv string.
-         */
-        static std::string setToCsv (const std::set<std::string>& listList,
-                                     const char separator = ',');
-
-        /*!
-         * Split a comma-separated key/value pair list into a map.
-         */
-        static std::map<std::string, std::string> csvToMap (const std::string& csvList,
-                                                            const char relationship = '=',
-                                                            const char separator = ',');
-        /*!
          * Split a string of values into a vector using the separator string (not char)
          * passed in as "separator". If ignoreTrailingEmptyVal is true, then a trailing
          * separator with nothing after it will NOT cause an additional empty value in
-         * the returned vector.
-         *
-         * Similar to util::splitString but FASTER. PREFER THIS OVER splitString.
+         * the returned vector. See also splitStringWithEncs
          */
         static std::vector<std::string> stringToVector (const std::string& s,
                                                         const std::string& separator,
@@ -716,8 +669,7 @@ namespace morph
             std::string entry("");
             std::string::size_type sepLen = separator.size();
             std::string::size_type a=0, b=0;
-            while (a < s.size()
-                   && (b = s.find (separator, a)) != std::string::npos) {
+            while (a < s.size() && (b = s.find (separator, a)) != std::string::npos) {
                 entry = s.substr (a, b-a);
                 theVec.push_back (entry);
                 a=b+sepLen;
@@ -742,8 +694,8 @@ namespace morph
 
 #ifdef __WIN__
         /*!
-         * Stat a file Windows style, return true if the file exists
-         * and is any kind of file except a directory.
+         * Stat a file Windows style, return true if the file exists and is any kind of
+         * file except a directory.
          */
         static bool fileExists (const std::string& path)
         {
@@ -1278,13 +1230,11 @@ namespace morph
         /*!
          * Check read/write access for the specified file.
          *
-         * Checks whether read/write access, as indicated by
-         * the accessType string, is available for the
-         * specified file.
+         * Checks whether read/write access, as indicated by the accessType string, is
+         * available for the specified file.
          *
-         * \param filepath File to check.
-         * \param accessType Indicates which access type(s) to
-         * check. r=read, w=write.
+         * \param filepath File to check.  \param accessType Indicates which access
+         * type(s) to check. r=read, w=write.
          */
         static bool checkAccess (const std::string& filepath, const std::string& accessType)
         {
@@ -1494,9 +1444,8 @@ namespace morph
 #endif
 
         /*!
-         * Copy from one file pointer to another. Both are
-         * expected to be open, neither is closed after the
-         * copy.
+         * Copy from one file pointer to another. Both are expected to be open, neither
+         * is closed after the copy.
          */
         static void copyFile (FILE* from, FILE* to)
         {
@@ -1771,7 +1720,7 @@ namespace morph
             try {
                 Tools::readDirectoryTree (files, dirPath, olderThanSeconds);
             } catch (const std::exception& e) {
-                //DBG ("Failed to read dir tree: " << e.what());
+                // Failed to read dir tree
                 return;
             }
             std::vector<std::string>::iterator i = files.begin();
@@ -1788,7 +1737,7 @@ namespace morph
                     }
 
                 } catch (const std::exception& e) {
-                    //DBG ("Failed to unlink " << *i << ": " << e.what());
+                    // Failed to unlink *i
                 }
                 ++i;
             }
@@ -1849,8 +1798,7 @@ namespace morph
                     struct stat * buf = NULL;
                     buf = static_cast<struct stat*>(malloc (sizeof (struct stat)));
                     if (!buf) { // Malloc error.
-                        throw std::runtime_error ("Failed to malloc buf; "
-                                                  "could not stat link " + fileName);
+                        throw std::runtime_error ("Failed to malloc buf; could not stat link " + fileName);
                     }
                     memset (buf, 0, sizeof(struct stat));
                     if (stat (fileName.c_str(), buf)) {
@@ -1902,17 +1850,14 @@ namespace morph
 
                         if (stat (fileName.c_str(), &buf)) {
                             // no file to stat
-                            //DBG ("stat() error for '" << fileName << "'");
                             continue;
                         }
 
                         if (static_cast<unsigned int>(time(NULL)) - buf.st_mtime
                             <= olderThanSeconds) {
-                            // The age of the last modification is less
-                            // than olderThanSeconds, so skip
-                            // (we're only returning the OLDER
+                            // The age of the last modification is less than
+                            // olderThanSeconds, so skip (we're only returning the OLDER
                             // files)
-                            //DBG ("File " << fileName << " is too new to include, continuing");
                             continue;
                         } //else DBG ("File " << fileName << " is older than " << olderThanSeconds << " s");
                     }
@@ -2016,9 +1961,8 @@ namespace morph
                     }
 
                     ++levelDirCount;
-                    // Because we found a directory, this current
-                    // directory ain't empty - recurse with a new
-                    // directory in the subDir path:
+                    // Because we found a directory, this current directory ain't empty
+                    // - recurse with a new directory in the subDir path:
                     std::string newSubDir;
                     if (subDir.empty()) {
                         newSubDir = static_cast<const char*>(ep->d_name);
@@ -2095,9 +2039,8 @@ namespace morph
                     }
 
                     ++levelDirCount;
-                    // Because we found a directory, this current
-                    // directory ain't empty - recurse with a new
-                    // directory in the subDir path:
+                    // Because we found a directory, this current directory ain't empty
+                    // - recurse with a new directory in the subDir path:
                     std::string newSubDir;
                     if (subDir.empty()) {
                         newSubDir = static_cast<const char*>(ep->d_name);
@@ -2255,10 +2198,9 @@ namespace morph
         }
 #endif
         /*!
-         * Given the month as an int, where 1==Jan, 12==Dec,
-         * return the month as a string. If shortFormat is true,
-         * return "Jan", "Dec", etc., otherwise "January",
-         * "December" etc.
+         * Given the month as an int, where 1==Jan, 12==Dec, return the month as a
+         * string. If shortFormat is true, return "Jan", "Dec", etc., otherwise
+         * "January", "December" etc.
          */
         static std::string monthStr (const int month, const bool shortFormat=false)
         {
@@ -2354,8 +2296,8 @@ namespace morph
         }
 
         /*!
-         * Give the number n, return the suitable (english)
-         * suffix. E.g. "st" for 1, "nd" for 22 etc.
+         * Give the number n, return the suitable (english) suffix. E.g. "st" for 1,
+         * "nd" for 22 etc.
          */
         static std::string suffix (const int n)
         {
@@ -2387,11 +2329,10 @@ namespace morph
         }
 
         /*!
-         * Convert a date of form 2009-02-16 to the unix epoch
-         * number. The fifth character of the string is
-         * examined, and if it is not a numeral, it is used as
-         * the separator. If the fifth character IS a numeral,
-         * then the date format is read in as YYYYMMDD.
+         * Convert a date of form 2009-02-16 to the unix epoch number. The fifth
+         * character of the string is examined, and if it is not a numeral, it is used
+         * as the separator. If the fifth character IS a numeral, then the date format
+         * is read in as YYYYMMDD.
          */
         static time_t dateToNum (const std::string& dateStr)
         {
@@ -2472,15 +2413,12 @@ namespace morph
         }
 
         /*!
-         * Convert a date/time of form 2009-02-16 14:34:34 to
-         * the unix epoch number. The fifth character of the
-         * string is examined, and if it is not a numeral, it
-         * is used as the date separator. If the fifth
-         * character IS a numeral, then the date format is
-         * read in as YYYYMMDD.
+         * Convert a date/time of form 2009-02-16 14:34:34 to the unix epoch number. The
+         * fifth character of the string is examined, and if it is not a numeral, it is
+         * used as the date separator. If the fifth character IS a numeral, then the
+         * date format is read in as YYYYMMDD.
          *
-         * The 3rd char after the space is read in and used as
-         * time separator
+         * The 3rd char after the space is read in and used as time separator
          */
         static time_t dateTimeToNum (const std::string& dateTimeStr)
         {
@@ -2582,9 +2520,8 @@ namespace morph
 
 #ifndef __WIN__
         /*!
-         * Convert a unix epoch number to a date/time of form
-         * 2009-02-16 02:03:01, using dateSeparator to delimit
-         * the date and timeSeparator to delimit the time.
+         * Convert a unix epoch number to a date/time of form 2009-02-16 02:03:01, using
+         * dateSeparator to delimit the date and timeSeparator to delimit the time.
          */
         static std::string numToDateTime (const time_t epochSeconds,
                                           const char dateSeparator = '\0',
@@ -2638,8 +2575,8 @@ namespace morph
         }
 
         /*!
-         * Convert a unix epoch number to a date of form
-         * 2009-02-16, using separator to delimit the date.
+         * Convert a unix epoch number to a date of form 2009-02-16, using separator to
+         * delimit the date.
          */
         static std::string numToDate (const time_t epochSeconds, const char separator = '\0')
         {
@@ -2704,15 +2641,13 @@ namespace morph
          *
          * \param s The string to split up
          *
-         * \param separatorChars The chars used only to
-         * separate tokens (" ,;")
+         * \param separatorChars The chars used only to separate tokens (" ,;")
          *
-         * \param enclosureChars The characters used to
-         * enclose a multi-word token ("\"\'")
+         * \param enclosureChars The characters used to enclose a multi-word token
+         * ("\"\'")
          *
-         * \param the escape character. If not set to \0, then
-         * this is the character used to escape the enclosure
-         * chars.
+         * \param the escape character. If not set to \0, then this is the character
+         * used to escape the enclosure chars.
          */
         template <typename ST>
         static std::vector<ST> splitStringWithEncs (const ST& s,
@@ -2763,7 +2698,6 @@ morph::Tools::splitStringWithEncs (const ST& s,
                 ++a; // Skip the enclosure char
             } else if ((separatorChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
                 // First char is a ',' This special case means that we insert an entry for the current ',' and step past it.
-                //DBG2 ("First char special case, insert entry.");
                 theVec.push_back ("");
                 ++a;
 
@@ -2772,7 +2706,6 @@ morph::Tools::splitStringWithEncs (const ST& s,
         } else { // Not first field
 
             if ((a = s.find_first_of (sepsAndEncsAndEsc, a)) == ST::npos) {
-                //DBG ("No enclosure, separator or escape chars in string");
                 theVec.push_back (s);
                 return theVec;
             }
@@ -2788,12 +2721,10 @@ morph::Tools::splitStringWithEncs (const ST& s,
                 ++a; // Skip the enclosure char
             } else if ((separatorChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
                 // It's a field separator
-                //DBG2 ("Field separator found at position " << a << " skipping...");
                 ++a; // Skip the separator
                 if (a >= sz) {
                     // Special case - a trailing separator character - add an empty
                     // value to the return vector of tokens.
-                    //DBG2 ("Adding trailing empty field due to trailing separator");
                     theVec.push_back ("");
                 } else {
                     // a < sz, so now check if we've hit an escape char
@@ -2804,9 +2735,7 @@ morph::Tools::splitStringWithEncs (const ST& s,
                         ++a; // Skip the enclosure char
                     }
                 }
-            } else {
-                //throw std::runtime_error ("Tools::splitStringWithEncs: Unexpected case");
-            }
+            } // else unexpected case.
         }
 
         // Check we didn't over-run
@@ -2815,7 +2744,6 @@ morph::Tools::splitStringWithEncs (const ST& s,
         // Now get the token
         typename ST::size_type range = ST::npos;
         if (nextIsEnc) {
-            //DBG2 ("Searching for next instances of enc chars: >" << enclosureChars << "< ");
             c = a;
             while ((b = s.find_first_of (currentEncChar, c)) != ST::npos) {
                 // FIXME: Check we didn't find an escaped enclosureChar.
@@ -2831,41 +2759,34 @@ morph::Tools::splitStringWithEncs (const ST& s,
                 break;
             }
         } else {
-            //DBG2 ("Searching for next instances of sep chars: >" << separatorChars << "< from position " << a);
             if ((b = s.find_first_of (separatorChars, a)) != ST::npos) {
                 // Check it wasn't an escaped separator:
                 if (escapeChar) {
                     c = b; --c;
                     if (c >= 0 && c != ST::npos && c < sz && s[c] == escapeChar) {
-                        //DBG2 ("Found escaped separator character");
                         c = b; ++c;
                         continue;
                     }
                 }
                 range = b - a;
-                //DBG2 ("On finding a separator char at position " << b
-                //<< " (starting from position " << a << "), have set range to " << range);
             }
         }
 
         entry = s.substr (a, range);
         Tools::stripChars (entry, escapeChar);
-        //DBG2 ("Adding entry '" << entry << "' to vector");
         theVec.push_back (entry);
 
         if (range != ST::npos) { // end of field was not end of string
             if (nextIsEnc) {
-                //DBG2 ("Adding " << range + 1 << " to a (" << a << ") as nextIsEnc...");
                 a += range + 1; // +1 to take us past the closing enclosure.
             } else {
-                //DBG2 ("Adding " << range << " to a (" << a << ")...");
-                a += range; // in new scheme, we want to find the separator, so this
-                // places us ON the separator.
+                // in new scheme, we want to find the separator, so this places us ON the separator.
+                a += range;
+
             }
         } else {
             a = range;
         }
-        //DBG2 ("...a is now " << a);
     }
 
     return theVec;
