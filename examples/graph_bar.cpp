@@ -27,7 +27,7 @@ int main()
     ds.linewidth = ds.markersize/8.0f;
     // Bar graphs usually need to extend up from 0, so set scaling policy for the y axis accordingly:
     gv->scalingpolicy_y = morph::scalingpolicy::manual_min;
-    gv->datamin_y = 0;
+    gv->datarange_y.min = 0;
     // Set the data-to-axis distance based on the markersize.
     gv->setdataaxisdist (0.04f + ds.markersize/2.0f);
     gv->setdata (absc, ord, ds);

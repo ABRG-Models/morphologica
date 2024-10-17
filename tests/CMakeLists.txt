@@ -388,6 +388,9 @@ add_test(testMathAlgo2 testMathAlgo2)
 add_executable(testScale testScale.cpp)
 add_test(testScale testScale)
 
+add_executable(testrange testrange.cpp)
+add_test(testrange testrange)
+
 # Test the colour mapping
 add_executable(testColourMap testColourMap.cpp)
 add_test(testColourMap testColourMap)

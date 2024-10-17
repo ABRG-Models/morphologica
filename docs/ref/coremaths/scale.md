@@ -150,7 +150,15 @@ s.output_range.max = 5;
 s.compute_scaling (-10, 10);
 ```
 
-You can also trigger the computation of the scaling function if you have a container of data by using `compute_scaling_from_data`, which is the function that is automatically called by `transform` when `do_autoscale` is `true`.
+You can also pass the input range to `Scale<>::compute_scaling` and set the `output_range` using `morph::range<>` objects:
+
+```c++
+morph::Scale<int, float> s;
+s.output_range = morph::range<float>{0, 5};
+s.compute_scaling (morph::range<int>{-10, 10});
+```
+
+You can trigger the computation of the scaling function if you have a container of data by using `compute_scaling_from_data`, which is the function that is automatically called by `transform` when `do_autoscale` is `true`.
 
 ```c++
 morph::Scale<int, float> s;

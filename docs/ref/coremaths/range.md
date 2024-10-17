@@ -36,9 +36,12 @@ morph::range<float> r(0.0f, 10.0f); // Construct with a defined range
 **Update** the range to include a value
 ```c++
 morph::range<int> r; // range initially 0 to 0
-r.update (100);      // range now 0 to 100
-r.update (-100);     // range now -100 to 100
+bool changed1 = r.update (100);      // range now 0 to 100
+bool changed2 = r.update (-100);     // range now -100 to 100
+bool changed3 = r.update (50);       // range unchanged; still -100 to 100
 ```
+
+`update` returns a `bool` which will be true if the range was changed and false if the range is not changed. In the example above, `changed1` and changed2` will both be `true`, but `changed3` will contain `false`.
 
 **Set** the range manually in a single function call
 ```c++

@@ -50,8 +50,6 @@ namespace morph {
             this->twodimensional = true;
         }
 
-        ~GraphVisual() { for (auto& gdc : this->graphDataCoords) { delete gdc; } }
-
         //! Set true for any optional debugging
         static constexpr bool gv_debug = false;
 
@@ -67,54 +65,79 @@ namespace morph {
             if (this->datastyles[didx].axisside == morph::axisside::left) {
                 this->ord1.push_back (_ordinate);
                 this->absc1.push_back (_abscissa);
-                o = this->ord1_scale.transform_one (_ordinate);
+                try {
+                    o = this->ord1_scale.transform_one (_ordinate);
+                } catch (const std::exception& e) {
+                    std::cerr << "Error scaling ordinate 1 datum: " << e.what() << "\n";
+                    throw e;
+                }
             } else {
                 this->ord2.push_back (_ordinate);
                 this->absc2.push_back (_abscissa);
-                o = this->ord2_scale.transform_one (_ordinate);
+                try {
+                    o = this->ord2_scale.transform_one (_ordinate);
+                } catch (const std::exception& e) {
+                    std::cerr << "Error scaling ordinate 2 datum: " << e.what() << "\n";
+                    throw e;
+                }
             }
-            Flt a = this->abscissa_scale.transform_one (_abscissa);
-            //std::cout << "transformed coords: " << a << ", " << o << std::endl;
+
+            Flt a = Flt{0};
+            try {
+                a = this->abscissa_scale.transform_one (_abscissa);
+            } catch (const std::exception& e) {
+                std::cerr << "Error scaling abscissa datum: " << e.what() << "\n";
+                throw e;
+            }
+
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
+            if (graphDataCoords.size() < didx + 1) {
+                // Need to add an additional graphDataCoords to receive data. This can occur after
+                // appending the first data point of a first dataset and then appending the first
+                // data point of a second dataset to an otherwise empty graph.
+                this->graphDataCoords.push_back (std::make_unique<std::vector<morph::vec<float>>>(0u, morph::vec<float>{0,0,0}));
+                // As well as creating a new, empty graphDataCoords, we have to add the right datastyle
+                if (this->datastyles[didx].axisside == morph::axisside::left) {
+                    this->datastyles.push_back (this->ds_ord1);
+                } else {
+                    this->datastyles.push_back (this->ds_ord2);
+                }
+            }
+
             unsigned int oldsz = this->graphDataCoords[didx]->size();
             (this->graphDataCoords[didx])->resize (oldsz+1);
-            (*this->graphDataCoords[didx])[oldsz][0] = a;
-            (*this->graphDataCoords[didx])[oldsz][1] = o;
-            (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
-
-            bool redraw_plot = false;
-            Flt min_x = this->datamin_x, max_x = this->datamax_x;
-            Flt min_y = this->datamin_y, max_y = this->datamax_y;
-            Flt min_y2 = this->datamin_y2, max_y2 = this->datamax_y2;
-
+            this->graphDataCoords[didx].get()->at(oldsz) = morph::vec<float>{ static_cast<float>(a), static_cast<float>(o), float{0} };
+            int redraw_plot = 0;
+            morph::range<Flt> xrange = this->datarange_x;
+            morph::range<Flt> yrange = this->datarange_y;
+            morph::range<Flt> y2range = this->datarange_y2;
             // check x axis
-            if (this->auto_rescale_x) {
-                redraw_plot = this->UpdateMinMax(_abscissa, this->datamin_x, this->datamax_x, min_x, max_x);
-            }
+            if (this->auto_rescale_x) { redraw_plot += xrange.update (_abscissa) ? 1 : 0; }
 
             // check y axis
             if (this->auto_rescale_y) {
                 if (this->datastyles[didx].axisside == morph::axisside::left) {
-                    if(this->UpdateMinMax(this->ord1.back(), this->datamin_y, this->datamax_y, min_y, max_y)) {
-                        redraw_plot = true;
-                    }
+                    redraw_plot += yrange.update (this->ord1.back()) ? 1 : 0;
                 } else {
-                    if(this->UpdateMinMax(this->ord2.back(), this->datamin_y2, this->datamax_y2, min_y2, max_y2)) {
-                        redraw_plot = true;
-                    }
+                    redraw_plot += y2range.update (this->ord2.back()) ? 1 : 0;
                 }
             }
 
             // update graph if necessary
-            if (redraw_plot) {
+            if (redraw_plot > 0) {
                 this->clear_graph_data();
+
+                // setdata or this function will re-add these
                 this->graphDataCoords.clear();
+                this->datastyles.clear();
+
                 this->pendingAppended = true; // as the graph will be re-drawn
 
+                this->abscissa_scale.reset();
                 this->ord1_scale.reset();
                 this->ord2_scale.reset();
-                this->setlimits(min_x, max_x, min_y, max_y, min_y2, max_y2);
+                this->setlimits (xrange, yrange, y2range);
 
                 if (!this->ord1.empty()) {
                     // vvec, vvec, datasetstyle
@@ -160,6 +183,7 @@ namespace morph {
         update (const Ctnr1& _abscissae, const Ctnr2& _data, const unsigned int data_idx)
         {
             unsigned int dsize = _data.size();
+            morph::range<Flt> datarange;
 
             if (_abscissae.size() != dsize) {
                 throw std::runtime_error ("update: size mismatch");
@@ -173,19 +197,12 @@ namespace morph {
             // Ensure the vector at data_idx has enough capacity for the updated data
             this->graphDataCoords[data_idx]->resize (dsize);
 
-            // May need a re-autoscaling option somewhere in here.
-
-            // check x axis
+            // Are we auto-rescaling the x axis?
             if (this->auto_rescale_x) {
                 this->abscissa_scale.reset();
-                for (auto x_val : _abscissae) {
-                    this->ord1_scale.reset();
-                    this->ord2_scale.reset();
-
-                    Flt min_x = this->datamin_x, max_x = this->datamax_x;
-                    this->UpdateMinMax (x_val, this->datamin_x, this->datamax_x, min_x, max_x);
-                    this->setlimits (min_x, max_x, this->datamin_y, this->datamax_y, this->datamin_y2, this->datamax_y2);
-                }
+                datarange = this->datarange_x;
+                for (auto x_val : _abscissae) { datarange.update (x_val); }
+                this->setlimits_x (datarange);
             }
 
             // Transform the data into temporary containers sd and ad. Note call of
@@ -198,53 +215,34 @@ namespace morph {
                 // check min and max of the y axis
                 if (this->auto_rescale_y && this->auto_rescale_fit) {
                     this->ord1_scale.reset();
-                    this->ord2_scale.reset();
-                    Flt min_y = _data[0], max_y = _data[0];
-                    for (auto y_val : _data) {
-                        this->UpdateMinMax (y_val, min_y, max_y, min_y, max_y);
-                    }
-                    this->setlimits_y (min_y, max_y);
+                    // Find the data range in _data and setlimits_y accordingly
+                    datarange.search_init();
+                    for (auto y_val : _data) { datarange.update (y_val); }
+                    this->setlimits_y (datarange);
+
                 } else if (this->auto_rescale_y) {
-                    for (auto y_val : _data) {
-                        if (!(y_val >= this->datamin_y && y_val <= this->datamax_y)) {
-                            this->ord1_scale.reset();
-                            this->ord2_scale.reset();
-
-                            // update the y axis
-                            Flt min_y = this->datamin_y, max_y = this->datamax_y;
-                            this->UpdateMinMax (y_val, this->datamin_y, this->datamax_y, min_y, max_y);
-                            this->setlimits (this->datamin_x, this->datamax_x, min_y, max_y);
-
-                        }
-                    }
+                    this->ord1_scale.reset();
+                    // Starting with datarange_y, update datarange.
+                    datarange = this->datarange_y;
+                    for (auto y_val : _data) { datarange.update (y_val); }
+                    this->setlimits_y (datarange);
                 }
-
                 // scale data with the axis
                 this->ord1_scale.transform (_data, sd);
             } else {
-                // check min and max of the y2 axis
+                // Similar to the above, for the y2 axis
                 if (this->auto_rescale_y && this->auto_rescale_fit) {
-                    this->ord1_scale.reset();
                     this->ord2_scale.reset();
-                    Flt min_y2 = _data[0], max_y2 = _data[0];
-                    for (auto y_val : _data) {
-                        this->UpdateMinMax(y_val, min_y2, max_y2, min_y2, max_y2);
-                    }
-                    this->setlimits(this->datamin_x, this->datamax_x, this->datamin_y, this->datamax_y, min_y2, max_y2);
+                    datarange.search_init();
+                    for (auto y_val : _data) { datarange.update (y_val); }
+                    this->setlimits_y2 (datarange);
+
                 } else if (this->auto_rescale_y) {
-                    for (auto y_val : _data) {
-                        if (!(y_val >= this->datamin_y2 && y_val <= this->datamax_y2)) {
-                            this->ord1_scale.reset();
-                            this->ord2_scale.reset();
-
-                            // update the y axis
-                            Flt min_y2 = this->datamin_y2, max_y2 = this->datamax_y2;
-                            this->UpdateMinMax(y_val, this->datamin_y2, this->datamax_y2, min_y2, max_y2);
-                            this->setlimits(this->datamin_x, this->datamax_x, this->datamin_y, this->datamax_y, min_y2, max_y2);
-                        }
-                    }
+                    this->ord2_scale.reset();
+                    datarange = this->datarange_y2;
+                    for (auto y_val : _data) { datarange.update (y_val); }
+                    this->setlimits_y2 (datarange);
                 }
-
                 // scale data with the axis
                 this->ord2_scale.transform (_data, sd);
             }
@@ -252,9 +250,7 @@ namespace morph {
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             for (unsigned int i = 0; i < dsize; ++i) {
-                (*this->graphDataCoords[data_idx])[i][0] = static_cast<Flt>(ad[i]);
-                (*this->graphDataCoords[data_idx])[i][1] = static_cast<Flt>(sd[i]);
-                (*this->graphDataCoords[data_idx])[i][2] = Flt{0};
+                this->graphDataCoords[data_idx].get()->at(i) = morph::vec<float>{ static_cast<float>(ad[i]), static_cast<float>(sd[i]), float{0} };
             }
 
             this->clearTexts(); // VisualModel::clearTexts()
@@ -394,7 +390,7 @@ namespace morph {
 
             unsigned int dsize = _quivs.size();
             unsigned int didx = this->graphDataCoords.size();
-            this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, { 0.0f, 0.0f, 0.0f }));
+            this->graphDataCoords.push_back (std::make_unique<std::vector<morph::vec<float>>>(dsize, morph::vec<float>{ 0.0f, 0.0f, 0.0f }));
             this->datastyles.push_back (ds);
 
             // Compute the ord1_scale and asbcissa_scale for the first added dataset only
@@ -430,9 +426,7 @@ namespace morph {
                 // Now sd and ad can be used to construct dataCoords x/y. They are used to
                 // set the position of each datum into dataCoords
                 for (unsigned int i = 0; i < dsize; ++i) {
-                    (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
-                    (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
-                    (*this->graphDataCoords[didx])[i][2] = Flt{0};
+                    this->graphDataCoords[didx].get()->at(i) = morph::vec<float>{ static_cast<float>(ad[i]), static_cast<float>(sd[i]), float{0} };
                 }
             }
         }
@@ -467,7 +461,7 @@ namespace morph {
 
             // Allocate memory for the new data coords, add the data style info and the
             // starting index for dataCoords
-            this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, {0,0,0}));
+            this->graphDataCoords.push_back (std::make_unique<std::vector<morph::vec<float>>>(dsize, morph::vec<float>{0,0,0}));
 
             this->datastyles.push_back (ds);
 
@@ -492,9 +486,7 @@ namespace morph {
                 // Now sd and ad can be used to construct dataCoords x/y. They are used to
                 // set the position of each datum into dataCoords
                 for (unsigned int i = 0; i < dsize; ++i) {
-                    (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
-                    (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
-                    (*this->graphDataCoords[didx])[i][2] = Flt{0};
+                    this->graphDataCoords[didx].get()->at(i) = morph::vec<float>{ static_cast<float>(ad[i]), static_cast<float>(sd[i]), float{0} };
                 }
             }
         }
@@ -534,7 +526,7 @@ namespace morph {
             // Because this is bar graph data, make sure to compute the ord1_scale now from
             // 0 -> max and NOT from min -> max.
             this->scalingpolicy_y = morph::scalingpolicy::manual_min;
-            this->datamin_y = Flt{0};
+            this->datarange_y.min = Flt{0};
             this->setdata (h.bins, h.proportions, ds);
         }
 
@@ -545,7 +537,7 @@ namespace morph {
             // Because this is bar graph data, make sure to compute the ord1_scale now from
             // 0 -> max and NOT from min -> max.
             this->scalingpolicy_y = morph::scalingpolicy::manual_min;
-            this->datamin_y = Flt{0};
+            this->datarange_y.min = Flt{0};
             this->setdata (h.bins, h.proportions, ds);
         }
 
@@ -556,8 +548,8 @@ namespace morph {
                          && morph::is_copyable_container<Ctnr2>::value, void>
         compute_scaling (const Ctnr1& _abscissae, const Ctnr2& _data, const morph::axisside axisside)
         {
-            morph::range<Flt> data_maxmin = morph::MathAlgo::maxmin (_data);
-            morph::range<Flt> absc_maxmin = morph::MathAlgo::maxmin (_abscissae);
+            morph::range<Flt> data_range = morph::MathAlgo::maxmin (_data);
+            morph::range<Flt> absc_range = morph::MathAlgo::maxmin (_abscissae);
             if (axisside == morph::axisside::left) {
                 this->setsize (this->width, this->height);
             }
@@ -566,23 +558,23 @@ namespace morph {
             switch (this->scalingpolicy_x) {
             case morph::scalingpolicy::manual:
             {
-                this->abscissa_scale.compute_scaling (this->datamin_x, this->datamax_x);
+                this->abscissa_scale.compute_scaling (this->datarange_x);
                 break;
             }
             case morph::scalingpolicy::manual_min:
             {
-                this->abscissa_scale.compute_scaling (this->datamin_x, absc_maxmin.max);
+                this->abscissa_scale.compute_scaling (this->datarange_x.min, absc_range.max);
                 break;
             }
             case morph::scalingpolicy::manual_max:
             {
-                this->abscissa_scale.compute_scaling (absc_maxmin.min, this->datamax_x);
+                this->abscissa_scale.compute_scaling (absc_range.min, this->datarange_x.max);
                 break;
             }
             case morph::scalingpolicy::autoscale:
             default:
             {
-                this->abscissa_scale.compute_scaling (absc_maxmin.min, absc_maxmin.max);
+                this->abscissa_scale.compute_scaling (absc_range);
                 break;
             }
             }
@@ -592,27 +584,27 @@ namespace morph {
             case morph::scalingpolicy::manual:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_scaling (this->datamin_y, this->datamax_y);
+                    this->ord1_scale.compute_scaling (this->datarange_y);
                 } else {
-                    this->ord2_scale.compute_scaling (this->datamin_y2, this->datamax_y2);
+                    this->ord2_scale.compute_scaling (this->datarange_y2);
                 }
                 break;
             }
             case morph::scalingpolicy::manual_min:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_scaling (this->datamin_y, data_maxmin.max);
+                    this->ord1_scale.compute_scaling (this->datarange_y.min, data_range.max);
                 } else {
-                    this->ord2_scale.compute_scaling (this->datamin_y2, data_maxmin.max);
+                    this->ord2_scale.compute_scaling (this->datarange_y2.min, data_range.max);
                 }
                 break;
             }
             case morph::scalingpolicy::manual_max:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_scaling (data_maxmin.min, this->datamax_y);
+                    this->ord1_scale.compute_scaling (data_range.min, this->datarange_y.max);
                 } else {
-                    this->ord2_scale.compute_scaling (data_maxmin.min, this->datamax_y2);
+                    this->ord2_scale.compute_scaling (data_range.min, this->datarange_y2.max);
                 }
                 break;
             }
@@ -620,9 +612,9 @@ namespace morph {
             default:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_scaling (data_maxmin.min, data_maxmin.max);
+                    this->ord1_scale.compute_scaling (data_range);
                 } else {
-                    this->ord2_scale.compute_scaling (data_maxmin.min, data_maxmin.max);
+                    this->ord2_scale.compute_scaling (data_range);
                 }
                 break;
             }
@@ -638,19 +630,15 @@ namespace morph {
         void setdataaxisdist (float proportion)
         {
             if (this->ord1_scale.ready()) {
-                throw std::runtime_error ("Have already scaled the data, can't set the dataaxisdist now.\n"
+                throw std::runtime_error ("setdataaxisdist: Have already scaled the data, can't set the dataaxisdist now.\n"
                                           "Hint: call GraphVisual::setdataaxisdist() BEFORE GraphVisual::setdata() or ::setlimits()");
             }
             this->dataaxisdist = proportion;
         }
 
-        //! Set the graph size, in model units.
-        void setsize (float _width, float _height)
+        //! Set the graph size, in model units, without a check on the scales
+        void resetsize (float _width, float _height)
         {
-            if (this->ord1_scale.ready()) {
-                throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
-                                          "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
-            }
             this->width = _width;
             this->height = _height;
 
@@ -666,6 +654,16 @@ namespace morph {
             this->abscissa_scale.output_range.max = this->width - _extra;
 
             this->thickness = this->relative_thickness * this->width;
+        }
+
+        //! Set the graph size, in model units.
+        void setsize (float _width, float _height)
+        {
+            if (this->ord1_scale.ready() || this->ord2_scale.ready() || this->abscissa_scale.ready()) {
+                throw std::runtime_error ("setsize: Have already scaled the data, can't set the scale now.\n"
+                                          "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
+            }
+            this->resetsize (_width, _height);
         }
 
         // Make all the bits of the graph - fonts, line thicknesses, etc, bigger by factor. Call before finalize().
@@ -689,95 +687,119 @@ namespace morph {
         }
 
         //! Set manual limits for the x axis (abscissa)
-        void setlimits_x (Flt _xmin, Flt _xmax)
+        void setlimits_x (const Flt _xmin, const Flt _xmax)
+        {
+            morph::range<Flt> range_x(_xmin, _xmax);
+            this->setlimits_x (range_x);
+        }
+
+        //! Set manual limits for the x axis (abscissa) passing by morph::range
+        void setlimits_x (const morph::range<Flt>& range_x)
         {
             this->scalingpolicy_x = morph::scalingpolicy::manual;
-            this->datamin_x = _xmin;
-            this->datamax_x = _xmax;
-            this->setsize (this->width, this->height);
-            this->abscissa_scale.compute_scaling (this->datamin_x, this->datamax_x);
+            this->datarange_x = range_x;
+            if (this->abscissa_scale.ready()) {
+                throw std::runtime_error ("Have already scaled the abscissa data.\n");
+            }
+            this->resetsize (this->width, this->height);
+            this->abscissa_scale.compute_scaling (this->datarange_x);
         }
 
         //! Set manual limits for the y axis (ordinate)
-        void setlimits_y (Flt _ymin, Flt _ymax)
+        void setlimits_y (const Flt _ymin, const Flt _ymax)
+        {
+            morph::range<Flt> range_y(_ymin, _ymax);
+            this->setlimits_y (range_y);
+        }
+
+        //! Set manual limits for the x axis (abscissa) passing by morph::range
+        void setlimits_y (const morph::range<Flt>& range_y)
         {
             this->scalingpolicy_y = morph::scalingpolicy::manual;
-            this->datamin_y = _ymin;
-            this->datamax_y = _ymax;
-            this->setsize (this->width, this->height);
-            this->ord1_scale.compute_scaling (this->datamin_y, this->datamax_y);
+            this->datarange_y = range_y;
+            if (this->ord1_scale.ready()) {
+                throw std::runtime_error ("Have already scaled the ord1 data.\n");
+            }
+            this->resetsize (this->width, this->height);
+            this->ord1_scale.compute_scaling (this->datarange_y);
         }
 
         //! Set manual limits for the second y axis (ordinate)
-        void setlimits_y2 (Flt _ymin, Flt _ymax)
+        void setlimits_y2 (const Flt _ymin2, const Flt _ymax2)
+        {
+            morph::range<Flt> range_y2(_ymin2, _ymax2);
+            this->setlimits_y2 (range_y2);
+        }
+
+        //! Set manual limits for the x axis (abscissa) passing by morph::range
+        void setlimits_y2 (const morph::range<Flt>& range_y2)
         {
             this->scalingpolicy_y = morph::scalingpolicy::manual; // scalingpolicy_y common to both left and right axes?
-            this->datamin_y2 = _ymin;
-            this->datamax_y2 = _ymax;
-            this->setsize (this->width, this->height);
-            this->ord2_scale.compute_scaling (this->datamin_y2, this->datamax_y2);
+            this->datarange_y2 = range_y2;
+            if (this->ord2_scale.ready()) {
+                throw std::runtime_error ("Have already scaled the ord2 data.\n");
+            }
+            this->resetsize (this->width, this->height);
+            this->ord2_scale.compute_scaling (this->datarange_y2);
         }
 
         // Axis ranges. The length of each axis could be determined from the data and
         // abscissas for a static graph, but for a dynamically updating graph, it's
         // going to be necessary to give a hint at how far the data/abscissas might need
         // to extend.
-        void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
+        void setlimits (const Flt _xmin, const Flt _xmax, const Flt _ymin, const Flt _ymax)
+        {
+            morph::range<Flt> range_x(_xmin, _xmax);
+            morph::range<Flt> range_y(_ymin, _ymax);
+            this->setlimits (range_x, range_y);
+        }
+
+        // Set axis limits for x/y passing by morph::range
+        void setlimits (const morph::range<Flt>& range_x, const morph::range<Flt>& range_y)
         {
             // Set limits with 4 args gives fully manual scaling
             this->scalingpolicy_x = morph::scalingpolicy::manual;
-            this->datamin_x = _xmin;
-            this->datamax_x = _xmax;
+            this->datarange_x = range_x;
             this->scalingpolicy_y = morph::scalingpolicy::manual;
-            this->datamin_y = _ymin;
-            this->datamax_y = _ymax;
+            this->datarange_y = range_y;
 
             // First make sure that the range_min/max are correctly set
             this->setsize (this->width, this->height);
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always width * height in size).
-            this->ord1_scale.compute_scaling (this->datamin_y, this->datamax_y);
-            this->abscissa_scale.compute_scaling (this->datamin_x, this->datamax_x);
+            this->ord1_scale.compute_scaling (this->datarange_y);
+            this->abscissa_scale.compute_scaling (this->datarange_x);
         }
 
         //! setlimits overload that sets BOTH left and right axes limits
-        void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax, Flt _ymin2, Flt _ymax2)
+        void setlimits (const Flt _xmin, const Flt _xmax,
+                        const Flt _ymin, const Flt _ymax, const Flt _ymin2, const Flt _ymax2)
+        {
+            morph::range<Flt> range_x(_xmin, _xmax);
+            morph::range<Flt> range_y(_ymin, _ymax);
+            morph::range<Flt> range_y2(_ymin2, _ymax2);
+            this->setlimits (range_x, range_y, range_y2);
+        }
+
+        //! setlimits overload that sets BOTH left and right axes limits, passing by morph::range
+        void setlimits (const morph::range<Flt>& range_x,
+                        const morph::range<Flt>& range_y, const morph::range<Flt>& range_y2)
         {
             // Set limits with 4 args gives fully manual scaling
             this->scalingpolicy_x = morph::scalingpolicy::manual;
-            this->datamin_x = _xmin;
-            this->datamax_x = _xmax;
+            this->datarange_x = range_x;
             this->scalingpolicy_y = morph::scalingpolicy::manual;
-            this->datamin_y = _ymin;
-            this->datamax_y = _ymax;
-            this->datamin_y2 = _ymin2;
-            this->datamax_y2 = _ymax2;
+            this->datarange_y = range_y;
+            this->datarange_y2 = range_y2;
 
             // First make sure that the range_min/max are correctly set
             this->setsize (this->width, this->height);
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always width * height in size).
-            this->abscissa_scale.compute_scaling (this->datamin_x, this->datamax_x);
-            this->ord1_scale.compute_scaling (this->datamin_y, this->datamax_y);
-            this->ord2_scale.compute_scaling (this->datamin_y2, this->datamax_y2);
-        }
+            this->abscissa_scale.compute_scaling (this->datarange_x);
+            this->ord1_scale.compute_scaling (this->datarange_y);
+            this->ord2_scale.compute_scaling (this->datarange_y2);
 
-        //! function to test if a value is in a given range and update that range with new boundaries if required
-        bool UpdateMinMax (const Flt& val, const Flt& old_min, const Flt& old_max, Flt& new_min, Flt& new_max)
-        {
-            if (val > old_max) {
-                new_min = old_min;
-                new_max = val;
-                return true;
-            } else if (val < old_min) {
-                new_min = val;
-                new_max = old_max;
-                return true;
-            } else {
-                new_min = old_min;
-                new_max = old_max;
-                return false;
-            }
         }
 
         //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
@@ -809,30 +831,45 @@ namespace morph {
         }
 
         /*!
-         * Auto-computes the tick marker locations (in data space) for the data range
-         * rmin to rmax. realmin and realmax gives the data range actually displayed on
-         * the graph - it's the data range, plus any padding introduced by
-         * GraphVisual::dataaxisdist
+         * Auto-computes the tick marker locations (in data space) for the data range rmin to
+         * rmax. realmin and realmax gives the data range actually displayed on the graph - it's the
+         * data range, plus any padding introduced by GraphVisual::dataaxisdist.
+         *
+         * This overload accepts separate min and max for the preferred number of ticks.
          */
         static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
-                                          const Flt _max_num_ticks = 10, const Flt _min_num_ticks = 3)
+                                          const Flt _min_num_ticks = 3, const Flt _max_num_ticks = 10)
+        {
+            morph::range<Flt> _num_ticks_range(_min_num_ticks, _max_num_ticks);
+            return GraphVisual<Flt, glver>::maketicks (rmin, rmax, realmin, realmax, _num_ticks_range);
+        }
+
+        /*!
+         * Auto-computes the tick marker locations (in data space) for the data range rmin to
+         * rmax. realmin and realmax gives the data range actually displayed on the graph - it's the
+         * data range, plus any padding introduced by GraphVisual::dataaxisdist
+         *
+         * This overload accepts a morph::range for the preferred number of ticks.
+         */
+        static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
+                                          const morph::range<Flt>& _num_ticks_range)
         {
             std::deque<Flt> ticks;
 
-            Flt range = rmax - rmin;
+            Flt range = rmax - rmin; // data range
             // How big should the range be? log the range, find the floor, raise it to get candidate
             Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
             Flt numticks = floor(range/trytick);
             if constexpr (gv_debug) {
-                std::cout << "initial trytick = " << trytick << ", numticks = " << numticks << " max_num_ticks = " << _max_num_ticks << std::endl;
+                std::cout << "initial trytick = " << trytick << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
             }
-            if (numticks > _max_num_ticks) {
-                while (numticks > _max_num_ticks && numticks > _min_num_ticks) {
+            if (numticks > _num_ticks_range.max) {
+                while (numticks > _num_ticks_range.max && numticks > _num_ticks_range.min) {
                     trytick = trytick * Flt{2}; // bigger tick spacing means fewer ticks
                     numticks = floor(range/trytick);
                 }
-            } else if (numticks < _min_num_ticks) {
-                while (numticks < _min_num_ticks && numticks < _max_num_ticks) {
+            } else if (numticks < _num_ticks_range.min) {
+                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max) {
                     trytick = trytick * Flt{0.5};
                     numticks = floor(range/trytick);
                     if constexpr (gv_debug) {
@@ -1683,20 +1720,20 @@ namespace morph {
 
                 float realmin = this->abscissa_scale.inverse_one (0);
                 float realmax = this->abscissa_scale.inverse_one (this->width);
-                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
+                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax, this->num_ticks_range);
                 this->xtick_posns.resize (this->xticks.size());
                 this->abscissa_scale.transform (xticks, xtick_posns);
 
                 realmin = this->ord1_scale.inverse_one (0);
                 realmax = this->ord1_scale.inverse_one (this->height);
-                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
+                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax, this->num_ticks_range);
                 this->ytick_posns.resize (this->yticks.size());
                 this->ord1_scale.transform (yticks, ytick_posns);
 
                 if (this->ord2_scale.ready()) {
                     realmin = this->ord2_scale.inverse_one (0);
                     realmax = this->ord2_scale.inverse_one (this->height);
-                    this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
+                    this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax, this->num_ticks_range);
                     this->ytick_posns2.resize (this->yticks2.size());
                     this->ord2_scale.transform (yticks2, ytick_posns2);
                 }
@@ -1704,9 +1741,9 @@ namespace morph {
         }
 
     public:
-        //! Graph data coordinates. A vector of vectors of pointers to data, with one
+        //! Graph data coordinates. A vector of vectors of unique pointers to data, with one
         //! pointer for each graph in the model.
-        std::vector<std::vector<vec<float>>*> graphDataCoords;
+        std::vector<std::unique_ptr<std::vector<vec<float>>>> graphDataCoords;
         //! Quiver data, if used. Limitation: You can ONLY have ONE quiver field per
         //! GraphVisual. Note that the quivers can point in three dimensions. That's intentional,
         //! even though 2D quivers are going to be used most. The locations for the quivers for
@@ -1742,16 +1779,13 @@ namespace morph {
         //! What's the scaling policy for the abscissa?
         morph::scalingpolicy scalingpolicy_x = morph::scalingpolicy::autoscale;
         //! If required, the abscissa's minimum/max data values
-        Flt datamin_x = Flt{0};
-        Flt datamax_x = Flt{1};
+        morph::range<Flt> datarange_x{ Flt{0}, Flt{1} };
         //! What's the scaling policy for the ordinate?
         morph::scalingpolicy scalingpolicy_y = morph::scalingpolicy::autoscale;
         //! If required, the ordinate's minimum/max data values
-        Flt datamin_y = Flt{0};
-        Flt datamax_y = Flt{1};
+        morph::range<Flt> datarange_y{ Flt{0}, Flt{1} };
         //! If required, the second ordinate's minimum/max data values (twinax)
-        Flt datamin_y2 = Flt{0};
-        Flt datamax_y2 = Flt{1};
+        morph::range<Flt> datarange_y2{ Flt{0}, Flt{1} };
         //! Auto-rescale x axis if data goes off the edge of the graph (by setting the out of range data as new boundary)
         bool auto_rescale_x = false;
         //! Auto-rescale y axis if data goes off the edge of the graph (by setting the out of range data as new boundary)
@@ -1795,10 +1829,8 @@ namespace morph {
         bool omit_x_tick_labels = false;
         //! Should the y (and y2) tick *labels* be omitted?
         bool omit_y_tick_labels = false;
-        //! Max number of tick labels permitted
-        Flt max_num_ticks = Flt{10};
-        //! Min number of tick labels permitted
-        Flt min_num_ticks = Flt{3};
+        //! The number of tick labels permitted, stored as a morph::range
+        morph::range<Flt> num_ticks_range{ Flt{3}, Flt{10} };
         // Default font
         morph::VisualFont font = morph::VisualFont::DVSans;
         //! Font resolution - determines how textures for glyphs are generated. If your

@@ -252,5 +252,12 @@ int main () {
     // Fifth element should be NaN still:
     if (!std::isnan(resultnan[5])) { --rtn; }
 
+    morph::Scale<int, float> sif;
+    sif.output_range = morph::range<float>{0, 5};
+    sif.compute_scaling (morph::range<int>{-10, 10});
+    std::cout << "input 8(int) transforms to float: " << sif.transform_one (8) << std::endl;
+    if (sif.transform_one (8) != 4.5f) { --rtn; }
+
+    std::cout << "testScale " << (rtn == 0 ? "Passed" : "Failed") << std::endl;
     return rtn;
 }
