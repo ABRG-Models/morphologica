@@ -65,7 +65,8 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (v.curr_map_type);
     gv->zScale.setParams (0, 0);
-    gv->addLabel (gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
+    gv->addLabel (gv->cm.getTypeStr() + std::string(" (") + gv->cm.getFlagsStr() + std::string(")"),
+                  morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     auto gvp = v.addVisualModel (gv);
 
@@ -83,7 +84,8 @@ int main()
                 gv->setScalarData (&data);
                 gv->cm.setType (v.curr_map_type);
                 gv->zScale.setParams (0, 0);
-                gv->addLabel (gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
+                gv->addLabel (gv->cm.getTypeStr() + std::string(" (") + gv->cm.getFlagsStr() + std::string(")"),
+                              morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
                 gv->finalize();
                 gvp = v.addVisualModel (gv);
             } else {

@@ -196,14 +196,27 @@ namespace morph {
     // A flags class for ColourMaps, to flag features
     enum class ColourMapFlags : uint32_t
     {
-        none                   =  0x0,
-        one_d                  =  0x1,
-        two_d                  =  0x2,
-        three_d                =  0x4,
-        cyclic                 =  0x8,
-        disc                   = 0x10,
-        perceptually_uniform   = 0x20,
-        colourblind_friendly   = 0x40
+        none                   =      0x0,
+        one_d                  =      0x1,
+        two_d                  =      0x2,
+        three_d                =      0x4,
+        sequential             =      0x8, // sequential/linear
+        cyclic                 =     0x10,
+        disc                   =     0x20,
+        perceptually_uniform   =     0x40,
+        colourblind_friendly   =     0x80,
+        divergent              =    0x100,
+        rainbow                =    0x200,
+        isoluminant            =    0x400,
+        multisequential        =    0x800,
+        whites                 =   0x1000,
+        reds                   =   0x2000,
+        blues                  =   0x4000, // Flag 15
+        greens                 =   0x8000,
+        yellows                =  0x10000,
+        pinks                  =  0x20000,
+        purples                =  0x40000,
+        greys                  =  0x80000,
     };
     // Bitwise operators for ColourMapFlags
     ColourMapFlags operator| (const ColourMapFlags& lhs, const ColourMapFlags& rhs)
@@ -220,6 +233,8 @@ namespace morph {
     {
         // Logic to create ColourMapFlags
         morph::ColourMapFlags f = ColourMapFlags::none;
+
+        // Dimensionality
         if (t == ColourMapType::DiscFourWhite
             || t == ColourMapType::DiscFourBlack
             || t == ColourMapType::DiscSixWhite
@@ -236,8 +251,260 @@ namespace morph {
             f = f | ColourMapFlags::one_d;
         }
 
-        // Additional logic to come
+        // Linear (sequential)
+        if (t == ColourMapType::CET_L01
+            || t == ColourMapType::CET_L02
+            || t == ColourMapType::CET_L03
+            || t == ColourMapType::CET_L04
+            || t == ColourMapType::CET_L05
+            || t == ColourMapType::CET_L06
+            || t == ColourMapType::CET_L07
+            || t == ColourMapType::CET_L08
+            || t == ColourMapType::CET_L09
+            || t == ColourMapType::CET_L10
+            || t == ColourMapType::CET_L11
+            || t == ColourMapType::CET_L12
+            || t == ColourMapType::CET_L13
+            || t == ColourMapType::CET_L14
+            || t == ColourMapType::CET_L15
+            || t == ColourMapType::CET_L16
+            || t == ColourMapType::CET_L17
+            || t == ColourMapType::CET_L18
+            || t == ColourMapType::CET_L19
+            || t == ColourMapType::CET_L20
+            || t == ColourMapType::CET_CBL1
+            || t == ColourMapType::CET_CBL2
 
+
+            || t == ColourMapType::Batlow
+            || t == ColourMapType::BatlowW
+            || t == ColourMapType::BatlowK
+            || t == ColourMapType::Glasgow
+            || t == ColourMapType::Lipari
+            || t == ColourMapType::Navia
+            || t == ColourMapType::Hawaii
+            || t == ColourMapType::Buda
+            || t == ColourMapType::Imola
+            || t == ColourMapType::Oslo
+            || t == ColourMapType::GrayC
+            || t == ColourMapType::Nuuk
+            || t == ColourMapType::Devon
+            || t == ColourMapType::Lajolla
+            || t == ColourMapType::Bamako
+            || t == ColourMapType::Davos
+            || t == ColourMapType::Bilbao
+            || t == ColourMapType::Lapaz
+            || t == ColourMapType::Acton
+            || t == ColourMapType::Turku
+            || t == ColourMapType::Tokyo
+
+            || t == ColourMapType::Inferno
+            || t == ColourMapType::Plasma
+            || t == ColourMapType::Cividis
+            || t == ColourMapType::Viridis
+            || t == ColourMapType::Magma
+
+            || t == ColourMapType::Greyscale
+            || t == ColourMapType::GreyscaleInv
+            || t == ColourMapType::Monochrome
+            || t == ColourMapType::MonochromeRed
+            || t == ColourMapType::MonochromeGreen
+            || t == ColourMapType::MonochromeBlue
+            || t == ColourMapType::Monoval
+            || t == ColourMapType::MonovalRed
+            || t == ColourMapType::MonovalGreen
+            || t == ColourMapType::MonovalBlue ) {
+
+            f = f | ColourMapFlags::sequential;
+        }
+
+        // Divergent
+        if (t == ColourMapType::Petrov
+            || t == ColourMapType::HSV1D
+
+            || t == ColourMapType::CET_D01
+            || t == ColourMapType::CET_D01A
+            || t == ColourMapType::CET_D02
+            || t == ColourMapType::CET_D03
+            || t == ColourMapType::CET_D04
+            || t == ColourMapType::CET_D07
+            || t == ColourMapType::CET_D08
+            || t == ColourMapType::CET_D09
+            || t == ColourMapType::CET_D10
+            || t == ColourMapType::CET_D13
+            || t == ColourMapType::CET_R3
+            || t == ColourMapType::CET_CBD1
+
+
+            || t == ColourMapType::Broc
+            || t == ColourMapType::Cork
+            || t == ColourMapType::Vik
+            || t == ColourMapType::Lisbon
+            || t == ColourMapType::Tofino
+            || t == ColourMapType::Berlin
+            || t == ColourMapType::Bam
+            || t == ColourMapType::Roma
+            || t == ColourMapType::Vanimo
+            || t == ColourMapType::Managua ) {
+            f = f | ColourMapFlags::divergent;
+        }
+
+        // Cyclic
+        if (t == ColourMapType::CET_C1
+            || t == ColourMapType::CET_C2
+            || t == ColourMapType::CET_C3
+            || t == ColourMapType::CET_C4
+            || t == ColourMapType::CET_C5
+            || t == ColourMapType::CET_C6
+            || t == ColourMapType::CET_C7
+            || t == ColourMapType::CET_CBC1
+            || t == ColourMapType::CET_CBC2
+
+            || t == ColourMapType::Twilight
+
+            || t == ColourMapType::RomaO
+            || t == ColourMapType::BamO
+            || t == ColourMapType::BrocO
+            || t == ColourMapType::CorkO
+            || t == ColourMapType::VikO
+            ) {
+            f = f | ColourMapFlags::cyclic;
+        }
+
+        // Multi-sequential
+        if (t == ColourMapType::Oleron
+            || t == ColourMapType::Bukavu
+            || t == ColourMapType::Fes ) {
+            f = f | ColourMapFlags::multisequential;
+        }
+
+        // Isoluminant
+        if (t == ColourMapType::CET_I1
+            || t == ColourMapType::CET_I2
+            || t == ColourMapType::CET_I3
+            || t == ColourMapType::CET_D11
+            || t == ColourMapType::CET_D12 ) {
+            f = f | ColourMapFlags::isoluminant;
+        }
+
+        // Rainbow maps
+        if (t == ColourMapType::Jet
+            || t == ColourMapType::Rainbow
+            || t == ColourMapType::Hawaii
+            || t == ColourMapType::CET_R1
+            || t == ColourMapType::CET_R2
+            || t == ColourMapType::CET_R3
+            || t == ColourMapType::CET_R4
+            || t == ColourMapType::CET_C1
+            || t == ColourMapType::CET_C2
+            || t == ColourMapType::CET_C6
+            || t == ColourMapType::CET_C7
+            || t == ColourMapType::HSV
+            || t == ColourMapType::DiscFourWhite
+            || t == ColourMapType::DiscFourBlack
+            || t == ColourMapType::DiscSixWhite
+            || t == ColourMapType::DiscSixBlack) {
+            f = f | ColourMapFlags::rainbow;
+        }
+
+        // Disc maps
+        if (t == ColourMapType::DiscFourWhite
+            || t == ColourMapType::DiscFourBlack
+            || t == ColourMapType::DiscSixWhite
+            || t == ColourMapType::DiscSixBlack) {
+            f = f | ColourMapFlags::disc;
+        }
+
+        // PU
+        if (t == ColourMapType::HSV
+            || t == ColourMapType::HSV1D
+            || t == ColourMapType::Monochrome
+            || t == ColourMapType::MonochromeRed
+            || t == ColourMapType::MonochromeGreen
+            || t == ColourMapType::MonochromeBlue
+            || t == ColourMapType::Monoval
+            || t == ColourMapType::MonovalRed
+            || t == ColourMapType::MonovalGreen
+            || t == ColourMapType::MonovalBlue
+            || t == ColourMapType::Rainbow) {
+            // Not perceptually uniform
+        } else {
+            f = f | ColourMapFlags::perceptually_uniform;
+        }
+
+        // Colourblind friendly
+        if (t == ColourMapType::Monochrome
+            || t == ColourMapType::MonochromeRed
+            || t == ColourMapType::MonochromeGreen
+            || t == ColourMapType::MonochromeBlue
+            || t == ColourMapType::Monoval
+            || t == ColourMapType::MonovalRed
+            || t == ColourMapType::MonovalGreen
+            || t == ColourMapType::MonovalBlue
+            || t == ColourMapType::Greyscale
+            || t == ColourMapType::GreyscaleInv
+
+            //|| t == ColourMapType::CET_CL01
+            //|| t == ColourMapType::CET_CL02
+            //|| t == ColourMapType::CET_CL06
+            //|| t == ColourMapType::CET_CL12
+            //|| t == ColourMapType::CET_CL13
+            //|| t == ColourMapType::CET_CL14
+            //|| t == ColourMapType::CET_CL15
+            || t == ColourMapType::CET_C5
+
+            || t == ColourMapType::CET_CBL1
+            || t == ColourMapType::CET_CBL2
+            || t == ColourMapType::CET_CBD1
+            || t == ColourMapType::CET_CBC1
+            || t == ColourMapType::CET_CBC2
+
+            || t == ColourMapType::GrayC
+
+            || t == ColourMapType::Batlow
+            || t == ColourMapType::BatlowW
+            || t == ColourMapType::BatlowK
+            || t == ColourMapType::Glasgow
+            || t == ColourMapType::Lipari
+            || t == ColourMapType::Navia
+            || t == ColourMapType::Hawaii
+            || t == ColourMapType::Buda
+            || t == ColourMapType::Imola
+            || t == ColourMapType::Oslo
+            || t == ColourMapType::GrayC
+            || t == ColourMapType::Nuuk
+            || t == ColourMapType::Devon
+            || t == ColourMapType::Lajolla
+            || t == ColourMapType::Bamako
+            || t == ColourMapType::Davos
+            || t == ColourMapType::Bilbao
+            || t == ColourMapType::Lapaz
+            || t == ColourMapType::Acton
+            || t == ColourMapType::Turku
+            || t == ColourMapType::Tokyo
+
+            || t == ColourMapType::RomaO
+            || t == ColourMapType::BamO
+            || t == ColourMapType::BrocO
+            || t == ColourMapType::CorkO
+            || t == ColourMapType::VikO
+
+            || t == ColourMapType::Broc
+            || t == ColourMapType::Cork
+            || t == ColourMapType::Vik
+            || t == ColourMapType::Lisbon
+            || t == ColourMapType::Tofino
+            || t == ColourMapType::Berlin
+            || t == ColourMapType::Bam
+            || t == ColourMapType::Roma
+            || t == ColourMapType::Vanimo
+            || t == ColourMapType::Managua
+
+            || t == ColourMapType::Oleron
+            || t == ColourMapType::Bukavu
+            || t == ColourMapType::Fes ) {
+            f = f | ColourMapFlags::colourblind_friendly;
+        }
         return f;
     }
 
@@ -267,7 +534,7 @@ namespace morph {
     {
     public:
         //! Flags associated with the type (generated in setType)
-        ColourMapFlags flags = ColourMapFlags::one_d | ColourMapFlags::perceptually_uniform;
+        ColourMapFlags flags = ColourMapFlags::none;
     private:
         //! Type of map
         ColourMapType type = ColourMapType::Plasma;
@@ -601,6 +868,28 @@ namespace morph {
                 cmt = morph::ColourMapType::Jet;
             }
             return cmt;
+        }
+
+        static std::string colourMapFlagsToStr (const ColourMapFlags _f)
+        {
+            std::string s("");
+            if (_f & ColourMapFlags::one_d) { s += (s.empty() ? "1D" : ", 1D"); }
+            if (_f & ColourMapFlags::two_d) { s += (s.empty() ? "2D" : ", 2D"); }
+            if (_f & ColourMapFlags::three_d) { s += (s.empty() ? "3D" : ", 3D"); }
+
+            if (_f & ColourMapFlags::sequential) { s += (s.empty() ? "Seq" : ", Seq"); }
+            if (_f & ColourMapFlags::multisequential) { s += (s.empty() ? "MultiSeq" : ", MultiSeq"); }
+            if (_f & ColourMapFlags::divergent) { s += (s.empty() ? "Dvg" : ", Dvg"); }
+            if (_f & ColourMapFlags::cyclic) { s += (s.empty() ? "Cyclic" : ", Cyclic"); }
+            if (_f & ColourMapFlags::disc) { s += (s.empty() ? "Disc" : ", Disc"); }
+
+            if (_f & ColourMapFlags::isoluminant) { s += (s.empty() ? "Iso" : ", Iso"); }
+            if (_f & ColourMapFlags::rainbow) { s += (s.empty() ? "Rain" : ", Rain"); }
+
+            if (_f & ColourMapFlags::perceptually_uniform) { s += (s.empty() ? "PU" : ", PU"); }
+            if (_f & ColourMapFlags::colourblind_friendly) { s += (s.empty() ? "CB" : ", CB"); }
+
+            return s;
         }
 
         //! Return a string representation of the ColourMapType _t
@@ -2360,6 +2649,8 @@ namespace morph {
 
         //! Getter for type, the ColourMapType of this ColourMap, returning as a human-readable string
         std::string getTypeStr() const { return ColourMap::colourMapTypeToStr (this->type); }
+
+        std::string getFlagsStr() const { return ColourMap::colourMapFlagsToStr (this->flags); }
 
         //! Setter for type, the ColourMapType of this ColourMap.
         void setType (const ColourMapType& tp)
