@@ -208,6 +208,12 @@ if(ARMADILLO_FOUND)
     target_link_libraries(hsvwheel GLEW::GLEW)
   endif()
 
+  add_executable(cyclic_colour cyclic_colour.cpp)
+  target_link_libraries(cyclic_colour OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(cyclic_colour GLEW::GLEW)
+  endif()
+
   # ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
   add_executable(hexgrid hexgrid.cpp)
   target_link_libraries(hexgrid OpenGL::GL glfw Freetype::Freetype)
