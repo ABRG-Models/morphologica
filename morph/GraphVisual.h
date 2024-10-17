@@ -50,8 +50,6 @@ namespace morph {
             this->twodimensional = true;
         }
 
-        ~GraphVisual() { for (auto& gdc : this->graphDataCoords) { delete gdc; } }
-
         //! Set true for any optional debugging
         static constexpr bool gv_debug = false;
 
@@ -94,12 +92,22 @@ namespace morph {
 
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
+            if (graphDataCoords.size() < didx + 1) {
+                // Need to add an additional graphDataCoords to receive data. This can occur after
+                // appending the first data point of a first dataset and then appending the first
+                // data point of a second dataset to an otherwise empty graph.
+                this->graphDataCoords.push_back (std::make_unique<std::vector<morph::vec<float>>>(0u, morph::vec<float>{0,0,0}));
+                // As well as creating a new, empty graphDataCoords, we have to add the right datastyle
+                if (this->datastyles[didx].axisside == morph::axisside::left) {
+                    this->datastyles.push_back (this->ds_ord1);
+                } else {
+                    this->datastyles.push_back (this->ds_ord2);
+                }
+            }
+
             unsigned int oldsz = this->graphDataCoords[didx]->size();
             (this->graphDataCoords[didx])->resize (oldsz+1);
-            (*this->graphDataCoords[didx])[oldsz][0] = a;
-            (*this->graphDataCoords[didx])[oldsz][1] = o;
-            (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
-
+            this->graphDataCoords[didx].get()->at(oldsz) = morph::vec<float>{ static_cast<float>(a), static_cast<float>(o), float{0} };
             int redraw_plot = 0;
             morph::range<Flt> xrange = this->datarange_x;
             morph::range<Flt> yrange = this->datarange_y;
@@ -119,7 +127,11 @@ namespace morph {
             // update graph if necessary
             if (redraw_plot > 0) {
                 this->clear_graph_data();
+
+                // setdata or this function will re-add these
                 this->graphDataCoords.clear();
+                this->datastyles.clear();
+
                 this->pendingAppended = true; // as the graph will be re-drawn
 
                 this->abscissa_scale.reset();
@@ -131,6 +143,7 @@ namespace morph {
                     // vvec, vvec, datasetstyle
                     this->setdata (this->absc1, this->ord1, this->ds_ord1);
                 }
+
                 if (!this->ord2.empty()) {
                     this->setdata (this->absc2, this->ord2, this->ds_ord2);
                 }
@@ -252,9 +265,7 @@ namespace morph {
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             for (unsigned int i = 0; i < dsize; ++i) {
-                (*this->graphDataCoords[data_idx])[i][0] = static_cast<Flt>(ad[i]);
-                (*this->graphDataCoords[data_idx])[i][1] = static_cast<Flt>(sd[i]);
-                (*this->graphDataCoords[data_idx])[i][2] = Flt{0};
+                this->graphDataCoords[data_idx].get()->at(i) = morph::vec<float>{ static_cast<float>(ad[i]), static_cast<float>(sd[i]), float{0} };
             }
 
             this->clearTexts(); // VisualModel::clearTexts()
@@ -394,7 +405,7 @@ namespace morph {
 
             unsigned int dsize = _quivs.size();
             unsigned int didx = this->graphDataCoords.size();
-            this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, { 0.0f, 0.0f, 0.0f }));
+            this->graphDataCoords.push_back (std::make_unique<std::vector<morph::vec<float>>>(dsize, morph::vec<float>{ 0.0f, 0.0f, 0.0f }));
             this->datastyles.push_back (ds);
 
             // Compute the ord1_scale and asbcissa_scale for the first added dataset only
@@ -430,9 +441,7 @@ namespace morph {
                 // Now sd and ad can be used to construct dataCoords x/y. They are used to
                 // set the position of each datum into dataCoords
                 for (unsigned int i = 0; i < dsize; ++i) {
-                    (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
-                    (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
-                    (*this->graphDataCoords[didx])[i][2] = Flt{0};
+                    this->graphDataCoords[didx].get()->at(i) = morph::vec<float>{ static_cast<float>(ad[i]), static_cast<float>(sd[i]), float{0} };
                 }
             }
         }
@@ -467,7 +476,7 @@ namespace morph {
 
             // Allocate memory for the new data coords, add the data style info and the
             // starting index for dataCoords
-            this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, {0,0,0}));
+            this->graphDataCoords.push_back (std::make_unique<std::vector<morph::vec<float>>>(dsize, morph::vec<float>{0,0,0}));
 
             this->datastyles.push_back (ds);
 
@@ -492,9 +501,7 @@ namespace morph {
                 // Now sd and ad can be used to construct dataCoords x/y. They are used to
                 // set the position of each datum into dataCoords
                 for (unsigned int i = 0; i < dsize; ++i) {
-                    (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
-                    (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
-                    (*this->graphDataCoords[didx])[i][2] = Flt{0};
+                    this->graphDataCoords[didx].get()->at(i) = morph::vec<float>{ static_cast<float>(ad[i]), static_cast<float>(sd[i]), float{0} };
                 }
             }
         }
@@ -1749,9 +1756,9 @@ namespace morph {
         }
 
     public:
-        //! Graph data coordinates. A vector of vectors of pointers to data, with one
+        //! Graph data coordinates. A vector of vectors of unique pointers to data, with one
         //! pointer for each graph in the model.
-        std::vector<std::vector<vec<float>>*> graphDataCoords;
+        std::vector<std::unique_ptr<std::vector<vec<float>>>> graphDataCoords;
         //! Quiver data, if used. Limitation: You can ONLY have ONE quiver field per
         //! GraphVisual. Note that the quivers can point in three dimensions. That's intentional,
         //! even though 2D quivers are going to be used most. The locations for the quivers for
