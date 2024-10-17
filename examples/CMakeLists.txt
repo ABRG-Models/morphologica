@@ -141,10 +141,16 @@ if(ARMADILLO_FOUND)
     target_link_libraries(grid_simple GLEW::GLEW)
   endif()
 
-  add_executable(colourbar_test colourbar_test.cpp)
-  target_link_libraries(colourbar_test OpenGL::GL glfw Freetype::Freetype)
+  add_executable(colourmap_test colourmap_test.cpp)
+  target_link_libraries(colourmap_test OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
-    target_link_libraries(colourbar_test GLEW::GLEW)
+    target_link_libraries(colourmap_test GLEW::GLEW)
+  endif()
+
+  add_executable(colourmap_browser colourmap_browser.cpp)
+  target_link_libraries(colourmap_browser OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(colourmap_browser GLEW::GLEW)
   endif()
 
   # grid_simple, but orthographic view is the default
@@ -200,6 +206,12 @@ if(ARMADILLO_FOUND)
   target_link_libraries(hsvwheel OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
     target_link_libraries(hsvwheel GLEW::GLEW)
+  endif()
+
+  add_executable(cyclic_colour cyclic_colour.cpp)
+  target_link_libraries(cyclic_colour OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(cyclic_colour GLEW::GLEW)
   endif()
 
   # ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
