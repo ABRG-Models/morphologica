@@ -197,6 +197,7 @@ namespace morph {
          */
         virtual void compute_autoscale (T input_min, T input_max) = 0; // deprecated name, left to avoid breaking client code
         virtual void compute_scaling (const T input_min, const T input_max) = 0;
+        virtual void compute_scaling (const morph::range<T>& input_range) = 0;
 
         /*!
          * \brief Compute scaling function from data
@@ -366,6 +367,7 @@ namespace morph {
             this->compute_scaling (input_min, input_max);
         }
 
+        virtual void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
         virtual void compute_scaling (const T input_min, const T input_max)
         {
             if (this->type != ScaleFn::Linear) {
@@ -527,6 +529,7 @@ namespace morph {
             this->compute_scaling (input_min, input_max);
         }
 
+        virtual void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
         virtual void compute_scaling (const T input_min, const T input_max)
         {
             if (this->type == ScaleFn::Logarithmic) {
