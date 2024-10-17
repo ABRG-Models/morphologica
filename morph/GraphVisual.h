@@ -396,13 +396,9 @@ namespace morph {
 
             // Compute the ord1_scale and asbcissa_scale for the first added dataset only
             if (ds.axisside == morph::axisside::left) {
-                if (this->ord1_scale.ready() == false && this->abscissa_scale.ready() == false) {
-                    this->compute_scaling (_abscissae, _data, ds.axisside);
-                }
+                if (this->ord1_scale.ready() == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
             } else {
-                if (this->ord2_scale.ready() == false && this->abscissa_scale.ready() == false) {
-                    this->compute_scaling (_abscissae, _data, ds.axisside);
-                }
+                if (this->ord2_scale.ready() == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
             }
 
             if (dsize > 0) {
