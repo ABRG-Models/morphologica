@@ -143,7 +143,6 @@ namespace morph {
                     // vvec, vvec, datasetstyle
                     this->setdata (this->absc1, this->ord1, this->ds_ord1);
                 }
-
                 if (!this->ord2.empty()) {
                     this->setdata (this->absc2, this->ord2, this->ds_ord2);
                 }
