@@ -16,6 +16,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/GridVisual.h>
 #include <morph/Grid.h>
+#include <morph/CyclicColourVisual.h>
 
 struct myvisual final : public morph::Visual<>
 {
@@ -37,10 +38,42 @@ protected:
     }
 };
 
+morph::VisualModel<>* addmap (myvisual& v, morph::ColourMapType display_map_type, const morph::Grid<>& grid, const std::vector<float>& data)
+{
+    morph::VisualModel<>* vmp = nullptr;
+    morph::ColourMap<float> nextmap (display_map_type);
+    if ((nextmap.flags & morph::ColourMapFlags::cyclic) == true) {
+        morph::vec<float, 3> offset = {0,0,0};
+        auto cv = std::make_unique<morph::CyclicColourVisual<float>>(offset);
+        v.bindmodel (cv);
+        cv->outer_radius = 0.6;
+        cv->inner_radius = 0.2;
+        cv->cm = nextmap;
+        cv->draw_ticks = false;
+        cv->addLabel (cv->cm.getTypeStr() + std::string(" (") + cv->cm.getFlagsStr() + std::string(")"),
+                      morph::vec<float>({-1.3, -0.4, 0}), morph::TextFeatures(0.05f));
+        cv->finalize();
+        vmp = v.addVisualModel (cv);
+    } else {
+        morph::vec<float, 3> offset = { -0.5f * grid.width(), -0.5f * grid.height(), 0.0f };
+        auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+        v.bindmodel (gv);
+        gv->gridVisMode = morph::GridVisMode::Triangles;
+        gv->setScalarData (&data);
+        gv->cm = nextmap;
+        gv->zScale.setParams (0, 0);
+        gv->addLabel (gv->cm.getTypeStr() + std::string(" (") + gv->cm.getFlagsStr() + std::string(")"),
+                      morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
+        gv->finalize();
+        vmp = v.addVisualModel (gv);
+    }
+    return vmp;
+}
+
 int main()
 {
-    myvisual v(2100, 575, "Colourbar perceptual uniformity test");
-    v.setSceneTrans (morph::vec<float,3>{ float{-0.00636619}, float{0.0518834}, float{-1.4} });
+    myvisual v(2100, 1100, "Colourbar perceptual uniformity test");
+    v.setSceneTrans (morph::vec<float,3>{ float{-0.00636619}, float{0.0518834}, float{-3} });
 
     // Create a grid for the colourmaps
     constexpr unsigned int Nside_w = 512;
@@ -58,36 +91,19 @@ int main()
         data[ri] = x / grid.width() + 0.1f * (y / grid.height()) * (y / grid.height()) * std::sin (120.0f * x);
     }
 
-    morph::vec<float, 3> offset = { -0.5f * grid.width(), -0.5f * grid.height(), 0.0f };
-    auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
-    v.bindmodel (gv);
-    gv->gridVisMode = morph::GridVisMode::Triangles;
-    gv->setScalarData (&data);
-    gv->cm.setType (v.curr_map_type);
-    gv->zScale.setParams (0, 0);
-    gv->addLabel (gv->cm.getTypeStr() + std::string(" (") + gv->cm.getFlagsStr() + std::string(")"),
-                  morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
-    gv->finalize();
-    auto gvp = v.addVisualModel (gv);
+    morph::ColourMapType display_map_type = v.curr_map_type;
+    morph::VisualModel<>* gvp = addmap (v, v.curr_map_type, grid, data);
 
     while (v.readyToFinish == false) {
         v.render();
         v.waitevents (0.017);
-        if (gvp->cm.getType() != v.curr_map_type) {
-            gvp->cm.setType (v.curr_map_type);
-            if ((gvp->cm.flags & morph::ColourMapFlags::one_d) == true) {
+        if (v.curr_map_type != display_map_type) {
+            // Change to v.curr_map_type
+            morph::ColourMap<float> nextmap(v.curr_map_type);
+            if ((nextmap.flags & morph::ColourMapFlags::one_d) == true) {
                 // Update the map
                 v.removeVisualModel (gvp);
-                gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
-                v.bindmodel (gv);
-                gv->gridVisMode = morph::GridVisMode::Triangles;
-                gv->setScalarData (&data);
-                gv->cm.setType (v.curr_map_type);
-                gv->zScale.setParams (0, 0);
-                gv->addLabel (gv->cm.getTypeStr() + std::string(" (") + gv->cm.getFlagsStr() + std::string(")"),
-                              morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
-                gv->finalize();
-                gvp = v.addVisualModel (gv);
+                gvp = addmap (v, v.curr_map_type, grid, data);
             } else {
                 // The map wasn't 1D, so skip
                 if (v.forwards) { ++v.curr_map_type; } else { --v.curr_map_type; }
