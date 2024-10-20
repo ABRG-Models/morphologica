@@ -38,6 +38,10 @@ protected:
     }
 };
 
+// Parameters for the fineness of the grid/cyclic wheels
+static constexpr unsigned int Nside_w = 512;
+static constexpr unsigned int Nside_h = 256;
+
 morph::VisualModel<>* addmap (myvisual& v, morph::ColourMapType display_map_type, const morph::Grid<>& grid, const std::vector<float>& data)
 {
     morph::VisualModel<>* vmp = nullptr;
@@ -48,6 +52,8 @@ morph::VisualModel<>* addmap (myvisual& v, morph::ColourMapType display_map_type
         v.bindmodel (cv);
         cv->outer_radius = 0.6;
         cv->inner_radius = 0.2;
+        cv->numsegs = Nside_w;
+        cv->numrings = Nside_h;
         cv->cm = nextmap;
         cv->draw_ticks = false;
         cv->addLabel (cv->cm.getTypeStr() + std::string(" (") + cv->cm.getFlagsStr() + std::string(")"),
@@ -76,8 +82,6 @@ int main()
     v.setSceneTrans (morph::vec<float,3>{ float{-0.00636619}, float{0.0518834}, float{-3} });
 
     // Create a grid for the colourmaps
-    constexpr unsigned int Nside_w = 512;
-    constexpr unsigned int Nside_h = 256;
     constexpr float barw = 2.56f;
     constexpr float barh = 0.5f;
     constexpr morph::vec<float, 2> grid_spacing = {barw/static_cast<float>(Nside_w), barh/static_cast<float>(Nside_h)};
