@@ -391,6 +391,9 @@ add_test(testScale testScale)
 add_executable(testrange testrange.cpp)
 add_test(testrange testrange)
 
+add_executable(testrange_constexpr testrange_constexpr.cpp)
+add_test(testrange_constexpr testrange_constexpr)
+
 # Test the colour mapping
 add_executable(testColourMap testColourMap.cpp)
 add_test(testColourMap testColourMap)
