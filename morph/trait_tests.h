@@ -125,4 +125,16 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
+    // Test for std::complex by looking for real() and imag() methods
+    template<typename T>
+    class is_complex
+    {
+        // See the right arrow?                 v--- there it is. It's a different function declaration syntax
+	template<typename U> static auto test(int) -> decltype(std::declval<U>().real() == 1
+                                                            && std::declval<U>().imag() == 1, std::true_type());
+	template<typename> static std::false_type test(...); // This uses the more typical syntax for fn declaration
+    public:
+	static constexpr bool value = std::is_same<decltype(test<T>(1)), std::true_type>::value;
+    };
+
 } // morph::

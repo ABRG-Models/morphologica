@@ -35,9 +35,25 @@ set_from (const _S& v)
     return false;
 }
 
+template <typename _S=float>
+std::enable_if_t < !morph::is_complex<_S>::value, bool >
+complex_from (const _S& v)
+{
+    std::cout << "Type _S=" << typeid(_S).name() << " size " << sizeof (v) << " isn't a complex" << std::endl;
+    return false;
+}
+template <typename _S=float>
+std::enable_if_t < morph::is_complex<_S>::value, bool >
+complex_from (const _S& v)
+{
+    std::cout << "Type _S=" << typeid(_S).name() << " size " << sizeof (v) << " is a complex" << std::endl;
+    return true;
+}
+
 #include <array>
 #include <vector>
 #include <map>
+#include <complex>
 
 int main()
 {
@@ -56,7 +72,13 @@ int main()
     std::set<double> c4;
     bool set_can = set_from (c4);
 
-    if (float_can || !array_can || !vector_can || !set_can) {
+    std::complex<float> c5;
+    bool complex_can = complex_from (c5);
+
+    float c6;
+    bool float_is_complex = complex_from (c6);
+
+    if (float_can || !array_can || !vector_can || !set_can || !complex_can || float_is_complex) {
         std::cout << "Test failed\n";
         return -1;
     }
