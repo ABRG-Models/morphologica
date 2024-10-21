@@ -18,6 +18,30 @@ constexpr morph::vec<double, 3> vec_add()
     return vce;
 }
 
+constexpr morph::vec<double, 3> vec_plusequals()
+{
+    constexpr morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
+    morph::vec<double, 3> v2 = { 1.0, 2.0, 3.0 };
+    v2 += v1;
+    return v2;
+}
+
+constexpr morph::vec<double, 3> vec_subtract()
+{
+    morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
+    morph::vec<double, 3> v2 = { 1.0, 2.0, 3.0 };
+    morph::vec<double, 3> vce = v1 - v2;
+    return vce;
+}
+
+constexpr morph::vec<double, 3> vec_subtractequals()
+{
+    constexpr morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
+    morph::vec<double, 3> v2 = { 1.0, 2.0, 3.0 };
+    v2 -= v1;
+    return v2;
+}
+
 constexpr morph::vec<double, 3> vec_div_scalar()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
@@ -43,7 +67,7 @@ constexpr morph::vec<double, 3> vec_div_vec()
 constexpr morph::vec<double, 3> vec_diveq_vec()
 {
     morph::vec<double, 3> v1 = { 1.0, 2.0, 3.0 };
-    morph::vec<double, 3> v2 = { 2.0, 2.0, 2.0 };
+    constexpr morph::vec<double, 3> v2 = { 2.0, 2.0, 2.0 };
     v1 /= v2;
     return v1;
 }
@@ -405,6 +429,9 @@ int main()
     constexpr morph::vec<double, 3> result1 = vec_add();
     if (result1[0] != 2.0) { std::cout << "Fail 1\n"; rtn -= 1; }
 
+    constexpr morph::vec<double, 3> result1_1 = vec_plusequals();
+    if (result1_1[0] != 2.0) { std::cout << "Fail 1_1\n"; rtn -= 1; }
+
     constexpr morph::vec<double, 3> result2 = vec_div_scalar();
     if (result2[0] != 1.0/2.0) { std::cout << "Fail 2\n"; rtn -= 1; }
 
@@ -507,6 +534,12 @@ int main()
 
     constexpr morph::vec<float, 2> result34 = vec_angle();
     if (result34[0] != std::sqrt(2.0f)/2.0f) { std::cout << "Fail 34\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result35 = vec_subtract();
+    if (result35[0] != 0.0) { std::cout << "Fail 35\n"; rtn -= 1; }
+
+    constexpr morph::vec<double, 3> result36 = vec_subtractequals();
+    if (result36[0] != 0.0) { std::cout << "Fail 36\n"; rtn -= 1; }
 
     return rtn;
 }
