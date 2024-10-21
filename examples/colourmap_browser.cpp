@@ -65,6 +65,7 @@ morph::VisualModel<>* addmap (myvisual& v, morph::ColourMapType display_map_type
         auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
         v.bindmodel (gv);
         gv->gridVisMode = morph::GridVisMode::Triangles;
+        gv->twodimensional = true;
         gv->setScalarData (&data);
         gv->cm = nextmap;
         gv->zScale.setParams (0, 0);
@@ -108,6 +109,7 @@ int main()
                 // Update the map
                 v.removeVisualModel (gvp);
                 gvp = addmap (v, v.curr_map_type, grid, data);
+                display_map_type = v.curr_map_type;
             } else {
                 // The map wasn't 1D, so skip
                 if (v.forwards) { ++v.curr_map_type; } else { --v.curr_map_type; }
