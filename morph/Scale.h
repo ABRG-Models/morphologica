@@ -44,7 +44,7 @@
 #include <string>
 #include <sstream>
 #include <morph/MathAlgo.h>
-#include <morph/number_type.h>
+#include <morph/trait_tests.h>
 #include <morph/vvec.h>
 #include <morph/range.h>
 
@@ -651,6 +651,6 @@ namespace morph {
      * double
      */
     template <typename T, typename S=T>
-    struct Scale : public ScaleImpl<number_type<T>::value, T, S> {};
+    struct Scale : public ScaleImpl<morph::number_type<T>::value, T, S> {};
 
 } // namespace morph

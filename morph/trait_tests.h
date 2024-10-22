@@ -137,4 +137,22 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(1)), std::true_type>::value;
     };
 
+    /*! \brief A class to distinguish between scalars and vectors
+     *
+     * From the typename T, set a #value attribute which says whether T is a scalar (like
+     * float, double), or vector (basically, anything else).
+     *
+     * Query the attribute `value`, which will be 1 for scalar and 0 for anything else including
+     * vectors.  This really just wraps std::is_scalar.
+     *
+     * \tparam T the type to distinguish
+     */
+    template <typename T>
+    struct number_type {
+        //! is_scalar test
+        static constexpr bool const scalar = std::is_scalar<std::decay_t<T>>::value;
+        //! Set value simply from the is_scalar test. 0 for vector, 1 for scalar
+        static constexpr int const value = scalar ? 1 : 0;
+    };
+
 } // morph::

@@ -15,7 +15,7 @@
 #include <morph/vvec.h>
 #include <morph/range.h>
 #include <morph/mathconst.h>
-#include <morph/number_type.h>
+#include <morph/trait_tests.h>
 #include <morph/MathImpl.h>
 
 namespace morph {
@@ -50,7 +50,7 @@ namespace morph {
          */
         template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
         static morph::range<typename Container::value_type> maxmin (const Container& vec) {
-            return MathImpl<number_type<typename Container::value_type>::value>::maxmin (vec);
+            return MathImpl<morph::number_type<typename Container::value_type>::value>::maxmin (vec);
         }
 
         /*!
@@ -62,7 +62,7 @@ namespace morph {
                    typename T,
                    typename Allocator=std::allocator<T> >
         static T centroid (const Container<T, Allocator>& coords) {
-            return MathImpl<number_type<T>::value>::centroid (coords);
+            return MathImpl<morph::number_type<T>::value>::centroid (coords);
         }
 
         /*!
@@ -74,7 +74,7 @@ namespace morph {
                    typename Allocator=std::allocator<T>,
                    typename S >
         static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max) {
-            return MathImpl<number_type<T>::value>::autoscale (values, range_min, range_max);
+            return MathImpl<morph::number_type<T>::value>::autoscale (values, range_min, range_max);
         }
 
         /*******************************************************************/
