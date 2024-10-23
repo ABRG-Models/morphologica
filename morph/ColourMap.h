@@ -1716,7 +1716,22 @@ namespace morph {
             return rm;
         }
 
-        //! An overload of convert for DuoChrome and HSV ColourMaps
+        /*!
+         * An overload of convert for DuoChrome and HSV ColourMaps
+         *
+         * Inputs are two datums in the range [0, 1]. For disc colour maps, the datums are
+         * considered to be "hue" and "saturation" and are processed through xy_to_radius_angle to
+         * convert them into suitable radius and angle values for the colourmap functions.
+         *
+         * Note that *this will NOT give the full range of possible colours on the disc*!!!
+         *
+         * What you get is a 'square cut out on the disc', with maximum saturation at the four
+         * corners of the square.
+         *
+         * If you have a colourmapping where you want to use the full colour range (such as mapping
+         * radius and angle) use ColourMap::convert_angular, whcih *does* give you access to the
+         * full colour disc.
+         */
         std::array<float, 3> convert (T _datum1, T _datum2) const
         {
             if (this->type == ColourMapType::Duochrome) {
@@ -1758,7 +1773,13 @@ namespace morph {
             }
         }
 
-        //! An overload of convert for HSV/Disc ColourMaps only
+        /*!
+         * An overload of convert for HSV/Disc ColourMaps only
+         *
+         * The inputs are angle in radians and radius in range [0, 1].
+         *
+         * hue/rotation gets applied in rphi_to_radius_angle.
+         */
         std::array<float, 3> convert_angular (T _angle, T _radius) const
         {
             std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
@@ -3085,16 +3106,24 @@ namespace morph {
         /*!
          * Convert 'x' and 'y' data values into a radius and angle.
          *
+         * x and y inputs are expected to be in range [0, 1]
+         *
          * Both returned radius angle are in the range [0,1] (NOT 0, 2pi, for angle), making them
          * suitable for input to ColourMap::hsv2rgb or the lenthe Disc functions.
          *
-         * ColourMap::hue_rotation is applied, which allows any of the disc colourmaps (HSV,
+         * **ColourMap::hue_rotation is applied**, which allows any of the disc colourmaps (HSV,
          * DiscFourWhite etc) to be rotated.
          */
         std::array<T, 2> xy_to_radius_angle (T x, T y) const
         {
+            // Keep input honest
+            x = x > T{1} ? T{1} : x;
+            x = x < T{0} ? T{0} : x;
+            y = y > T{1} ? T{1} : y;
+            y = y < T{0} ? T{0} : y;
+
             std::array<T, 2> radius_angle;
-            // Get the datums centralised about 0 & scale so that for datum1/2 both equal to 1 we get max saturation
+            // Get the datums centralised about 0 & scale so that the radius is 1 at max
             x = (x - T{0.5}) * morph::mathconst<T>::root_2;
             y = (y - T{0.5}) * morph::mathconst<T>::root_2;
 
