@@ -555,13 +555,13 @@ namespace morph {
         float sat3 = 1.0f;
         float val3 = 1.0f;
 
-        // Used by HSV. This allows you to rotate the way the HSV hues appear. If your
-        // two inputs were 'x' and 'y', then this allows you to choose which colour
-        // appears for x=1 and y=0 (i.e. for 0 rads). Give this as a value in radians in
-        // range 0 to 2pi. 0 gives the default, red.
+        // Used by HSV and other disc maps. This allows you to rotate the way the HSV hues
+        // appear. If your two inputs were 'x' and 'y', then this allows you to choose which colour
+        // appears for x=1 and y=0 (i.e. for 0 rads). Give this as a value in radians in range 0 to
+        // 2pi. 0 gives the default, red.
         T hue_rotation = T{0};
 
-        // Set this true to reverse the direction in which the hues are output
+        // Set this true to reverse the direction in which the hues are output for disc maps
         bool hue_reverse_direction = false;
 
     public:
@@ -1734,43 +1734,31 @@ namespace morph {
          */
         std::array<float, 3> convert (T _datum1, T _datum2) const
         {
+            std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
             if (this->type == ColourMapType::Duochrome) {
-                return this->duochrome (_datum1, _datum2);
-            } else if (this->type == ColourMapType::DiscFourWhite) {
-                std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+                c = this->duochrome (_datum1, _datum2);
+            } else {
                 // Convert two inputs to radius and angle
                 std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
-                //                                radius[0,1] theta [0,1]  true:white sym None Azimuth or Polar
-                lenthe::colormap::disk::four<float> (static_cast<float>(ra[0]), static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                                     c.data(), true, lenthe::colormap::Sym::None);
-                return c;
-            } else if (this->type == ColourMapType::DiscFourBlack) {
-                std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
-                std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
-                lenthe::colormap::disk::four<float> (static_cast<float>(ra[0]), static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                                     c.data(), false, lenthe::colormap::Sym::None);
-                return c;
-            } else if (this->type == ColourMapType::DiscSixWhite) {
-                std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
-                std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
-                lenthe::colormap::disk::six<float> (static_cast<float>(ra[0]), static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                                    c.data(), true, lenthe::colormap::Sym::None);
-                return c;
-            } else if (this->type == ColourMapType::DiscSixBlack) {
-                std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
-                std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
-                lenthe::colormap::disk::six<float> (static_cast<float>(ra[0]), static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                                    c.data(), false, lenthe::colormap::Sym::None);
-                return c;
-            } else if (this->type == ColourMapType::HSV) {
-                // Get the datums centralised about 0 & scale so that for datum1/2 both equal to 1 we get max saturation
-                std::array<T, 2> ra = this->xy_to_radius_angle (_datum1, _datum2);
-                return ColourMap::hsv2rgb (this->hue_reverse_direction ? (1.0f-static_cast<float>(ra[1])) : static_cast<float>(ra[1]),
-                                           static_cast<float>(ra[0]), this->val);
+                float ra0 = static_cast<float>(ra[0]); // radius
+                float ra1 = static_cast<float>(ra[1]); // angle
 
-            } else {
-                throw std::runtime_error ("Set ColourMapType to Duochrome, HSV DiscFourWhite/Black or DiscSixWhite/Black.");
+                if (this->type == ColourMapType::HSV) {
+                    c = ColourMap::hsv2rgb (ra1, ra0, this->val);
+                } else if (this->type == ColourMapType::DiscFourWhite) {
+                    // Convert two inputs to output radius and angle, applying rotation as necessary and scaling to range [0,1]
+                    lenthe::colormap::disk::four<float> (ra0, ra1, c.data(), true, lenthe::colormap::Sym::None);
+                } else if (this->type == ColourMapType::DiscFourBlack) {
+                    lenthe::colormap::disk::four<float> (ra0, ra1, c.data(), false, lenthe::colormap::Sym::None);
+                } else if (this->type == ColourMapType::DiscSixWhite) {
+                    lenthe::colormap::disk::six<float> (ra0, ra1, c.data(), true, lenthe::colormap::Sym::None);
+                } else if (this->type == ColourMapType::DiscSixBlack) {
+                    lenthe::colormap::disk::six<float> (ra0, ra1, c.data(), false, lenthe::colormap::Sym::None);
+                } else {
+                    throw std::runtime_error ("Set ColourMapType to Duochrome, HSV DiscFourWhite/Black or DiscSixWhite/Black.");
+                }
             }
+            return c;
         }
 
         /*!
@@ -1783,27 +1771,23 @@ namespace morph {
         std::array<float, 3> convert_angular (T _angle, T _radius) const
         {
             std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+
+            // ra[1] is angle, ra[0] is radius (magnitude)
+            std::array<T, 2> ra = this->rphi_to_radius_angle (_radius, _angle);
+            float ra0 = static_cast<float>(ra[0]); // radius
+            float ra1 = static_cast<float>(ra[1]); // angle
+
             if (this->type == ColourMapType::HSV) {
-                std::array<T, 2> ra = this->rphi_to_radius_angle (_radius, _angle);
-                c = ColourMap::hsv2rgb (static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]), // angle
-                                        static_cast<float>(ra[0]), this->val);
+                c = ColourMap::hsv2rgb (ra1, ra0, this->val);
             } else if (this->type == ColourMapType::DiscFourWhite) {
-                // Convert two inputs to radius and angle
-                std::array<T, 2> ra = rphi_to_radius_angle (_radius, _angle);
-                lenthe::colormap::disk::four<float> (static_cast<float>(ra[0]), static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                                     c.data(), true, lenthe::colormap::Sym::None);
+                // Convert two inputs to output radius and angle, applying rotation as necessary and scaling to range [0,1]
+                lenthe::colormap::disk::four<float> (ra0, ra1, c.data(), true, lenthe::colormap::Sym::None);
             } else if (this->type == ColourMapType::DiscFourBlack) {
-                std::array<T, 2> ra = rphi_to_radius_angle (_radius, _angle);
-                lenthe::colormap::disk::four<float> (static_cast<float>(ra[0]), static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                                     c.data(), false, lenthe::colormap::Sym::None);
+                lenthe::colormap::disk::four<float> (ra0, ra1, c.data(), false, lenthe::colormap::Sym::None);
             } else if (this->type == ColourMapType::DiscSixWhite) {
-                std::array<T, 2> ra = rphi_to_radius_angle (_radius, _angle);
-                lenthe::colormap::disk::six<float> (static_cast<float>(ra[0]), static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                                    c.data(), true, lenthe::colormap::Sym::None);
+                lenthe::colormap::disk::six<float> (ra0, ra1, c.data(), true, lenthe::colormap::Sym::None);
             } else if (this->type == ColourMapType::DiscSixBlack) {
-                std::array<T, 2> ra = rphi_to_radius_angle (_radius, _angle);
-                lenthe::colormap::disk::six<float> (static_cast<float>(ra[0]), static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                                    c.data(), false, lenthe::colormap::Sym::None);
+                lenthe::colormap::disk::six<float> (ra0, ra1, c.data(), false, lenthe::colormap::Sym::None);
             } else {
                 throw std::runtime_error ("Set ColourMapType to HSV or a Disc* map to use ColourMap::convert_angular().");
             }
@@ -3104,15 +3088,22 @@ namespace morph {
         }
 
         /*!
-         * Convert 'x' and 'y' data values into a radius and angle.
+         * Convert 'x' and 'y' data values into a radius and angle suitable for a disc colour map
+         * such as HSV or DiscSixWhite.
          *
          * x and y inputs are expected to be in range [0, 1]
          *
          * Both returned radius angle are in the range [0,1] (NOT 0, 2pi, for angle), making them
          * suitable for input to ColourMap::hsv2rgb or the lenthe Disc functions.
          *
+         * NOTE: The FULL range of colours possible in the colour map cannot be accessed with the
+         * radius and angle returned from this function. Imagine a square cookie cutter cutting out
+         * from the HSV circle such that at the corners of the square, the saturation is maxiumum.
+         *
          * **ColourMap::hue_rotation is applied**, which allows any of the disc colourmaps (HSV,
          * DiscFourWhite etc) to be rotated.
+         *
+         * Hue reversal is also applied.
          */
         std::array<T, 2> xy_to_radius_angle (T x, T y) const
         {
@@ -3135,6 +3126,7 @@ namespace morph {
             radius_angle[1] = radius_angle[1] < T{0} ? radius_angle[1] + morph::mathconst<T>::two_pi : radius_angle[1];
             radius_angle[1] = radius_angle[1] > morph::mathconst<T>::two_pi ? radius_angle[1] - morph::mathconst<T>::two_pi : radius_angle[1];
             radius_angle[1] /= morph::mathconst<T>::two_pi;
+            radius_angle[1] = this->hue_reverse_direction ? (T{1} - radius_angle[1]) : radius_angle[1];
 
             return radius_angle;
         }
@@ -3144,7 +3136,7 @@ namespace morph {
          * to the range [0,1] representing 0 to 2pi.
          *
          * ColourMap::hue_rotation is applied, which allows any of the disc colourmaps (HSV,
-         * DiscFourWhite etc) to be rotated.
+         * DiscFourWhite etc) to be rotated. Hue reversal is also applied.
          */
         std::array<T, 2> rphi_to_radius_angle (T r, T phi) const
         {
@@ -3155,19 +3147,22 @@ namespace morph {
             phi = phi < T{0} ? phi + morph::mathconst<T>::two_pi : phi;
             phi = phi > morph::mathconst<T>::two_pi ? phi - morph::mathconst<T>::two_pi : phi;
             phi /= morph::mathconst<T>::two_pi;
+            phi = this->hue_reverse_direction ? (T{1} - phi) : phi;
             return std::array<T, 2>{r, phi};
         }
 
+        //! Gives same result as convert (datum1, datum2) with the HSV colour map type.
         std::array<float,3> hsv_2d (T datum1, T datum2) const
         {
-            std::array<T, 2> ra = this->xy_to_ra (datum1, datum2);
-            return ColourMap::hsv2rgb (this->hue_reverse_direction ? (1.0f-static_cast<float>(ra[1])) : static_cast<float>(ra[1]),
-                                       static_cast<float>(ra[0]), this->val);
+            std::array<T, 2> ra = this->xy_to_radius_angle (datum1, datum2);
+            return ColourMap::hsv2rgb (static_cast<float>(ra[1]), static_cast<float>(ra[0]), this->val);
         }
 
         /*!
          * Return the colour from the hsv map with the given angle and radius. Takes
          * hue_rotation and hue_reverse_direction into account.
+         *
+         * This gives the same result as convert_angular (angle, radius) with the HSV colour map type.
          *
          * @param angle_hue An angle in radians (will be modified to lie between 0 and 2pi)
          *
@@ -3176,11 +3171,8 @@ namespace morph {
         std::array<float,3> hsv_anglerad (T angle_hue, T radius_sat) const
         {
             std::array<T, 2> ra = this->rphi_to_radius_angle (radius_sat, angle_hue);
-            return ColourMap::hsv2rgb (static_cast<float>(this->hue_reverse_direction ? (1.0f-ra[1]) : ra[1]),
-                                       static_cast<float>(ra[0]), this->val);
+            return ColourMap::hsv2rgb (static_cast<float>(ra[1]), static_cast<float>(ra[0]), this->val);
         }
-
-
 
         //! Bounds-check three datums to be in range [0,1]
         static void bounds_check_3 (float& datum1, float& datum2, float& datum3)
