@@ -118,6 +118,53 @@ namespace morph {
         GridDomainWrap get_wrap() const { return this->wrap; }
         GridOrder get_order() const { return this->order; }
 
+        //! static method to obtain a candidate width and height for a Grid of N elements If
+        //! allow_extra is true, and num_elements has no factors, then make a grid that has
+        //! >num_elements. Otherwise, return {max, max} for number type I
+        static morph::vec<I, 2> suggest_dims (const I num_elements, const bool allow_extra = false)
+        {
+            morph::vec<I, 2> w_h = { std::numeric_limits<I>::max(), std::numeric_limits<I>::max() };
+
+            if (num_elements <= I{1}) { return w_h; }
+
+            // Naively find factors (this is plenty quick enough for non-astronomical grid sizes)
+            morph::vvec<I> factors;
+            for (I i = I{2}; i < num_elements; ++i) { if (num_elements % i == I{0}) { factors.push_back (i); } }
+
+            if (!factors.empty()) {
+                morph::vvec<C> factors_minus_sqrt = factors.template as<C>() - std::sqrt(static_cast<C>(num_elements));
+                size_t j = factors_minus_sqrt.abs().argmin();
+                if (j < factors.size()) {
+                    I f_other = num_elements / factors[j];
+                    w_h[1] = std::min (factors[j], f_other);
+                    w_h[0] = num_elements / w_h[1];
+                } // else no argmin (return { max, max } to indicate failure)
+
+            } else {
+                // There are no factors other than 1
+                constexpr I one_by_most = I{20};
+                if (num_elements <= one_by_most) {
+                    // Allow 1 x num_elements grids if they're small
+                    w_h[0] = num_elements;
+                    w_h[1] = I{1};
+
+                } else if (allow_extra == true) {
+                    // find w, h that are close enough. Add to num_elements and
+                    // re-call this function until we find something that works.
+                    const I possible_additional = std::numeric_limits<I>::max() - num_elements;
+                    for (I j = num_elements + I{1}; j < num_elements + possible_additional; ++j) {
+                        w_h = morph::Grid<I, C>::suggest_dims (j, false);
+                        if (w_h != morph::vec<I, 2>{ std::numeric_limits<I>::max(), std::numeric_limits<I>::max() }) {
+                            // success!
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return w_h;
+        }
+
         //! Return whether ordering is row-major (true) or column-major (false)
         bool rowmaj() const
         {

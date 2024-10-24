@@ -533,6 +533,9 @@ endif()
 add_executable(testGrid testGrid.cpp)
 add_test(testGrid testGrid)
 
+add_executable(testGrid_suggest_dims testGrid_suggest_dims.cpp)
+add_test(testGrid_suggest_dims testGrid_suggest_dims)
+
 add_executable(testGridRowCol testGridRowCol.cpp)
 add_test(testGridRowCol testGridRowCol)
 
