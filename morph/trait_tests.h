@@ -142,8 +142,10 @@ namespace morph {
      * From the typename T, set a #value attribute which says whether T is a scalar (like
      * float, double), or vector (basically, anything else).
      *
-     * Query the attribute `value`, which will be 1 for scalar and 0 for anything else including
-     * vectors.  This really just wraps std::is_scalar.
+     * Query the attribute `value`, which will be 1 for scalars, 2 for complex scalars and 0
+     * for anything else, which includes vectors, arrays. As long as you know that your 'anything
+     * else' is some sort of vector type, you can use this in template classes like morph::Scale for
+     * scalar/vector implementations.
      *
      * \tparam T the type to distinguish
      */
@@ -151,8 +153,9 @@ namespace morph {
     struct number_type {
         //! is_scalar test
         static constexpr bool const scalar = std::is_scalar<std::decay_t<T>>::value;
-        //! Set value simply from the is_scalar test. 0 for vector, 1 for scalar
-        static constexpr int const value = scalar ? 1 : 0;
+        static constexpr bool const cplx = morph::is_complex<std::decay_t<T>>::value;
+        //! Set value simply from the is_scalar test. 0 for vector, 1 for scalar, 2 for complex scalar
+        static constexpr int const value = scalar ? 1 : cplx ? 2 : 0;
     };
 
 } // morph::
