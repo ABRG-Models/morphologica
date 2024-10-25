@@ -1,13 +1,12 @@
 {
-    // Ermentrout simulation
-    "steps" : 400000,                // Number of steps to simulate for
+    "steps" : 400000,
     "win_width" : 800,
     "logevery": 100000,
     "plotevery": 5000,
     "rhoInit" : 1,
     "overwrite_logs": true,
     "logpath" : "./logs/erm_lowmode_ellipseup",
-    "hextohex_d" : 0.01,           // Hex to hex distance, determines num hexes
+    "hextohex_d" : 0.01,
     "svgpath" : "./ellipse_up_big.svg",
     "dt" : 0.00001,
     "boundaryFalloffDist" : 0.01,

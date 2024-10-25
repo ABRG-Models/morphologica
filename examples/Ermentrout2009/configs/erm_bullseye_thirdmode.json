@@ -1,13 +1,12 @@
 {
-    // Ermentrout simulation
-    "steps" : 200000,                // Number of steps to simulate for
+    "steps" : 200000,
     "win_width" : 800,
     "logevery": 100000,
     "plotevery": 5000,
     "rhoInit" : 1.9,
     "overwrite_logs": true,
     "logpath" : "./logs/erm",
-    "hextohex_d" : 0.02,           // Hex to hex distance, determines num hexes
+    "hextohex_d" : 0.02,
     "svgpath" : "../morphologica/boundaries/whiskerbarrels.svg",
     "dt" : 0.0001,
     "boundaryFalloffDist" : 0.01,
