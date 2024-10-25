@@ -241,6 +241,9 @@ namespace morph {
             if (this->showselectedpixborder == true) {
               this->drawSelectedPixBorder();
             }
+            if (this->showorigin == true) {
+                this->computeSphere (morph::vec<float>{0, 0, 0}, morph::colour::crimson, 0.25f * this->grid->get_dx()[0]);
+            }
         }
 
         // Initialize vertex buffer objects and vertex array object.
@@ -744,6 +747,11 @@ namespace morph {
 
         //! Set true to draw a grid (border around each pixels)
         bool showgrid = false;
+
+        //! Show a sphere at the grid's origin? This can be useful when placing several Grids with
+        //! different sized pixels in a scene - it helps you to figure out the scene coordinates at
+        //! which to place each grid.
+        bool showorigin = false;
 
         //! The colour used for the grid (default is grey)
         std::array<float, 3> grid_colour = morph::colour::grey80;
