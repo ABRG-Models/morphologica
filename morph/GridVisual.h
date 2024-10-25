@@ -43,7 +43,7 @@ namespace morph {
         }
 
         // function that draw a border around the whole image
-        void drawBorder() 
+        void drawBorder()
         {
             // Draw around the outside.
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
@@ -114,7 +114,7 @@ namespace morph {
 
             // check if the size of selected_pix_border_colour is the same as the size of selected_pix_indexes
             if (selected_pix_indexes.size()>selected_pix_border_colour.size()){
-              std::cerr << "[GridVisual::drawSelectedPixBorder] the number of pixel indices is higher than the number of colours," 
+              std::cerr << "[GridVisual::drawSelectedPixBorder] the number of pixel indices is higher than the number of colours,"
                         << " the last color will be used for the remaining pixels" << std::endl;
               while(selected_pix_border_colour.size() < selected_pix_indexes.size()) {
                 selected_pix_border_colour.push_back(selected_pix_border_colour.back());
@@ -128,7 +128,7 @@ namespace morph {
             for (unsigned int i=0; i < selected_pix_indexes.size(); ++i ) {
                 unsigned int r = selected_pix_indexes[i] % pix_width;
                 unsigned int c = selected_pix_indexes[i] / pix_width;
-                
+
                 float left = grid_left + (r * dx[0]);
                 float right = left + dx[0];
                 float bot = grid_bot + (c * dx[1]);
@@ -774,7 +774,7 @@ namespace morph {
 
         //! The colour for the border
         std::vector<std::array<float, 3>> selected_pix_border_colour;
-        
+
 
         // If true, interpolate the colour of the sides of columns on a column grid
         bool interpolate_colour_sides = false;
