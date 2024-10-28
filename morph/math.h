@@ -35,9 +35,7 @@ namespace morph {
         }
 
 
-        //! Wraps std::assoc_legendre, allowing signed m (abs(m) always passed to
-        //! std::assoc_legendre) NB: There is a recursive approach that can be used when computing
-        //! many associated legendre values, see Numerical Recipes p 252 (Spherical Harmonics)
+        //! Wraps std::assoc_legendre, allowing signed m (abs(m) always passed to std::assoc_legendre)
         template <typename T, typename UI, typename I, typename std::enable_if< std::is_integral<UI>{} && !std::is_signed<UI>{} && std::is_integral<I>{} && std::is_signed<I>{}, bool>::type = true >
         T Plm (const UI l, const I m, const T x)
         {
@@ -45,7 +43,7 @@ namespace morph {
             return std::assoc_legendre (static_cast<unsigned int>(l), absm, x);
         }
 
-        //! Compute the real spherical harmonic function
+        //! Compute the real spherical harmonic function with pre-computed normalization term Nlm.
         template <typename T, typename UI, typename I, typename std::enable_if< std::is_integral<UI>{} && !std::is_signed<UI>{} && std::is_integral<I>{} && std::is_signed<I>{}, bool>::type = true >
         T real_spherical_harmonic (const UI l, const I m, const T _Nlm, const T phi, const T theta)
         {
@@ -59,6 +57,13 @@ namespace morph {
                 ylm = _Nlm * morph::math::Plm<T, UI, I> (l, I{0}, std::cos (theta));
             }
             return ylm;
+        }
+
+        //! Compute the real spherical harmonic function without a pre-computed normalization term
+        template <typename T, typename UI, typename I>
+        T real_spherical_harmonic (const UI l, const I m, const T phi, const T theta)
+        {
+            return morph::math::real_spherical_harmonic<T, UI, I>(l, m, morph::math::Nlm<T, UI, I>(l, m), phi, theta);
         }
 
     } // math
