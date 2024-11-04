@@ -1,5 +1,5 @@
 {
-    "Description" : "Izhikevich 'abcd' model parameters",
+    "description" : "Izhikevich Simple Model of Spiking Neurons",
     "a" : 0.025,
     "b" : 0.191,
     "c" : -59,

@@ -1,0 +1,19 @@
+{
+    "description" : "Kenyon cell model from Ardin et al., PLOS Comp Biol. 2016",
+    "a" :   0.01,
+    "b" :  -0.3,
+    "c" : -65,
+    "d" :   8,
+
+    "k" : 0.035,
+    "vr" : -85,
+    "vt" : -25,
+    "vpeak" : 35,
+
+    "CC" : 4,
+
+    "I" : 30,
+
+    "u0" : 0,
+    "v0" : -60
+}

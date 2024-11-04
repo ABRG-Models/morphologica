@@ -1,0 +1,19 @@
+{
+    "description" : "Izhikevich Dynamical Systems Example Model (Fig. 8.6)",
+    "a" : 0.03,
+    "b" : -2,
+    "c" : -50,
+    "d" : 100,
+
+    "k" : 0.7,
+    "vr" : -60,
+    "vt" : -40,
+    "vpeak" : 35,
+
+    "CC" : 100,
+
+    "I" :   70,
+
+    "u0" : 0,
+    "v0" : -60
+}

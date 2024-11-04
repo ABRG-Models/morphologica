@@ -685,6 +685,12 @@ if(USE_GLEW)
   target_link_libraries(izhikevich GLEW::GLEW)
 endif()
 
+add_executable(izhikevich_alt izhikevich_alt.cpp)
+target_link_libraries(izhikevich_alt OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(izhikevich_alt GLEW::GLEW)
+endif()
+
 add_executable(curvytelly curvytelly.cpp)
 target_link_libraries(curvytelly OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
