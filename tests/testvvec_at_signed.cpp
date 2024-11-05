@@ -70,6 +70,9 @@ int main()
         std::cout << "mvf.c_at_signed("<<i<<") = " << mvf.c_at_signed(i) << std::endl;
         if (mvf.c_at_signed(i) != i) { --rtn; }
     }
+    std::cout << "c_at_signed<unsigned int>: " << mvf.c_at_signed<unsigned int>(1u) << std::endl;
+    std::cout << "c_at_signed<float>: " << mvf.c_at_signed<float>(1.0f) << std::endl;
+    std::cout << "c_at_signed<double>: " << mvf.c_at_signed<double>(1.0) << std::endl;
 #endif
 
     // Should error
