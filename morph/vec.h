@@ -232,11 +232,13 @@ namespace morph {
             bool first = true;
             for (auto i : *this) {
                 if (first) {
-                    ss << i;
                     first = false;
                 } else {
-                    ss << sep << i;
+                    ss << sep;
                 }
+                if constexpr (std::is_same<S, unsigned char>::value == true || std::is_same<S, char>::value == true) {
+                    ss << static_cast<int>(i);
+                } else { ss << i; }
             }
         }
 

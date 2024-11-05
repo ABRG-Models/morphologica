@@ -274,11 +274,17 @@ namespace morph {
             unsigned int elementcount = 0;
             for (auto i : *this) {
                 if (first) {
-                    ss << i;
+                    // Test for char/unsigned char and cast to int to avoid being interpreted as ascii
+                    if constexpr (std::is_same<S, unsigned char>::value == true || std::is_same<S, char>::value == true) {
+                        ss << static_cast<int>(i);
+                    } else { ss << i; }
                     first = false;
-                    if (elementcount == num_in_line-1) { ss << "\n"; }
+                    if (elementcount == num_in_line - 1) { ss << "\n"; }
                 } else {
-                    ss << sep << (elementcount%num_in_line==0 ? "\n" : "") << i;
+                    ss << sep << (elementcount%num_in_line==0 ? "\n" : "");
+                    if constexpr (std::is_same<S, unsigned char>::value == true || std::is_same<S, char>::value == true) {
+                        ss << static_cast<int>(i);
+                    } else { ss << i; }
                 }
                 ++elementcount;
             }
