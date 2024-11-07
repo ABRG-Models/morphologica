@@ -1299,12 +1299,12 @@ namespace hp {
         }
 
         // A few functions from starutil
-        auto radec2x (auto r, auto d) { return std::cos (d) * std::cos (r); }
-        auto radec2y (auto r, auto d) { return std::cos (d) * std::sin (r); }
-        auto radec2z (auto r, auto d) { return std::sin (d); }
+        double radec2x (double r, double d) { return std::cos (d) * std::cos (r); }
+        double radec2y (double r, double d) { return std::cos (d) * std::sin (r); }
+        double radec2z (double r, double d) { return std::sin (d); }
 
-        auto deg2rad (auto d) { return d * morph::mathconst<double>::deg2rad; }
-        auto rad2deg (auto r) { return r * morph::mathconst<double>::rad2deg; }
+        double deg2rad (double d) { return d * morph::mathconst<double>::deg2rad; }
+        double rad2deg (double r) { return r * morph::mathconst<double>::rad2deg; }
 
         double z2dec(double z) { return std::asin(z); }
         double xy2ra(double x, double y) {
