@@ -31,6 +31,8 @@ if (OpenGL_EGL_FOUND)
   add_subdirectory(pi)
 endif()
 
+add_subdirectory(components)
+
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
