@@ -15,6 +15,7 @@
 #include <sstream>
 #include <limits>
 #include <type_traits>
+#include <set>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/GridFeatures.h>
@@ -112,6 +113,7 @@ namespace morph {
         // Getters
         I get_w() const { return this->w; }
         I get_h() const { return this->h; }
+        I get_n_pixels() const { return this->w * this->h; }
         morph::vec<I, 2> get_dims() const { return morph::vec<I, 2>{this->w, this->h}; }
         morph::vec<C, 2> get_dx() const { return this->dx; }
         morph::vec<C, 2> get_offset() const { return this->offset; }
@@ -747,6 +749,71 @@ namespace morph {
 
             expr_resampled /= expr_resampled.max(); // renormalise result
             return expr_resampled;
+        }
+
+        /*!
+         * Returns all the indices of the grid with a given radius (radius argument) of a given (x,y) location (loc argument)
+         *
+         * \param loc (x,y) metric location of the center of the circle
+         * \param radius radius defining the circle
+         * \param inds_in_radius A vector of indices within the circle - supplied as a reference
+         */
+        void indices_in_radius (const morph::vec<C,2> loc,
+                                const C radius,
+                                morph::vvec<I>& inds_in_radius)
+        {
+            morph::vvec<I> inds_in_circle;
+            morph::vvec<I> inds_in_previous_circle;
+            std::set<I> seen;
+
+            // Find first index (middle of circle)
+            I current_ind = this->index_lookup (loc);
+            inds_in_radius.push_back (current_ind);
+            seen.insert (current_ind);
+            inds_in_circle.push_back (current_ind);
+
+            while (!inds_in_circle.empty()) {
+
+                inds_in_previous_circle = inds_in_circle;
+                inds_in_circle.clear();
+                morph::vvec<I> nearest_neighbours;
+                find_nearest_neighbours (inds_in_previous_circle, nearest_neighbours);
+
+                for (auto n : nearest_neighbours){
+                    if (!seen.count (n)){
+                        if ((this->coord_lookup (n) - loc).length() < radius){
+                            inds_in_circle.push_back (n);
+                        }
+                    }
+                    seen.insert (n);
+                }
+
+                if (!inds_in_circle.empty()){
+                    inds_in_radius.concat (inds_in_circle);
+                }
+            }
+        }
+
+        /*!
+         * Returns all the nearest neighbours of a given set of indices. Returns indices of North, East, South and West neighbours of all supplied source indices, if they exist.
+         *
+         * \param inds A vector of indices whose neighbours we want to find
+         * \param neighbour_inds Empty vector, passed by reference, that the function populates with the nearest neighbours.
+         */
+        void find_nearest_neighbours (const morph::vvec<I>& inds, morph::vvec<I>& neighbour_inds)
+        {
+            neighbour_inds.reserve (4 * inds.size());
+            I tmp = I{0};
+            for (const I & i : inds) {
+                tmp = this->index_nn(i);
+                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back (tmp);}
+                tmp = this->index_ne(i);
+                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back (tmp);}
+                tmp = this->index_ns(i);
+                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back (tmp);}
+                tmp = this->index_nw(i);
+                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back (tmp);}
+            }
         }
 
         //! This vector structure contains the coords for this grid. Note that it is public and so
