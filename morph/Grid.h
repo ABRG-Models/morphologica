@@ -777,6 +777,7 @@ namespace morph {
                 inds_in_circle.clear();
 
                 morph::vvec<I> nearest_neighbours;
+
                 find_nearest_neighbours(inds_in_previous_circle, nearest_neighbours);
                 
                 for (auto & n : nearest_neighbours){
@@ -803,6 +804,7 @@ namespace morph {
         void find_nearest_neighbours (const morph::vvec<I>& inds, 
                                       morph::vvec<I>& neighbour_inds)
         {
+            neighbour_inds.reserve(4 * inds.size());
             I tmp;
             for (const I & i : inds){
                 tmp = this->index_nn(i);
