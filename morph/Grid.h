@@ -797,7 +797,7 @@ namespace morph {
         /*!
          * Returns all the nearest neighbours of a given set of indices. Returns indices of North, East, South and West neighbours of all supplied source indices, if they exist.
          *
-         * \param inds A vector of indices whoes neighbours we want to find
+         * \param inds A vector of indices whose neighbours we want to find
          * \param neighbour_inds Empty vector, passed by reference, that the function populates with the nearest neighbours.
          */
         void find_nearest_neighbours (const morph::vvec<I>& inds, morph::vvec<I>& neighbour_inds)
