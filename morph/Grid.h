@@ -756,16 +756,16 @@ namespace morph {
          * \param radius radius defining the circle 
          * \param inds_in_radius A vector of indicies within the circle - supplied as a reference
          */
-        void indicies_in_radius(const morph::vec<float,2> loc, 
-                                const float radius,
-                                morph::vvec<int>& inds_in_radius)
+        void indicies_in_radius (const morph::vec<C,2> loc, 
+                                 const C radius,
+                                 morph::vvec<I>& inds_in_radius)
         {
-            morph::vvec<int> inds_in_circle;
-            morph::vvec<int> inds_in_previous_circle;
-            std::set<int> seen;
+            morph::vvec<I> inds_in_circle;
+            morph::vvec<I> inds_in_previous_circle;
+            std::set<I> seen;
             
             // Find first index (middle of circle)
-            int current_ind = this->index_lookup(loc);
+            I current_ind = this->index_lookup(loc);
             inds_in_radius.push_back(current_ind);
             seen.insert(current_ind);
             inds_in_circle.push_back(current_ind);
@@ -775,7 +775,7 @@ namespace morph {
                 inds_in_previous_circle = inds_in_circle;
                 inds_in_circle.clear();
 
-                morph::vvec<int> nearest_neighbours;
+                morph::vvec<I> nearest_neighbours;
                 find_nearest_neighbours(inds_in_previous_circle, nearest_neighbours);
                 
                 for (auto & n : nearest_neighbours){
@@ -801,19 +801,19 @@ namespace morph {
          * \param inds A vector of indices whoes neighbours we want to find
          * \param neighbour_inds Empty vector, passed by reference, that the function populates with the nearest neighbours.
          */
-        void find_nearest_neighbours(const morph::vvec<int>& inds, 
-                                    morph::vvec<int>& neighbour_inds)
+        void find_nearest_neighbours (const morph::vvec<I>& inds, 
+                                      morph::vvec<I>& neighbour_inds)
         {
-            int tmp;
-            for (const int & i : inds){
+            I tmp;
+            for (const I & i : inds){
                 tmp = this->index_nn(i);
-                if (tmp != std::numeric_limits<int>::max()){neighbour_inds.push_back(tmp);}
+                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back(tmp);}
                 tmp = this->index_ne(i);
-                if (tmp != std::numeric_limits<int>::max()){neighbour_inds.push_back(tmp);}
+                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back(tmp);}
                 tmp = this->index_ns(i);
-                if (tmp != std::numeric_limits<int>::max()){neighbour_inds.push_back(tmp);}
+                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back(tmp);}
                 tmp = this->index_nw(i);
-                if (tmp != std::numeric_limits<int>::max()){neighbour_inds.push_back(tmp);}
+                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back(tmp);}
             }
         }  // end of find_nearest_neighbours()
 
