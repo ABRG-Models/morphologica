@@ -112,6 +112,7 @@ namespace morph {
         // Getters
         I get_w() const { return this->w; }
         I get_h() const { return this->h; }
+        I get_n_pixels() const { return this->w * this->h; }
         morph::vec<I, 2> get_dims() const { return morph::vec<I, 2>{this->w, this->h}; }
         morph::vec<C, 2> get_dx() const { return this->dx; }
         morph::vec<C, 2> get_offset() const { return this->offset; }
@@ -787,9 +788,7 @@ namespace morph {
                     seen.insert(n);
                 }
 
-                if (inds_in_circle.size() == 0){
-                    return;
-                } else {
+                if (!inds_in_circle.empty()){
                     inds_in_radius.concat(inds_in_circle);
                 }   
             }       
