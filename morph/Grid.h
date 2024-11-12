@@ -751,13 +751,13 @@ namespace morph {
         }
 
         /*!
-         * Returns all the indicies of the grid with a given radius (radius argument) of a given (x,y) location (loc argument)
+         * Returns all the indices of the grid with a given radius (radius argument) of a given (x,y) location (loc argument)
          *
          * \param loc (x,y) metric location of the center of the circle
          * \param radius radius defining the circle 
-         * \param inds_in_radius A vector of indicies within the circle - supplied as a reference
+         * \param inds_in_radius A vector of indices within the circle - supplied as a reference
          */
-        void indicies_in_radius (const morph::vec<C,2> loc, 
+        void indices_in_radius (const morph::vec<C,2> loc, 
                                  const C radius,
                                  morph::vvec<I>& inds_in_radius)
         {
@@ -793,10 +793,10 @@ namespace morph {
                     inds_in_radius.concat(inds_in_circle);
                 }   
             }       
-        }   // end of indicies_in_radius()
+        } // end of indices_in_radius()
 
         /*!
-         * Returns all the nearest neighbours of a given set of indicies. Returns indicies of North, East, South and West neighbours of all supplied source indicies, if they exist.
+         * Returns all the nearest neighbours of a given set of indices. Returns indices of North, East, South and West neighbours of all supplied source indices, if they exist.
          *
          * \param inds A vector of indices whoes neighbours we want to find
          * \param neighbour_inds Empty vector, passed by reference, that the function populates with the nearest neighbours.
@@ -816,7 +816,7 @@ namespace morph {
                 tmp = this->index_nw(i);
                 if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back(tmp);}
             }
-        }  // end of find_nearest_neighbours()
+        } // end of find_nearest_neighbours()
 
         //! This vector structure contains the coords for this grid. Note that it is public and so
         //! acccessible by client code
