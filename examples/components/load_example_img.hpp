@@ -21,24 +21,23 @@ constexpr int img_sz = img_w * img_h;
 
 std::vector<m::vvec<m::vec<float, 3>>> load_imgs()
 {
-  // First load the images into memory. All of 'em should fit.
-  std::cout << "Load images into memory...\n";
-  std::vector<m::vvec<m::vec<float, 3>>> images(num_pngs);
-  m::vec<bool, 2> flip = {false, true};
-  for (int idx = first_png; idx <= last_png; ++idx) {
-    std::stringstream ss;
-    ss << "./../examples/components/frames/frame-";
-    if (idx < 10) {ss << "0";}
-    if (idx < 100) {ss << "0";}
-    ss << idx << ".png";
-    std::string fpath = ss.str();
-    //std::string fpath = std::format("../examples/perception/input/cropped/{:04d}.png", idx);
-    images[idx - first_png].resize(img_w * img_h);
-    std::cout << "path = " << fpath << std::endl;
-    m::loadpng<float, 3>(fpath, images[idx - first_png], flip);
-  }
+    // First load the images into memory. All of 'em should fit.
+    std::cout << "Load images into memory...\n";
+    std::vector<m::vvec<m::vec<float, 3>>> images(num_pngs);
+    m::vec<bool, 2> flip = {false, true};
+    for (int idx = first_png; idx <= last_png; ++idx) {
+        std::stringstream ss;
+        ss << "./../examples/components/frames/frame-";
+        if (idx < 10) {ss << "0";}
+        if (idx < 100) {ss << "0";}
+        ss << idx << ".png";
+        std::string fpath = ss.str();
+        images[idx - first_png].resize(img_w * img_h);
+        std::cout << "path = " << fpath << std::endl;
+        m::loadpng<float, 3>(fpath, images[idx - first_png], flip);
+    }
 
-  return images;
+    return images;
 }
 
 } // namespace morph_example
