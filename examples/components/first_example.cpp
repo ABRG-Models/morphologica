@@ -1,4 +1,4 @@
-/**
+/*!
  * \file first_example.cpp
  * Process image from example movie data and use the graph visualization from the lib.
  * It runs at 30 FPS (original movie pace)
@@ -68,7 +68,7 @@ struct VisualizerTemporalSignal
   std::vector<std::array<float, 3>> colors_for_line;  // list of colors used for the graph and grid
   std::array<unsigned int, 2> old_pix_position = {0, 0};  // store the location from previous call
 
-  /**
+  /*!
    * @brief Constructor for VisualTemporalSignal object, which display temporal signal of the state variables
    *
    * @param img_w image width
@@ -108,7 +108,7 @@ struct VisualizerTemporalSignal
       if (origin_top_left) {
         grid_order_setting = m::GridOrder::topleft_to_bottomright;
         offset_left += m::vec<float>{0.0f, pixel_size * img_h, 0.0f};
-        //offset_right += m::vec<float>{0.0f, pixel_size * img_h, 0.0f};
+        // offset_right += m::vec<float>{0.0f, pixel_size * img_h, 0.0f};
       } else {
         grid_order_setting = m::GridOrder::bottomleft_to_topright;
       }
@@ -142,7 +142,7 @@ struct VisualizerTemporalSignal
       std::cout << "[VisualizerTemporalSignal::constructor] ends" << std::endl;
     }
 
-  /**
+  /*!
    * @brief update the visualization with the computed data to visualize the new frame
    *
    * @param data input data converted to morphologica vectors
@@ -234,7 +234,7 @@ struct VisualizerTemporalSignal
     this->v.releaseContext();
   }
 
-  /**
+  /*!
    * @brief Destroy the VisualTemporalSignal object and check if any OpenGL error is triggered
    *
    */
@@ -245,7 +245,7 @@ struct VisualizerTemporalSignal
   }
 };
 
-/**
+/*!
  * @brief  load images and uses them with the default visualizer
  *
  * @return int an integer 0 upon exit success

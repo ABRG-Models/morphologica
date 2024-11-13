@@ -1,4 +1,4 @@
-/*
+/*!
  * Components are defined as composition of visuals.
  * The idea is to make basic blocks easy to apprehend for users. 
  *
@@ -39,7 +39,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
     // pointers to the grid owning the original image
     m::GridVisual<T, I, C, gl_version> * gv_ptr = nullptr;
   
-    /**
+    /*!
      * @brief create a default image to use at initialization of the grids
      *
      * @param img_w
@@ -66,7 +66,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
       return default_img;
     }
   
-    /**
+    /*!
      * @brief Create a grid to display the image by defining size of pixels and size of the image
      *
      * @param img_w image width in pixel
@@ -90,7 +90,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
       }
     }
   
-    /**
+    /*!
      * @brief Create a grid visualizer that can display vector
      *
      * @param v_ref reference to the Visual object managing the openGL window
@@ -125,7 +125,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
   return v_ref.addVisualModel(cgv);
 }
   
-    /**
+    /*!
      * @brief Set the colourbar object for a given grid
      *
      * @param v_ref reference to the Visual object managing the openGL window
@@ -162,7 +162,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
     }
   
   public:
-    /**
+    /*!
      * @brief Construct a new Simple Grid Visual object
      *
      * @param v_ref reference to the Visual object managing the openGL window
@@ -228,7 +228,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
           this->gv_ptr->colourScale);
       }
     }
-    /**
+    /*!
      * @brief update grid function with new data
      *
      * @param new_data vector of vector of data to be displayed in the grid
@@ -238,7 +238,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
       this->gv_ptr->updateData(&new_data);
     }
   
-    /**
+    /*!
      * @brief Set the Grid around the Selected Pixels with the correct colors
      *
      * @param grid_thickness relative grid thickness to pixel size
@@ -301,7 +301,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
     std::vector<std::deque<float>> data_;  // data for graph to be plotted
 
   public:
-    /**
+    /*!
      * @brief Constructor for a new Graph Visual object
      * with constant abscissa and temporal update
      *
@@ -374,7 +374,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
       this->clean_data_graph(n_curve_, 0.0f);
     }
 
-    /**
+    /*!
      * @brief clear the graph from any data to start again
      *
      * @param nb_sample_to_display number of curves to display
@@ -399,7 +399,7 @@ namespace morph // TODO decide if it should stay in the same namespace or define
       }
     }
 
-    /**
+    /*!
      * @brief function to update the graph with new data
      *
      * @param nb_sample_to_display set the number of sample to display. The sample will be displayed from the last
