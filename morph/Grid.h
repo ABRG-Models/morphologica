@@ -678,16 +678,16 @@ namespace morph {
         I col_after_x_shift (const I ind, const I dx) const
         {
             I new_col = this->col (ind) + dx;
-            if (new_col >= I{0} && new_col < w) {
+            if (new_col >= I{0} && new_col < this->w) {
                 return new_col;
             } else {    // new column is off grid and result will depend on the horizontal wrapping
                 if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical) {
                     return std::numeric_limits<I>::max();
                 } else if (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both) {
-                    if (new_col >= w){
-                        return new_col % w;
+                    if (new_col >= this->w){
+                        return new_col % this->w;
                     } else { // new_col < 0 i.e. off the left side of the grid
-                        return w + (new_col % w);
+                        return this->w + (new_col % this->w);
                     }
                 }
             }
@@ -703,16 +703,16 @@ namespace morph {
         I row_after_y_shift (const I ind, const I dy)const
         {
             I new_row = this->row (ind) + dy;
-            if (new_row >= I{0} && new_row < h) {
+            if (new_row >= I{0} && new_row < this->h) {
                 return new_row;
             } else {    // new row is off grid and result will depend on the vertical wrapping
                 if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal) {
                     return std::numeric_limits<I>::max();
                 } else if (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both) {
-                    if (new_row >= h){
-                        return new_row % h;
+                    if (new_row >= this->h){
+                        return new_row % this->h;
                     } else {    // new_row < 0 i.e. off the bottom of the grid
-                        return h + (new_row % h);
+                        return h + (new_row % this->h);
                     }
                 }
             }
