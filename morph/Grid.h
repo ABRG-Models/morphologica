@@ -667,16 +667,18 @@ namespace morph {
             return index < n ? index / h : std::numeric_limits<I>::max();
         }
 
+        private:
+
         /*!
-        * For a supplied source index, this function returns the new COLUMN index following a horizontal shift (in either direction) of given number of pixels (dx).
-        * \param ind The 1D index in the vector of data of the pixel that is to be moved
-        * \param dx The horizontal displacement (in units of number of pixels).
-        * \return The column index of the moved pixel
-        */
-        I col_after_x_shift (I ind, I dx)
+         * For a supplied source index, this function returns the new COLUMN index following a horizontal shift (in either direction) of given number of pixels (dx).
+         * \param ind The 1D index in the vector of data of the pixel that is to be moved
+         * \param dx The horizontal displacement (in units of number of pixels).
+         * \return The column index of the moved pixel
+         */
+        I col_after_x_shift (const I ind, const I dx) const
         {
-            int new_col = col (ind) + dx;
-            if (new_col >= 0 && new_col < w) {
+            I new_col = this->col (ind) + dx;
+            if (new_col >= I{0} && new_col < w) {
                 return new_col;
             } else {    // new column is off grid and result will depend on the horizontal wrapping
                 if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical) {
@@ -693,15 +695,15 @@ namespace morph {
         }
 
         /*!
-        * For a supplied source index, this function returns the new ROW index following a vertical shift (in either direction) of given number of pixels (dy).
-        * \param ind The 1D index in the vector of data of the pixel that is to be moved
-        * \param dy The vertical displacement (in units of number of pixels).
-        * \return The row index of the moved pixel
-        */
-        I row_after_y_shift (I ind, I dy)
+         * For a supplied source index, this function returns the new ROW index following a vertical shift (in either direction) of given number of pixels (dy).
+         * \param ind The 1D index in the vector of data of the pixel that is to be moved
+         * \param dy The vertical displacement (in units of number of pixels).
+         * \return The row index of the moved pixel
+         */
+        I row_after_y_shift (const I ind, const I dy)const
         {
-            int new_row = row (ind) + dy;
-            if (new_row >= 0 && new_row < h) {
+            I new_row = this->row (ind) + dy;
+            if (new_row >= I{0} && new_row < h) {
                 return new_row;
             } else {    // new row is off grid and result will depend on the vertical wrapping
                 if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal) {
@@ -717,20 +719,22 @@ namespace morph {
             return std::numeric_limits<I>::max();
         }
 
+        public:
+
         /*!
-        * For a supplied source index, this function returns the new index following a 2D shift (in any direction) of given number of pixels (dx, dy).
-        * \param ind The 1D index in the vector of data of the pixel that is to be moved
-        * \param delta The [x, y] displacement vector (in units of number of pixels).
-        * \return The index of the moved pixel
-        */
-        I shift_index (I ind, morph::vec<int, 2> delta)
+         * For a supplied source index, this function returns the new index following a 2D shift (in any direction) of given number of pixels (dx, dy).
+         * \param ind The 1D index in the vector of data of the pixel that is to be moved
+         * \param delta The [x, y] displacement vector (in units of number of pixels).
+         * \return The index of the moved pixel
+         */
+        I shift_index (const I ind, const morph::vec<int, 2> delta) const
         {
-            int new_col = col_after_x_shift(ind, delta[0]);
+            I new_col = this->col_after_x_shift (ind, delta[0]);
             if (new_col == std::numeric_limits<I>::max()) { return std::numeric_limits<I>::max(); }
-            int new_row = row_after_y_shift(ind, delta[1]);
+            I new_row = this->row_after_y_shift (ind, delta[1]);
             if (new_row == std::numeric_limits<I>::max()) { return std::numeric_limits<I>::max(); }
 
-            return this->rowmaj() ? new_row * w + new_col : new_col * h + new_row;
+            return this->rowmaj() ? new_row * this->w + new_col : new_col * this->h + new_row;
         }
 
         /*!
