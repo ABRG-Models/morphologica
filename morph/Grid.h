@@ -676,7 +676,7 @@ namespace morph {
         I col_after_x_shift (I ind, I dx)
         {
             int new_col = col (ind) + dx;
-            if (new_col > 0 && new_col < w) {
+            if (new_col >= 0 && new_col < w) {
                 return new_col;
             } else {    // new column is off grid and result will depend on the horizontal wrapping
                 if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical) {
@@ -701,7 +701,7 @@ namespace morph {
         I row_after_y_shift (I ind, I dy)
         {
             int new_row = row (ind) + dy;
-            if (new_row > 0 && new_row < h) {
+            if (new_row >= 0 && new_row < h) {
                 return new_row;
             } else {    // new row is off grid and result will depend on the vertical wrapping
                 if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal) {
@@ -726,26 +726,11 @@ namespace morph {
         I shift_index (I ind, morph::vec<int, 2> delta)
         {
             int new_col = col_after_x_shift(ind, delta[0]);
+            if (new_col == std::numeric_limits<I>::max()) { return std::numeric_limits<I>::max(); }
             int new_row = row_after_y_shift(ind, delta[1]);
+            if (new_row == std::numeric_limits<I>::max()) { return std::numeric_limits<I>::max(); }
 
             return this->rowmaj() ? new_row * w + new_col : new_col * h + new_row;
-        }
-
-        /*!
-        *
-        */
-        morph::vec<I, 2> index_shift (morph::vec<C, 2> delta)
-        {
-            morph::vec<I, 2> delta_ind;
-
-            if (order == GridOrder::bottomleft_to_topright || order == GridOrder::bottomleft_to_topright_colmaj){
-                int delta_ind[0] = (int) std::round(delta[0] / this->dx[0]);
-                int delta_ind[1] = (int) std::round(delta[1] / this->dx[1]);
-            } else if (order == GridOrder::topleft_to_bottomright || order == GridOrder::topleft_to_bottomright_colmaj){
-                int delta_ind[0] = (int) std::round(delta[0] / this->dx[0]);
-                int delta_ind[1] = (int) std::round(delta[1] / this->dx[1]) * -1;
-            }
-            return delta_ind;
         }
 
         /*!
