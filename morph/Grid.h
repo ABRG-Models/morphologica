@@ -667,8 +667,6 @@ namespace morph {
             return index < n ? index / h : std::numeric_limits<I>::max();
         }
 
-        // private:
-
         /*!
          * For a supplied source index, this function returns the new COLUMN index following a horizontal shift (in either direction) of given number of pixels (dx).
          * \param ind The 1D index in the vector of data of the pixel that is to be moved
@@ -718,8 +716,6 @@ namespace morph {
             }
             return std::numeric_limits<I>::max();
         }
-
-        // public:
 
         /*!
          * For a supplied source index, this function returns the new index following a 2D shift (in any direction) of given number of pixels (dx, dy).
