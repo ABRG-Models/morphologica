@@ -539,6 +539,9 @@ add_test(testGrid_suggest_dims testGrid_suggest_dims)
 add_executable(testGridRowCol testGridRowCol.cpp)
 add_test(testGridRowCol testGridRowCol)
 
+add_executable(testGrid_shiftindex testGrid_shiftindex.cpp)
+add_test(testGrid_shiftindex testGrid_shiftindex)
+
 add_executable(testGridIndexLookup testGridIndexLookup.cpp)
 add_test(testGridIndexLookup testGridIndexLookup)
 
