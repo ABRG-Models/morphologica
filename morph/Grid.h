@@ -668,6 +668,87 @@ namespace morph {
         }
 
         /*!
+        * For a supplied source index, this function returns the new COLUMN index following a horizontal shift (in either direction) of given number of pixels (dx).
+        * \param ind The 1D index in the vector of data of the pixel that is to be moved
+        * \param dx The horizontal displacement (in units of number of pixels).
+        * \return The column index of the moved pixel
+        */
+        I col_after_x_shift (I ind, I dx)
+        {
+            int new_col = col (ind) + dx;
+            if (new_col > 0 && new_col < w) {
+                return new_col;
+            } else {    // new column is off grid and result will depend on the horizontal wrapping
+                if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical) {
+                    return std::numeric_limits<I>::max();
+                } else if (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both) {
+                    if (new_col >= w){
+                        return new_col % w;
+                    } else { // new_col < 0 i.e. off the left side of the grid
+                        return w + (new_col % w);
+                    }
+                }
+            }
+            return std::numeric_limits<I>::max();
+        }
+
+        /*!
+        * For a supplied source index, this function returns the new ROW index following a vertical shift (in either direction) of given number of pixels (dy).
+        * \param ind The 1D index in the vector of data of the pixel that is to be moved
+        * \param dy The vertical displacement (in units of number of pixels).
+        * \return The row index of the moved pixel
+        */
+        I row_after_y_shift (I ind, I dy)
+        {
+            int new_row = row (ind) + dy;
+            if (new_row > 0 && new_row < h) {
+                return new_row;
+            } else {    // new row is off grid and result will depend on the vertical wrapping
+                if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal) {
+                    return std::numeric_limits<I>::max();
+                } else if (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both) {
+                    if (new_row >= h){
+                        return new_row % h;
+                    } else {    // new_row < 0 i.e. off the bottom of the grid
+                        return h + (new_row % h);
+                    }
+                }
+            }
+            return std::numeric_limits<I>::max();
+        }
+
+        /*!
+        * For a supplied source index, this function returns the new index following a 2D shift (in any direction) of given number of pixels (dx, dy).
+        * \param ind The 1D index in the vector of data of the pixel that is to be moved
+        * \param delta The [x, y] displacement vector (in units of number of pixels).
+        * \return The index of the moved pixel
+        */
+        I shift_index (I ind, morph::vec<int, 2> delta)
+        {
+            int new_col = col_after_x_shift(ind, delta[0]);
+            int new_row = row_after_y_shift(ind, delta[1]);
+
+            return this->rowmaj() ? new_row * w + new_col : new_col * h + new_row;
+        }
+
+        /*!
+        *
+        */
+        morph::vec<I, 2> index_shift (morph::vec<C, 2> delta)
+        {
+            morph::vec<I, 2> delta_ind;
+
+            if (order == GridOrder::bottomleft_to_topright || order == GridOrder::bottomleft_to_topright_colmaj){
+                int delta_ind[0] = (int) std::round(delta[0] / this->dx[0]);
+                int delta_ind[1] = (int) std::round(delta[1] / this->dx[1]);
+            } else if (order == GridOrder::topleft_to_bottomright || order == GridOrder::topleft_to_bottomright_colmaj){
+                int delta_ind[0] = (int) std::round(delta[0] / this->dx[0]);
+                int delta_ind[1] = (int) std::round(delta[1] / this->dx[1]) * -1;
+            }
+            return delta_ind;
+        }
+
+        /*!
          * Resampling function (monochrome).
          *
          * \param image_data (input) The monochrome image as a vvec of floats. The image
