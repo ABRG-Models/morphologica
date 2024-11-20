@@ -75,23 +75,25 @@ if(ARMADILLO_FOUND)
   endif()
 
   # Adaptive Simulated Annealing algo on a made up objective
-  add_executable(anneal_asa anneal_asa.cpp)
-  target_compile_definitions(anneal_asa PUBLIC VISUALISE)
-  target_link_libraries(anneal_asa OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(anneal_asa GLEW::GLEW)
-  endif()
+  if(HDF5_FOUND)
+    add_executable(anneal_asa anneal_asa.cpp)
+    target_compile_definitions(anneal_asa PUBLIC VISUALISE)
+    target_link_libraries(anneal_asa OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(anneal_asa GLEW::GLEW)
+    endif()
 
-  add_executable(anneal_asa_novis anneal_asa.cpp)
-  target_link_libraries(anneal_asa_novis)
+    add_executable(anneal_asa_novis anneal_asa.cpp)
+    target_link_libraries(anneal_asa_novis)
 
-  # Adaptive Simulated Annealing algo on objective from Bohachevsky
-  add_executable(anneal_boha anneal_asa.cpp)
-  target_compile_definitions(anneal_boha PUBLIC USE_BOHACHEVSKY_FUNCTION VISUALISE)
-  target_link_libraries(anneal_boha OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(anneal_boha GLEW::GLEW)
-  endif()
+    # Adaptive Simulated Annealing algo on objective from Bohachevsky
+    add_executable(anneal_boha anneal_asa.cpp)
+    target_compile_definitions(anneal_boha PUBLIC USE_BOHACHEVSKY_FUNCTION VISUALISE)
+    target_link_libraries(anneal_boha OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(anneal_boha GLEW::GLEW)
+    endif()
+  endif(HDF5_FOUND)
 
   # Plots a surface, counts (and shows) the frames per second
   add_executable(fps fps.cpp)
