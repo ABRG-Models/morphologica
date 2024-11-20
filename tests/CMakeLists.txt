@@ -288,6 +288,9 @@ if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   add_test(testvec_constexpr testvec_constexpr)
 endif()
 
+add_executable(testvec_casting testvec_casting.cpp)
+add_test(testvec_casting testvec_casting)
+
 add_executable(testvec_asmapkey testvec_asmapkey.cpp)
 add_test(testvec_asmapkey testvec_asmapkey)
 
