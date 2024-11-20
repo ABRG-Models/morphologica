@@ -160,6 +160,7 @@ endif()
 include_directories(${OPENGL_INCLUDE_DIR})
 if(HDF5_FOUND)
   include_directories(${HDF5_INCLUDE_DIR})
+  message (INFO "HDF5_INCLUDE_DIR ${HDF5_INCLUDE_DIR}")
 endif()
 if(ARMADILLO_FOUND)
   # Two possible values for the armadillo include dirs
