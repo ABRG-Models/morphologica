@@ -46,7 +46,7 @@ int main()
     morph::vec<float, 3> v1 = { 1, 2, 3 };
     std::array<float, 3> a1 = { 3, 2, 1 };
 
-    // Casting of pointers is fine
+    // Casting of const pointers is fine
     std::cout << "\nCasting to const pointer args\n";
     // f1 takes a const array pointer arg
     f00 (&a1);
@@ -96,6 +96,8 @@ int main()
     // f3 (dynamic_cast<std::array<float, 3>>(v1));
     // error: invalid 'const_cast' from type 'morph::vec<float, 3>*' to type 'std::array<float, 3>*'
     // f3 (const_cast<std::array<float, 3>&>(v1));
+    f3 (reinterpret_cast<std::array<float, 3>&>(v1));
+    //f3 (reinterpret_cast<std::array<float, 3>>(v1)); // invalid cast
 
     // but casting when the args are const array&/const vec& is more constrained
     f4 (v1);
@@ -108,6 +110,7 @@ int main()
 
     // ok (note we're casting to const vec<>&
     f4 (static_cast< const morph::vec<float, 3>& >(a1));
+    f4 (reinterpret_cast< const morph::vec<float, 3>& >(a1));
 
     // error: invalid 'const_cast' from type 'std::array<float, 3>*' to type 'const morph::vec<float, 3>*'
     // f4 (const_cast< const morph::vec<float, 3>& >(a1));
