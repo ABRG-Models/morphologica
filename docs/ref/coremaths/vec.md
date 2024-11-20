@@ -175,6 +175,94 @@ std::map<morph::vec<int, 2>, std::string, decltype(_cmp)> themap(_cmp);
 ```
 This example comes from [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp).
 
+## Casting of `std::array` to `morph::vec`
+
+If you have data in a part of your program contained in an `std::array`, it's possible to cast it to `morph::vec` either to use it within a morphologica visualization or simply to do some maths on the data.
+
+The following casts from `array` to `vec` are possible.
+
+### Cast `array` to a const pointer
+
+Use `static_cast` or `reinterpret_cast` to cast an `array` to a `const vec` pointer.
+```c++
+// An array to cast
+std::array<float, 3> a1 = { 3, 2, 1 };
+// A function taking a const pointer argument
+void f_const_ptr_v (const morph::vec<float, 3>* v1) { /* morph::vec operations */ }
+// Calls to the function, passing in the array
+f_const_ptr_v (static_cast< const morph::vec<float, 3>* >(&a1));
+f_const_ptr_v (reinterpret_cast< const morph::vec<float, 3>* >(&a1));
+f_const_ptr_v (static_cast< morph::vec<float, 3>* >(&a1));
+f_const_ptr_v (reinterpret_cast< morph::vec<float, 3>* >(&a1));
+```
+
+### Cast `array` to a non-const pointer
+
+You can only use `static_cast` to cast an `array` to a non-const pointer.
+```c++
+void f_nonconst_ptr_v (morph::vec<float, 3>* v1) { /* morph::vec operations */ }
+f_nonconst_ptr_v (static_cast< morph::vec<float, 3>* >(&a1));
+```
+
+### Cast `array` to a const reference
+
+You can use `static_cast` or `reinterpret_cast` to cast `std::array` to a `const vec<>&`.
+```c++
+void f_const_ref_v (const morph::vec<float, 3>& v1) { /* morph::vec operations */ }
+f_const_ref_v (static_cast< const morph::vec<float, 3>& >(a1));
+f_const_ref_v (reinterpret_cast< const morph::vec<float, 3>& >(a1));
+f_const_ref_v (static_cast< morph::vec<float, 3>& >(a1));
+f_const_ref_v (reinterpret_cast< morph::vec<float, 3>& >(a1));
+```
+
+### Cast `array` to a non-const reference
+
+You can only use `static_cast` to cast `array` to a non-const `vec` reference.
+```c++
+void f_nonconst_ref_v (morph::vec<float, 3>& v1) { /* morph::vec operations */ }
+f_nonconst_ref_v (static_cast< morph::vec<float, 3>& >(a1));
+```
+
+## Casting `morph::vec` to `std::array`
+
+You may need to use a third-party library to process data in a `morph::vec`. You can use these casts to avoid any need to duplicate the data.
+
+### Cast to a const `array` pointer
+You can use static, reinterpret or dynamic casts to cast from `morph::vec` to `std::array`. Declaring that the pointer must be const is optional.
+```c++
+morph::vec<float, 3> v1 = { 1, 2, 3 };
+void f_const_ptr_a (const std::array<float, 3>* a1) { /* std::array operations */ }
+f_const_ptr_a (static_cast<std::array<float, 3>*>(&v1));
+f_const_ptr_a (reinterpret_cast<std::array<float, 3>*>(&v1));
+f_const_ptr_a (dynamic_cast<std::array<float, 3>*>(&v1));
+f_const_ptr_a (static_cast<const std::array<float, 3>*>(&v1));
+f_const_ptr_a (reinterpret_cast<const std::array<float, 3>*>(&v1));
+f_const_ptr_a (dynamic_cast<const std::array<float, 3>*>(&v1));
+```
+### Cast to a non-const `array` pointer
+You can static cast or reinterpret_cast to cast `vec` to a non-const `array` pointer
+```c++
+void f_nonconst_ptr_a (std::array<float, 3>* a1) { /* std::array operations */ }
+f_nonconst_ptr_a (static_cast<std::array<float, 3>*>(&v1));
+f_nonconst_ptr_a (reinterpret_cast<std::array<float, 3>*>(&v1));
+```
+### Cast to a const `array` reference
+Two possibilities for `static_cast` and one for `reinterpret_cast`.
+```c++
+void f_const_ref_a (const std::array<float, 3>& a1) { /* std::array operations */ }
+f_const_ref_a (static_cast< std::array<float, 3> >(v1));
+f_const_ref_a (static_cast< std::array<float, 3>& >(v1));
+f_const_ref_a (dynamic_cast< std::array<float, 3>& >(v1));
+```
+
+### Cast to a non-const `array` reference
+You can either static_cast or dynamic_cast from `vec` to `array` by reference.
+```c++
+void f_nonconst_ref_a (std::array<float, 3>& a1) { /* std::array operations */ }
+f_nonconst_ref_a (static_cast< std::array<float, 3>& >(v1));
+f_nonconst_ref_a (dynamic_cast< std::array<float, 3>& >(v1));
+```
+
 ## Member functions
 
 ### Setter functions
