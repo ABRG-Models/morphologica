@@ -505,6 +505,8 @@ namespace morph {
 
         //! Get mv_offset in a json-friendly string
         std::string translation_str() { return this->mv_offset.str_mat(); }
+        //! And a simple getter for mv_offset
+        vec<float> get_mv_offset() { return this->mv_offset; }
 
         //! Return the number of elements in this->indices
         std::size_t indices_size() { return this->indices.size(); }

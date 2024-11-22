@@ -13,6 +13,7 @@
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
 #include <morph/VisualTextModel.h>
+#include <morph/colour.h>
 #include <array>
 
 namespace morph {
@@ -146,9 +147,9 @@ namespace morph {
 
         //! The colours of the arrows, and of the centre sphere
         std::array<float, 3> centresphere_col = {1.0f, 1.0f, 1.0f};
-        std::array<float, 3> x_axis_col = {1.0f, 0.0f, 0.0f}; // Red
-        std::array<float, 3> y_axis_col = {0.0f, 1.0f, 0.0f}; // Green
-        std::array<float, 3> z_axis_col = {0.0f, 0.0f, 1.0f}; // Blue
+        std::array<float, 3> x_axis_col = morph::colour::crimson;
+        std::array<float, 3> y_axis_col = morph::colour::springgreen2;
+        std::array<float, 3> z_axis_col = morph::colour::blue2;
 
         std::string x_label = "X";
         std::string y_label = "Y";

@@ -423,6 +423,30 @@ namespace morph {
             if (this->k == 0) { return; }
             this->healpix_triangles_by_nest();
             if (this->show_spheres == true) { this->vertex_spheres(); }
+            if (this->indicate_axes == true) { this->draw_coordaxes(); }
+        }
+
+        // Draw a small set of coordinate arrows with origin at pixel 0
+        void draw_coordaxes()
+        {
+            morph::vec<float> vpf0 = {0, 0, this->r};
+
+            // draw tubes
+            float tlen = this->r * 0.1f;
+            float tlen2 = this->r * 0.05f;
+            float tthk = this->r * 0.005f;
+
+            this->computeCone (vpf0 + (this->uz * tthk/2),
+                               vpf0 + (this->uz * tlen),
+                               0.0f, morph::colour::blue2, tthk);
+
+            this->computeCone (vpf0 + this->ux * tthk * 1.1f + this->uz * tthk,
+                               vpf0 + this->ux * tlen2 + this->uz * tthk,
+                               0.0f, morph::colour::crimson, tthk/2);
+
+            this->computeCone (vpf0 + this->uy * tthk * 1.1f + this->uz * tthk,
+                               vpf0 + this->uy * tlen2 + this->uz * tthk,
+                               0.0f, morph::colour::springgreen2, tthk/2);
         }
 
         int64_t n_pixels() { return 12 * this->nside * this->nside; }
@@ -479,6 +503,9 @@ namespace morph {
 
         // Show spheres at face locations? (mainly for debug)
         bool show_face_spheres = false;
+
+        // Show a little coordinate axes set indicating directions?
+        bool indicate_axes = false;
 
     private:
         // How many sides for the healpix? This is a choice of the user. Default to 3.
