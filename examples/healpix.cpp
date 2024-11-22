@@ -16,6 +16,7 @@ int main (int argc, char** argv)
 
     auto hpv = std::make_unique<morph::HealpixVisual<float>> (morph::vec<float>{0,0,0});
     v.bindmodel (hpv);
+    hpv->indicate_axes = true;
     hpv->set_order (ord);
     hpv->cm.setType (morph::ColourMapType::Plasma);
 
