@@ -33,8 +33,12 @@ namespace morph {
 
         void updateColours()
         {
-            this->vertexColors.clear(); // could potentially just replace values
             size_t n_data = this->n_pixels();
+
+            if (this->vertexColors.size() < n_data * 3) {
+                throw std::runtime_error ("vertexColors is not big enough to updateColours()");
+            }
+
             // Scale data
             morph::vvec<float> scaled_data (this->pixeldata);
             if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
@@ -43,7 +47,9 @@ namespace morph {
             // Re-colour
             for (size_t i = 0u; i < n_data; ++i) {
                 auto c = this->cm.convert (scaled_data[i]);
-                this->vertex_push (c, this->vertexColors);
+                this->vertexColors[3*i] = c[0];
+                this->vertexColors[3*i+1] = c[1];
+                this->vertexColors[3*i+2] = c[2];
             }
 
             // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
