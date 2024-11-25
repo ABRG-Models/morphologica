@@ -1,7 +1,7 @@
 /*!
  * \file
  *
- * A Transformation matrix class
+ * A 4x4 Transformation matrix class
  *
  * \author Seb James
  * \date 2019
@@ -20,43 +20,43 @@
 namespace morph {
 
     // Forward declare class and stream operator
-    template <typename Flt> class TransformMatrix;
-    template <typename Flt> std::ostream& operator<< (std::ostream&, const TransformMatrix<Flt>&);
+    template <typename F> class mat44;
+    template <typename F> std::ostream& operator<< (std::ostream&, const mat44<F>&);
 
     /*!
      * This implements a 4x4 transformation matrix, for use in computer graphics
      * applications in which 3D coordinates are often given as 4D homogeneous
      * coordinates (with the fourth element chosen to be equal to 1). It's used a lot in
-     * morph::Visual. The matrix data is stored in TransformMatrix::mat, an array of 16
+     * morph::Visual. The matrix data is stored in mat44::mat, an array of 16
      * floating point numbers.
      *
-     * \templateparam Flt The floating point type in which to store the
-     * TransformMatrix's data.
+     * \templateparam F The floating point type in which to store the
+     * mat44's data.
      */
-    template <typename Flt>
-    class TransformMatrix
+    template <typename F>
+    class mat44
     {
     public:
         //! Default constructor
-        constexpr TransformMatrix() { this->setToIdentity(); }
+        constexpr mat44() { this->setToIdentity(); }
         //! User-declared copy constructor
-        constexpr TransformMatrix (const TransformMatrix<Flt>& other) : mat(other.mat) {}
+        constexpr mat44 (const mat44<F>& other) : mat(other.mat) {}
         //! User-declared copy assignment constructor
-        constexpr TransformMatrix<Flt>& operator= (const TransformMatrix<Flt>& other)
+        constexpr mat44<F>& operator= (const mat44<F>& other)
         {
             std::copy (other.mat.begin(), other.mat.end(), mat.begin());
             return *this;
         }
         //! Explicitly defaulted  move constructor
-        TransformMatrix(TransformMatrix<Flt>&& other) = default;
+        mat44(mat44<F>&& other) = default;
         //! Explicitly defaulted move assignment constructor
-        TransformMatrix<Flt>& operator=(TransformMatrix<Flt>&& other) = default;
+        mat44<F>& operator=(mat44<F>&& other) = default;
 
         /*!
          * The transformation matrix data, arranged in column major format to be OpenGL
          * friendly.
          */
-        alignas(std::array<Flt, 16>) std::array<Flt, 16> mat;
+        alignas(std::array<F, 16>) std::array<F, 16> mat;
 
         //! Return a string representation of the matrix
         std::string str() const
@@ -70,7 +70,7 @@ namespace morph {
         }
 
         //! Return a string representation of the passed-in column-major array
-        static std::string str (const std::array<Flt, 16>& arr)
+        static std::string str (const std::array<F, 16>& arr)
         {
             std::stringstream ss;
             ss <<"[ "<< arr[0]<<" , "<<arr[4]<<" , "<<arr[8]<<" , "<<arr[12]<<" ;\n";
@@ -83,20 +83,20 @@ namespace morph {
         //! Self-explanatory
         constexpr void setToIdentity()
         {
-            this->mat.fill (Flt{0});
-            this->mat[0] = Flt{1};
-            this->mat[5] = Flt{1};
-            this->mat[10] = Flt{1};
-            this->mat[15] = Flt{1};
+            this->mat.fill (F{0});
+            this->mat[0] = F{1};
+            this->mat[5] = F{1};
+            this->mat[10] = F{1};
+            this->mat[15] = F{1};
         }
 
         //! Access elements of the matrix
-        constexpr Flt& operator[] (unsigned int idx) { return this->mat[idx]; }
+        constexpr F& operator[] (unsigned int idx) { return this->mat[idx]; }
 
         //! Access a given row of the matrix
-        constexpr morph::vec<Flt, 4> row (unsigned int idx) const
+        constexpr morph::vec<F, 4> row (unsigned int idx) const
         {
-            morph::vec<Flt, 4> r = {Flt{0}, Flt{0}, Flt{0}, Flt{0}};
+            morph::vec<F, 4> r = {F{0}, F{0}, F{0}, F{0}};
             if (idx > 3U) { return r; }
             r[0] = this->mat[idx];
             r[1] = this->mat[idx+4];
@@ -106,9 +106,9 @@ namespace morph {
         }
 
         //! Access a given column of the matrix
-        constexpr morph::vec<Flt, 4> col (unsigned int idx) const
+        constexpr morph::vec<F, 4> col (unsigned int idx) const
         {
-            morph::vec<Flt, 4> c = {Flt{0}, Flt{0}, Flt{0}, Flt{0}};
+            morph::vec<F, 4> c = {F{0}, F{0}, F{0}, F{0}};
             if (idx > 3U) { return c; }
             idx *= 4U;
             c[0] = this->mat[idx];
@@ -122,8 +122,8 @@ namespace morph {
         //! Compute a morphing transformation to turn simplex(ABCD) into simplex(EFGH). Avoid
         //! reflection. Keep the 'order' of ABC in DEF; if ABC defines a clockwise order
         //! of vertices, then so should DEF.
-        void determineFrom (std::array<vec<Flt,4>, 4>& abcd,
-                            std::array<vec<Flt,4>, 4>& efdg)
+        void determineFrom (std::array<vec<F,4>, 4>& abcd,
+                            std::array<vec<F,4>, 4>& efdg)
         {
             // The transformation is quite simple to determine. abcd defines a triangle
             // as 3 columns of 4-vectors (in homogeneous coordinates); efgh defines a
@@ -134,7 +134,7 @@ namespace morph {
         }
 #endif
         //! Apply translation specified by vector @dv
-        constexpr void translate (const vec<Flt>& dv)
+        constexpr void translate (const vec<F>& dv)
         {
             this->mat[12] += dv.x();
             this->mat[13] += dv.y();
@@ -142,7 +142,7 @@ namespace morph {
         }
 
         //! Apply translation specified by vector @dv provided as array of three coordinates
-        constexpr void translate (const std::array<Flt, 3>& dv)
+        constexpr void translate (const std::array<F, 3>& dv)
         {
             this->mat[12] += dv[0];
             this->mat[13] += dv[1];
@@ -150,7 +150,7 @@ namespace morph {
         }
 
         //! Apply translation specified by coordinates @dx, @dy and @dz.
-        constexpr void translate (const Flt& dx, const Flt& dy, const Flt& dz)
+        constexpr void translate (const F& dx, const F& dy, const F& dz)
         {
             this->mat[12] += dx;
             this->mat[13] += dy;
@@ -158,9 +158,9 @@ namespace morph {
         }
 
         //! Compute determinant for 3x3 matrix @cm
-        constexpr Flt determinant (std::array<Flt, 9> cm) const
+        constexpr F determinant (std::array<F, 9> cm) const
         {
-            Flt det = (cm[0]*cm[4]*cm[8])
+            F det = (cm[0]*cm[4]*cm[8])
                 + (cm[3]*cm[7]*cm[2])
                 + (cm[6]*cm[1]*cm[5])
                 - (cm[6]*cm[4]*cm[2])
@@ -170,10 +170,10 @@ namespace morph {
         }
 
         //! Compute determinant for 4x4 matrix @cm
-        constexpr Flt determinant (std::array<Flt, 16> cm) const
+        constexpr F determinant (std::array<F, 16> cm) const
         {
             // Configure the 3x3 matrices that have to be evaluated to get the 4x4 det.
-            std::array<Flt, 9> cm00;
+            std::array<F, 9> cm00;
             cm00[0] = cm[5];
             cm00[1] = cm[6];
             cm00[2] = cm[7];
@@ -184,7 +184,7 @@ namespace morph {
             cm00[7] = cm[14];
             cm00[8] = cm[15];
 
-            std::array<Flt, 9> cm01;
+            std::array<F, 9> cm01;
             cm01[0] = cm[1];
             cm01[1] = cm[2];
             cm01[2] = cm[3];
@@ -195,7 +195,7 @@ namespace morph {
             cm01[7] = cm[14];
             cm01[8] = cm[15];
 
-            std::array<Flt, 9> cm02;
+            std::array<F, 9> cm02;
             cm02[0] = cm[1];
             cm02[1] = cm[2];
             cm02[2] = cm[3];
@@ -206,7 +206,7 @@ namespace morph {
             cm02[7] = cm[14];
             cm02[8] = cm[15];
 
-            std::array<Flt, 9> cm03;
+            std::array<F, 9> cm03;
             cm03[0] = cm[1];
             cm03[1] = cm[2];
             cm03[2] = cm[3];
@@ -217,7 +217,7 @@ namespace morph {
             cm03[7] = cm[10];
             cm03[8] = cm[11];
 
-            Flt det = cm[0] * this->determinant (cm00)
+            F det = cm[0] * this->determinant (cm00)
                 - cm[4] * this->determinant (cm01)
                 + cm[8] * this->determinant (cm02)
                 - cm[12] * this->determinant (cm03);
@@ -226,10 +226,10 @@ namespace morph {
         }
 
         //! Compute determinant for this->mat
-        constexpr Flt determinant() const
+        constexpr F determinant() const
         {
             // Configure the 3x3 matrices that have to be evaluated to get the 4x4 det.
-            std::array<Flt, 9> cm00;
+            std::array<F, 9> cm00;
             cm00[0] = this->mat[5];
             cm00[1] = this->mat[6];
             cm00[2] = this->mat[7];
@@ -240,7 +240,7 @@ namespace morph {
             cm00[7] = this->mat[14];
             cm00[8] = this->mat[15];
 
-            std::array<Flt, 9> cm01;
+            std::array<F, 9> cm01;
             cm01[0] = this->mat[1];
             cm01[1] = this->mat[2];
             cm01[2] = this->mat[3];
@@ -251,7 +251,7 @@ namespace morph {
             cm01[7] = this->mat[14];
             cm01[8] = this->mat[15];
 
-            std::array<Flt, 9> cm02;
+            std::array<F, 9> cm02;
             cm02[0] = this->mat[1];
             cm02[1] = this->mat[2];
             cm02[2] = this->mat[3];
@@ -262,7 +262,7 @@ namespace morph {
             cm02[7] = this->mat[14];
             cm02[8] = this->mat[15];
 
-            std::array<Flt, 9> cm03;
+            std::array<F, 9> cm03;
             cm03[0] = this->mat[1];
             cm03[1] = this->mat[2];
             cm03[2] = this->mat[3];
@@ -273,7 +273,7 @@ namespace morph {
             cm03[7] = this->mat[10];
             cm03[8] = this->mat[11];
 
-            Flt det = this->mat[0] * this->determinant (cm00)
+            F det = this->mat[0] * this->determinant (cm00)
                 - this->mat[4] * this->determinant (cm01)
                 + this->mat[8] * this->determinant (cm02)
                 - this->mat[12] * this->determinant (cm03);
@@ -286,9 +286,9 @@ namespace morph {
          * 1. Get the cofactor matrix (with this->cofactor())
          * 2. Obtain the adjugate matrix by transposing the cofactor matrix
          */
-        constexpr std::array<Flt, 16> adjugate() const
+        constexpr std::array<F, 16> adjugate() const
         {
-            std::array<Flt, 16> adj = this->transpose (this->cofactor());
+            std::array<F, 16> adj = this->transpose (this->cofactor());
             return adj;
         }
 
@@ -297,16 +297,16 @@ namespace morph {
          * 1. Create matrix of minors
          * 2. Multiply matrix of minors by a checkerboard pattern to give the cofactor matrix
          */
-        constexpr std::array<Flt, 16> cofactor() const
+        constexpr std::array<F, 16> cofactor() const
         {
-            std::array<Flt, 16> cofac;
+            std::array<F, 16> cofac;
 
             // Keep to column-major format for all matrices. The elements of the matrix
             // of minors is found, but the cofactor matrix is populated, applying the
             // alternating pattern of +/- as we go.
 
             // 0.
-            std::array<Flt, 9> minorElem;
+            std::array<F, 9> minorElem;
             minorElem[0] = this->mat[5];
             minorElem[3] = this->mat[9];
             minorElem[6] = this->mat[13];
@@ -449,16 +449,16 @@ namespace morph {
          * 2. Obtain the adjugate matrix
          * 3. Get the inverse by multiplying 1/determinant by the adjugate
          */
-        constexpr TransformMatrix<Flt> invert()
+        constexpr mat44<F> invert()
         {
-            Flt det = this->determinant();
-            TransformMatrix<Flt> rtn;
-            if (det == Flt{0}) {
+            F det = this->determinant();
+            mat44<F> rtn;
+            if (det == F{0}) {
                 // The transform matrix has no inverse (determinant is 0)
-                rtn.mat.fill (Flt{0});
+                rtn.mat.fill (F{0});
             } else {
                 rtn.mat = this->adjugate();
-                rtn *= (Flt{1}/det);
+                rtn *= (F{1}/det);
             }
             return rtn;
         }
@@ -472,7 +472,7 @@ namespace morph {
         template <typename T = float>
         constexpr void rotate (const Quaternion<T>& q)
         {
-            std::array<Flt, 16> m;
+            std::array<F, 16> m;
 
             const T f2x = q.x + q.x;
             const T f2y = q.y + q.y;
@@ -508,24 +508,24 @@ namespace morph {
         }
 
         //! Rotate an angle theta radians about axis
-        constexpr void rotate (const std::array<Flt, 3>& axis, const Flt& theta)
+        constexpr void rotate (const std::array<F, 3>& axis, const F& theta)
         {
-            Quaternion<Flt> q;
+            Quaternion<F> q;
             q.rotate (axis, theta);
-            this->rotate<Flt> (q);
+            this->rotate<F> (q);
         }
 
-        constexpr void rotate (const morph::vec<Flt, 3>& axis, const Flt& theta)
+        constexpr void rotate (const morph::vec<F, 3>& axis, const F& theta)
         {
-            Quaternion<Flt> q;
+            Quaternion<F> q;
             q.rotate (axis, theta);
-            this->rotate<Flt> (q);
+            this->rotate<F> (q);
         }
 
         //! Right-multiply this->mat with m2.
-        constexpr void operator*= (const std::array<Flt, 16>& m2)
+        constexpr void operator*= (const std::array<F, 16>& m2)
         {
-            std::array<Flt, 16> result;
+            std::array<F, 16> result;
             // Top row
             result[0] = this->mat[0] * m2[0]
                 + this->mat[4] * m2[1]
@@ -602,9 +602,9 @@ namespace morph {
         }
 
         //! Right-multiply this->mat with m2.mat.
-        constexpr void operator*= (const TransformMatrix<Flt>& m2)
+        constexpr void operator*= (const mat44<F>& m2)
         {
-            std::array<Flt, 16> result;
+            std::array<F, 16> result;
             // Top row
             result[0] = this->mat[0] * m2.mat[0]
                 + this->mat[4] * m2.mat[1]
@@ -680,9 +680,9 @@ namespace morph {
             this->mat.swap (result);
         }
 
-        constexpr TransformMatrix<Flt> operator* (const std::array<Flt, 16>& m2) const
+        constexpr mat44<F> operator* (const std::array<F, 16>& m2) const
         {
-            TransformMatrix<Flt> result;
+            mat44<F> result;
             // Top row
             result.mat[0] = this->mat[0] * m2[0]
                 + this->mat[4] * m2[1]
@@ -759,9 +759,9 @@ namespace morph {
         }
 
         //! Right multiply this->mat with m2.mat.
-        constexpr TransformMatrix<Flt> operator* (const TransformMatrix<Flt>& m2) const
+        constexpr mat44<F> operator* (const mat44<F>& m2) const
         {
-            TransformMatrix<Flt> result;
+            mat44<F> result;
             // Top row
             result.mat[0] = this->mat[0] * m2.mat[0]
                 + this->mat[4] * m2.mat[1]
@@ -838,9 +838,9 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        constexpr std::array<Flt, 4> operator* (const std::array<Flt, 4>& v1) const
+        constexpr std::array<F, 4> operator* (const std::array<F, 4>& v1) const
         {
-            std::array<Flt, 4> v;
+            std::array<F, 4> v;
             v[0] = this->mat[0] * v1[0]
                 + this->mat[4] * v1[1]
                 + this->mat[8] * v1[2]
@@ -861,9 +861,9 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        constexpr vec<Flt, 4> operator* (const vec<Flt, 4>& v1) const
+        constexpr vec<F, 4> operator* (const vec<F, 4>& v1) const
         {
-            vec<Flt, 4> v;
+            vec<F, 4> v;
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
@@ -884,9 +884,9 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1.
-        constexpr vec<Flt, 4> operator* (const vec<Flt, 3>& v1) const
+        constexpr vec<F, 4> operator* (const vec<F, 3>& v1) const
         {
-            vec<Flt, 4> v;
+            vec<F, 4> v;
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
@@ -907,14 +907,14 @@ namespace morph {
         }
 
         //! *= operator for a scalar value.
-        template <typename T=Flt>
+        template <typename T=F>
         constexpr void operator*= (const T& f)
         {
             for (unsigned int i = 0; i<16; ++i) { this->mat[i] *= f; }
         }
 
         //! Equality operator. True if all elements match
-        constexpr bool operator==(const TransformMatrix<Flt>& rhs) const
+        constexpr bool operator==(const mat44<F>& rhs) const
         {
             unsigned int ndiff = 0;
             for (unsigned int i = 0; i < 16 && ndiff == 0; ++i) {
@@ -924,7 +924,7 @@ namespace morph {
         }
 
         //! Not equals
-        constexpr bool operator!=(const TransformMatrix<Flt>& rhs) const
+        constexpr bool operator!=(const mat44<F>& rhs) const
         {
             unsigned int ndiff = 0;
             for (unsigned int i = 0; i < 16 && ndiff == 0; ++i) {
@@ -936,7 +936,7 @@ namespace morph {
         //! Transpose this matrix
         constexpr void transpose()
         {
-            std::array<Flt, 6> a;
+            std::array<F, 6> a;
             a[0] = this->mat[4];
             a[1] = this->mat[8];
             a[2] = this->mat[9];
@@ -960,9 +960,9 @@ namespace morph {
         }
 
         //! Transpose the matrix @matrx, returning the transposed version.
-        constexpr std::array<Flt, 16> transpose (const std::array<Flt, 16>& matrx) const
+        constexpr std::array<F, 16> transpose (const std::array<F, 16>& matrx) const
         {
-            std::array<Flt, 16> tposed;
+            std::array<F, 16> tposed;
             tposed[0] = matrx[0];
             tposed[4] = matrx[1];
             tposed[8] = matrx[2];
@@ -996,31 +996,31 @@ namespace morph {
          *
          * @zFar The far plane.
          */
-        constexpr void perspective (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar)
+        constexpr void perspective (F fovDeg, F aspect, F zNear, F zFar)
         {
             // Aspect is going to be about 1.33 for a typical rectangular window wider
             // than it is high.
 
             // Bail out if the projection volume is zero-sized.
-            if (zNear == zFar || aspect == Flt{0}) { return; }
+            if (zNear == zFar || aspect == F{0}) { return; }
 
-            Flt fovRad_ov2 = fovDeg * morph::mathconst<Flt>::pi_over_360; // fovDeg/2 converted to radians
-            Flt sineFov = std::sin (fovRad_ov2);
-            if (sineFov == Flt{0}) { return; }
-            Flt cotanFov = std::cos (fovRad_ov2) / sineFov;
-            Flt clip = zFar - zNear;
+            F fovRad_ov2 = fovDeg * morph::mathconst<F>::pi_over_360; // fovDeg/2 converted to radians
+            F sineFov = std::sin (fovRad_ov2);
+            if (sineFov == F{0}) { return; }
+            F cotanFov = std::cos (fovRad_ov2) / sineFov;
+            F clip = zFar - zNear;
 
             // Perspective matrix to multiply self by
-            std::array<Flt, 16> persMat;
-            persMat.fill (Flt{0});
+            std::array<F, 16> persMat;
+            persMat.fill (F{0});
             persMat[0] = cotanFov/aspect; // n/(width/2) = 2n/width, or generally 2n/r-l
             persMat[5] = cotanFov;        // n/(height/2) = 2n/height, or generally 2n/t-b
             // For fully general frustrum not centered on the z axis, we would add these:
             //persMat[8] = r+l/r-l
             //persMat[9] = t+b/t-b
             persMat[10] = -(zNear+zFar)/clip;
-            persMat[11] = Flt{-1};
-            persMat[14] = -(Flt{2} * zNear * zFar)/clip;
+            persMat[11] = F{-1};
+            persMat[14] = -(F{2} * zNear * zFar)/clip;
 
             (*this) *= persMat;
         }
@@ -1036,31 +1036,31 @@ namespace morph {
          *
          * \param zNear The 'near' z coordinate of the canonical viewing volume
          */
-        constexpr void orthographic (const vec<Flt, 2>& lb, const vec<Flt, 2>& rt,
-                                     const Flt zNear, const Flt zFar)
+        constexpr void orthographic (const vec<F, 2>& lb, const vec<F, 2>& rt,
+                                     const F zNear, const F zFar)
         {
             if (zNear == zFar) { return; }
 
             // Orthographic matrix to multiply self by
-            std::array<Flt, 16> orthoMat;
-            orthoMat.fill (Flt{0});
-            orthoMat[0] = Flt{2}/(rt[0]-lb[0]);             //      2/(r-l)
-            orthoMat[5] = Flt{2}/(rt[1]-lb[1]);             //      2/(t-b)
-            orthoMat[10] = Flt{-2}/(zFar-zNear);            //     -2/(f-n)
+            std::array<F, 16> orthoMat;
+            orthoMat.fill (F{0});
+            orthoMat[0] = F{2}/(rt[0]-lb[0]);             //      2/(r-l)
+            orthoMat[5] = F{2}/(rt[1]-lb[1]);             //      2/(t-b)
+            orthoMat[10] = F{-2}/(zFar-zNear);            //     -2/(f-n)
             orthoMat[12] = -(rt[0]+lb[0])/(rt[0]-lb[0]);    // -(r+l)/(r-l)
             orthoMat[13] = -(rt[1]+lb[1])/(rt[1]-lb[1]);    // -(t+b)/(t-b)
             orthoMat[14] = -(zFar+zNear)/(zFar-zNear);      // -(f+n)/(f-n)
-            orthoMat[15] = Flt{1};
+            orthoMat[15] = F{1};
 
             (*this) *= orthoMat;
         }
 
         //! Overload the stream output operator
-        friend std::ostream& operator<< <Flt> (std::ostream& os, const TransformMatrix<Flt>& tm);
+        friend std::ostream& operator<< <F> (std::ostream& os, const mat44<F>& tm);
     };
 
-    template <typename Flt>
-    std::ostream& operator<< (std::ostream& os, const TransformMatrix<Flt>& tm)
+    template <typename F>
+    std::ostream& operator<< (std::ostream& os, const mat44<F>& tm)
     {
         os << tm.str();
         return os;
