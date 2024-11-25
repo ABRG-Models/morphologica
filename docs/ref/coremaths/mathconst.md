@@ -8,4 +8,4 @@ permalink: /ref/coremaths/mathconst/
 #include <morph/mathconst.h>
 ```
 
-A fixed-size mathematical vector class. Derives from `std::array`.
+Templated mathematical constants in the morph namespace.

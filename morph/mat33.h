@@ -51,7 +51,7 @@ namespace morph {
 
         /*!
          * The matrix data, arranged in column major format to be similar to
-         * morph::TransformMatrix (which is OpenGL friendly).
+         * morph::mat44 (which is OpenGL friendly).
          */
         alignas(std::array<F, 9>) std::array<F, 9> mat;
 

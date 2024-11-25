@@ -23,7 +23,7 @@
 #endif
 
 #include <morph/gl/version.h>
-#include <morph/TransformMatrix.h>
+#include <morph/mat44.h>
 #include <morph/vec.h>
 #include <morph/mathconst.h>
 #include <morph/gl/util.h>
@@ -203,10 +203,10 @@ namespace morph {
         }
 
         //! Setter for VisualTextModel::viewmatrix, the model view
-        void setViewMatrix (const TransformMatrix<float>& mv) { this->viewmatrix = mv; }
+        void setViewMatrix (const mat44<float>& mv) { this->viewmatrix = mv; }
 
         //! Setter for VisualTextModel::scenematrix, the scene view
-        void setSceneMatrix (const TransformMatrix<float>& sv) { this->scenematrix = sv; }
+        void setSceneMatrix (const mat44<float>& sv) { this->scenematrix = sv; }
 
         //! Set the translation specified by \a v0 into the scene translation
         void setSceneTranslation (const vec<float>& v0)
@@ -562,12 +562,12 @@ namespace morph {
         //! Scene view rotation
         Quaternion<float> sv_rotation;
         //! The text-model-specific view matrix and a scene matrix
-        TransformMatrix<float> viewmatrix;
+        mat44<float> viewmatrix;
         //! Before, I wrote: We protect the scene matrix as updating it with the parent
         //! model's scene matrix likely involves also adding an additional
         //! translation. Now, I'm still slightly confused as to whether I *need* to have a
         //! copy of the scenematrix *here*.
-        TransformMatrix<float> scenematrix;
+        mat44<float> scenematrix;
 
         //! The text string stored for debugging
         std::basic_string<char32_t> txt;

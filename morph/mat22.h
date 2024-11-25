@@ -35,7 +35,7 @@ namespace morph {
 
         /*!
          * The matrix data, arranged in column major format to be similar to
-         * morph::TransformMatrix (which is OpenGL friendly).
+         * morph::mat44 (which is OpenGL friendly).
          */
         alignas(morph::vec<F, 4>) morph::vec<F, 4> mat;
 
