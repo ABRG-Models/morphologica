@@ -1,8 +1,8 @@
-#include "morph/Matrix33.h"
+#include "morph/mat33.h"
 #include <iostream>
 #include <array>
 
-void setMatrixSequence (morph::Matrix33<float>& tm)
+void setMatrixSequence (morph::mat33<float>& tm)
 {
     tm.mat[0] = 0;
     tm.mat[1] = 1;
@@ -20,9 +20,9 @@ int main()
     int rtn = 0;
 
     // Test assignment
-    morph::Matrix33<float> tm1;
+    morph::mat33<float> tm1;
     setMatrixSequence (tm1);
-    morph::Matrix33<float> tm2 = tm1;
+    morph::mat33<float> tm2 = tm1;
     std::cout << "After assignment:\n" << tm2 << std::endl;
     for (unsigned int i = 0; i<9; ++i) {
         if (tm2.mat[i] != (float)i) {
@@ -31,7 +31,7 @@ int main()
     }
 
     // Test 2x2 determinant
-    morph::Matrix33<float> td;
+    morph::mat33<float> td;
     std::array<float, 4> twotwo = { 1.0f, 4.0f, 1.0f, 5.0f };
     float det_td = td.determinant (twotwo);
     std::cout << "Determinant = " << det_td << " (expect 1)" << std::endl;
@@ -44,7 +44,7 @@ int main()
     if (det_td2 != 111.0f) { ++rtn; }
 
     // Test matrix inversion
-    morph::Matrix33<float> mi;
+    morph::mat33<float> mi;
     mi.mat[0] = -1;
     mi.mat[1] = 2 ;
     mi.mat[2] = 3;
@@ -55,16 +55,16 @@ int main()
     mi.mat[7] = 1;
     mi.mat[8] = 5; // This is Sal's example from Kahn academy!
 
-    morph::Matrix33<float> miinv = mi.invert();
+    morph::mat33<float> miinv = mi.invert();
     std::cout << "mi\n" << mi << std::endl;
     std::cout << "mi.invert():\n" << miinv << std::endl;
 
     // Test multiplication
-    morph::Matrix33<float> mult1;
+    morph::mat33<float> mult1;
     setMatrixSequence (mult1);
     std::cout << "mult1\n" << mult1 << std::endl;
 
-    morph::Matrix33<float> mult2;
+    morph::mat33<float> mult2;
     mult2.mat[0] = 15;
     mult2.mat[1] = 14;
     mult2.mat[2] = 13;
@@ -76,13 +76,13 @@ int main()
     mult2.mat[8] = 7;
     std::cout << "mult2\n" << mult2 << std::endl;
 
-    morph::Matrix33<float> mult3 = mult1 * mult2;
+    morph::mat33<float> mult3 = mult1 * mult2;
     std::cout << "mult1 * mult2 =\n" << mult3 << std::endl;
 
-    morph::Matrix33<float> mult3alt = mult1 * mult2.mat;
+    morph::mat33<float> mult3alt = mult1 * mult2.mat;
     std::cout << "mult1 * mult2.mat =\n" << mult3alt << std::endl;
 
-    morph::Matrix33<float> mult2_t = mult2;
+    morph::mat33<float> mult2_t = mult2;
     mult2_t.transpose();
     std::cout << "mult2 transposed =\n" << mult2_t << std::endl;
 
@@ -98,7 +98,7 @@ int main()
         ) {
         ++rtn;
     }
-    morph::Matrix33<float> mult1save = mult1;
+    morph::mat33<float> mult1save = mult1;
     mult1 *= mult2;
     std::cout << "mult1 *= mult2 gives\n" << mult1 << std::endl;
     mult1 = mult1save; // tests copy
@@ -119,7 +119,7 @@ int main()
     }
 
     // Test copy
-    morph::Matrix33<double> md1;
+    morph::mat33<double> md1;
     md1.mat[0] = 0;
     md1.mat[1] = 1;
     md1.mat[2] = 2;
@@ -130,7 +130,7 @@ int main()
     md1.mat[7] = 7;
     md1.mat[8] = 8;
 
-    morph::Matrix33<double> md2 = md1;
+    morph::mat33<double> md2 = md1;
     if (md2 != md1) { ++rtn; }
 
     return rtn;
