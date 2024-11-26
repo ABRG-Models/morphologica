@@ -26,7 +26,7 @@
 #include <morph/gl/version.h>
 #include <morph/geometry.h>
 #include <morph/Quaternion.h>
-#include <morph/TransformMatrix.h>
+#include <morph/mat44.h>
 #include <morph/vvec.h>
 #include <morph/vec.h>
 #include <morph/range.h>
@@ -377,10 +377,10 @@ namespace morph {
         }
 
         //! Setter for the viewmatrix
-        void setViewMatrix (const TransformMatrix<float>& mv) { this->viewmatrix = mv; }
+        void setViewMatrix (const mat44<float>& mv) { this->viewmatrix = mv; }
 
         //! When setting the scene matrix, also have to set the text's scene matrices.
-        void setSceneMatrix (const TransformMatrix<float>& sv)
+        void setSceneMatrix (const mat44<float>& sv)
         {
             this->scenematrix = sv;
             // For each text model, also set scene matrix
@@ -682,11 +682,11 @@ namespace morph {
     protected:
 
         //! The model-specific view matrix.
-        TransformMatrix<float> viewmatrix;
+        mat44<float> viewmatrix;
         //! The model-specific scene view matrix.
-        TransformMatrix<float> scenematrix;
+        mat44<float> scenematrix;
         //! An additional scaling applied to viewmatrix to scale the size of the model [see render()]
-        TransformMatrix<float> model_scaling;
+        mat44<float> model_scaling;
 
         /*!
          * The spatial offset of this VisualModel within the morph::Visual 'scene

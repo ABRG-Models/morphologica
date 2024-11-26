@@ -68,7 +68,7 @@
 #include <nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
 #include <morph/Quaternion.h>
-#include <morph/TransformMatrix.h>
+#include <morph/mat44.h>
 #include <morph/vec.h>
 #include <morph/tools.h>
 
@@ -463,7 +463,7 @@ namespace morph {
             }
 
             // Calculate model view transformation - transforming from "model space" to "worldspace".
-            morph::TransformMatrix<float> sceneview;
+            morph::mat44<float> sceneview;
             if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
                 // This line translates from model space to world space. Avoid in cyl?
                 sceneview.translate (this->scenetrans); // send backwards into distance
@@ -517,7 +517,7 @@ namespace morph {
                 this->coordArrows->render();
             }
 
-            morph::TransformMatrix<float> scenetransonly;
+            morph::mat44<float> scenetransonly;
             scenetransonly.translate (this->scenetrans);
 
             auto vmi = this->vm.begin();
@@ -1109,15 +1109,15 @@ namespace morph {
         morph::Quaternion<float> savedRotation;
 
         //! The projection matrix is a member of this class
-        morph::TransformMatrix<float> projection;
+        morph::mat44<float> projection;
 
         //! The inverse of the projection
-        morph::TransformMatrix<float> invproj;
+        morph::mat44<float> invproj;
 
         //! A scene transformation
-        morph::TransformMatrix<float> scene;
+        morph::mat44<float> scene;
         //! Scene transformation inverse
-        morph::TransformMatrix<float> invscene;
+        morph::mat44<float> invscene;
 
 #ifndef OWNED_MODE
         /*
@@ -1569,7 +1569,7 @@ namespace morph {
                 morph::vec<float, 4> scroll_move_y = { 0.0f, static_cast<float>(yoffset) * this->scenetrans_stepsize, 0.0f, 1.0f };
                 this->scenetrans[2] += scroll_move_y[1];
                 // Translate scroll_move_y then add it to cyl_cam_pos here
-                morph::TransformMatrix<float> sceneview_rotn;
+                morph::mat44<float> sceneview_rotn;
                 sceneview_rotn.rotate (this->rotation);
                 this->cyl_cam_pos += sceneview_rotn * scroll_move_y;
             }

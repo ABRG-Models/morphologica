@@ -1,8 +1,8 @@
-// Testing rotations of unit vectors about unit axes with TransformMatrix multiplication
+// Testing rotations of unit vectors about unit axes with mat44 multiplication
 // and Quaternion multiplication
 
 #include "morph/Quaternion.h"
-#include "morph/TransformMatrix.h"
+#include "morph/mat44.h"
 #include "morph/vec.h"
 #include "morph/mathconst.h"
 
@@ -91,7 +91,7 @@ int main()
 
     std::cout << "\n\n";
 
-    morph::TransformMatrix<F> tmx;
+    morph::mat44<F> tmx;
     tmx.rotate (qx);
     morph::vec<F, 4> ux_about_tmx = tmx * ux;
     morph::vec<F, 4> uy_about_tmx = tmx * uy;
@@ -104,7 +104,7 @@ int main()
         || (uy_about_tmx.less_one_dim() - uy_about_x_truth).abs().max() > std::numeric_limits<F>::epsilon()
         || (uz_about_tmx.less_one_dim() - uz_about_x_truth).abs().max() > std::numeric_limits<F>::epsilon()) { --rtn; }
 
-    morph::TransformMatrix<F> tmy;
+    morph::mat44<F> tmy;
     tmy.rotate (qy);
     morph::vec<F, 4> ux_about_tmy = tmy * ux;
     morph::vec<F, 4> uy_about_tmy = tmy * uy;
@@ -118,7 +118,7 @@ int main()
         || (uy_about_tmy.less_one_dim() - uy_about_y_truth).abs().max() > std::numeric_limits<F>::epsilon()
         || (uz_about_tmy.less_one_dim() - uz_about_y_truth).abs().max() > std::numeric_limits<F>::epsilon()) { --rtn; }
 
-    morph::TransformMatrix<F> tmz;
+    morph::mat44<F> tmz;
     tmz.rotate (qz);
     morph::vec<F, 4> ux_about_tmz = tmz * ux;
     morph::vec<F, 4> uy_about_tmz = tmz * uy;

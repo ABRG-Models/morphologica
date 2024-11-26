@@ -6,7 +6,7 @@
 #include <morph/VectorVisual.h>
 #include <morph/vec.h>
 #include <morph/Quaternion.h>
-#include <morph/TransformMatrix.h>
+#include <morph/mat44.h>
 #include <iostream>
 #include <array>
 #include <stdexcept>
@@ -35,7 +35,7 @@ int main()
     vvm->thevec = {1,1,1};
     vvm->fixed_colour = true;
     vvm->single_colour = morph::colour::royalblue;
-    vvm->addLabel ("Rotn by TransformMatrix", {-0.8, -0.5, 0}, morph::TextFeatures(0.1f));
+    vvm->addLabel ("Rotn by mat44", {-0.8, -0.5, 0}, morph::TextFeatures(0.1f));
     vvm->finalize();
     auto ptr2 = v.addVisualModel (vvm);
 
@@ -47,7 +47,7 @@ int main()
     // Set up a rotation about the z axis
     morph::Quaternion<float> qr (axis, angle_per_frame);
 
-    morph::TransformMatrix<float> tf;
+    morph::mat44<float> tf;
     tf.rotate (axis, angle_per_frame);
 
     while (!v.readyToFinish) {

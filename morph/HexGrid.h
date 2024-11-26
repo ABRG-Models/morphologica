@@ -16,7 +16,7 @@
 #include <morph/mathconst.h>
 #include <morph/MathAlgo.h>
 #include <morph/debug.h>
-#include <morph/Matrix22.h>
+#include <morph/mat22.h>
 
 // If the HexGrid::save and HexGrid::load methods are required, define
 // HEXGRID_COMPILE_LOAD_AND_SAVE. A link to libhdf5 will be required in your program.
@@ -1811,7 +1811,7 @@ namespace morph {
             } else if (rxs == 0.0f && q_m_pxr != 0.0f) {
                 // Parallel and non-intersecting. Place distance between lines into isect[0], leave other one NaN.
                 // Get normal to p2-q2
-                morph::Matrix22<float> rot90;
+                morph::mat22<float> rot90;
                 rot90.rotate (morph::mathconst<float>::pi_over_2);
                 vec<float, 2> nor = rot90 * (_q2-_p2);
                 // Project p2-p1 onto normal
@@ -2132,7 +2132,7 @@ namespace morph {
             if constexpr (debug_hexshift) {std::cout << __FUNCTION__ << " called with rotation " << _rotation << "\n"; }
             vec<float, 19> rtn;
             rtn.zero();
-            morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
+            morph::mat22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
             unit_60 = rotn * morph::vec<float, 2>({ 0.5f, morph::mathconst<float>::root_3_over_2 });
             // Main parallelogram is defined by points p1, q1, q4.
             float ap1 = std::abs((p1-q4).dot(unit_60)) * this->getLR() / this->hexen.begin()->getArea();
@@ -2151,7 +2151,7 @@ namespace morph {
             if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called with rotation " << _rotation << "\n"; }
             vec<float, 19> rtn;
             rtn.zero();
-            morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
+            morph::mat22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
             unit_120 = rotn * morph::vec<float, 2>({ -0.5f, morph::mathconst<float>::root_3_over_2});
             // Main parallelogram is defined by points p2, q2 and q3.
             float ap1 = std::abs((p2-q3).dot(unit_120)) * this->getLR() / this->hexen.begin()->getArea();
@@ -2170,10 +2170,10 @@ namespace morph {
         //! east-ish of the base hex, or is it in one of the other 5 rotationally
         //! symmetric positions? Depending on rotatation, p1-6 and q1-6 are defined in
         //! differing (but rotationally symmetric) locations.
-        morph::Matrix22<float> setup_hexoverlap_geometry (const unsigned int _rotation)
+        morph::mat22<float> setup_hexoverlap_geometry (const unsigned int _rotation)
         {
             float lr = this->getLR();
-            morph::Matrix22<float> rotn;
+            morph::mat22<float> rotn;
             // hexvectors from centre to points:
             morph::vec<float, 2> hv_ne = { morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr };
             morph::vec<float, 2> hv_n =  { 0, lr };
@@ -2274,7 +2274,7 @@ namespace morph {
         {
             if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called\n"; }
 
-            morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
+            morph::mat22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
 
             // basis vectors
             unit_150 = { -morph::mathconst<float>::root_3_over_2, 0.5f };
@@ -2390,7 +2390,7 @@ namespace morph {
             unit_60 = {0.5f, morph::mathconst<float>::root_3_over_2};
             unit_300 = {0.5f, -morph::mathconst<float>::root_3_over_2};
 
-            morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
+            morph::mat22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
             float hex_area = this->hexen.begin()->getArea();
 
             // Rotate our basis vectors
@@ -2511,7 +2511,7 @@ namespace morph {
             unit_60 = {0.5f, morph::mathconst<float>::root_3_over_2};
             unit_300 = {0.5f, -morph::mathconst<float>::root_3_over_2};
 
-            morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
+            morph::mat22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
             float hex_area = this->hexen.begin()->getArea();
 
             // Rotate our basis vectors
@@ -2641,7 +2641,7 @@ namespace morph {
             // Hex long radius/edge length
             float lr = this->getLR();
 
-            morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
+            morph::mat22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
 
             // Rotate our basis vector(s)
             uvv = rotn * uvv;

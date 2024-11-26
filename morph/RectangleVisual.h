@@ -3,7 +3,7 @@
 #include <morph/vec.h>
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
-#include <morph/Matrix22.h>
+#include <morph/mat22.h>
 #include <array>
 
 namespace morph {
@@ -48,7 +48,7 @@ namespace morph {
             c4 /= 2.0f;
 
             // Apply rotational transformation
-            Matrix22<float> rotn;
+            mat22<float> rotn;
             rotn.rotate (this->angle * mathconst<float>::deg2rad);
             c1 = rotn * c1;
             c2 = rotn * c2;

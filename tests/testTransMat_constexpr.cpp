@@ -1,9 +1,9 @@
-#include "morph/TransformMatrix.h"
+#include "morph/mat44.h"
 #include <iostream>
 #include <array>
 #include <morph/vec.h>
 
-constexpr void setMatrixSequence (morph::TransformMatrix<float>& tm)
+constexpr void setMatrixSequence (morph::mat44<float>& tm)
 {
     tm.mat[0] = 0;
     tm.mat[1] = 1;
@@ -28,10 +28,10 @@ constexpr int do_test()
     int rtn = 0;
 
     // Test assignment
-    morph::TransformMatrix<float> tm1;
+    morph::mat44<float> tm1;
     setMatrixSequence (tm1);
 
-    morph::TransformMatrix<float> tm2 = tm1;
+    morph::mat44<float> tm2 = tm1;
     for (unsigned int i = 0; i<16; ++i) {
         if (tm2.mat[i] != (float)i) {
             ++rtn;
@@ -46,10 +46,10 @@ constexpr int do_test()
     }
 
     // Test multiplication
-    morph::TransformMatrix<float> mult1;
+    morph::mat44<float> mult1;
     setMatrixSequence (mult1);
 
-    morph::TransformMatrix<float> mult2;
+    morph::mat44<float> mult2;
     mult2.mat[0] = 15;
     mult2.mat[1] = 14;
     mult2.mat[2] = 13;
@@ -67,7 +67,7 @@ constexpr int do_test()
     mult2.mat[14] = 1;
     mult2.mat[15] = 0;
 
-    morph::TransformMatrix<float> mult3 = mult1 * mult2;
+    morph::mat44<float> mult3 = mult1 * mult2;
 
     if (mult3.mat[0] != 304
         || mult3.mat[1] != 358
@@ -112,7 +112,7 @@ constexpr int do_test()
     }
 
     // Test 3x3 determinant
-    morph::TransformMatrix<float> td;
+    morph::mat44<float> td;
     std::array<float, 9> threethree = { 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 3.5f, 3.0f, 2.0f, 120.0f };
     float det_td = td.determinant (threethree);
     if (det_td != 111.0f) {
@@ -127,7 +127,7 @@ constexpr int do_test()
     }
 
     // Test matrix inversion
-    morph::TransformMatrix<float> mult4;
+    morph::mat44<float> mult4;
     mult4.mat[0] = 15;
     mult4.mat[1] = 17;
     mult4.mat[2] = 0;
@@ -145,7 +145,7 @@ constexpr int do_test()
     mult4.mat[14] = 1;
     mult4.mat[15] = 0;
 
-    morph::TransformMatrix<float> mult4inv = mult4.invert();
+    morph::mat44<float> mult4inv = mult4.invert();
 
     std::array<float, 4> v1 = {1,2,3,4};
     std::array<float, 4> v2;
@@ -170,7 +170,7 @@ constexpr int do_test()
         ++rtn;
     }
 
-    morph::TransformMatrix<float> mult4inv_copy = mult4inv;
+    morph::mat44<float> mult4inv_copy = mult4inv;
     if (mult4inv_copy != mult4inv) { ++rtn; }
 
     mult4inv_copy.setToIdentity();
