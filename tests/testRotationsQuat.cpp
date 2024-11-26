@@ -1,6 +1,6 @@
-// Testing chained rotations with Quaternions (only)
+// Testing chained rotations with quaternions (only)
 
-#include "morph/Quaternion.h"
+#include "morph/quaternion.h"
 #include "morph/vec.h"
 #include "morph/mathconst.h"
 
@@ -28,14 +28,14 @@ int main()
     constexpr morph::vec<F> ux_after_q2_truth = uy;
     constexpr morph::vec<F> ux_after_q1_q2_truth = { 0, mc::one_over_root_2, mc::one_over_root_2 };
 
-    morph::Quaternion<F> q1 (uy, -mc::pi_over_4);
-    morph::Quaternion<F> q2 (uz, mc::pi_over_2);
+    morph::quaternion<F> q1 (uy, -mc::pi_over_4);
+    morph::quaternion<F> q2 (uz, mc::pi_over_2);
     // Combined rotation; first q1, then q2.
-    morph::Quaternion<F> q1q2 = q1 * q2;
-    morph::Quaternion<F> q2q1 = q2 * q1;
-    morph::Quaternion<F> q1premultq2 = q1;
+    morph::quaternion<F> q1q2 = q1 * q2;
+    morph::quaternion<F> q2q1 = q2 * q1;
+    morph::quaternion<F> q1premultq2 = q1;
     q1premultq2.premultiply(q2);
-    morph::Quaternion<F> q1postmultq2 = q1;
+    morph::quaternion<F> q1postmultq2 = q1;
     q1postmultq2.postmultiply(q2);
 
     morph::vec<F> ux_after_q1 = q1 * ux;

@@ -1,7 +1,7 @@
 // Testing rotations of unit vectors about unit axes with mat44 multiplication
-// and Quaternion multiplication
+// and quaternion multiplication
 
-#include "morph/Quaternion.h"
+#include "morph/quaternion.h"
 #include "morph/mat44.h"
 #include "morph/vec.h"
 #include "morph/mathconst.h"
@@ -38,7 +38,7 @@ int main()
 
     using mc = morph::mathconst<F>;
 
-    morph::Quaternion<F> qx (ux, mc::pi_over_2);
+    morph::quaternion<F> qx (ux, mc::pi_over_2);
     morph::vec<F> ux_about_x = qx * ux;
     morph::vec<F> uy_about_x = qx * uy;
     morph::vec<F> uz_about_x = qx * uz;
@@ -55,7 +55,7 @@ int main()
         || (uy_about_x - uy_about_x_truth).abs().max() > std::numeric_limits<F>::epsilon()
         || (uz_about_x - uz_about_x_truth).abs().max() > std::numeric_limits<F>::epsilon()) { --rtn; }
 
-    morph::Quaternion<F> qy (uy, mc::pi_over_2);
+    morph::quaternion<F> qy (uy, mc::pi_over_2);
     morph::vec<F> ux_about_y = qy * ux;
     morph::vec<F> uy_about_y = qy * uy;
     morph::vec<F> uz_about_y = qy * uz;
@@ -72,7 +72,7 @@ int main()
         || (uy_about_y - uy_about_y_truth).abs().max() > std::numeric_limits<F>::epsilon()
         || (uz_about_y - uz_about_y_truth).abs().max() > std::numeric_limits<F>::epsilon()) { --rtn; }
 
-    morph::Quaternion<F> qz (uz, mc::pi_over_2);
+    morph::quaternion<F> qz (uz, mc::pi_over_2);
     morph::vec<F> ux_about_z = qz * ux;
     morph::vec<F> uy_about_z = qz * uy;
     morph::vec<F> uz_about_z = qz * uz;

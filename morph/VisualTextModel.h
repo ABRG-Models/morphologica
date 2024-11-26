@@ -23,6 +23,7 @@
 #endif
 
 #include <morph/gl/version.h>
+#include <morph/quaternion.h>
 #include <morph/mat44.h>
 #include <morph/vec.h>
 #include <morph/mathconst.h>
@@ -225,7 +226,7 @@ namespace morph {
         }
 
         //! Set a rotation (only) into the scene view matrix
-        void setSceneRotation (const Quaternion<float>& r)
+        void setSceneRotation (const quaternion<float>& r)
         {
             this->sv_rotation = r;
             this->scenematrix.setToIdentity();
@@ -236,7 +237,7 @@ namespace morph {
         }
 
         //! Add a rotation to the scene view matrix
-        void addSceneRotation (const Quaternion<float>& r)
+        void addSceneRotation (const quaternion<float>& r)
         {
             this->sv_rotation.premultiply (r);
             this->scenematrix.rotate (r);
@@ -259,7 +260,7 @@ namespace morph {
         }
 
         //! Set a rotation (only) into the model view matrix
-        void setViewRotation (const Quaternion<float>& r)
+        void setViewRotation (const quaternion<float>& r)
         {
             this->mv_rotation = r;
             this->viewmatrix.setToIdentity();
@@ -271,7 +272,7 @@ namespace morph {
         }
 
         //! Apply a further rotation to the model view matrix
-        void addViewRotation (const Quaternion<float>& r)
+        void addViewRotation (const quaternion<float>& r)
         {
             this->mv_rotation.premultiply (r);
             this->viewmatrix.rotate (r);
@@ -321,7 +322,7 @@ namespace morph {
 
         //! Set up a new text at a given position, with the given colour and a pre-rotation
         void setupText (const std::string& _txt,
-                        const morph::Quaternion<float>& _rotation, const morph::vec<float> _mv_offset,
+                        const morph::quaternion<float>& _rotation, const morph::vec<float> _mv_offset,
                         std::array<float, 3> _clr = {0,0,0})
         {
             this->mv_rotation = _rotation;
@@ -552,15 +553,15 @@ namespace morph {
         //! The model-view rotation of this text object. mv_offset and mv_rotation are
         //! together used to compute viewmatrix. Keep a copy so that it is easy to reset
         //! the viewmatrix and recompute it with either a new offset or a new rotation.
-        Quaternion<float> mv_rotation;
+        quaternion<float> mv_rotation;
 
         //! A rotation of the parent model
-        Quaternion<float> parent_rotation;
+        quaternion<float> parent_rotation;
 
         //! Scene view offset
         vec<float> sv_offset;
         //! Scene view rotation
-        Quaternion<float> sv_rotation;
+        quaternion<float> sv_rotation;
         //! The text-model-specific view matrix and a scene matrix
         mat44<float> viewmatrix;
         //! Before, I wrote: We protect the scene matrix as updating it with the parent
