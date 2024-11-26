@@ -5,7 +5,7 @@
 #include <morph/ColourMap.h>
 #include <morph/VectorVisual.h>
 #include <morph/vec.h>
-#include <morph/Quaternion.h>
+#include <morph/quaternion.h>
 #include <morph/mat44.h>
 #include <iostream>
 #include <array>
@@ -26,7 +26,7 @@ int main()
     vvm->thevec = {1,1,1};
     vvm->fixed_colour = true;
     vvm->single_colour = morph::colour::crimson;
-    vvm->addLabel ("Rotn by Quaternion", {-0.8, -0.5, 0}, morph::TextFeatures(0.1f));
+    vvm->addLabel ("Rotn by quaternion", {-0.8, -0.5, 0}, morph::TextFeatures(0.1f));
     vvm->finalize();
     auto ptr = v.addVisualModel (vvm);
 
@@ -42,10 +42,10 @@ int main()
     float angle_per_frame = 0.05f;
     morph::vec<float> axis = {0,1,0.4};
 
-    // Quaternion way
+    // quaternion way
     // Also demo quaternion rotation.
     // Set up a rotation about the z axis
-    morph::Quaternion<float> qr (axis, angle_per_frame);
+    morph::quaternion<float> qr (axis, angle_per_frame);
 
     morph::mat44<float> tf;
     tf.rotate (axis, angle_per_frame);

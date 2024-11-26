@@ -9,7 +9,7 @@
 #pragma once
 
 #include <morph/mathconst.h>
-#include <morph/Quaternion.h>
+#include <morph/quaternion.h>
 #include <morph/vec.h>
 #include <cmath>
 #include <array>
@@ -470,7 +470,7 @@ namespace morph {
          * and https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html)
          */
         template <typename T = float>
-        constexpr void rotate (const Quaternion<T>& q)
+        constexpr void rotate (const quaternion<T>& q)
         {
             std::array<F, 16> m;
 
@@ -510,14 +510,14 @@ namespace morph {
         //! Rotate an angle theta radians about axis
         constexpr void rotate (const std::array<F, 3>& axis, const F& theta)
         {
-            Quaternion<F> q;
+            quaternion<F> q;
             q.rotate (axis, theta);
             this->rotate<F> (q);
         }
 
         constexpr void rotate (const morph::vec<F, 3>& axis, const F& theta)
         {
-            Quaternion<F> q;
+            quaternion<F> q;
             q.rotate (axis, theta);
             this->rotate<F> (q);
         }

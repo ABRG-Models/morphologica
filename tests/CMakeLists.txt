@@ -247,11 +247,11 @@ endif(APPLE)
 add_executable(testConfig testConfig.cpp)
 add_test(testConfig testConfig)
 
-# Test morph::Quaternion
+# Test morph::quaternion
 add_executable(testQuaternion testQuaternion.cpp)
 add_test(testQuaternion testQuaternion)
 
-# Test Quaternion and TransformMatrix rotations in float and double precision
+# Test quaternion and mat44 rotations in float and double precision
 add_executable(testRotations_float testRotations.cpp)
 target_compile_definitions(testRotations_float PUBLIC FLT=float)
 add_test(testRotations_float testRotations_float)

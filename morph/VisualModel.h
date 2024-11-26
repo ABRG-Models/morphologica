@@ -25,7 +25,7 @@
 
 #include <morph/gl/version.h>
 #include <morph/geometry.h>
-#include <morph/Quaternion.h>
+#include <morph/quaternion.h>
 #include <morph/mat44.h>
 #include <morph/vvec.h>
 #include <morph/vec.h>
@@ -407,7 +407,7 @@ namespace morph {
         }
 
         //! Set a rotation (only) into the scene view matrix
-        void setSceneRotation (const Quaternion<float>& r)
+        void setSceneRotation (const quaternion<float>& r)
         {
             this->scenematrix.setToIdentity();
             this->sv_rotation = r;
@@ -416,7 +416,7 @@ namespace morph {
         }
 
         //! Add a rotation to the scene view matrix
-        void addSceneRotation (const Quaternion<float>& r)
+        void addSceneRotation (const quaternion<float>& r)
         {
             this->sv_rotation.premultiply (r);
             this->scenematrix.rotate (r);
@@ -438,7 +438,7 @@ namespace morph {
             this->viewmatrix.translate (v0);
         }
 
-        void setViewRotationFixTexts (const Quaternion<float>& r)
+        void setViewRotationFixTexts (const quaternion<float>& r)
         {
             this->viewmatrix.setToIdentity();
             this->mv_rotation = r;
@@ -447,7 +447,7 @@ namespace morph {
         }
 
         //! Set a rotation (only) into the view
-        void setViewRotation (const Quaternion<float>& r)
+        void setViewRotation (const quaternion<float>& r)
         {
             this->viewmatrix.setToIdentity();
             this->mv_rotation = r;
@@ -471,7 +471,7 @@ namespace morph {
         }
 
         //! Apply a further rotation to the model view matrix
-        void addViewRotation (const Quaternion<float>& r)
+        void addViewRotation (const quaternion<float>& r)
         {
             this->mv_rotation.premultiply (r);
             this->viewmatrix.rotate (r);
@@ -697,12 +697,12 @@ namespace morph {
          */
         vec<float> mv_offset;
         //! Model view rotation
-        Quaternion<float> mv_rotation;
+        quaternion<float> mv_rotation;
 
         //! Scene view offset
         vec<float> sv_offset;
         //! Scene view rotation
-        Quaternion<float> sv_rotation;
+        quaternion<float> sv_rotation;
 
         //! A vector of pointers to text models that should be rendered.
         std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
