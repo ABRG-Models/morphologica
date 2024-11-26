@@ -3,7 +3,7 @@
 #include <morph/tools.h>
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <memory>
 #include <iostream>
@@ -20,7 +20,7 @@ namespace morph {
         QuadsVisual(const std::vector<std::array<Flt,12>>* _quads,
                     const vec<float> _offset,
                     const std::vector<Flt>* _data,
-                    const Scale<Flt>& _scale,
+                    const scale<Flt>& _scale,
                     ColourMapType _cmt,
                     const float _hue = 0.0f)
         {
@@ -57,7 +57,7 @@ namespace morph {
         QuadsVisual(const std::vector<std::array<Flt,12>>* _quads,
                     const std::array<float, 3> _offset,
                     const std::vector<Flt>* _data,
-                    const Scale<Flt>& _scale,
+                    const scale<Flt>& _scale,
                     ColourMapType _cmt,
                     const float _hue = 0.0f)
         {

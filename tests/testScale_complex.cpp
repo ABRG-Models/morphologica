@@ -1,25 +1,25 @@
 /*
- * Test use of std::complex<> objects in a Scale class.
+ * Test use of std::complex<> objects in a morph::scale class.
  */
 
 #include <iostream>
 #include <complex>
 #include <array>
 #include <morph/vvec.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 
 int main()
 {
     int rtn = 0;
 
-    morph::Scale<std::complex<float>> sc;
+    morph::scale<std::complex<float>> sc;
     sc.do_autoscale = true;
 
     morph::vvec<std::complex<float>> vc = { {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {2, 0}, {0, 2}, {-2, 0}, {0, -2},  };
     morph::vvec<std::complex<float>> vcs (vc);
     sc.transform (vc, vcs);
 
-    std::cout << "After autoscaling we have this morph::Scale:\n" << sc << std::endl;
+    std::cout << "After autoscaling we have this morph::scale:\n" << sc << std::endl;
     std::cout << "vvec<complex> unscaled: " << vc << "\n";
     std::cout << "vvec<complex> scaled:   " << vcs << "\n";
 
@@ -69,8 +69,8 @@ int main()
     }
 
     // Should not compile:
-    // morph::Scale<std::complex<std::array<float, 3>>> scale_cplx_of_vec;
-    // morph::Scale<std::pair<float, double>> scale_a_pair;
+    // morph::scale<std::complex<std::array<float, 3>>> scale_cplx_of_vec;
+    // morph::scale<std::pair<float, double>> scale_a_pair;
 
     std::cout << "Test " << (rtn == 0 ? "Passed" : "Failed") << std::endl;
     return rtn;

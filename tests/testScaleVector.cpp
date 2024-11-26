@@ -1,5 +1,5 @@
 /*
- * Test use of vec<F, N> objects in a Scale class.
+ * Test use of vec<F, N> objects in a scale class.
  */
 
 #include <vector>
@@ -13,14 +13,14 @@ using std::cout;
 using std::endl;
 #include "morph/vec.h"
 using morph::vec;
-#include "morph/Scale.h"
-using morph::Scale;
+#include "morph/scale.h"
+using morph::scale;
 
 int main () {
 
     int rtn = 0;
 
-    Scale<vec<float,4>> s2;
+    scale<vec<float,4>> s2;
     s2.do_autoscale = true;
     vector<vec<float,4>> vaf;
     vaf.push_back ({1,1,2,1});
@@ -46,7 +46,7 @@ int main () {
         cout << ")\n";
     }
 
-    cout << "Stream Scale<vec<float,4>>: " << s2 << endl;
+    cout << "Stream scale<vec<float,4>>: " << s2 << endl;
 
     // Test this scaling:
     vector<vec<float, 4>>::const_iterator r2i = result2.end();

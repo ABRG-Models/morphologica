@@ -6,7 +6,7 @@
 
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/GraphVisual.h> // share some features from GraphVisual
 
@@ -343,9 +343,9 @@ namespace morph {
         //! The ColourMap to show (copy in)
         morph::ColourMap<F> cm;
         //! A copy of the scaling for the data. This will map data_min -> data_max to 0->1
-        morph::Scale<F> scale;
+        morph::scale<F> scale;
         //! A scaling between colourbar value and model position. Scales 0->1 to 0->this->length
-        morph::Scale<F> tickscale;
+        morph::scale<F> tickscale;
         //! The width of the ColourBar
         float width = 0.1f;
         //! The length of the ColourBar (the colours vary along this direction)

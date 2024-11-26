@@ -1,5 +1,5 @@
 /*
- * Example usage of morph::Scale<>
+ * Example usage of morph::scale<>
  *
  * Author: Seb James
  * Date: September 2022
@@ -10,16 +10,16 @@
 #include <list>
 #include <array>
 #include <iostream>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vvec.h>
 
 int main()
 {
     int rtn = 0;
 
-    // You can scale a set of numbers to the range 0->1: First create a Scale
+    // You can scale a set of numbers to the range 0->1: First create a scale
     // object. This scales numbers of type float into scaled numbers also of type float.
-    morph::Scale<float> s;
+    morph::scale<float> s;
 
     std::cout << "Auto-scaling\n------------------\n";
     // Set it to autoscale the next time its transform method is called
@@ -36,7 +36,7 @@ int main()
 
     // Now create some different data, but make the maximum element bigger (32 instead
     // of 18). The result of s.transform() should now span a wider range than 0->1. This
-    // shows that the autoscaling is carried out once only by the Scale object.
+    // shows that the autoscaling is carried out once only by the scale object.
     std::vector<float> vf2 = {1,2,3,4,5,8,9,32};
     s.transform (vf2, result);
 
@@ -44,7 +44,7 @@ int main()
         std::cout << vf2[i] << " scales to: " << result[i] << "\n";
     }
 
-    // If you need to reset the scaling in s (our Scale object), then you can do this:
+    // If you need to reset the scaling in s (our scale object), then you can do this:
     s.compute_scaling_from_data (vf2); // will immediately compute the scaling function from the container of values vf2.
 
     // OR you can do this, which forces automatic scaling when s.transform() is next
@@ -60,31 +60,31 @@ int main()
     morph::vvec<float> vv1 = {1,2,3,4,5,8,9,32};
     morph::vvec<float> vvresult(vv1);
     s.transform (vv1, vvresult);
-    std::cout << "With Scale::compute_scaling (1, 32), " << vv1 << " scales to: " << vvresult << "\n";
+    std::cout << "With scale::compute_scaling (1, 32), " << vv1 << " scales to: " << vvresult << "\n";
 
     // To compute a scale which transforms every number to 1, you can do this:
-    s.setParams(0, 1); // For a linear morph::Scale, the parameters are gradient, offset
+    s.setParams(0, 1); // For a linear morph::scale, the parameters are gradient, offset
     s.transform (vv1, vvresult);
-    std::cout << "With Scale::setParams(0,1) " << vv1 << " scales to: " << vvresult << "\n";
+    std::cout << "With scale::setParams(0,1) " << vv1 << " scales to: " << vvresult << "\n";
 
     // To set a scaling which doubles every number and adds 1:
     s.setParams(2, 1);
     s.transform (vv1, vvresult);
-    std::cout << "With Scale::setParams(2,1) " << vv1 << " scales to: " << vvresult << "\n";
+    std::cout << "With scale::setParams(2,1) " << vv1 << " scales to: " << vvresult << "\n";
 
     // To compute a scale which transforms every number to 0, you can do this:
     s.setParams(0, 0);
     s.transform (vv1, vvresult);
-    std::cout << "With Scale::setParams(0,0) " << vv1 << " scales to: " << vvresult << "\n";
+    std::cout << "With scale::setParams(0,0) " << vv1 << " scales to: " << vvresult << "\n";
 
     // DON'T try to use compute autoscale to allow you to scale any number to zero. Here's what you
     // get with compute_scaling (0,0)
     s.compute_scaling (0.0f, 0.0f);
     s.transform (vv1, vvresult);
-    std::cout << "With Scale::compute_scaling(0,0) " << vv1 << " scales to: " << vvresult << "\n";
+    std::cout << "With scale::compute_scaling(0,0) " << vv1 << " scales to: " << vvresult << "\n";
 
     // You can scale numbers between two different number types.
-    morph::Scale<int,float> si;
+    morph::scale<int,float> si;
     si.do_autoscale = true;
     std::vector<int> vfi = {-19,1,2,3,4,5,8,9,18};
     std::vector<float> resulti(vfi.size());
@@ -96,7 +96,7 @@ int main()
 
     //  You can scale arrays of numbers!
     std::cout << "Scaling arrays\n------------------\n";
-    morph::Scale<std::array<float,4>> s2;
+    morph::scale<std::array<float,4>> s2;
     s2.do_autoscale = true;
     std::vector<std::array<float,4>> vaf;
     vaf.push_back ({1,1,2,1});
@@ -126,7 +126,7 @@ int main()
     // Log scaling
     std::cout << "Log scaling\n------------------\n";
 
-    morph::Scale<double, float> ls;
+    morph::scale<double, float> ls;
     ls.do_autoscale = true;
     ls.setlog();
 

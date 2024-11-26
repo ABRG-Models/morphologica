@@ -3,7 +3,6 @@
 #include <morph/tools.h>
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
-#include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/ColourMap.h>
 #include <iostream>

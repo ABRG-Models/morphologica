@@ -19,7 +19,6 @@
 #endif
 #include <morph/VisualModel.h>
 #include <morph/vec.h>
-#include <morph/Scale.h>
 #include <array>
 
 #include "net.h"

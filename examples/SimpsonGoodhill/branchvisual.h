@@ -19,7 +19,7 @@
 #endif
 #include <morph/VisualModel.h>
 #include <morph/vec.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <vector>
 #include <array>
 
@@ -36,7 +36,7 @@ public:
         this->viewmatrix.translate (this->mv_offset);
     }
 
-    morph::Scale<Flt, Flt> EphA_scale;
+    morph::scale<Flt, Flt> EphA_scale;
 
     void initializeVertices()
     {

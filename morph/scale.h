@@ -3,12 +3,12 @@
  *
  * \brief A class for scaling signals
  *
- * Scale is a class for scaling (transforming) signals. It has been coded for linear scaling of
+ * scale is a class for scaling (transforming) signals. It has been coded for linear scaling of
  * signals. It could also be used to logarithmically scale signals with suitable extension, and this
  * has been kept in mind (see ScaleFn). It has an autoscaling feature which allows a signal which
  * ranges between x and y to be rescaled to range between 0 and 1 (or -1 and 1 or -w and z)
  *
- * Classes created from the template class morph::Scale will derive from one of the morph::ScaleImpl
+ * Classes created from the template class morph::scale will derive from one of the morph::ScaleImpl
  * <ntype, T, S> classes, where ntype is the 'number type' (0 means the numbers are mathematical
  * vectors like morph::vec, std::array or std::vector; 1 means that the numbers are scalars like
  * float, double or int)
@@ -16,7 +16,7 @@
  * Usage: See \c tests/testScale.cpp \n
  * e.g.:\n
  * \code{.cpp}
- *   morph::Scale<float> s;
+ *   morph::scale<float> s;
  *   s.do_autoscale = true;
  *   std::vector<float> vf = { 1, 2, 3 };
  *   std::vector<float> result(vf);
@@ -25,7 +25,7 @@
  *
  * If the output type is different from the input type, then specify both as template parameters:
  * \code{.cpp}
- *   morph::Scale<int, float> s;
+ *   morph::scale<int, float> s;
  *   s.do_autoscale = true;
  *   std::vector<int> vi = { -2, -1, 1, 3 };
  *   std::vector<float> result(vi.size());
@@ -51,22 +51,22 @@
 namespace morph {
 
     //! \brief A label for what kind of scaling transformation to make
-    enum class ScaleFn {
+    enum class scaling_function {
         Linear,
         Logarithmic
     };
 
     // For stream operator
-    template <typename T, typename S> struct ScaleImplBase;
-    template <typename T, typename S> std::ostream& operator<< (std::ostream&, const ScaleImplBase<T, S>&);
+    template <typename T, typename S> struct scale_impl_base;
+    template <typename T, typename S> std::ostream& operator<< (std::ostream&, const scale_impl_base<T, S>&);
 
     /*!
-     * \brief Base class for morph::ScaleImpl
+     * \brief Base class for morph::scale_impl
      *
-     * A base class for specialised implementations of ScaleImpl depending on whether \a T is a
+     * A base class for specialised implementations of scale_impl depending on whether \a T is a
      * scalar type or a (mathematical) vector type.
      *
-     * This class contains code common to all implementations of ScaleImpl.
+     * This class contains code common to all implementations of scale_impl.
      *
      * \tparam T The type of the number to be scaled. Should be some scalar type such as int,
      * double, etc or a type which can contain a vector such as std::array, morph::vec or
@@ -77,15 +77,15 @@ namespace morph {
      * integers.
      */
     template <typename T, typename S>
-    struct ScaleImplBase
+    struct scale_impl_base
     {
     public:
         /*!
-         * \brief Transform the given datum using this Scale's parameters.
+         * \brief Transform the given datum using this scale's parameters.
          *
          * I would have preferred to have named this function 'transform', matching transform (const
          * vector<T>&, vector<T>&). Had I done so then I would have to have had two implementations
-         * of transform (const vector<T>&, vector<T>&) in ScaleImpl<0,T> and ScaleImpl<1,T>, even
+         * of transform (const vector<T>&, vector<T>&) in scale_impl<0,T> and scale_impl<1,T>, even
          * though they are identical in each derived class.
          *
          * \param datum The datum (scalar or vector) to be transformed by the current scaling.
@@ -108,7 +108,7 @@ namespace morph {
          */
         virtual std::string str() const
         {
-            std::string _type = this->type == ScaleFn::Linear ? "Linear" : "Logarithmic";
+            std::string _type = this->type == scaling_function::Linear ? "Linear" : "Logarithmic";
             std::stringstream ss;
             ss << _type << " scaling " << typeid(T).name() << " to " << typeid(S).name()
                << " as: " << this->transform_str()
@@ -128,7 +128,7 @@ namespace morph {
         /*!
          * \brief Transform a container of scalars or vectors.
          *
-         * This uses the scaling parameters \b params (ScaleImpl::params) to scale the input \a
+         * This uses the scaling parameters \b params (scale_impl::params) to scale the input \a
          * data. If #do_autoscale is true and this->ready() is false, then the parameters are computed
          * from the input \a data.
          *
@@ -156,12 +156,12 @@ namespace morph {
         {
             std::size_t dsize = data.size();
             if (output.size() != dsize) {
-                throw std::runtime_error ("ScaleImplBase::transform(): Ensure data.size()==output.size()");
+                throw std::runtime_error ("scale_impl_base::transform(): Ensure data.size()==output.size()");
             }
             if (this->do_autoscale == true && !this->ready()) {
                 this->compute_scaling_from_data<Container> (data); // not const
             } else if (this->do_autoscale == false && !this->ready()) {
-                throw std::runtime_error ("ScaleImplBase::transform(): Params are not set and do_autoscale is set false. Can't transform.");
+                throw std::runtime_error ("scale_impl_base::transform(): Params are not set and do_autoscale is set false. Can't transform.");
             }
             typename Container::const_iterator di = data.begin();
             typename OContainer::iterator oi = output.begin();
@@ -178,10 +178,10 @@ namespace morph {
         {
             std::size_t dsize = data.size();
             if (output.size() != dsize) {
-                throw std::runtime_error ("ScaleImplBase::inverse(): Ensure data.size()==output.size()");
+                throw std::runtime_error ("scale_impl_base::inverse(): Ensure data.size()==output.size()");
             }
             if (!this->ready()) {
-                throw std::runtime_error ("ScaleImplBase::inverse(): Can't inverse transform; set params of this Scale, first");
+                throw std::runtime_error ("scale_impl_base::inverse(): Can't inverse transform; set params of this scale, first");
             }
             typename Container::const_iterator di = data.begin();
             typename OContainer::iterator oi = output.begin();
@@ -209,7 +209,7 @@ namespace morph {
          * gives \b output_range.min as output and max(\a data) gives \b
          * output_range.max as output.
          *
-         * This method sub-calls #compute_scaling(T, T), which then modifies ScaleImpl::params.
+         * This method sub-calls #compute_scaling(T, T), which then modifies scale_impl::params.
          *
          * \tparam Container The STL container holding the data. Restricted to those containers
          * which take two arguments for construction. This includes std::vector, std::list but
@@ -230,30 +230,30 @@ namespace morph {
             this->compute_scaling (mm.min, mm.max);
         }
 
-        //! Set to true to make the Scale object compute autoscaling when data is available, i.e. on
+        //! Set to true to make the scale object compute autoscaling when data is available, i.e. on
         //! the first call to #transform.
         bool do_autoscale = false;
 
         // Set type for transformations/autoscaling
-        void setType (ScaleFn t)
+        void setType (scaling_function t)
         {
             // Reset, because any autoscaling will need to be re-computed
             this->reset();
             this->type = t;
         }
 
-        ScaleFn getType() { return this->type; }
+        scaling_function getType() { return this->type; }
 
         void setlog()
         {
             this->reset();
-            this->type = ScaleFn::Logarithmic;
+            this->type = scaling_function::Logarithmic;
         }
 
         void setlinear()
         {
             this->reset();
-            this->type = ScaleFn::Linear;
+            this->type = scaling_function::Linear;
         }
 
         virtual bool ready() const = 0;
@@ -262,34 +262,34 @@ namespace morph {
 
     protected:
         /*!
-         * What type of scaling function is in use? Intended for future implementations when Scale
+         * What type of scaling function is in use? Intended for future implementations when scale
          * could carry out logarithmic (or other) scalings, in addition to linear transforms.
          */
-        ScaleFn type = ScaleFn::Linear;
+        scaling_function type = scaling_function::Linear;
 
     public:
         //! Overload the stream output operator
-        friend std::ostream& operator<< <T> (std::ostream& os, const ScaleImplBase<T, S>& scl);
+        friend std::ostream& operator<< <T> (std::ostream& os, const scale_impl_base<T, S>& scl);
     };
 
     template <typename T, typename S>
-    std::ostream& operator<< (std::ostream& os, const ScaleImplBase<T, S>& scl)
+    std::ostream& operator<< (std::ostream& os, const scale_impl_base<T, S>& scl)
     {
         os << scl.str();
         return os;
     }
 
     /*!
-     * \brief ScaleImpl for vector \a T
+     * \brief scale_impl for vector \a T
      *
-     * A default implementation base class for Scale which is used when the number type of \a T is a
+     * A default implementation base class for scale which is used when the number type of \a T is a
      * vector such as std::array or morph::vec.
      *
      * FIXME: Rename ntype, because T is 'input number type' and S is 'output number
      * type' with type meaning machine number type. ntype would be better as vector_scalar or similar.
      *
      * \tparam ntype The 'number type' as contained in morph::number_type::value. 1 for vectors, 0
-     * for scalars, 2 for complex, 3 for vector of complex (not supported by Scale). Default is
+     * for scalars, 2 for complex, 3 for vector of complex (not supported by scale). Default is
      * 0. This class is active if ntype is 0 (vector). There are other specializations of this class
      * which are active if ntype is 1 or 2.
      *
@@ -301,10 +301,10 @@ namespace morph {
      * \tparam S The output number type. From S is derived the type of the output
      * elements, S_el.
      *
-     * \sa ScaleImplBase
+     * \sa scale_impl_base
      */
     template <int ntype = 0, typename T=float, typename S=float>
-    class ScaleImpl : public ScaleImplBase<T, S>
+    class scale_impl : public scale_impl_base<T, S>
     {
     public:
         //! In a vector implementation we have to get the type of the components of the vector type
@@ -319,7 +319,7 @@ namespace morph {
         //! Transform a single (math) vector T into a (math) vector S
         virtual S transform_one (const T& datum) const
         {
-            if (this->type != ScaleFn::Linear) {
+            if (this->type != scaling_function::Linear) {
                 throw std::runtime_error ("This transform function is for Linear scaling only");
             }
             if (params.size() != 2) {
@@ -339,9 +339,9 @@ namespace morph {
         virtual std::string transform_str() const
         {
             std::stringstream ss;
-            if (this->type == ScaleFn::Logarithmic) {
+            if (this->type == scaling_function::Logarithmic) {
                 ss << "log scaling of vectors is unimplemented";
-            } else if (this->type == ScaleFn::Linear && this->params.size() > 1) {
+            } else if (this->type == scaling_function::Linear && this->params.size() > 1) {
                 ss << "(elementwise) y[i] = (x[i] - (x[i]/|x|) * " << this->params[1] << ") * " << this->params[0];
             } else {
                 ss << "unknown scaling type";
@@ -359,9 +359,9 @@ namespace morph {
         virtual T inverse_one (const S& datum) const
         {
             T rtn = T{};
-            if (this->type == ScaleFn::Logarithmic) {
+            if (this->type == scaling_function::Logarithmic) {
                 rtn = this->inverse_one_log (datum);
-            } else if (this->type == ScaleFn::Linear) {
+            } else if (this->type == scaling_function::Linear) {
                 rtn = this->inverse_one_linear (datum);
             } else {
                 throw std::runtime_error ("Unknown scaling");
@@ -372,14 +372,14 @@ namespace morph {
         // deprecated name. use compute_scaling()
         virtual void compute_autoscale (T input_min, T input_max)
         {
-            std::cerr << "Note: The function Scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
+            std::cerr << "Note: The function scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
             this->compute_scaling (input_min, input_max);
         }
 
         virtual void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
         virtual void compute_scaling (const T input_min, const T input_max)
         {
-            if (this->type != ScaleFn::Linear) {
+            if (this->type != scaling_function::Linear) {
                 throw std::runtime_error ("This scaling function is for Linear scaling only");
             }
             this->params.resize (2, T_el{0});
@@ -420,7 +420,7 @@ namespace morph {
         //! return string representation of params
         virtual std::string params_str() const { return this->params.str(); }
 
-        //! The Scale object is ready if params has size 2.
+        //! The scale object is ready if params has size 2.
         bool ready() const { return (this->params.size() > 1); }
 
         //! Reset the Scaling by emptying params
@@ -468,9 +468,9 @@ namespace morph {
     };
 
     /*!
-     * \brief ScaleImpl for scalar \a T
+     * \brief scale_impl for scalar \a T
      *
-     * A specialized implementation base class for the template class Scale, which is used when the
+     * A specialized implementation base class for the template class scale, which is used when the
      * number type of \a T is a scalar such as int, double, float or long double.
      *
      * \tparam ntype The 'number type' as contained in number_type::value. 0 for vectors, 1 for
@@ -482,10 +482,10 @@ namespace morph {
      * \tparam S The output type for the scaled number. For integer T, this might well be a floating
      * point type.
      *
-     * \sa ScaleImplBase
+     * \sa scale_impl_base
      */
     template<typename T, typename S>
-    class ScaleImpl<1, T, S> : public ScaleImplBase<T, S>
+    class scale_impl<1, T, S> : public scale_impl_base<T, S>
     {
     public:
         //! The output range required. Change if you want to scale to something other than [0, 1]
@@ -494,9 +494,9 @@ namespace morph {
         virtual S transform_one (const T& datum) const
         {
             S rtn = S{0};
-            if (this->type == ScaleFn::Logarithmic) {
+            if (this->type == scaling_function::Logarithmic) {
                 rtn = this->transform_one_log (datum);
-            } else if (this->type == ScaleFn::Linear) {
+            } else if (this->type == scaling_function::Linear) {
                 rtn = this->transform_one_linear (datum);
             } else {
                 throw std::runtime_error ("Unknown scaling");
@@ -508,9 +508,9 @@ namespace morph {
         virtual std::string transform_str() const
         {
             std::stringstream ss;
-            if (this->type == ScaleFn::Logarithmic && this->params.size() > 1) {
+            if (this->type == scaling_function::Logarithmic && this->params.size() > 1) {
                 ss << "y = " << this->params[0] << " * log(x) + " << this->params[1];
-            } else if (this->type == ScaleFn::Linear && this->params.size() > 1) {
+            } else if (this->type == scaling_function::Linear && this->params.size() > 1) {
                 ss << "y = " << this->params[0] << " * x + " << this->params[1];
             } else {
                 ss << "unknown scaling type";
@@ -528,9 +528,9 @@ namespace morph {
         virtual T inverse_one (const S& datum) const
         {
             T rtn = T{0};
-            if (this->type == ScaleFn::Logarithmic) {
+            if (this->type == scaling_function::Logarithmic) {
                 rtn = this->inverse_one_log (datum);
-            } else if (this->type == ScaleFn::Linear) {
+            } else if (this->type == scaling_function::Linear) {
                 rtn = this->inverse_one_linear (datum);
             } else {
                 throw std::runtime_error ("Unknown scaling");
@@ -541,16 +541,16 @@ namespace morph {
         // deprecated name
         virtual void compute_autoscale (T input_min, T input_max)
         {
-            std::cerr << "Note: The function Scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
+            std::cerr << "Note: The function scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
             this->compute_scaling (input_min, input_max);
         }
 
         virtual void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
         virtual void compute_scaling (const T input_min, const T input_max)
         {
-            if (this->type == ScaleFn::Logarithmic) {
+            if (this->type == scaling_function::Logarithmic) {
                 this->compute_scaling_log (input_min, input_max);
-            } else if (this->type == ScaleFn::Linear) {
+            } else if (this->type == scaling_function::Linear) {
                 this->compute_scaling_linear (input_min, input_max);
             } else {
                 throw std::runtime_error ("Unknown scaling");
@@ -579,7 +579,7 @@ namespace morph {
         //! return string representation of params
         virtual std::string params_str() const { return this->params.str(); }
 
-        //! The Scale object is ready if params has size 2.
+        //! The scale object is ready if params has size 2.
         bool ready() const { return (this->params.size() > 1); }
 
         //! Reset the Scaling by emptying params
@@ -631,7 +631,7 @@ namespace morph {
 
         virtual void compute_scaling_log (T input_min, T input_max)
         {
-            // Have to check here as ScaleImpl<2, T, S> is built from ScaleImpl<1, T, S> but <= operator makes no sense
+            // Have to check here as scale_impl<2, T, S> is built from scale_impl<1, T, S> but <= operator makes no sense
             if constexpr (morph::number_type<T>::value == 1) {
                 if (input_min <= T{0} || input_max <= T{0}) {
                     throw std::runtime_error ("Can't logarithmically autoscale a range which includes zeros or negatives");
@@ -648,9 +648,9 @@ namespace morph {
     };
 
     /*!
-     * \brief Experimental ScaleImpl for complex scalars\a T
+     * \brief Experimental scale_impl for complex scalars\a T
      *
-     * A specialized implementation base class for the template class Scale, which is used when the
+     * A specialized implementation base class for the template class scale, which is used when the
      * number type of \a T is std::complex<>
      *
      * \tparam ntype The 'number type' as contained in number_type::value. 0 for vectors, 1 for
@@ -663,10 +663,10 @@ namespace morph {
      * point type. Does it make sense to scale from complex to non complex? Maybe, if you're scaling
      * to magnitude.
      *
-     * \sa ScaleImplBase
+     * \sa scale_impl_base
      */
     template<typename T, typename S>
-    class ScaleImpl<2, T, S> : public ScaleImpl<1, T, S>
+    class scale_impl<2, T, S> : public scale_impl<1, T, S>
     {
     public:
         // Any public overrides go here
@@ -680,7 +680,7 @@ namespace morph {
             // stretch the complex plane so that the input numbers with the largest magnitude are
             // given the magniude of output_range.max.
             if (this->output_range.min != T{0}) {
-                throw std::runtime_error ("ScaleImpl<2, T, S>::compute_scaling_linear: "
+                throw std::runtime_error ("scale_impl<2, T, S>::compute_scaling_linear: "
                                           "output_range minimum must be (0 + 0i) for complex scaling");
             }
 
@@ -713,24 +713,24 @@ namespace morph {
 
     // Scaling a vector of complex numbers is unsupported
     template<typename T, typename S>
-    class ScaleImpl<3, T, S> : public ScaleImplBase<T, S> {
+    class scale_impl<3, T, S> : public scale_impl_base<T, S> {
         void compute_scaling_linear (T input_min, T input_max) {
 #if __cplusplus >= 202002L
-            []<bool flag = false>() { static_assert(flag, "morph::Scale does not support scaling vectors of complex numbers"); }();
+            []<bool flag = false>() { static_assert(flag, "morph::scale does not support scaling vectors of complex numbers"); }();
 #else
-            throw std::runtime_error ("morph::Scale does not support scaling vectors of complex numbers");
+            throw std::runtime_error ("morph::scale does not support scaling vectors of complex numbers");
 #endif
         }
     };
 
     // Scaling is unsupported if the input number_type is not a number type.
     template<typename T, typename S>
-    class ScaleImpl<-1, T, S> : public ScaleImplBase<T, S> {
+    class scale_impl<-1, T, S> : public scale_impl_base<T, S> {
         void compute_scaling_linear (T input_min, T input_max) {
 #if __cplusplus >= 202002L
-            []<bool flag = false>() { static_assert(flag, "morph::Scale does not support scaling non-number types"); }();
+            []<bool flag = false>() { static_assert(flag, "morph::scale does not support scaling non-number types"); }();
 #else
-            throw std::runtime_error ("morph::Scale does not support scaling non-number types");
+            throw std::runtime_error ("morph::scale does not support scaling non-number types");
 #endif
         }
     };
@@ -741,11 +741,11 @@ namespace morph {
      * Mostly used for linear scaling of signals, has an autoscale feature. Could also be used to
      * logarithmically scale a signal with suitable extension.
      *
-     * morph::Scale derives from ScaleImpl<N> depending on the type of T
+     * morph::scale derives from scale_impl<N> depending on the type of T
      *
      * Usage: See tests/testScale.cpp
      * e.g.:
-     *   morph::Scale<float> s;
+     *   morph::scale<float> s;
      *   s.do_autoscale = true;
      *   std::vector<float> vf = { 1, 2, 3 };
      *   std::vector<float> result(vf);
@@ -758,6 +758,6 @@ namespace morph {
      * double
      */
     template <typename T, typename S=T>
-    struct Scale : public ScaleImpl<morph::number_type<T>::value, T, S> {};
+    struct scale : public scale_impl<morph::number_type<T>::value, T, S> {};
 
 } // namespace morph

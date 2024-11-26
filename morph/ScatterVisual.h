@@ -8,7 +8,7 @@
 
 #include <morph/tools.h>
 #include <morph/VisualDataModel.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <iostream>
 #include <vector>

@@ -3,7 +3,7 @@
 #include <morph/tools.h>
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/ColourMap.h>
 #include <iostream>
@@ -66,7 +66,7 @@ namespace morph {
         PointRowsMeshVisual(std::vector<vec<float,3>>* _pointrows,
                             const vec<float, 3> _offset,
                             const std::vector<Flt>* _data,
-                            const Scale<Flt>& cscale,
+                            const scale<Flt>& cscale,
                             ColourMapType _cmt, // mesh
                             const float _hue,
                             const float _sat,

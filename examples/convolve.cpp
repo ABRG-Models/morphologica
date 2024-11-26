@@ -12,7 +12,7 @@
 #include <morph/HexGrid.h>
 #include <morph/ReadCurves.h>
 #include <morph/Random.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 
 int main()
@@ -106,7 +106,7 @@ int main()
     // Demonstrate how to divide existing scale by 10:
     float newGrad = hgvp->zScale.getParams(0)/10.0;
     // Set this in a new zscale object:
-    morph::Scale<float> zscale;
+    morph::scale<float> zscale;
     zscale.setParams (newGrad, 0);
     // Use the un-owned pointer rgvp:
     rgvp->updateZScale (zscale);

@@ -15,7 +15,7 @@
 #endif
 #include <morph/VisualModel.h>
 #include <morph/vec.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <vector>
 #include <array>
 
@@ -50,7 +50,7 @@ public:
         std::vector<morph::vec<float,3>> startlocs;
 
         // Scaling for colour
-        morph::Scale<float> s;
+        morph::scale<float> s;
         float min_act = this->nn->min_neuron_activation();
         float max_act = this->nn->max_neuron_activation();
         s.compute_scaling (min_act, max_act);

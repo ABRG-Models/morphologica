@@ -41,7 +41,7 @@
 # include <morph/HexGridVisual.h>
 # include <morph/ColourMap.h>
 # include <morph/VisualDataModel.h>
-# include <morph/Scale.h>
+# include <morph/scale.h>
 # include <morph/vec.h>
 
 //! Helper function to save PNG images with a suitable name
@@ -75,7 +75,7 @@ using morph::HexGridVisual;
 using morph::ColourMap;
 using morph::ColourMapType;
 using morph::VisualDataModel;
-using morph::Scale;
+using morph::scale;
 using morph::vec;
 #endif
 using morph::Config;

@@ -2,7 +2,6 @@
 #include <vector>
 #include <cmath>
 
-#include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/loadpng.h>

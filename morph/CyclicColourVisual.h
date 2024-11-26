@@ -7,7 +7,6 @@
 #include <deque>
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
-#include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/unicode.h>
 

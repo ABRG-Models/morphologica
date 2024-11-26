@@ -6,7 +6,6 @@
 
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
-#include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/GraphVisual.h>
 

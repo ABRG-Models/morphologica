@@ -7,7 +7,7 @@
 #include <morph/ScatterVisual.h>
 #include <morph/QuiverVisual.h>
 #include <morph/TriangleVisual.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/geometry.h>
@@ -61,7 +61,7 @@ int main()
 
     try {
         morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
-        morph::Scale<float> scale;
+        morph::scale<float> scale;
         scale.setParams (1.0f, 0.0f);
 
         morph::vvec<float> data(geo.poly.vertices.size(), 0.06f);

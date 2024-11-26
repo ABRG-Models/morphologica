@@ -10,7 +10,6 @@
 #include <vector>
 #include <cmath>
 
-#include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
