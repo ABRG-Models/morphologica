@@ -279,7 +279,7 @@ namespace morph {
             void set (const std::string& hexstr)
             {
                 // 1 split string by the '-' character
-                std::vector<std::string> parts = morph::Tools::stringToVector (hexstr, "-");
+                std::vector<std::string> parts = morph::tools::stringToVector (hexstr, "-");
 
                 // 2 Make sure there are N sections
                 if (parts.size() != N) {

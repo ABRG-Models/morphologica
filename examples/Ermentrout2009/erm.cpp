@@ -104,9 +104,9 @@ int main (int argc, char **argv)
     bool do_autoscale = conf.getBool ("autoscale", false);
 
     // Now create a log directory if necessary, and exit on any failures.
-    if (morph::Tools::dirExists (logpath) == false) {
-        morph::Tools::createDir (logpath);
-        if (morph::Tools::dirExists (logpath) == false) {
+    if (morph::tools::dirExists (logpath) == false) {
+        morph::tools::createDir (logpath);
+        if (morph::tools::dirExists (logpath) == false) {
             std::cerr << "Failed to create the logpath directory "
                       << logpath << " which does not exist.\n";
             return 1;
@@ -115,8 +115,8 @@ int main (int argc, char **argv)
         // Directory DOES exist. See if it contains a previous run and
         // exit without overwriting to avoid confusion.
         if (overwrite_logs == false
-            && (morph::Tools::fileExists (logpath + "/params.json") == true
-                || morph::Tools::fileExists (logpath + "/positions.h5") == true)) {
+            && (morph::tools::fileExists (logpath + "/params.json") == true
+                || morph::tools::fileExists (logpath + "/positions.h5") == true)) {
             std::cerr << "Seems like a previous simulation was logged in " << logpath << ".\n"
                       << "Please clean it out manually, choose another directory or set\n"
                       << "overwrite_logs to true in your parameters config JSON file.\n";
@@ -261,7 +261,7 @@ int main (int argc, char **argv)
 
     // Add simulation runtime information to the config, before saving it out as params.json
     conf.set ("float_width", (unsigned int)sizeof(FLT));
-    std::string tnow = morph::Tools::timeNow();
+    std::string tnow = morph::tools::timeNow();
     conf.set ("sim_ran_at_time", tnow.substr(0,tnow.size()-1));
     conf.set ("final_step", RD.stepCount);
     conf.set ("hextohex_d", RD.hextohex_d);

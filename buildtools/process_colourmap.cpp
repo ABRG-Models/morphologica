@@ -19,8 +19,8 @@ int main (int argc, char** argv)
 
     // Obtain name from fpath
     std::string name = fpath;
-    morph::Tools::stripUnixPath (name);
-    morph::Tools::stripFileSuffix (name);
+    morph::tools::stripUnixPath (name);
+    morph::tools::stripFileSuffix (name);
     if (name.empty()) {
         std::cerr << "No name.\n";
         return -1;
@@ -53,7 +53,7 @@ int main (int argc, char** argv)
     unsigned int lastline = nlines - 1;
     for (std::string line; std::getline(ifile, line);) {
         // Process line into csv
-        std::vector<std::string> tokens = morph::Tools::stringToVector (line, (commas ? "," : " "));
+        std::vector<std::string> tokens = morph::tools::stringToVector (line, (commas ? "," : " "));
         if (tokens.size() != 3) {
             std::cerr << "text format error: != 3 values in line '" << line << "', (got "<< tokens.size() << ")\n";
             return -1;

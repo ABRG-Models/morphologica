@@ -79,7 +79,6 @@ using morph::scale;
 using morph::vec;
 #endif
 using morph::Config;
-using morph::Tools;
 using std::string;
 using std::stringstream;
 using std::cerr;
@@ -133,9 +132,9 @@ int main (int argc, char **argv)
         // Using json filename as logpath
         string justfile = paramsfile;
         // Remove trailing .json and leading directories
-        vector<string> pth = Tools::stringToVector (justfile, "/");
+        vector<string> pth = morph::tools::stringToVector (justfile, "/");
         justfile = pth.back();
-        Tools::searchReplace (".json", "", justfile);
+        morph::tools::searchReplace (".json", "", justfile);
         // Use logbase as the subdirectory into which this should go
         logbase = conf.getString ("logbase", "logs/");
         if (logbase.back() != '/') {
@@ -237,9 +236,9 @@ int main (int argc, char **argv)
      * Now create a log directory if necessary, and exit on any
      * failures.
      */
-    if (Tools::dirExists (logpath) == false) {
-        Tools::createDir (logpath);
-        if (Tools::dirExists (logpath) == false) {
+    if (morph::tools::dirExists (logpath) == false) {
+        morph::tools::createDir (logpath);
+        if (morph::tools::dirExists (logpath) == false) {
             cerr << "Failed to create the logpath directory "
                  << logpath << " which does not exist."<< endl;
             return 1;
@@ -248,8 +247,8 @@ int main (int argc, char **argv)
         // Directory DOES exist. See if it contains a previous run and
         // exit without overwriting to avoid confusion.
         if (overwrite_logs == false
-            && (Tools::fileExists (logpath + "/params.json") == true
-                || Tools::fileExists (logpath + "/positions.h5") == true)) {
+            && (morph::tools::fileExists (logpath + "/params.json") == true
+                || morph::tools::fileExists (logpath + "/positions.h5") == true)) {
             cerr << "Seems like a previous simulation was logged in " << logpath << ".\n"
                  << "Please clean it out manually, choose another directory or set\n"
                  << "overwrite_logs to true in your parameters config JSON file." << endl;
@@ -347,7 +346,7 @@ int main (int argc, char **argv)
     // results were computed with single precision, if 8, then double
     // precision was used. Also save various parameters from the RD system.
     conf.set ("float_width", (unsigned int)sizeof(FLT));
-    string tnow = Tools::timeNow();
+    string tnow = morph::tools::timeNow();
     conf.set ("sim_ran_at_time", tnow.substr(0,tnow.size()-1));
     conf.set ("hextohex_d", RD.hextohex_d);
     conf.set ("D_A", RD.D_A);

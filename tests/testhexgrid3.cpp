@@ -12,7 +12,7 @@ int main()
 {
     int rtn = 0;
     try {
-        std::string pwd = morph::Tools::getPwd();
+        std::string pwd = morph::tools::getPwd();
         std::string curvepath = "../../tests/trialmod.svg";
         morph::ReadCurves r(curvepath);
 
@@ -74,7 +74,7 @@ int main()
 
     } catch (const std::exception& e) {
         std::cerr << "Caught exception reading svg: " << e.what() << std::endl;
-        std::cerr << "Current working directory: " << morph::Tools::getPwd() << std::endl;
+        std::cerr << "Current working directory: " << morph::tools::getPwd() << std::endl;
         rtn = -1;
     }
 

@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         // setup the log file
         std::string logpath = argv[2];
         std::ofstream logfile;
-        morph::Tools::createDir (logpath);
+        morph::tools::createDir (logpath);
         { std::stringstream ss; ss << logpath << "/log.txt"; logfile.open(ss.str()); }
         logfile << "Hello world!" << std::endl;
 

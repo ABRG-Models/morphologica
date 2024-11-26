@@ -10,7 +10,7 @@ int main()
 {
     int rtn = 0;
     try {
-        string pwd = Tools::getPwd();
+        string pwd = tools::getPwd();
         // Assumes were in the build dir and that the build dir is within the
         // morphologica directory.
         string curvepath = "../../tests/trial.svg";
@@ -30,7 +30,7 @@ int main()
 
     } catch (const exception& e) {
         cerr << "Caught exception reading trial.svg: " << e.what() << endl;
-        cerr << "Current working directory: " << Tools::getPwd() << endl;
+        cerr << "Current working directory: " << tools::getPwd() << endl;
         rtn = -1;
     }
     return rtn;

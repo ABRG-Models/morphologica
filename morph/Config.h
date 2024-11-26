@@ -279,7 +279,7 @@ namespace morph {
                 if ((pos = arg.find ("-co:")) == 0) {
                     std::string arg_ss = arg.substr (4);
                     // Split arg based on '='
-                    std::vector<std::string> co = morph::Tools::stringToVector (arg_ss, std::string("="));
+                    std::vector<std::string> co = morph::tools::stringToVector (arg_ss, std::string("="));
                     if (co.size() >= 2) {
                         std::cout << "Override parameter '" << co[0] << "' with value '" << co[1] << "'\n";
                         //...so stick with using a map

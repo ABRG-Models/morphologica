@@ -161,7 +161,7 @@ int main()
 
     } catch (const exception& e) {
         cerr << "Caught exception: " << e.what() << endl;
-        cerr << "Current working directory: " << Tools::getPwd() << endl;
+        cerr << "Current working directory: " << tools::getPwd() << endl;
         rtn = -1;
     }
     return rtn;

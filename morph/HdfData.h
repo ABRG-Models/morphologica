@@ -719,7 +719,7 @@ namespace morph {
          */
         void process_groups (const char* path)
         {
-            std::vector<std::string> pbits = morph::Tools::stringToVector (path, "/");
+            std::vector<std::string> pbits = morph::tools::stringToVector (path, "/");
             unsigned int numgroups = pbits.size() - 1;
             if (numgroups > 1) { // There's always the first, empty (root) group
                 std::string groupstr("");

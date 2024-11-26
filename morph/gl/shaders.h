@@ -127,7 +127,7 @@ namespace morph {
                 if constexpr (debug_shaders == true) {
                     std::cout << "Check file exists for " << entry.filename << std::endl;
                 }
-                if (morph::Tools::fileExists (entry.filename)) {
+                if (morph::tools::fileExists (entry.filename)) {
                     std::cout << "Using " << morph::gl::shader_type_str(entry.type)
                               << " shader from the file " << entry.filename << std::endl;
                     source = morph::gl::ReadShader (entry.filename);

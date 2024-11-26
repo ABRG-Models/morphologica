@@ -91,8 +91,8 @@ int main (int argc, char** argv)
     unsigned int framenum = 0;
 
     // Create a directory to save PNG images
-    if (morph::Tools::dirExists ("./logs") == false) {
-        morph::Tools::createDir ("./logs");
+    if (morph::tools::dirExists ("./logs") == false) {
+        morph::tools::createDir ("./logs");
     }
 
     for (unsigned int ep = 0; ep < epochs; ++ep) {

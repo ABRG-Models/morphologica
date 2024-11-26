@@ -517,7 +517,7 @@ if(ARMADILLO_FOUND)
 
 endif()
 
-# morph::Tools
+# morph::tools
 add_executable(testTools testTools.cpp)
 add_test(testTools testTools)
 

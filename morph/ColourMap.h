@@ -578,7 +578,7 @@ namespace morph {
         {
             ColourMapType cmt = morph::ColourMapType::Plasma;
             std::string _s = s;
-            morph::Tools::toLowerCase (_s);
+            morph::tools::toLowerCase (_s);
             if (_s == "fixed") {
                 cmt = morph::ColourMapType::Fixed;
             } else if (_s == "trichrome") {

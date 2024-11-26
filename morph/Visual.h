@@ -1225,10 +1225,10 @@ namespace morph {
 
             if (_key == key::s && (mods & keymod::control) && action == keyaction::press) {
                 std::string fname (this->title);
-                morph::Tools::stripFileSuffix (fname);
+                morph::tools::stripFileSuffix (fname);
                 fname += ".png";
                 // Make fname 'filename safe'
-                morph::Tools::conditionAsFilename (fname);
+                morph::tools::conditionAsFilename (fname);
                 this->saveImage (fname);
                 std::cout << "Saved image to '" << fname << "'\n";
             }
@@ -1236,9 +1236,9 @@ namespace morph {
             // Save gltf 3D file
             if (_key == key::m && (mods & keymod::control) && action == keyaction::press) {
                 std::string gltffile = this->title;
-                morph::Tools::stripFileSuffix (gltffile);
+                morph::tools::stripFileSuffix (gltffile);
                 gltffile += ".gltf";
-                morph::Tools::conditionAsFilename (gltffile);
+                morph::tools::conditionAsFilename (gltffile);
                 this->savegltf (gltffile);
                 std::cout << "Saved 3D file '" << gltffile << "'\n";
             }

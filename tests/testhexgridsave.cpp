@@ -18,10 +18,10 @@ int main()
     int rtn = 0;
     unsigned int hexnum = 0;
 
-    cout << "Start " << Tools::timeNow() << endl;
+    cout << "Start " << tools::timeNow() << endl;
     // Create and then write a HexGrid
     try {
-        string pwd = Tools::getPwd();
+        string pwd = tools::getPwd();
         string curvepath = "../../tests/trial.svg";
 
         ReadCurves r(curvepath);
@@ -39,15 +39,15 @@ int main()
 
     } catch (const exception& e) {
         cerr << "Caught exception reading trial.svg: " << e.what() << endl;
-        cerr << "Current working directory: " << Tools::getPwd() << endl;
+        cerr << "Current working directory: " << tools::getPwd() << endl;
         rtn = -1;
     }
-    cout << "Generated " << Tools::timeNow() << endl;
+    cout << "Generated " << tools::timeNow() << endl;
     // Now read it back
     try {
         HexGrid hg("../trialhexgrid.h5");
 
-        cout << "Read " << Tools::timeNow() << endl;
+        cout << "Read " << tools::timeNow() << endl;
 
         // Make sure read-in grid has same number of hexes as the generated one.
         if (hexnum != hg.num()) { rtn = -1; }
@@ -100,7 +100,7 @@ int main()
 
     } catch (const exception& e) {
         cerr << "Caught exception reading trial.svg: " << e.what() << endl;
-        cerr << "Current working directory: " << Tools::getPwd() << endl;
+        cerr << "Current working directory: " << tools::getPwd() << endl;
         rtn = -1;
     }
     return rtn;
