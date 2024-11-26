@@ -220,7 +220,7 @@ int main (int argc, char **argv)
     } else {
         // Create an empty/default json file
         paramsfile = "./sg.json";
-        morph::Tools::copyStringToFile ("{}\n", paramsfile);
+        morph::tools::copyStringToFile ("{}\n", paramsfile);
     }
 
     morph::Config conf(paramsfile);

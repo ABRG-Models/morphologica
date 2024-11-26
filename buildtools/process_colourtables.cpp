@@ -21,9 +21,9 @@ int main ()
 {
     ctabletype tt = ctabletype::unknown;
     // First get a directory listing and make sure we're in the Crameri folder
-    if (morph::Tools::fileExists ("+README_ScientificColourMaps.pdf")) {
+    if (morph::tools::fileExists ("+README_ScientificColourMaps.pdf")) {
         tt = ctabletype::Crameri;
-    } else if (morph::Tools::fileExists ("CET-C1.csv")) {
+    } else if (morph::tools::fileExists ("CET-C1.csv")) {
         tt = ctabletype::CET;
     } else {
         std::cerr << "Run this program within the Crameri OR CET colour table directories\n";
@@ -35,7 +35,7 @@ int main ()
     std::vector<std::string> table_files;
     std::string basedir = "./";
     std::string subdir = "";
-    morph::Tools::readDirectoryTree (dirs, basedir, subdir);
+    morph::tools::readDirectoryTree (dirs, basedir, subdir);
     if (tt == ctabletype::Crameri) {
         for (auto dir : dirs) {
             std::cerr << "Got file " << dir << std::endl;
@@ -90,14 +90,14 @@ int main ()
 
         // Obtain name from fpath
         std::string name = fpath;
-        morph::Tools::stripUnixPath (name);
-        morph::Tools::stripFileSuffix (name);
+        morph::tools::stripUnixPath (name);
+        morph::tools::stripFileSuffix (name);
         if (name.empty()) {
             std::cerr << "No name.\n";
             return -1;
         }
         std::string name_lower = name;
-        morph::Tools::toLowerCase (name_lower);
+        morph::tools::toLowerCase (name_lower);
 
         std::ifstream ifile (fpath, std::ios::in);
         if (!ifile.is_open()) {
@@ -135,7 +135,7 @@ int main ()
         unsigned int lastline = nlines - 1;
         for (std::string line; std::getline(ifile, line);) {
             // Process line into csv
-            std::vector<std::string> tokens = morph::Tools::stringToVector (line, (commas ? "," : " "));
+            std::vector<std::string> tokens = morph::tools::stringToVector (line, (commas ? "," : " "));
             if (tokens.size() != 3) {
                 std::cerr << "text format error: != 3 values in line '" << line << "', (got "<< tokens.size() << ")\n";
                 return -1;

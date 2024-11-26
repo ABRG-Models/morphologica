@@ -257,7 +257,7 @@ namespace morph {
 
                 // setup log file
                 this->logpath = logpath;
-                morph::Tools::createDir (logpath);
+                morph::tools::createDir (logpath);
                 { std::stringstream ss; ss << logpath << "/log.txt"; logfile.open(ss.str());}
                 logfile<<"Hello."<<std::endl;
 

@@ -486,7 +486,7 @@ namespace morph {
             void makeTempFontFile (const std::string& fontpath, T* file_start, T* file_stop)
             {
                 T* p;
-                if (!morph::Tools::fileExists (fontpath)) {
+                if (!morph::tools::fileExists (fontpath)) {
                     std::ofstream fout;
                     fout.open (fontpath.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
                     if (fout.is_open()) {

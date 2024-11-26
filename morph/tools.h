@@ -88,14 +88,13 @@ namespace morph
     //! Allows use of transform and toupper() on strings with GNU compiler
     struct to_upper { char operator() (const char c) const { return toupper(c); } };
 
-    class Tools
+    namespace tools
     {
-    public:
         /*!
          * For mixing up bits of three args; used to generate a good random seed using
          * time() getpid() and clock().
          */
-        static unsigned int mix (unsigned int a, unsigned int b, unsigned int c)
+        unsigned int mix (unsigned int a, unsigned int b, unsigned int c)
         {
             a=a-b;  a=a-c;  a=a^(c >> 13);
             b=b-c;  b=b-a;  b=b^(a << 8);
@@ -114,16 +113,16 @@ namespace morph
          * Using clock(), time() and getpid() along with the mix utility function,
          * generate a decently random seed for seeding your RNG.
          */
-        static unsigned int randomSeed()
+        unsigned int randomSeed()
         {
-            unsigned int rsd = morph::Tools::mix(clock(), time(NULL), getpid());
+            unsigned int rsd = morph::tools::mix(clock(), time(NULL), getpid());
             return rsd;
         }
 #endif
         /*!
          * return indices of descending value in unsorted
          */
-        static std::vector<int> sort (std::vector<double> unsorted)
+        std::vector<int> sort (std::vector<double> unsorted)
         {
             std::vector<int> unsortID;
             for(int i=0;i<static_cast<int>(unsorted.size());i++){
@@ -156,7 +155,7 @@ namespace morph
          * characters which are present will be removed, whether or not they are
          * followed by a '\\n' character.
          */
-        static int ensureUnixNewlines (std::string& input)
+        int ensureUnixNewlines (std::string& input)
         {
             int num = 0;
 
@@ -173,7 +172,7 @@ namespace morph
         /*!
          * Get the working directory
          */
-        static std::string getPwd()
+        std::string getPwd()
         {
             char b[FILENAME_MAX];
             char* rtn = GetCurrentDir (b, FILENAME_MAX);
@@ -188,7 +187,7 @@ namespace morph
          *
          * \return 0 on success, -1 & sets errno otherwise
          */
-        static int setPwd (const std::string& directory)
+        int setPwd (const std::string& directory)
         {
             int rtn = SetCurrentDir (directory.c_str());
             return rtn;
@@ -198,7 +197,7 @@ namespace morph
          * If the last character of input is a carriage return ('\\r' 0xd), then it is
          * erased from input.
          */
-        static int stripTrailingCarriageReturn (std::string& input)
+        int stripTrailingCarriageReturn (std::string& input)
         {
             if (input[input.size()-1] == '\r') {
                 input.erase(input.size()-1, 1);
@@ -208,17 +207,9 @@ namespace morph
         }
 
         /*!
-         * Erase trailing spaces from input. Return the number of spaces removed.
-         */
-        static int stripTrailingSpaces (std::string& input)
-        {
-            return Tools::stripTrailingChars (input);
-        }
-
-        /*!
          * Erase trailing chars c from input. Return the number of chars removed.
          */
-        static int stripTrailingChars (std::string& input, const char c = ' ')
+        int stripTrailingChars (std::string& input, const char c = ' ')
         {
             int i = 0;
             while (input.size()>0 && input[input.size()-1] == c) {
@@ -229,10 +220,18 @@ namespace morph
         }
 
         /*!
+         * Erase trailing spaces from input. Return the number of spaces removed.
+         */
+        int stripTrailingSpaces (std::string& input)
+        {
+            return tools::stripTrailingChars (input);
+        }
+
+        /*!
          * Erase trailing whitespace from input. Return the number of whitespace
          * characters removed.
          */
-        static int stripTrailingWhitespace (std::string& input)
+        int stripTrailingWhitespace (std::string& input)
         {
             char c;
             std::string::size_type len = input.size(), pos = len;
@@ -248,17 +247,9 @@ namespace morph
         }
 
         /*!
-         * Erase leading spaces from input. Return the number of spaces removed.
-         */
-        static int stripLeadingSpaces (std::string& input)
-        {
-            return Tools::stripLeadingChars (input);
-        }
-
-        /*!
          * Erase any leading character c from input. Return the number of chars removed.
          */
-        static int stripLeadingChars (std::string& input, const char c = ' ')
+        int stripLeadingChars (std::string& input, const char c = ' ')
         {
             int i = 0;
             while (input.size()>0 && input[0] == c) {
@@ -269,10 +260,18 @@ namespace morph
         }
 
         /*!
+         * Erase leading spaces from input. Return the number of spaces removed.
+         */
+        int stripLeadingSpaces (std::string& input)
+        {
+            return tools::stripLeadingChars (input);
+        }
+
+        /*!
          * Erase leading whitespace from input. Return the number of whitespace
          * characters removed.
          */
-        static int stripLeadingWhitespace (std::string& input)
+        int stripLeadingWhitespace (std::string& input)
         {
             char c;
             std::string::size_type pos = 0;
@@ -291,17 +290,17 @@ namespace morph
          * Erase leading and trailing whitespace from input. Return the number of
          * whitespace characters removed.
          */
-        static int stripWhitespace (std::string& input)
+        int stripWhitespace (std::string& input)
         {
-            int n = Tools::stripLeadingWhitespace (input);
-            n += Tools::stripTrailingWhitespace (input);
+            int n = tools::stripLeadingWhitespace (input);
+            n += tools::stripTrailingWhitespace (input);
             return n;
         }
 
         /*!
          * Return true if input contains only space, tab, newline chars.
          */
-        static bool containsOnlyWhitespace (std::string& input)
+        bool containsOnlyWhitespace (std::string& input)
         {
             bool rtn = true;
             for (std::string::size_type i = 0; i < input.size(); ++i) {
@@ -318,7 +317,7 @@ namespace morph
         /*!
          * Strip any occurrences of the characters in charList from input.
          */
-        static int stripChars (std::string& input, const std::string& charList)
+        int stripChars (std::string& input, const std::string& charList)
         {
             int rtn(0);
             std::string::size_type pos(0);
@@ -332,7 +331,7 @@ namespace morph
         /*!
          * Strip any occurrences of the characters in charList from input.
          */
-        static int stripChars (std::string& input, const char charList)
+        int stripChars (std::string& input, const char charList)
         {
             int rtn(0);
             std::string::size_type pos(0);
@@ -350,7 +349,7 @@ namespace morph
          *
          * \return The number of hex sequences replaced in \param input.
          */
-        static int convertCHexCharSequences (std::string& input)
+        int convertCHexCharSequences (std::string& input)
         {
             // This converts a string containing C style hex sequences like
             // "\x41\x42\x43" into the corresponding characters ("ABC" for the example).
@@ -540,10 +539,10 @@ namespace morph
          *
          * \return the number of terms replaced.
          */
-        static int searchReplace (const std::string& searchTerm,
-                                  const std::string& replaceTerm,
-                                  std::string& data,
-                                  const bool replaceAll = true)
+        int searchReplace (const std::string& searchTerm,
+                           const std::string& replaceTerm,
+                           std::string& data,
+                           const bool replaceAll = true)
         {
             int count = 0;
             std::string::size_type pos = 0;
@@ -579,7 +578,7 @@ namespace morph
         /*!
          * Return the number of instances of the character c in line.
          */
-        static unsigned int countChars (const std::string& line, const char c)
+        unsigned int countChars (const std::string& line, const char c)
         {
             unsigned int count(0);
             std::string::const_iterator i = line.begin();
@@ -590,13 +589,13 @@ namespace morph
         }
 
         //! Convert str to lower case
-        static void toLowerCase (std::string& str)
+        void toLowerCase (std::string& str)
         {
             std::transform (str.begin(), str.end(), str.begin(), morph::to_lower());
         }
 
         //! Convert str to upper case
-        static void toUpperCase (std::string& str)
+        void toUpperCase (std::string& str)
         {
             std::transform (str.begin(), str.end(), str.begin(), morph::to_upper());
         }
@@ -605,7 +604,7 @@ namespace morph
          * Remove filename-forbidden characters from str (including directory specifiers
          * '\' and '/'.
          */
-        static void conditionAsFilename (std::string& str)
+        void conditionAsFilename (std::string& str)
         {
             std::string::size_type ptr = std::string::npos;
             while ((ptr = str.find_last_not_of (COMMON_FILE_SAFE_CHARS, ptr)) != std::string::npos) {
@@ -619,7 +618,7 @@ namespace morph
          * replacing disallowed characters with '_' and making sure it doesn't start
          * with a numeral.
          */
-        static void conditionAsXmlTag (std::string& str)
+        void conditionAsXmlTag (std::string& str)
         {
             // 1) Replace chars which are disallowed in an XML tag
             std::string::size_type ptr = std::string::npos;
@@ -658,9 +657,9 @@ namespace morph
          * separator with nothing after it will NOT cause an additional empty value in
          * the returned vector. See also splitStringWithEncs
          */
-        static std::vector<std::string> stringToVector (const std::string& s,
-                                                        const std::string& separator,
-                                                        const bool ignoreTrailingEmptyVal = true)
+        std::vector<std::string> stringToVector (const std::string& s,
+                                                 const std::string& separator,
+                                                 const bool ignoreTrailingEmptyVal = true)
         {
             if (separator.empty()) {
                 throw std::runtime_error ("Can't split the string; the separator is empty.");
@@ -697,7 +696,7 @@ namespace morph
          * Stat a file Windows style, return true if the file exists and is any kind of
          * file except a directory.
          */
-        static bool fileExists (const std::string& path)
+        bool fileExists (const std::string& path)
         {
             struct _stat* buf = NULL;
 
@@ -720,14 +719,14 @@ namespace morph
         }
 
         // Check if a directory exists, windows style
-        static bool dirExists (const std::string& path)
+        bool dirExists (const std::string& path)
         {
             struct stat buffer;
             return (stat (path.c_str(), &buffer) == 0);
         }
 
         // Create a directory, C++17 style. Hardly needs a wrapper. Could replace unix createDir with this.
-        static void createDir (const std::string& path)
+        void createDir (const std::string& path)
         {
             std::filesystem::create_directories (path);
         }
@@ -738,7 +737,7 @@ namespace morph
          * Stat a file, return true if the file exists and is any kind of file except a
          * directory.
          */
-        static bool fileExists (const std::string& path)
+        bool fileExists (const std::string& path)
         {
             struct stat * buf = NULL;
 
@@ -773,7 +772,7 @@ namespace morph
          * is a hanging symlink, fileExists returns false, if file is a symlink pointing
          * to a regular file, fileExists returns true.
          */
-        static bool regfileExists (const std::string& path)
+        bool regfileExists (const std::string& path)
         {
             struct stat * buf = NULL;
 
@@ -798,7 +797,7 @@ namespace morph
          * Like regfileExists, but also checks if the file has the "executable by user"
          * bit set (chmod u+x).
          */
-        static bool userExefileExists (const std::string& path)
+        bool userExefileExists (const std::string& path)
         {
             struct stat * buf = NULL;
 
@@ -822,7 +821,7 @@ namespace morph
         /*!
          * Like regfileExists, but for block devices
          */
-        static bool blockdevExists (const std::string& path)
+        bool blockdevExists (const std::string& path)
         {
             struct stat * buf = NULL;
 
@@ -846,7 +845,7 @@ namespace morph
         /*!
          * Like regfileExists, but for sockets
          */
-        static bool socketExists (const std::string& path)
+        bool socketExists (const std::string& path)
         {
             struct stat * buf = NULL;
 
@@ -870,7 +869,7 @@ namespace morph
         /*!
          * Like regfileExists, but for fifos
          */
-        static bool fifoExists (const std::string& path)
+        bool fifoExists (const std::string& path)
         {
             struct stat * buf = NULL;
 
@@ -894,7 +893,7 @@ namespace morph
         /*!
          * Like regfileExists, but for char devices
          */
-        static bool chardevExists (const std::string& path)
+        bool chardevExists (const std::string& path)
         {
             struct stat * buf = NULL;
 
@@ -918,7 +917,7 @@ namespace morph
         /*!
          * Does a link exist?
          */
-        static bool linkExists (const std::string& path)
+        bool linkExists (const std::string& path)
         {
             struct stat * buf = NULL;
 
@@ -942,7 +941,7 @@ namespace morph
         /*!
          * Stat a directory, return true if the directory exists.
          */
-        static bool dirExists (const std::string& path)
+        bool dirExists (const std::string& path)
         {
             DIR* d;
             if (!(d = opendir (path.c_str()))) {
@@ -976,9 +975,9 @@ namespace morph
          * \param gid The group id to apply to the directory. This is applied even if
          * the directory was not created. This is NOT applied if it is set to -1.
          */
-        static void createDir (const std::string& path,
-                               const mode_t mode = 0775,
-                               const int uid = -1, const int gid = -1)
+        void createDir (const std::string& path,
+                        const mode_t mode = 0775,
+                        const int uid = -1, const int gid = -1)
         {
             if (path.empty()) { return; }
 
@@ -1104,7 +1103,7 @@ namespace morph
         /*!
          * Attempt to rmdir path.
          */
-        static void removeDir (const std::string& path)
+        void removeDir (const std::string& path)
         {
             int rtn = rmdir (path.c_str());
             if (rtn) {
@@ -1159,13 +1158,13 @@ namespace morph
          *
          * \return true if directory was created, false if directory already existed
          */
-        static bool createDirIf (const std::string& path)
+        bool createDirIf (const std::string& path)
         {
             std::stringstream ee;
 
-            if (morph::Tools::dirExists (path) == false) {
-                morph::Tools::createDir (path);
-                if (morph::Tools::dirExists (path) == false) {
+            if (morph::tools::dirExists (path) == false) {
+                morph::tools::createDir (path);
+                if (morph::tools::dirExists (path) == false) {
                     ee << "Failed to create the directory " << path;
                     throw std::runtime_error (ee.str());
                 }
@@ -1178,7 +1177,7 @@ namespace morph
         /*!
          * Set the permissions for the provided file
          */
-        static void setPermissions (const std::string& filepath, const mode_t mode)
+        void setPermissions (const std::string& filepath, const mode_t mode)
         {
             int rtn = chmod (filepath.c_str(), mode);
             if (rtn) {
@@ -1236,7 +1235,7 @@ namespace morph
          * \param filepath File to check.  \param accessType Indicates which access
          * type(s) to check. r=read, w=write.
          */
-        static bool checkAccess (const std::string& filepath, const std::string& accessType)
+        bool checkAccess (const std::string& filepath, const std::string& accessType)
         {
             if (accessType.find("r") != std::string::npos) {
                 std::ifstream in;
@@ -1260,9 +1259,9 @@ namespace morph
         /*!
          * Set the ownership for the provided file
          */
-        static void setOwnership (const std::string& filepath,
-                                  const int uid = -1,
-                                  const int gid = -1)
+        void setOwnership (const std::string& filepath,
+                           const int uid = -1,
+                           const int gid = -1)
         {
             int rtn = chown (filepath.c_str(), uid, gid);
             if (rtn) {
@@ -1315,7 +1314,7 @@ namespace morph
         /*!
          * Touch the file.
          */
-        static void touchFile (const std::string& path)
+        void touchFile (const std::string& path)
         {
             std::ofstream f;
             f.open (path.c_str(), std::ios::out|std::ios::app);
@@ -1344,39 +1343,25 @@ namespace morph
 #define COPYFILE_BUFFERSIZE    32768
 #define COPYFILE_BUFFERSIZE_MM 32767 // MM: Minus Minus
 #ifndef __WIN__
-        static void copyFile (const std::string& from, const std::string& to)
-        {
-            std::ofstream out;
-
-            out.open (to.c_str(), std::ios::out|std::ios::trunc);
-            if (!out.is_open()) {
-                std::string emsg = "Tools::copyFile(): Couldn't open TO file '" + to + "'";
-                throw std::runtime_error (emsg);
-            }
-
-            Tools::copyFile (from, out);
-
-            out.close();
-        }
-        static void copyFile (const std::string& from, std::ostream& to)
+        void copyFile (const std::string& from, std::ostream& to)
         {
             std::ifstream in;
 
             // Test that "from" is a regular file
-            if (!Tools::regfileExists (from)) {
+            if (!tools::regfileExists (from)) {
                 std::stringstream ee;
-                ee << "Tools::copyFile(): FROM file '"
+                ee << "tools::copyFile(): FROM file '"
                    << from << "' is not a regular file";
                 throw std::runtime_error (ee.str());
             }
 
             in.open (from.c_str(), std::ios::in);
             if (!in.is_open()) {
-                throw std::runtime_error ("Tools::copyFile(): Couldn't open FROM file");
+                throw std::runtime_error ("tools::copyFile(): Couldn't open FROM file");
             }
 
             if (!to) {
-                throw std::runtime_error ("Tools::copyFile(): Error occurred in TO stream");
+                throw std::runtime_error ("tools::copyFile(): Error occurred in TO stream");
             }
 
             char buf[64];
@@ -1394,8 +1379,22 @@ namespace morph
             // Finally, close the input.
             in.close();
         }
+        void copyFile (const std::string& from, const std::string& to)
+        {
+            std::ofstream out;
+
+            out.open (to.c_str(), std::ios::out|std::ios::trunc);
+            if (!out.is_open()) {
+                std::string emsg = "tools::copyFile(): Couldn't open TO file '" + to + "'";
+                throw std::runtime_error (emsg);
+            }
+
+            tools::copyFile (from, out);
+
+            out.close();
+        }
 #endif // __WIN__
-        static void copyFile (FILE* from, const std::string& to)
+        void copyFile (FILE* from, const std::string& to)
         {
             FILE * ofp = NULL;
             long pos;
@@ -1407,19 +1406,19 @@ namespace morph
 
             ofp = fopen (to.c_str(), "w");
             if (!ofp) {
-                throw std::runtime_error ("Tools::copyFile(): Can't open output for writing");
+                throw std::runtime_error ("tools::copyFile(): Can't open output for writing");
             }
             while ((bytes = fread (inputBuffer, 1, COPYFILE_BUFFERSIZE_MM, from)) > 0) {
                 output = fwrite (inputBuffer, 1, bytes, ofp);
                 if (output != bytes) {
                     fseek (from, pos, SEEK_SET); /* reset input */
-                    throw std::runtime_error ("Tools::copyFile(): Error writing data");
+                    throw std::runtime_error ("tools::copyFile(): Error writing data");
                 }
             }
             fclose (ofp); /* close output */
             fseek (from, pos, SEEK_SET); /* reset input */
         }
-        static void copyFile (std::istream& from, const std::string& to)
+        void copyFile (std::istream& from, const std::string& to)
         {
             char buf[64];
             std::ofstream f;
@@ -1434,20 +1433,12 @@ namespace morph
                 f.write (buf, from.gcount());
             }
         }
-#ifndef __WIN__
-        static void copyFile (const std::string& from, FILE* to)
-        {
-            FILE* ifp = fopen (from.c_str(), "r");
-            Tools::copyFile (ifp, to);
-            fclose (ifp);
-        }
-#endif
 
         /*!
          * Copy from one file pointer to another. Both are expected to be open, neither
          * is closed after the copy.
          */
-        static void copyFile (FILE* from, FILE* to)
+        void copyFile (FILE* from, FILE* to)
         {
             long pos;
             int bytes=0, output=0;
@@ -1457,22 +1448,31 @@ namespace morph
             pos = ftell (from);
 
             if (!to) {
-                throw std::runtime_error ("Tools::copyFile(): output is not open for writing");
+                throw std::runtime_error ("tools::copyFile(): output is not open for writing");
             }
             while ((bytes = fread (inputBuffer, 1, COPYFILE_BUFFERSIZE_MM, from)) > 0) {
                 output = fwrite (inputBuffer, 1, bytes, to);
                 if (output != bytes) {
                     fseek (from, pos, SEEK_SET); /* reset input */
-                    throw std::runtime_error ("Tools::copyFile(): Error writing data");
+                    throw std::runtime_error ("tools::copyFile(): Error writing data");
                 }
             }
             fseek (from, pos, SEEK_SET); /* reset input */
         }
 
+#ifndef __WIN__
+        void copyFile (const std::string& from, FILE* to)
+        {
+            FILE* ifp = fopen (from.c_str(), "r");
+            tools::copyFile (ifp, to);
+            fclose (ifp);
+        }
+#endif
+
         /*!
          * Copy a file from an input stream into a string.
          */
-        static void copyFileToString (std::istream& from, std::string& to)
+        void copyFileToString (std::istream& from, std::string& to)
         {
             char buf[64];
             while (!from.eof()) {
@@ -1481,7 +1481,7 @@ namespace morph
             }
         }
 
-        static void copyStringToFile (const std::string& fromstr, const std::string& to)
+        void copyStringToFile (const std::string& fromstr, const std::string& to)
         {
             std::ofstream out;
             out.open (to.c_str(), std::ios::out|std::ios::trunc);
@@ -1495,7 +1495,7 @@ namespace morph
         }
 
         //! Append the file from to the filestream appendTo
-        static void appendFile (const std::string& from, std::ostream& appendTo)
+        void appendFile (const std::string& from, std::ostream& appendTo)
         {
             if (!appendTo.good()) {
                 throw std::runtime_error ("Can't append to appendTo, it's not good()");
@@ -1503,7 +1503,7 @@ namespace morph
             std::ifstream in;
             in.open (from.c_str(), std::ios::in);
             if (!in.is_open()) {
-                throw std::runtime_error ("Tools::appendFile(): Couldn't open FROM file");
+                throw std::runtime_error ("tools::appendFile(): Couldn't open FROM file");
             }
 
             char buf[64];
@@ -1516,7 +1516,7 @@ namespace morph
         }
 
         //! Append the content of the filestream from to the filestream appendTo
-        static void appendFile (std::istream& from, std::ostream& appendTo)
+        void appendFile (std::istream& from, std::ostream& appendTo)
         {
             if (!appendTo.good()) {
                 throw std::runtime_error ("Can't append to appendTo, it's not good()");
@@ -1531,7 +1531,7 @@ namespace morph
         }
 
         //! Append the content of the filestream from to the file at appendTo
-        static void appendFile (std::istream& from, const std::string& appendTo)
+        void appendFile (std::istream& from, const std::string& appendTo)
         {
             std::ofstream f;
             f.open (appendTo.c_str(), std::ios::out|std::ios::app);
@@ -1550,7 +1550,7 @@ namespace morph
         }
 
         //! Append the file at path from to the file at path appendTo
-        static void appendFile (const std::string& from, const std::string& appendTo)
+        void appendFile (const std::string& from, const std::string& appendTo)
         {
             std::ifstream fin;
             fin.open (from.c_str(), std::ios::in);
@@ -1576,88 +1576,11 @@ namespace morph
             }
         }
 
-#ifndef __WIN__
-        /*!
-         * Make a copy of \param bytes bytes of the file at \param original to the file
-         * \param truncated.
-         */
-        static void truncateFile (const std::string& original,
-                                  const std::string& truncated,
-                                  const unsigned int bytes)
-        {
-            std::ofstream out;
-
-            out.open (truncated.c_str(), std::ios::out|std::ios::trunc);
-            if (!out.is_open()) {
-                std::string emsg = "Tools::copyFile(): Couldn't open TRUNCATED file '" + truncated + "'";
-                throw std::runtime_error (emsg);
-            }
-
-            std::ifstream in;
-
-            // Test that "original" is a regular file
-            if (!Tools::regfileExists (original)) {
-                std::stringstream ee;
-                ee << "Tools::truncateFile(): ORIGINAL file '"
-                   << original << "' is not a regular file";
-                throw std::runtime_error (ee.str());
-            }
-
-            in.open (original.c_str(), std::ios::in);
-            if (!in.is_open()) {
-                throw std::runtime_error ("Tools::truncateFile(): Couldn't open ORIGINAL file");
-            }
-
-            if (!out) {
-                throw std::runtime_error ("Tools::truncateFile(): Error occurred in TRUNCATED stream");
-            }
-
-            unsigned int loops(0);
-            unsigned int maxLoops = bytes / 63;
-            unsigned int remaining = bytes % 63;
-            char buf[64];
-            while (!in.eof() && loops < maxLoops) {
-                in.read (buf, 63);
-                // Find out how many were read
-                unsigned int bytesCopied = in.gcount();
-                // and write that many to the output stream
-                out.write (buf, bytesCopied);
-                ++loops;
-            }
-            // Copy remaining
-            if (!in.eof()) {
-                in.read (buf, remaining);
-                // Find out how many were read
-                unsigned int bytesCopied = in.gcount();
-                if (bytesCopied != remaining) {
-                    throw std::runtime_error ("copy error bytesCopied != remaining");
-                }
-                // and write that many to the output stream
-                out.write (buf, bytesCopied);
-            }
-
-            // Make sure output buffer is flushed.
-            out.flush();
-
-            // Finally, close the input and output
-            in.close();
-            out.close();
-        }
-
-        /*!
-         * Move a file. Throw exception on failure.
-         */
-        static void moveFile (const std::string& from, const std::string& to)
-        {
-            Tools::copyFile (from, to);
-            Tools::unlinkFile (from);
-        }
-#endif
         /*!
          * Call unlink() on the given file path fpath. If unlinking fails, throw a
          * descriptive error based on the errno which was set on unlink's return.
          */
-        static void unlinkFile (const std::string& fpath)
+        void unlinkFile (const std::string& fpath)
         {
             int rtn = unlink (fpath.c_str());
             if (rtn) {
@@ -1709,38 +1632,79 @@ namespace morph
 
 #ifndef __WIN__
         /*!
-         * Unlink files in dirPath which are older than olerThanSeconds and which
-         * contain filePart.
+         * Make a copy of \param bytes bytes of the file at \param original to the file
+         * \param truncated.
          */
-        static void clearoutDir (const std::string& dirPath,
-                                 const unsigned int olderThanSeconds = 0,
-                                 const std::string& filePart = "")
+        void truncateFile (const std::string& original,
+                           const std::string& truncated,
+                           const unsigned int bytes)
         {
-            std::vector<std::string> files;
-            try {
-                Tools::readDirectoryTree (files, dirPath, olderThanSeconds);
-            } catch (const std::exception& e) {
-                // Failed to read dir tree
-                return;
-            }
-            std::vector<std::string>::iterator i = files.begin();
-            while (i != files.end()) {
-                std::string fpath = dirPath + "/" + *i;
-                try {
-                    if (filePart.empty()) {
-                        Tools::unlinkFile (fpath);
-                    } else {
-                        // Must find filePart to unlink
-                        if (i->find (filePart, 0) != std::string::npos) {
-                            Tools::unlinkFile (fpath);
-                        } // else do nothing
-                    }
+            std::ofstream out;
 
-                } catch (const std::exception& e) {
-                    // Failed to unlink *i
-                }
-                ++i;
+            out.open (truncated.c_str(), std::ios::out|std::ios::trunc);
+            if (!out.is_open()) {
+                std::string emsg = "tools::copyFile(): Couldn't open TRUNCATED file '" + truncated + "'";
+                throw std::runtime_error (emsg);
             }
+
+            std::ifstream in;
+
+            // Test that "original" is a regular file
+            if (!tools::regfileExists (original)) {
+                std::stringstream ee;
+                ee << "tools::truncateFile(): ORIGINAL file '"
+                   << original << "' is not a regular file";
+                throw std::runtime_error (ee.str());
+            }
+
+            in.open (original.c_str(), std::ios::in);
+            if (!in.is_open()) {
+                throw std::runtime_error ("tools::truncateFile(): Couldn't open ORIGINAL file");
+            }
+
+            if (!out) {
+                throw std::runtime_error ("tools::truncateFile(): Error occurred in TRUNCATED stream");
+            }
+
+            unsigned int loops(0);
+            unsigned int maxLoops = bytes / 63;
+            unsigned int remaining = bytes % 63;
+            char buf[64];
+            while (!in.eof() && loops < maxLoops) {
+                in.read (buf, 63);
+                // Find out how many were read
+                unsigned int bytesCopied = in.gcount();
+                // and write that many to the output stream
+                out.write (buf, bytesCopied);
+                ++loops;
+            }
+            // Copy remaining
+            if (!in.eof()) {
+                in.read (buf, remaining);
+                // Find out how many were read
+                unsigned int bytesCopied = in.gcount();
+                if (bytesCopied != remaining) {
+                    throw std::runtime_error ("copy error bytesCopied != remaining");
+                }
+                // and write that many to the output stream
+                out.write (buf, bytesCopied);
+            }
+
+            // Make sure output buffer is flushed.
+            out.flush();
+
+            // Finally, close the input and output
+            in.close();
+            out.close();
+        }
+
+        /*!
+         * Move a file. Throw exception on failure.
+         */
+        void moveFile (const std::string& from, const std::string& to)
+        {
+            tools::copyFile (from, to);
+            tools::unlinkFile (from);
         }
 
         /*!
@@ -1767,10 +1731,10 @@ namespace morph
          * If olderThanSeconds is passed in with a non-zero value, then only files older
          * than olderThanSeconds will be returned.
          */
-        static void readDirectoryTree (std::vector<std::string>& vec,
-                                       const std::string& baseDirPath,
-                                       const std::string& subDirPath,
-                                       const unsigned int olderThanSeconds = 0)
+        void readDirectoryTree (std::vector<std::string>& vec,
+                                const std::string& baseDirPath,
+                                const std::string& subDirPath,
+                                const unsigned int olderThanSeconds = 0)
         {
             DIR* d;
             struct dirent *ep;
@@ -1832,8 +1796,7 @@ namespace morph
                     } else {
                         newPath = sd + "/" + ep->d_name;
                     }
-                    Tools::readDirectoryTree (vec, baseDirPath,
-                                              newPath.c_str(), olderThanSeconds);
+                    tools::readDirectoryTree (vec, baseDirPath, newPath.c_str(), olderThanSeconds);
                 } else {
                     // Non-directories are simply added to the vector
                     std::string newEntry;
@@ -1874,11 +1837,46 @@ namespace morph
          * If olderThanSeconds is passed in with a non-zero value, then only files older
          * than olderThanSeconds will be returned.
          */
-        static void readDirectoryTree (std::vector<std::string>& vec,
-                                       const std::string& dirPath,
-                                       const unsigned int olderThanSeconds = 0)
+        void readDirectoryTree (std::vector<std::string>& vec,
+                                const std::string& dirPath,
+                                const unsigned int olderThanSeconds = 0)
         {
-            Tools::readDirectoryTree (vec, dirPath, "", olderThanSeconds);
+            tools::readDirectoryTree (vec, dirPath, "", olderThanSeconds);
+        }
+
+        /*!
+         * Unlink files in dirPath which are older than olerThanSeconds and which
+         * contain filePart.
+         */
+        void clearoutDir (const std::string& dirPath,
+                          const unsigned int olderThanSeconds = 0,
+                          const std::string& filePart = "")
+        {
+            std::vector<std::string> files;
+            try {
+                tools::readDirectoryTree (files, dirPath, olderThanSeconds);
+            } catch (const std::exception& e) {
+                // Failed to read dir tree
+                return;
+            }
+            std::vector<std::string>::iterator i = files.begin();
+            while (i != files.end()) {
+                std::string fpath = dirPath + "/" + *i;
+                try {
+                    if (filePart.empty()) {
+                        tools::unlinkFile (fpath);
+                    } else {
+                        // Must find filePart to unlink
+                        if (i->find (filePart, 0) != std::string::npos) {
+                            tools::unlinkFile (fpath);
+                        } // else do nothing
+                    }
+
+                } catch (const std::exception& e) {
+                    // Failed to unlink *i
+                }
+                ++i;
+            }
         }
 
         /*!
@@ -1895,8 +1893,7 @@ namespace morph
          *
          * The set dset would be filled only with dir2, dir1.
          */
-        static void readDirectoryDirs (std::set<std::string>& dset,
-                                       const std::string& dirPath)
+        void readDirectoryDirs (std::set<std::string>& dset, const std::string& dirPath)
         {
             DIR* d;
             struct dirent *ep;
@@ -1932,9 +1929,9 @@ namespace morph
          * The base directory path baseDirPath should have NO TRAILING '/'. The
          * subDirPath should have NO INITIAL '/' character.
          */
-        static void readDirectoryEmptyDirs (std::set<std::string>& dset,
-                                            const std::string& baseDirPath,
-                                            const std::string& subDir = "")
+        void readDirectoryEmptyDirs (std::set<std::string>& dset,
+                                     const std::string& baseDirPath,
+                                     const std::string& subDir = "")
         {
             DIR* d;
             struct dirent *ep;
@@ -1969,35 +1966,20 @@ namespace morph
                     } else {
                         newSubDir = subDir + "/" + static_cast<const char*>(ep->d_name);
                     }
-                    Tools::readDirectoryEmptyDirs (dset, baseDirPath, newSubDir);
+                    tools::readDirectoryEmptyDirs (dset, baseDirPath, newSubDir);
                 }
             }
 
             if (levelDirCount == 0) {
                 // No directories found here, check for files
                 std::vector<std::string> foundfiles;
-                Tools::readDirectoryTree (foundfiles, dirPath);
+                tools::readDirectoryTree (foundfiles, dirPath);
                 if (foundfiles.empty()) {
                     dset.insert (subDir);
                 } // else DBG ("NOT adding " << subDir << " as " << dirPath << " contains " << foundfiles.size() << " files");
             }
 
             (void) closedir (d);
-        }
-
-        /*!
-         * Attempts to remove all the unused directories in a tree.
-         *
-         * May throw exceptions.
-         */
-        static void removeUnusedDirs (std::set<std::string>& dset, const std::string& dirPath)
-        {
-            std::set<std::string> onepass;
-            do {
-                onepass.clear();
-                Tools::removeEmptySubDirs (onepass, dirPath);
-                dset.insert (onepass.begin(), onepass.end());
-            } while (!onepass.empty());
         }
 
         /*!
@@ -2010,9 +1992,9 @@ namespace morph
          * This does one "pass" - it removes all empty end-of-directories in a tree. If
          * you want to remove all "unused" directories in a tree, use removeUnusedDirs()
          */
-        static void removeEmptySubDirs (std::set<std::string>& dset,
-                                        const std::string& baseDirPath,
-                                        const std::string& subDir = "")
+        void removeEmptySubDirs (std::set<std::string>& dset,
+                                 const std::string& baseDirPath,
+                                 const std::string& subDir = "")
         {
             DIR* d;
             struct dirent *ep;
@@ -2047,18 +2029,18 @@ namespace morph
                     } else {
                         newSubDir = subDir + "/" + static_cast<const char*>(ep->d_name);
                     }
-                    Tools::removeEmptySubDirs (dset, baseDirPath, newSubDir);
+                    tools::removeEmptySubDirs (dset, baseDirPath, newSubDir);
                 }
             }
 
             if (levelDirCount == 0) {
                 // No directories found here, check for files
                 std::vector<std::string> foundfiles;
-                Tools::readDirectoryTree (foundfiles, dirPath);
+                tools::readDirectoryTree (foundfiles, dirPath);
 
                 if (foundfiles.empty()) {
                     if (!subDir.empty()) {
-                        Tools::removeDir (dirPath);
+                        tools::removeDir (dirPath);
                         dset.insert (subDir);
                     }
                 } // else "NOT Removing " << dirPath << " which contains " << foundfiles.size() << " files";
@@ -2068,9 +2050,24 @@ namespace morph
         }
 
         /*!
+         * Attempts to remove all the unused directories in a tree.
+         *
+         * May throw exceptions.
+         */
+        void removeUnusedDirs (std::set<std::string>& dset, const std::string& dirPath)
+        {
+            std::set<std::string> onepass;
+            do {
+                onepass.clear();
+                tools::removeEmptySubDirs (onepass, dirPath);
+                dset.insert (onepass.begin(), onepass.end());
+            } while (!onepass.empty());
+        }
+
+        /*!
          * Return a datestamp - st_mtime; the file modification time for the given file.
          */
-        static std::string fileModDatestamp (const std::string& filename)
+        std::string fileModDatestamp (const std::string& filename)
         {
             struct stat * buf = NULL;
             std::stringstream datestamp;
@@ -2092,9 +2089,9 @@ namespace morph
         /*!
          * Check whether the specified files differ.
          */
-        static bool filesDiffer (const std::string& first, const std::string& second)
+        bool filesDiffer (const std::string& first, const std::string& second)
         {
-            if (!(Tools::regfileExists (first) && Tools::regfileExists (second))) {
+            if (!(tools::regfileExists (first) && tools::regfileExists (second))) {
                 throw std::runtime_error ("Error: expecting two regular files");
             }
             std::string diffcmd = "diff " + first + " " + second + " >/dev/null 2>&1";
@@ -2107,7 +2104,7 @@ namespace morph
          * Given a path like /path/to/file in str, remove all the preceding /path/to/
          * stuff to leave just the filename.
          */
-        static void stripUnixPath (std::string& unixPath)
+        void stripUnixPath (std::string& unixPath)
         {
             std::string::size_type pos (unixPath.find_last_of ('/'));
             if (pos != std::string::npos) { unixPath = unixPath.substr (++pos); }
@@ -2117,7 +2114,7 @@ namespace morph
          * Given a path like /path/to/file in str, remove the final filename, leaving
          * just the path, "/path/to".
          */
-        static void stripUnixFile (std::string& unixPath)
+        void stripUnixFile (std::string& unixPath)
         {
             std::string::size_type pos (unixPath.find_last_of ('/'));
             if (pos != std::string::npos) { unixPath = unixPath.substr (0, pos); }
@@ -2128,12 +2125,12 @@ namespace morph
          * of a pair of strings, returning the filename as the second element. The
          * unixPath could then be reconstructed as rt.first + string("/") + rtn.second.
          */
-        static std::pair<std::string, std::string> getUnixPathAndFile (const std::string& unixPath)
+        std::pair<std::string, std::string> getUnixPathAndFile (const std::string& unixPath)
         {
             std::string fpath(unixPath);
             std::string fname(unixPath);
-            morph::Tools::stripUnixFile (fpath);
-            morph::Tools::stripUnixPath (fname);
+            morph::tools::stripUnixFile (fpath);
+            morph::tools::stripUnixPath (fname);
             return std::make_pair (fpath, fname);
         }
 
@@ -2141,7 +2138,7 @@ namespace morph
          * Given a path like /path/to/file.ext or just file.ext in str, remove the file
          * suffix.
          */
-        static void stripFileSuffix (std::string& unixPath)
+        void stripFileSuffix (std::string& unixPath)
         {
             std::string::size_type pos (unixPath.rfind('.'));
             if (pos != std::string::npos) {
@@ -2161,7 +2158,7 @@ namespace morph
         /*!
          * Return the current year.
          */
-        static unsigned int yearNow()
+        unsigned int yearNow()
         {
             time_t curtime; // Current time
             struct tm* t;
@@ -2174,7 +2171,7 @@ namespace morph
         /*!
          * Return the current month (1==Jan, 12==Dec).
          */
-        static unsigned int monthNow()
+        unsigned int monthNow()
         {
             time_t curtime; // Current time
             struct tm* t;
@@ -2187,7 +2184,7 @@ namespace morph
         /*!
          * Return the current 'day of month' (the tm_mday field of a struct tm).
          */
-        static unsigned int dateNow()
+        unsigned int dateNow()
         {
             time_t curtime; // Current time
             struct tm* t;
@@ -2202,7 +2199,7 @@ namespace morph
          * string. If shortFormat is true, return "Jan", "Dec", etc., otherwise
          * "January", "December" etc.
          */
-        static std::string monthStr (const int month, const bool shortFormat=false)
+        std::string monthStr (const int month, const bool shortFormat=false)
         {
             std::string rtn("");
 
@@ -2299,7 +2296,7 @@ namespace morph
          * Give the number n, return the suitable (english) suffix. E.g. "st" for 1,
          * "nd" for 22 etc.
          */
-        static std::string suffix (const int n)
+        std::string suffix (const int n)
         {
             std::string suf("th"); // Most numbers end in "th" (in English)
             int leastSig = n%10;     // Right most, least significant numeral
@@ -2334,7 +2331,7 @@ namespace morph
          * as the separator. If the fifth character IS a numeral, then the date format
          * is read in as YYYYMMDD.
          */
-        static time_t dateToNum (const std::string& dateStr)
+        time_t dateToNum (const std::string& dateStr)
         {
             char separator = '\0';
 
@@ -2420,7 +2417,7 @@ namespace morph
          *
          * The 3rd char after the space is read in and used as time separator
          */
-        static time_t dateTimeToNum (const std::string& dateTimeStr)
+        time_t dateTimeToNum (const std::string& dateTimeStr)
         {
             char dateSeparator = '\0';
             char timeSeparator = '\0';
@@ -2523,10 +2520,10 @@ namespace morph
          * Convert a unix epoch number to a date/time of form 2009-02-16 02:03:01, using
          * dateSeparator to delimit the date and timeSeparator to delimit the time.
          */
-        static std::string numToDateTime (const time_t epochSeconds,
-                                          const char dateSeparator = '\0',
-                                          const char timeSeparator = '\0',
-                                          const char midSeparator = ' ')
+        std::string numToDateTime (const time_t epochSeconds,
+                                   const char dateSeparator = '\0',
+                                   const char timeSeparator = '\0',
+                                   const char midSeparator = ' ')
         {
             if (epochSeconds == 0) { return "unknown"; }
 
@@ -2578,7 +2575,7 @@ namespace morph
          * Convert a unix epoch number to a date of form 2009-02-16, using separator to
          * delimit the date.
          */
-        static std::string numToDate (const time_t epochSeconds, const char separator = '\0')
+        std::string numToDate (const time_t epochSeconds, const char separator = '\0')
         {
             time_t es = epochSeconds;
             struct tm* t = static_cast<struct tm*>(malloc (sizeof (struct tm)));
@@ -2617,7 +2614,7 @@ namespace morph
         /*!
          * Return the current time in neat string format.
          */
-        static std::string timeNow()
+        std::string timeNow()
         {
             time_t curtime;
             struct tm* loctime;
@@ -2631,9 +2628,9 @@ namespace morph
          * part of a filename.
          */
 #ifndef __WIN__
-        static std::string filenameTimestamp()
+        std::string filenameTimestamp()
         {
-            return morph::Tools::numToDateTime (time(NULL), '\0', '\0', '_');
+            return morph::tools::numToDateTime (time(NULL), '\0', '\0', '_');
         }
 #endif
         /*!
@@ -2650,144 +2647,132 @@ namespace morph
          * used to escape the enclosure chars.
          */
         template <typename ST>
-        static std::vector<ST> splitStringWithEncs (const ST& s,
-                                                    const ST& separatorChars = ST(";, "),
-                                                    const ST& enclosureChars = ST("\"'"),
-                                                    const typename ST::value_type& escapeChar = typename ST::value_type(0));
+        std::vector<ST> splitStringWithEncs (const ST& s,
+                                             const ST& separatorChars = ST(";, "),
+                                             const ST& enclosureChars = ST("\"'"),
+                                             const typename ST::value_type& escapeChar = typename ST::value_type(0))
+        {
+            // Run through the string, searching for separator and
+            // enclosure chars and finding tokens based on those.
 
-    }; // class Tools
+            std::vector<ST> theVec;
+            ST entry("");
+            typename ST::size_type a=0, b=0, c=0;
+            ST sepsAndEncsAndEsc = separatorChars + enclosureChars;
+            sepsAndEncsAndEsc += escapeChar;
 
-} // morph namespace
+            typename ST::size_type sz = s.size();
+            while (a < sz) {
 
-/*!
- * Templated function splitStringWithEncs implementation.
- */
-template <typename ST>
-std::vector<ST>
-morph::Tools::splitStringWithEncs (const ST& s,
-                                   const ST& separatorChars,
-                                   const ST& enclosureChars,
-                                   const typename ST::value_type& escapeChar) // or '\0'
-{
-    // Run through the string, searching for separator and
-    // enclosure chars and finding tokens based on those.
+                // If true, then the thing we're searching for is an enclosure
+                // char, otherwise, it's a separator char.
+                bool nextIsEnc(false);
+                typename ST::value_type currentEncChar = 0;
 
-    std::vector<ST> theVec;
-    ST entry("");
-    typename ST::size_type a=0, b=0, c=0;
-    ST sepsAndEncsAndEsc = separatorChars + enclosureChars;
-    sepsAndEncsAndEsc += escapeChar;
-
-    typename ST::size_type sz = s.size();
-    while (a < sz) {
-
-        // If true, then the thing we're searching for is an enclosure
-        // char, otherwise, it's a separator char.
-        bool nextIsEnc(false);
-        typename ST::value_type currentEncChar = 0;
-
-        if (a == 0) { // First field.
-            if (escapeChar && s[a] == escapeChar) {
-                // First char is an escape char - skip this and next
-                ++a; ++a;
-                continue;
-            } else if ((enclosureChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
-                // First char is an enclosure char.
-                nextIsEnc = true;
-                currentEncChar = s[a];
-                ++a; // Skip the enclosure char
-            } else if ((separatorChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
-                // First char is a ',' This special case means that we insert an entry for the current ',' and step past it.
-                theVec.push_back ("");
-                ++a;
-
-            } // else first char is a normal char or a separator.
-
-        } else { // Not first field
-
-            if ((a = s.find_first_of (sepsAndEncsAndEsc, a)) == ST::npos) {
-                theVec.push_back (s);
-                return theVec;
-            }
-
-            else if (escapeChar && s[a] == escapeChar) {
-                // it's an escape char - skip this and next
-                ++a; ++a;
-                continue;
-            } else if ((enclosureChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
-                // it's an enclosure char.
-                nextIsEnc = true;
-                currentEncChar = s[a];
-                ++a; // Skip the enclosure char
-            } else if ((separatorChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
-                // It's a field separator
-                ++a; // Skip the separator
-                if (a >= sz) {
-                    // Special case - a trailing separator character - add an empty
-                    // value to the return vector of tokens.
-                    theVec.push_back ("");
-                } else {
-                    // a < sz, so now check if we've hit an escape char
-                    if ((enclosureChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
-                        // Enclosure char following sep char
+                if (a == 0) { // First field.
+                    if (escapeChar && s[a] == escapeChar) {
+                        // First char is an escape char - skip this and next
+                        ++a; ++a;
+                        continue;
+                    } else if ((enclosureChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
+                        // First char is an enclosure char.
                         nextIsEnc = true;
                         currentEncChar = s[a];
                         ++a; // Skip the enclosure char
+                    } else if ((separatorChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
+                        // First char is a ',' This special case means that we insert an entry for the current ',' and step past it.
+                        theVec.push_back ("");
+                        ++a;
+
+                    } // else first char is a normal char or a separator.
+
+                } else { // Not first field
+
+                    if ((a = s.find_first_of (sepsAndEncsAndEsc, a)) == ST::npos) {
+                        theVec.push_back (s);
+                        return theVec;
                     }
-                }
-            } // else unexpected case.
-        }
 
-        // Check we didn't over-run
-        if (a >= sz) { break; }
-
-        // Now get the token
-        typename ST::size_type range = ST::npos;
-        if (nextIsEnc) {
-            c = a;
-            while ((b = s.find_first_of (currentEncChar, c)) != ST::npos) {
-                // FIXME: Check we didn't find an escaped enclosureChar.
-                if (escapeChar) {
-                    c = b; --c;
-                    if (s[c] == escapeChar) {
-                        // Skip b which is an escaped enclosure char
-                        c = b; ++c;
+                    else if (escapeChar && s[a] == escapeChar) {
+                        // it's an escape char - skip this and next
+                        ++a; ++a;
                         continue;
+                    } else if ((enclosureChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
+                        // it's an enclosure char.
+                        nextIsEnc = true;
+                        currentEncChar = s[a];
+                        ++a; // Skip the enclosure char
+                    } else if ((separatorChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
+                        // It's a field separator
+                        ++a; // Skip the separator
+                        if (a >= sz) {
+                            // Special case - a trailing separator character - add an empty
+                            // value to the return vector of tokens.
+                            theVec.push_back ("");
+                        } else {
+                            // a < sz, so now check if we've hit an escape char
+                            if ((enclosureChars.find_first_of (static_cast<typename ST::value_type>(s[a]), 0)) != ST::npos) {
+                                // Enclosure char following sep char
+                                nextIsEnc = true;
+                                currentEncChar = s[a];
+                                ++a; // Skip the enclosure char
+                            }
+                        }
+                    } // else unexpected case.
+                }
+
+                // Check we didn't over-run
+                if (a >= sz) { break; }
+
+                // Now get the token
+                typename ST::size_type range = ST::npos;
+                if (nextIsEnc) {
+                    c = a;
+                    while ((b = s.find_first_of (currentEncChar, c)) != ST::npos) {
+                        // FIXME: Check we didn't find an escaped enclosureChar.
+                        if (escapeChar) {
+                            c = b; --c;
+                            if (s[c] == escapeChar) {
+                                // Skip b which is an escaped enclosure char
+                                c = b; ++c;
+                                continue;
+                            }
+                        }
+                        range = b - a;
+                        break;
+                    }
+                } else {
+                    if ((b = s.find_first_of (separatorChars, a)) != ST::npos) {
+                        // Check it wasn't an escaped separator:
+                        if (escapeChar) {
+                            c = b; --c;
+                            if (c >= 0 && c != ST::npos && c < sz && s[c] == escapeChar) {
+                                c = b; ++c;
+                                continue;
+                            }
+                        }
+                        range = b - a;
                     }
                 }
-                range = b - a;
-                break;
-            }
-        } else {
-            if ((b = s.find_first_of (separatorChars, a)) != ST::npos) {
-                // Check it wasn't an escaped separator:
-                if (escapeChar) {
-                    c = b; --c;
-                    if (c >= 0 && c != ST::npos && c < sz && s[c] == escapeChar) {
-                        c = b; ++c;
-                        continue;
+
+                entry = s.substr (a, range);
+                tools::stripChars (entry, escapeChar);
+                theVec.push_back (entry);
+
+                if (range != ST::npos) { // end of field was not end of string
+                    if (nextIsEnc) {
+                        a += range + 1; // +1 to take us past the closing enclosure.
+                    } else {
+                        // in new scheme, we want to find the separator, so this places us ON the separator.
+                        a += range;
+
                     }
+                } else {
+                    a = range;
                 }
-                range = b - a;
             }
+
+            return theVec;
         }
-
-        entry = s.substr (a, range);
-        Tools::stripChars (entry, escapeChar);
-        theVec.push_back (entry);
-
-        if (range != ST::npos) { // end of field was not end of string
-            if (nextIsEnc) {
-                a += range + 1; // +1 to take us past the closing enclosure.
-            } else {
-                // in new scheme, we want to find the separator, so this places us ON the separator.
-                a += range;
-
-            }
-        } else {
-            a = range;
-        }
-    }
-
-    return theVec;
-}
+    } // namespace tools
+} // namespace morph

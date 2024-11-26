@@ -164,7 +164,7 @@ namespace morph {
         void setLogpath (const std::string p) {
             this->logpath = p;
             // Ensure log directory exists
-            morph::Tools::createDir (this->logpath);
+            morph::tools::createDir (this->logpath);
         }
 
         /*!

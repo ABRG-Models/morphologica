@@ -58,7 +58,7 @@ int main (int argc, char** argv)
 
     } catch (const std::exception& e) {
         std::cerr << "Caught exception reading svg: " << e.what() << std::endl;
-        std::cerr << "Current working directory: " << morph::Tools::getPwd() << std::endl;
+        std::cerr << "Current working directory: " << morph::tools::getPwd() << std::endl;
         rtn = -1;
     }
 
