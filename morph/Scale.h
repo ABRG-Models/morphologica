@@ -625,7 +625,6 @@ namespace morph {
                 // m = rise/run
                 this->params[0] = (this->output_range.max - this->output_range.min) / static_cast<S>(input_max - input_min);
                 // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
-                // FIXME: May need inspiration from the vector implementation of morph::Scale, above.
                 this->params[1] = this->output_range.min - (this->params[0] * static_cast<S>(input_min));
             }
         }
