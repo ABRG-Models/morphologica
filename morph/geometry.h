@@ -14,7 +14,7 @@
 #include <morph/mathconst.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
-#include <morph/Quaternion.h>
+#include <morph/quaternion.h>
 
 namespace morph {
 
@@ -45,7 +45,7 @@ namespace morph {
 
         //! Return a geometry::polyhedron object containing vertices and face indices for an
         //! icosahedron. An initial set of vertices is created, then transformed with
-        //! morph::Quaternion
+        //! morph::quaternion
         template<typename F>
         constexpr polyhedron<F, 12, 20> icosahedron()
         {
@@ -77,9 +77,9 @@ namespace morph {
             };
 
             // Set up the transform matrix for our rotation, made up of a rotation about the z axis...
-            morph::Quaternion<F> rotn1(_uz, -std::atan2(F{1}, phi));
+            morph::quaternion<F> rotn1(_uz, -std::atan2(F{1}, phi));
             // ...and a rotation about the x axis:
-            morph::Quaternion<F> rotn2(_ux, morph::mathconst<F>::pi_over_2);
+            morph::quaternion<F> rotn2(_ux, morph::mathconst<F>::pi_over_2);
 
             // For each vertex, apply rotational transform and renormalize
             for (auto& vertex : ico.vertices) {

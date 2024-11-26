@@ -67,7 +67,7 @@
 #include <morph/VisualResources.h>
 #include <nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
-#include <morph/Quaternion.h>
+#include <morph/quaternion.h>
 #include <morph/mat44.h>
 #include <morph/vec.h>
 #include <morph/tools.h>
@@ -751,7 +751,7 @@ namespace morph {
             this->scenetrans_default = _xyz;
         }
 
-        void setSceneRotation (const morph::Quaternion<float>& _rotn)
+        void setSceneRotation (const morph::quaternion<float>& _rotn)
         {
             this->rotation = _rotn;
             this->rotation_default = _rotn;
@@ -1100,13 +1100,13 @@ namespace morph {
         morph::vec<float, 3> rotationAxis = { 0.0f, 0.0f, 0.0f };
 
         //! A rotation quaternion. You could have guessed that, right?
-        morph::Quaternion<float> rotation;
+        morph::quaternion<float> rotation;
 
         //! The default rotation of the scene
-        morph::Quaternion<float> rotation_default;
+        morph::quaternion<float> rotation_default;
 
         //! A rotation that is saved between mouse button callbacks
-        morph::Quaternion<float> savedRotation;
+        morph::quaternion<float> savedRotation;
 
         //! The projection matrix is a member of this class
         morph::mat44<float> projection;
@@ -1249,7 +1249,7 @@ namespace morph {
                           << this->scenetrans.y() << "}, float{"
                           << this->scenetrans.z()
                           << "} });"
-                          <<  "\n    v.setSceneRotation (morph::Quaternion<float>{ float{"
+                          <<  "\n    v.setSceneRotation (morph::quaternion<float>{ float{"
                           << this->rotation.w << "}, float{" << this->rotation.x << "}, float{"
                           << this->rotation.y << "}, float{" << this->rotation.z << "} });\n";
                 std::cout << "Writing scene trans/rotation into /tmp/Visual.json... ";
@@ -1449,9 +1449,8 @@ namespace morph {
 
                 // Update rotation from the saved position.
                 this->rotation = this->savedRotation;
-                morph::Quaternion<float> rotationQuaternion(this->rotationAxis,
-                                                            -rotamount * morph::mathconst<float>::deg2rad);
-                this->rotation.postmultiply (rotationQuaternion); // combines rotations
+                morph::quaternion<float> rotnQuat (this->rotationAxis, -rotamount * morph::mathconst<float>::deg2rad);
+                this->rotation.postmultiply (rotnQuat); // combines rotations
                 needs_render = true;
 
             } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement

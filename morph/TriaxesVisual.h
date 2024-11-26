@@ -8,6 +8,7 @@
 #include <morph/mathconst.h>
 #include <morph/Scale.h>
 #include <morph/vec.h>
+#include <morph/quaternion.h>
 #include <morph/VisualModel.h>
 #include <morph/GraphVisual.h> // Share tickstyle, axestyle and possibly scalingpolicy from GraphVisual
 
@@ -264,7 +265,7 @@ namespace morph {
                         0.5f*this->axis_ends[1] - downshift, 0 }};
 
             if (geom.width() > 2*this->fontsize) {
-                morph::Quaternion<float> leftrot(this->uz, morph::mathconst<float>::pi_over_2);
+                morph::quaternion<float> leftrot(this->uz, morph::mathconst<float>::pi_over_2);
                 lbl->setupText (this->ylabel, leftrot, lblpos+this->mv_offset, this->axiscolour);
             } else {
                 lbl->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);

@@ -5,7 +5,7 @@
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/Grid.h>
-#include <morph/Quaternion.h>
+#include <morph/quaternion.h>
 #include <morph/loadpng.h>
 #include <morph/Visual.h>
 #include <morph/CurvyTellyVisual.h>
@@ -37,7 +37,7 @@ int main()
 
     // To make this view in the correct orientation as if it were a TV, we have to rotate & translate the scene.
     v.setSceneTrans (morph::vec<float,3>{ float{0}, float{0}, float{-14} });
-    v.setSceneRotation (morph::Quaternion<float>{ float{-0.5}, float{0.5}, float{-0.5}, float{-0.5} });
+    v.setSceneRotation (morph::quaternion<float>{ float{-0.5}, float{0.5}, float{-0.5}, float{-0.5} });
 
     v.keepOpen();
 

@@ -1,4 +1,5 @@
 #include "morph/mat44.h"
+#include "morph/quaternion.h"
 #include <iostream>
 #include <array>
 #include <morph/vec.h>
@@ -192,8 +193,8 @@ constexpr int do_test()
     mult4inv_copy.setToIdentity();
     if (mult4inv_copy[0] != 1.0f) { ++rtn; }
 
-    morph::Quaternion<float> q_f;
-    morph::Quaternion<double> q_d;
+    morph::quaternion<float> q_f;
+    morph::quaternion<double> q_d;
     mult4inv_copy.rotate (q_f);
     mult4inv_copy.rotate (q_d);
     mult4inv_copy.setToIdentity();
