@@ -2,6 +2,7 @@
 
 #include <morph/gl/version.h>
 #include <morph/tools.h>
+#include <morph/scale.h>
 #include <morph/VisualDataModel.h>
 #include <morph/ColourMap.h>
 #include <morph/HexGrid.h>
@@ -1123,8 +1124,8 @@ namespace morph {
                             const morph::HexGrid* _hg,
                             const morph::vec<float> _offset,
                             const std::vector<T>* _data,
-                            const morph::Scale<T, float>& zscale,
-                            const morph::Scale<T, float>& cscale,
+                            const morph::scale<T, float>& zscale,
+                            const morph::scale<T, float>& cscale,
                             morph::ColourMapType _cmt)
             : morph::HexGridVisual<T,glver>(sp, tsp, _hg, _offset, _data, zscale, cscale, _cmt)
         {

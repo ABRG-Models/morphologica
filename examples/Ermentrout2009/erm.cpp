@@ -16,7 +16,7 @@
 // Morphologica headers: visualization and JSON config
 #include <morph/tools.h>
 #include <morph/Config.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/ColourMap.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
@@ -156,7 +156,7 @@ int main (int argc, char **argv)
     // Data scaling parameters
     float _m = 0.2;
     float _c = 0.0;
-    morph::Scale<FLT, float> cscale;
+    morph::scale<FLT, float> cscale;
     cscale.setParams (_m, _c);
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual

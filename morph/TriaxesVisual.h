@@ -6,7 +6,7 @@
 #pragma once
 
 #include <morph/mathconst.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/VisualModel.h>
 #include <morph/GraphVisual.h> // Share tickstyle, axestyle and possibly scalingpolicy from GraphVisual
@@ -308,11 +308,11 @@ namespace morph {
         //! Should ticks be manually set?
         bool manualticks = false;
         //! A scaling for the x axis
-        morph::Scale<Flt> x_scale;
+        morph::scale<Flt> x_scale;
         //! A scaling for the y axis
-        morph::Scale<Flt> y_scale;
+        morph::scale<Flt> y_scale;
         //! A scaling for the z axis
-        morph::Scale<Flt> z_scale;
+        morph::scale<Flt> z_scale;
         //! The xtick values that should be displayed
         std::deque<Flt> xticks;
         //! The positions, along the x axis (in model space) for the xticks

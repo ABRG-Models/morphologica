@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <morph/VisualModel.h>
 #include <morph/ColourMap.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/healpix/healpix_bare.hpp>
@@ -490,7 +490,7 @@ namespace morph {
         morph::vvec<T> pixeldata;
 
         // A colour scaling
-        morph::Scale<T> colourScale;
+        morph::scale<T> colourScale;
 
         // A colourmap to translate pixeldata into colours
         morph::ColourMap<T> cm;
@@ -499,7 +499,7 @@ namespace morph {
         bool relief = false;
 
         // A scaling for pixeldata -> additional radius for relief
-        morph::Scale<T> reliefScale;
+        morph::scale<T> reliefScale;
 
         // Show spheres at vertex locations? (mainly for debug)
         bool show_spheres = false;

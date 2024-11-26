@@ -23,7 +23,7 @@
 #include <morph/tools.h>
 #include <morph/Random.h>
 #include <morph/Config.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/RecurrentNetworkTools.h>
 #include <morph/RecurrentNetwork.h>
@@ -589,7 +589,7 @@ namespace morph {
                 v.setZDefault(-3.7f);
                 v.setSceneTransXY (0.0f,0.0f);
                 morph::vec<float, 3> offset  = { 0., 0., 0.0 };
-                morph::Scale<float> scale;
+                morph::scale<float> scale;
                 scale.do_autoscale = true;
                 std::vector<float> fFlt;
                 for (unsigned int i=0; i<M[mapIndex].N; i++){ fFlt.push_back (static_cast<float>(F[i])); }
@@ -617,9 +617,9 @@ namespace morph {
                 v.setZDefault(-2.7f);
                 v.setSceneTransXY (0.0f,0.0f);
                 morph::vec<float, 3> offset  = { 0., 0., 0.0 };
-                morph::Scale<float> scale;
+                morph::scale<float> scale;
                 scale.do_autoscale = true;
-                morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
+                morph::scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
                 auto hgv1 = std::make_unique<HexGridVisual<float>> (domain.hg.get(), offset);
@@ -654,7 +654,7 @@ namespace morph {
                 v.setZDefault(-2.7f);
                 v.setSceneTransXY (0.0f,0.0f);
                 morph::vec<float, 3> offset  = { 0., 0., 0.0 };
-                morph::Scale<float> scale;
+                morph::scale<float> scale;
 
                 if(color_min==color_max){
                     scale.do_autoscale = true;
@@ -663,7 +663,7 @@ namespace morph {
                     float color_grad = 1.0f/(color_max-color_min);
                     scale.setParams(color_grad,-(color_grad*color_min));
                 }
-                morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
+                morph::scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
                 auto hgv1 = std::make_unique<HexGridVisual<float>> (domain.hg.get(), offset);

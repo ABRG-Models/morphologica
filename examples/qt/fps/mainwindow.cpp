@@ -7,7 +7,6 @@
 #include <morph/HexGrid.h>
 #include <morph/HexGridVisual.h>
 #include <morph/ScatterVisual.h>
-#include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 

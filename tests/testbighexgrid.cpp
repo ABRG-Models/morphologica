@@ -12,7 +12,6 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include "morph/Scale.h"
 #include "morph/vec.h"
 
 int main()

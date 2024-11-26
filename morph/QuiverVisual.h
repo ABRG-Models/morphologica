@@ -3,7 +3,7 @@
 #include <morph/tools.h>
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/colour.h>
@@ -86,7 +86,7 @@ namespace morph {
             // Now scale the lengths for their size on screen. Do this with a linear or log scaling.
 
             // (if log) First replace zeros with NaNs so that log transform will work.
-            if (this->do_quiver_length_scaling == true && this->length_scale.getType() == morph::ScaleFn::Logarithmic) {
+            if (this->do_quiver_length_scaling == true && this->length_scale.getType() == morph::scaling_function::Logarithmic) {
                 dlengths.search_replace (Flt{0}, std::numeric_limits<Flt>::quiet_NaN());
             }
 
@@ -198,7 +198,7 @@ namespace morph {
         // user using quiver_length_gain. This scaling can be made logarithmic by calling
         // QuiverVisual::setlog() before calling finalize(). The scaling can be ignored by calling
         // QuiverVisual::length_scale.compute_scaling (0, 1); before finalize().
-        morph::Scale<Flt, float> length_scale;
+        morph::scale<Flt, float> length_scale;
         // Set this false to avoid applying length_scale to quiver lengths and also and
         // colourScale (in the absence of ScalarData).
         bool do_quiver_length_scaling = true;

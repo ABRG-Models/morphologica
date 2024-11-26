@@ -6,7 +6,7 @@
 #include <morph/QuiverVisual.h>
 #include <morph/ScatterVisual.h>
 #include <morph/vec.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -57,7 +57,7 @@ int main (int argc, char** argv)
         cout << "Added Visual with visId " << visId << endl;
 
         offset = { 0.0, 0.1, 0.0 };
-        morph::Scale<float> scale;
+        morph::scale<float> scale;
         scale.setParams (1.0, 0.0);
 
         vector<morph::vec<float, 3>> points;

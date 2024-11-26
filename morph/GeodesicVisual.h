@@ -3,7 +3,7 @@
 #include <morph/vec.h>
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/ColourMap.h>
 #include <array>
 
@@ -189,7 +189,7 @@ namespace morph {
         //! A colour map for data plotting
         morph::ColourMap<float> cm;
         //! A scaling for data colour
-        morph::Scale<T, float> colourScale;
+        morph::scale<T, float> colourScale;
         //! The number of iterations in the geodesic sphere. Set before finalize() to change from the default.
         int iterations = 2;
         //! This may be filled with the number of vertices in the geodesic

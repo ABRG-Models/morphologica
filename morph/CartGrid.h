@@ -20,7 +20,7 @@
 #include <morph/mathconst.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/range.h>
 
 // If the CartGrid::save and CartGrid::load methods are required, define
@@ -854,7 +854,7 @@ namespace morph {
         // of view_angle.
         void resampleToPolar (const morph::vvec<float>& image_data,
                               morph::CartGrid& cg_polar, morph::vvec<float>& polar_data,
-                              morph::vec<float, 2> view_pos, float view_angle, morph::ScaleFn radscale = morph::ScaleFn::Linear)
+                              morph::vec<float, 2> view_pos, float view_angle, morph::scaling_function radscale = morph::scaling_function::Linear)
         {
             polar_data.zero();
 
@@ -877,7 +877,7 @@ namespace morph {
             for (unsigned int xi = 0; xi < cg_polar.num(); ++xi) { // for each output pixel which is an r/phi pair
 
                 float r = cg_polar.d_y[xi]; // Linear
-                if (radscale == morph::ScaleFn::Logarithmic) {
+                if (radscale == morph::scaling_function::Logarithmic) {
                     r = std::log (this->v+cg_polar.d_y[xi]) - std::log(this->v);
                     r *= 0.4f; // You can play with this factor
                     //std::cout << "For r linear = " << cg_polar.d_y[xi] << ", log transform is " << r << std::endl;

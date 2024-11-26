@@ -4,7 +4,6 @@
 #include <morph/Visual.h>
 #include <morph/ColourMap.h>
 #include <morph/GraphVisual.h>
-#include <morph/Scale.h>
 #include <morph/vvec.h>
 #include <iostream>
 #include <fstream>

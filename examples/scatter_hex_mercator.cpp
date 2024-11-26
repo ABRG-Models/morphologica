@@ -5,7 +5,7 @@
 #include <morph/HexGrid.h>
 #include <morph/Visual.h>
 #include <morph/ScatterVisual.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <iostream>
@@ -20,7 +20,7 @@ int main()
     v.lightingEffects();
 
     morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
-    morph::Scale<float> scale;
+    morph::scale<float> scale;
     scale.setParams (1.0f, 0.0f);
 
     // Have a Sphere of radius 1

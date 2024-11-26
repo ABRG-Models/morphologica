@@ -8,7 +8,7 @@
 #else
 #include <morph/PointRowsVisual.h>
 #endif
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <iostream>
 #include <fstream>
@@ -29,7 +29,7 @@ int main()
 
     try {
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
-        morph::Scale<float> scale;
+        morph::scale<float> scale;
         scale.setParams (1.0, 0.0);
 
         std::vector<morph::vec<float, 3>> points;

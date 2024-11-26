@@ -8,7 +8,7 @@
 #include <morph/ColourMap.h>
 #include <morph/ScatterVisual.h>
 #include <morph/TriangleVisual.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/geometry.h>
@@ -35,7 +35,7 @@ int main()
     }
     try {
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
-        morph::Scale<float, float> scale;
+        morph::scale<float, float> scale;
         scale.setParams (1.0, 0.0);
 
         morph::vvec<float> data(12, 0.06f);

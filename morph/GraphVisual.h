@@ -9,7 +9,7 @@
 #include <morph/VisualModel.h>
 #include <morph/gl/version.h>
 #include <morph/tools.h>
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/range.h>
 #include <morph/vec.h>
 #include <morph/VisualTextModel.h>
@@ -1700,7 +1700,7 @@ namespace morph {
                 std::cout << "Writeme: Implement a manual tick-setting scheme\n";
             } else {
                 if (!(this->abscissa_scale.ready() && this->ord1_scale.ready())) {
-                    throw std::runtime_error ("abscissa and ordinate Scales not set. Is there data?");
+                    throw std::runtime_error ("abscissa and ordinate scales not set. Is there data?");
                 }
                 // Compute locations for ticks...
                 Flt _xmin = this->abscissa_scale.inverse_one (this->abscissa_scale.output_range.min);
@@ -1753,27 +1753,27 @@ namespace morph {
         //! user using quiver_length_gain. This scaling can be made logarithmic by calling
         //! GraphVisual::quiver_setlog() before calling finalize(). The scaling can be ignored by calling
         //! GraphVisual::quiver_length_scale.compute_scaling (0, 1); before finalize().
-        morph::Scale<float> quiver_length_scale;
+        morph::scale<float> quiver_length_scale;
         //! Linear scaling for any quivers, which is independent from the length scaling and can be used for colours
-        morph::Scale<float> quiver_linear_scale;
-        morph::Scale<float> quiver_colour_scale;
+        morph::scale<float> quiver_linear_scale;
+        morph::scale<float> quiver_colour_scale;
         //! The dx from the morph::Grid, but scaled with abscissa_scale and ord1_scale to be in 'VisualModel units'
         morph::vec<Flt, 3> quiver_grid_spacing;
         //! A scaling for the abscissa.
-        morph::Scale<Flt> abscissa_scale;
+        morph::scale<Flt> abscissa_scale;
         //! A copy of the abscissa data values for ord1
         morph::vvec<Flt> absc1;
         //! A copy of the abscissa data values for ord2
         morph::vvec<Flt> absc2;
         //! A scaling for the first (left hand) ordinate
-        morph::Scale<Flt> ord1_scale;
+        morph::scale<Flt> ord1_scale;
         //! A copy of the first (left hand) ordinate data values
         morph::vvec<Flt> ord1;
         //! ds_ord1
         morph::DatasetStyle ds_ord1;
         morph::DatasetStyle ds_ord2;
         //! A scaling for the second (right hand) ordinate, if it's a twin axis graph
-        morph::Scale<Flt> ord2_scale;
+        morph::scale<Flt> ord2_scale;
         //! A copy of the second (right hand) ordinate data values
         morph::vvec<Flt> ord2;
         //! What's the scaling policy for the abscissa?

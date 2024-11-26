@@ -7,7 +7,7 @@
 #else
 # include <morph/QuadsVisual.h>
 #endif
-#include <morph/Scale.h>
+#include <morph/scale.h>
 #include <morph/vec.h>
 #include <iostream>
 #include <fstream>
@@ -25,8 +25,8 @@ int main()
 
     try {
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
-        morph::Scale<float> scale;
-        scale.setParams (1.0, 0.0);
+        morph::scale<float> scale1;
+        scale1.setParams (1.0, 0.0);
 
         std::vector<std::array<float, 12>> surfBoxes;
 
@@ -58,12 +58,12 @@ int main()
         std::vector<float> data = {0.1, 0.2, 0.5, 0.95};
 
 #ifdef MESH
-        auto qmv = std::make_unique<morph::QuadsMeshVisual<float>> (&surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma);
+        auto qmv = std::make_unique<morph::QuadsMeshVisual<float>> (&surfBoxes, offset, &data, scale1, morph::ColourMapType::Plasma);
         v.bindmodel (qmv);
         qmv->finalize();
         v.addVisualModel (qmv);
 #else
-        auto qv = std::make_unique<morph::QuadsVisual<float>> (&surfBoxes, offset, &data, scale, morph::ColourMapType::Monochrome);
+        auto qv = std::make_unique<morph::QuadsVisual<float>> (&surfBoxes, offset, &data, scale1, morph::ColourMapType::Monochrome);
         v.bindmodel (qv);
         qv->finalize();
         v.addVisualModel (qv);
