@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <complex>
+#include <array>
 #include <morph/vvec.h>
 #include <morph/Scale.h>
 
@@ -24,13 +25,11 @@ int main()
 
     if (vcs[0] == std::complex<float>{0.5f, 0.0f} && vcs[5] == std::complex<float>{0.0f, 1.0f}) {
         // good
-    } else {
-        --rtn;
-    }
+    } else { --rtn; }
 
     sc.reset();
     std::cout << "imaginary output range max...\n";
-    sc.output_range = { {0, 0}, {0, -1} }; // for complex, range min should always be 0, 0. The magniude of the top of the range is used.
+    sc.output_range = { {0, 0}, {0, -1} }; // for complex, range min should always be (0 + 0i). The magnitude of the top of the range is used.
     morph::vvec<std::complex<float>> vc1 = { {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {2, 0}, {0, 2}, {-2, 0}, {0, -2},  };
     morph::vvec<std::complex<float>> vcs1 (vc1);
     sc.transform (vc1, vcs1);
@@ -40,13 +39,11 @@ int main()
 
     if (vcs1[0] == std::complex<float>{0.5f, 0.0f} && vcs1[5] == std::complex<float>{0.0f, 1.0f}) {
         // good
-    } else {
-        --rtn;
-    }
+    } else { --rtn; }
 
     std::cout << "0 to 10 output range...\n";
     sc.reset();
-    sc.output_range = { {0, 0}, {10, 0} }; // for complex, range min should always be 0, 0. The magniude of the top of the range is used.
+    sc.output_range = { {0, 0}, {10, 0} }; // for complex, range min should always be (0 + 0i). The magnitude of the top of the range is used.
     morph::vvec<std::complex<float>> vc2 = { {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {2, 0}, {0, 2}, {-2, 0}, {0, -2},  };
     morph::vvec<std::complex<float>> vcs2 (vc2);
     sc.transform (vc2, vcs2);
@@ -56,14 +53,12 @@ int main()
 
     if (vcs2[0] == std::complex<float>{5.0f, 0.0f} && vcs2[5] == std::complex<float>{0.0f, 10.0f}) {
         // good
-    } else {
-        --rtn;
-    }
+    } else { --rtn; }
 
     try {
         std::cout << "Check that a non-zero output range min causes exception\n";
         sc.reset();
-        sc.output_range = { {1, 0}, {2, 0} }; // for complex, range min should always be 0, 0
+        sc.output_range = { {1, 0}, {2, 0} }; // for complex, range min should always be (0 + 0i)
         morph::vvec<std::complex<float>> vc1 = { {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {2, 0}, {0, 2}, {-2, 0}, {0, -2},  };
         morph::vvec<std::complex<float>> vcs1 (vc1);
         sc.transform (vc1, vcs1);
@@ -72,6 +67,10 @@ int main()
         // expected catch
         std::cout << "Expected exception '" << e.what() << "' caught\n";
     }
+
+    // Should not compile:
+    // morph::Scale<std::complex<std::array<float, 3>>> scale_cplx_of_vec;
+    // morph::Scale<std::pair<float, double>> scale_a_pair;
 
     std::cout << "Test " << (rtn == 0 ? "Passed" : "Failed") << std::endl;
     return rtn;

@@ -288,10 +288,10 @@ namespace morph {
      * FIXME: Rename ntype, because T is 'input number type' and S is 'output number
      * type' with type meaning machine number type. ntype would be better as vector_scalar or similar.
      *
-     * \tparam ntype The 'number type' as contained in number_type::value. 1 for vectors, 0 for
-     * scalars. Default is 0. This class is active if ntype is 0. There is a specialization of this
-     * class which is active if ntype is 1. Other values of ntype would activate this default
-     * implementation.
+     * \tparam ntype The 'number type' as contained in morph::number_type::value. 1 for vectors, 0
+     * for scalars, 2 for complex, 3 for vector of complex (not supported by Scale). Default is
+     * 0. This class is active if ntype is 0 (vector). There are other specializations of this class
+     * which are active if ntype is 1 or 2.
      *
      * \tparam T The type of the number to be scaled. Should be some scalar type such as
      * int, double, etc or a type which can contain a vector such as std::array,
@@ -710,6 +710,18 @@ namespace morph {
             // Now just scale linearly between ln_imin and ln_imax
             this->compute_scaling_linear (ln_imin, ln_imax);
         }
+    };
+
+    // Scaling a vector of complex numbers is unsupported
+    template<typename T, typename S>
+    class ScaleImpl<3, T, S> : public ScaleImplBase<T, S> {
+        void compute_scaling_linear (T input_min, T input_max) { static_assert (false); }
+    };
+
+    // Scaling is unsupported if the input number_type is not a number type.
+    template<typename T, typename S>
+    class ScaleImpl<-1, T, S> : public ScaleImplBase<T, S> {
+        void compute_scaling_linear (T input_min, T input_max) { static_assert (false); }
     };
 
     /*!

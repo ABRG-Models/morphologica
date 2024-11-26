@@ -263,7 +263,7 @@ namespace morph {
     };
 
     /*!
-     * Comlex scalar MathAlgo algorithm specializations
+     * Complex scalar MathAlgo algorithm specializations
      *
      * This is a specialization of MathImpl with vtype set to 2. The templates are applied if the
      * type T is a complex scalar such as std::complex<float> or std::complex<double>.
