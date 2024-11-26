@@ -12,6 +12,7 @@
 
 #include <ostream>
 #include <limits>
+#include <complex>
 #include <morph/trait_tests.h>
 
 namespace morph {
@@ -53,10 +54,16 @@ namespace morph {
         {
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
                 this->min = { std::numeric_limits<typename T::value_type>::max(), std::numeric_limits<typename T::value_type>::max() };
-                this->max = T{0};
-            } else { // assume numeric_limits will work with T
+                this->max = { std::numeric_limits<typename T::value_type>::lowest(), std::numeric_limits<typename T::value_type>::lowest() };
+            } else if constexpr (morph::number_type<T>::value == 1) { // range is scalar
                 this->min = std::numeric_limits<T>::max();
                 this->max = std::numeric_limits<T>::lowest();
+            } else {
+#if __cplusplus >= 202002L
+                []<bool flag = false>() { static_assert(flag, "morph::range does not support this type"); }();
+#else
+                throw std::runtime_error ("morph::range does not support this type");
+#endif
             }
         }
 
@@ -65,18 +72,18 @@ namespace morph {
         {
             bool changed = false;
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
-                this->min = std::abs(d) < std::abs(this->min) ? changed = true, d : this->min;
-                this->max = std::abs(d) > std::abs(this->max) ? changed = true, d : this->max;
-
-            } else if constexpr (morph::number_type<T>::value == 0) { // range is vector
-#if __cplusplus >= 202002L
-                []<bool flag = false>() { static_assert(flag, "Vector ranges are not yet supported"); }();
-#else
-                throw std::runtime_error ("Vector ranges are not yet supported");
-#endif
-            } else {
+                // Does d 'extend the rectangle in the complex plane that defines the complex range'?
+                this->min = std::real(d) < std::real(this->min) || std::imag(d) < std::imag(this->min) ? changed = true, d : this->min;
+                this->max = std::real(d) > std::real(this->max) || std::imag(d) > std::imag(this->max) ? changed = true, d : this->max;
+            } else if constexpr (morph::number_type<T>::value == 1) { // range is scalar
                 this->min = d < this->min ? changed = true, d : this->min;
                 this->max = d > this->max ? changed = true, d : this->max;
+            } else {
+#if __cplusplus >= 202002L
+                []<bool flag = false>() { static_assert(flag, "morph::range does not support this type"); }();
+#else
+                throw std::runtime_error ("morph::range does not support this type");
+#endif
             }
             return changed;
         }
@@ -85,20 +92,21 @@ namespace morph {
         constexpr bool includes (const T& v)
         {
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
-                return (std::abs(v) <= std::abs(this->max) && std::abs(v) >= std::abs(this->min));
-
-            } else if constexpr (morph::number_type<T>::value == 0) { // range type is vector
-#if __cplusplus >= 202002L
-                []<bool flag = false>() { static_assert(flag, "Vector ranges are not yet supported"); }();
-#else
-                throw std::runtime_error ("Vector ranges are not yet supported");
-#endif
-            } else {
+                // Is v inside the rectangle in the complex plane made by min and max?
+                return (std::real(v) <= std::real(this->max) && std::real(v) >= std::real(this->min)
+                        && std::imag(v) <= std::imag(this->max) && std::imag(v) >= std::imag(this->min));
+            } else if constexpr (morph::number_type<T>::value == 1) { // range is scalar
                 return (v <= this->max && v >= this->min);
+            } else {
+#if __cplusplus >= 202002L
+                []<bool flag = false>() { static_assert(flag, "morph::range does not support this type"); }();
+#else
+                throw std::runtime_error ("morph::range does not support this type");
+#endif
             }
         }
 
-        // What's the 'span of the range'?
+        // What's the 'span of the range'? Whether scalar or complex (or vector), it's max - min
         constexpr T span() const { return this->max - this->min; }
 
         // Overload the stream output operator
