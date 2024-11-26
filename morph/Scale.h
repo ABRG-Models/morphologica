@@ -114,7 +114,7 @@ namespace morph {
                << " as: " << this->transform_str()
                << ". ready()=" << (this->ready() ? "true" : "false")
                << ", do_autoscale=" << (this->do_autoscale ? "true" : "false")
-               << ", params=" << this->params_str();
+               << ", params=" << this->params_str() << ", output range: " << this->output_range_str();
             return ss.str();
         }
 
@@ -122,6 +122,8 @@ namespace morph {
         virtual std::string params_str() const = 0;
         //! Describe the transformation in a text string
         virtual std::string transform_str() const = 0;
+        //! Describe the output range in a text string
+        virtual std::string output_range_str() const = 0;
 
         /*!
          * \brief Transform a container of scalars or vectors.
@@ -286,10 +288,10 @@ namespace morph {
      * FIXME: Rename ntype, because T is 'input number type' and S is 'output number
      * type' with type meaning machine number type. ntype would be better as vector_scalar or similar.
      *
-     * \tparam ntype The 'number type' as contained in number_type::value. 1 for vectors, 0 for
-     * scalars. Default is 0. This class is active if ntype is 0. There is a specialization of this
-     * class which is active if ntype is 1. Other values of ntype would activate this default
-     * implementation.
+     * \tparam ntype The 'number type' as contained in morph::number_type::value. 1 for vectors, 0
+     * for scalars, 2 for complex, 3 for vector of complex (not supported by Scale). Default is
+     * 0. This class is active if ntype is 0 (vector). There are other specializations of this class
+     * which are active if ntype is 1 or 2.
      *
      * \tparam T The type of the number to be scaled. Should be some scalar type such as
      * int, double, etc or a type which can contain a vector such as std::array,
@@ -344,6 +346,13 @@ namespace morph {
             } else {
                 ss << "unknown scaling type";
             }
+            return ss.str();
+        }
+
+        virtual std::string output_range_str() const
+        {
+            std::stringstream ss;
+            ss << this->output_range;
             return ss.str();
         }
 
@@ -509,6 +518,13 @@ namespace morph {
             return ss.str();
         }
 
+        virtual std::string output_range_str() const
+        {
+            std::stringstream ss;
+            ss << this->output_range;
+            return ss.str();
+        }
+
         virtual T inverse_one (const S& datum) const
         {
             T rtn = T{0};
@@ -569,7 +585,7 @@ namespace morph {
         //! Reset the Scaling by emptying params
         void reset() { this->params.clear(); }
 
-    private:
+    protected:
         //! Linear transform for scalar type; y = mx + c
         S transform_one_linear (const T& datum) const
         {
@@ -597,7 +613,7 @@ namespace morph {
             return (std::exp (res));
         }
 
-        void compute_scaling_linear (T input_min, T input_max)
+        virtual void compute_scaling_linear (T input_min, T input_max)
         {
             // Here, we need to use the output type for the computations. Does that mean
             // params is stored in the output type? I think it does.
@@ -613,10 +629,13 @@ namespace morph {
             }
         }
 
-        void compute_scaling_log (T input_min, T input_max)
+        virtual void compute_scaling_log (T input_min, T input_max)
         {
-            if (input_min <= T{0} || input_max <= T{0}) {
-                throw std::runtime_error ("Can't logarithmically autoscale a range which includes zeros or negatives");
+            // Have to check here as ScaleImpl<2, T, S> is built from ScaleImpl<1, T, S> but <= operator makes no sense
+            if constexpr (morph::number_type<T>::value == 1) {
+                if (input_min <= T{0} || input_max <= T{0}) {
+                    throw std::runtime_error ("Can't logarithmically autoscale a range which includes zeros or negatives");
+                }
             }
             T ln_imin = std::log(input_min);
             T ln_imax = std::log(input_max);
@@ -626,6 +645,94 @@ namespace morph {
 
         //! The parameters for the scaling. If linear, this will contain two scalar values.
         morph::vvec<S> params;
+    };
+
+    /*!
+     * \brief Experimental ScaleImpl for complex scalars\a T
+     *
+     * A specialized implementation base class for the template class Scale, which is used when the
+     * number type of \a T is std::complex<>
+     *
+     * \tparam ntype The 'number type' as contained in number_type::value. 0 for vectors, 1 for
+     * scalars. This class is active only for ntype==2 (complex scalar).
+     *
+     * \tparam T The type of the number to be scaled. Should be some complex scalar type such as
+     * std::complex<float> or std::complex<double>.
+     *
+     * \tparam S The output type for the scaled number. For integer T, this might well be a floating
+     * point type. Does it make sense to scale from complex to non complex? Maybe, if you're scaling
+     * to magnitude.
+     *
+     * \sa ScaleImplBase
+     */
+    template<typename T, typename S>
+    class ScaleImpl<2, T, S> : public ScaleImpl<1, T, S>
+    {
+    public:
+        // Any public overrides go here
+    protected:
+        // Scaling a set of complex numbers means stretching/squashing the plane out so that the
+        // complex values have magnitudes between output_min and output_max. This is a little
+        // different from scaling of regular scalars.
+        void compute_scaling_linear (T input_min, T input_max)
+        {
+            // We enforce output_range.min == {0, 0} for complex number scaling. We simply shrink or
+            // stretch the complex plane so that the input numbers with the largest magnitude are
+            // given the magniude of output_range.max.
+            if (this->output_range.min != T{0}) {
+                throw std::runtime_error ("ScaleImpl<2, T, S>::compute_scaling_linear: "
+                                          "output_range minimum must be (0 + 0i) for complex scaling");
+            }
+
+            // Here, we need to use the output type for the computations. That means params is
+            // stored in the output type, which is (should be) complex. Only the magnitude of each
+            // param matters.
+            //
+            // Note that we ONLY scale values on the complex plane by multiplication. The origin
+            // remains at the origin. So we leave params[1] equal to S{0}
+            this->params.resize (2, S{0});
+
+            if (input_min != input_max) {
+                // m = rise/run but note that we ignore input_min
+                this->params[0] = (std::abs(this->output_range.max) - std::abs(this->output_range.min)) / static_cast<S>(std::abs(input_max) /*- std::abs(input_min)*/);
+            }
+        }
+
+        void compute_scaling_log (T input_min, T input_max)
+        {
+            // Log scaling complex range?
+            if (std::abs(input_min) == T{0} || std::abs(input_max) == T{0}) {
+                throw std::runtime_error ("Can't logarithmically autoscale a complex range which includes zeros");
+            }
+            T ln_imin = std::log(input_min);
+            T ln_imax = std::log(input_max);
+            // Now just scale linearly between ln_imin and ln_imax
+            this->compute_scaling_linear (ln_imin, ln_imax);
+        }
+    };
+
+    // Scaling a vector of complex numbers is unsupported
+    template<typename T, typename S>
+    class ScaleImpl<3, T, S> : public ScaleImplBase<T, S> {
+        void compute_scaling_linear (T input_min, T input_max) {
+#if __cplusplus >= 202002L
+            []<bool flag = false>() { static_assert(flag, "morph::Scale does not support scaling vectors of complex numbers"); }();
+#else
+            throw std::runtime_error ("morph::Scale does not support scaling vectors of complex numbers");
+#endif
+        }
+    };
+
+    // Scaling is unsupported if the input number_type is not a number type.
+    template<typename T, typename S>
+    class ScaleImpl<-1, T, S> : public ScaleImplBase<T, S> {
+        void compute_scaling_linear (T input_min, T input_max) {
+#if __cplusplus >= 202002L
+            []<bool flag = false>() { static_assert(flag, "morph::Scale does not support scaling non-number types"); }();
+#else
+            throw std::runtime_error ("morph::Scale does not support scaling non-number types");
+#endif
+        }
     };
 
     /*!

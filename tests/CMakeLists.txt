@@ -355,6 +355,10 @@ add_test(testvec11 testvec11)
 add_executable(testScaleVector testScaleVector.cpp)
 add_test(testScaleVector testScaleVector)
 
+# Test scaling complex numbers
+add_executable(testScale_complex testScale_complex.cpp)
+add_test(testScale_complex testScale_complex)
+
 # Test morph::TransformMatrix (4x4 matrix)
 add_executable(testTransformMatrix testTransformMatrix.cpp)
 add_test(testTransformMatrix testTransformMatrix)
@@ -398,6 +402,9 @@ add_test(testrange testrange)
 
 add_executable(testrange_constexpr testrange_constexpr.cpp)
 add_test(testrange_constexpr testrange_constexpr)
+
+add_executable(testrange_complex testrange_complex.cpp)
+add_test(testrange_complex testrange_complex)
 
 # Test the colour mapping
 add_executable(testColourMap testColourMap.cpp)
@@ -561,3 +568,6 @@ add_test(testloadpng testloadpng)
 
 add_executable(test_histo test_histo.cpp)
 add_test(test_histo test_histo)
+
+add_executable(test_number_type test_number_type.cpp)
+add_test(test_number_type test_number_type)

@@ -137,13 +137,30 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(1)), std::true_type>::value;
     };
 
+    // morph::value_type to allow us to write code that will accept float::value_type and std::vector<float>::value_type
+    template <class T, class = void> struct value_type { using type = T; };
+    template <class T> struct value_type<T, std::void_t<typename T::value_type>> { using type = typename T::value_type; };
+
+    // This gets the value_type of a class that has value_type or the type of itself for a class
+    // that doesn't have value_type. For example morph::value_type_t<float> is float and
+    // morph::value_type_t<std::array<float, 2>> is also float.
+    template <class T> using value_type_t = typename morph::value_type<T>::type;
+
     /*! \brief A class to distinguish between scalars and vectors
      *
      * From the typename T, set a #value attribute which says whether T is a scalar (like
      * float, double), or vector (basically, anything else).
      *
-     * Query the attribute `value`, which will be 1 for scalar and 0 for anything else including
-     * vectors.  This really just wraps std::is_scalar.
+     * Query the attribute `value`, which will be:
+     *
+     * 0 for containers of scalars (which includes vectors, arrays. Essentially, this is a mathematical vector)
+     * 1 for scalars
+     * 2 for complex scalars
+     * 3 for containers of complex (a vector<complex<float>> etc)
+     * -1 for non-number types
+     *
+     * You can use this trait test in template classes like morph::Scale for scalar/vector
+     * implementations.
      *
      * \tparam T the type to distinguish
      */
@@ -151,8 +168,13 @@ namespace morph {
     struct number_type {
         //! is_scalar test
         static constexpr bool const scalar = std::is_scalar<std::decay_t<T>>::value;
-        //! Set value simply from the is_scalar test. 0 for vector, 1 for scalar
-        static constexpr int const value = scalar ? 1 : 0;
+        static constexpr bool const cplx = morph::is_complex<std::decay_t<T>>::value;
+        static constexpr bool const container = morph::is_copyable_container<std::decay_t<T>>::value;
+        // if container, check the element type
+        static constexpr bool const container_of_scalars = container == true ? std::is_scalar<morph::value_type_t<T>>::value : false;
+        static constexpr bool const container_of_complex = container == true ? morph::is_complex<morph::value_type_t<T>>::value : false;
+        //! Set value. 0 for vector, 1 for scalar, 2 for complex scalar, 3 for vector of complex, -1 for non-number type
+        static constexpr int const value = scalar ? 1 : cplx ? 2 : container_of_scalars ? 0 : container_of_complex ? 3 : -1;
     };
 
 } // morph::

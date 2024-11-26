@@ -226,7 +226,7 @@ namespace morph {
      * exposed by morph::MathAlgo (client code should always select functions from
      * MathAlgo).
      *
-     * number_type::value will have been 1 - scalar (see number_type.h).
+     * number_type::value will have been 1 - scalar (see morph::number_type in trait_tests.h).
      */
     template<>
     struct MathImpl<1>
@@ -260,6 +260,38 @@ namespace morph {
             return norm_v;
         }
 
+    };
+
+    /*!
+     * Complex scalar MathAlgo algorithm specializations
+     *
+     * This is a specialization of MathImpl with vtype set to 2. The templates are applied if the
+     * type T is a complex scalar such as std::complex<float> or std::complex<double>.
+     *
+     * This specialization contains complex scalar implementations of algorithms which are exposed
+     * by morph::MathAlgo (client code should always select functions from MathAlgo).
+     *
+     * number_type::value will have been 2 - complex scalar (see morph::number_type in trait_tests.h).
+     */
+    template<>
+    struct MathImpl<2>
+    {
+        //! Complex scalar maxmin implementation
+        template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
+        static morph::range<typename Container::value_type> maxmin (const Container& values)
+        {
+            using T = typename Container::value_type;
+            using T_el = typename T::value_type; // If T is std::complex<float>, T_el will be float
+            // Note that there's no specialization of numeric_limits for std::complex, so set it up manually
+            morph::range<T> r ({std::numeric_limits<T_el>::max(), std::numeric_limits<T_el>::max() }, T{0, 0});
+            for (auto v : values) {
+                // comparison operations on complex numbers commonly consider their modulus - how
+                // far the number is from the origin.
+                r.max = std::abs(v) > std::abs(r.max) ? v : r.max;
+                r.min = std::abs(v) < std::abs(r.min) ? v : r.min;
+            }
+            return r;
+        }
     };
 
 } // namespace morph
