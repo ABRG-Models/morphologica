@@ -331,6 +331,8 @@ namespace morph {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
 
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
+
             auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_shaderprogs(this->parentVis).tprog, tfeatures);
 
             if (tfeatures.centre_horz == true) {
@@ -359,6 +361,8 @@ namespace morph {
             if (this->get_shaderprogs(this->parentVis).tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
+
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
             auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_shaderprogs(this->parentVis).tprog, tfeatures);
 
