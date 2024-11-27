@@ -524,7 +524,7 @@ add_test(testTools testTools)
 add_executable(testboxfilter testboxfilter.cpp)
 add_test(testboxfilter testboxfilter)
 
-# morph::Grid requires C++-20
+# morph::Gridct requires C++-20
 if(CXX_20_AVAILABLE)
   add_executable(testGridct testGridct.cpp)
   set_property(TARGET testGridct PROPERTY CXX_STANDARD 20)
@@ -562,6 +562,9 @@ add_test(testGridNeighbours testGridNeighbours)
 
 add_executable(testGrid_getabscissae testGrid_getabscissae.cpp)
 add_test(testGrid_getabscissae testGrid_getabscissae)
+
+add_executable(testGrid_profile testGrid_profile.cpp)
+add_test(testGrid_profile testGrid_profile)
 
 add_executable(testloadpng testloadpng.cpp)
 add_test(testloadpng testloadpng)

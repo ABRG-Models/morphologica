@@ -143,8 +143,8 @@ int main()
         constexpr morph::vec<float, 2> grid_spacing = {0.05f, 0.05f};
         morph::Grid grid(Nside, Nside, grid_spacing);
         // Data
-        std::vector<float> data(grid.n, 0.0);
-        for (unsigned int ri=0; ri<grid.n; ++ri) {
+        std::vector<float> data(grid.n(), 0.0);
+        for (unsigned int ri=0; ri<grid.n(); ++ri) {
             auto coord = grid[ri];
             float x = coord[0];
             float y = coord[1];

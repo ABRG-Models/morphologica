@@ -23,11 +23,11 @@ int main()
     constexpr float circum = morph::mathconst<float>::two_pi * radius;
     constexpr morph::vec<float, 2> grid_spacing = { circum/n_x, length/n_y };
     morph::Grid grid(n_x, n_y, grid_spacing);
-    std::cout << "Number of pixels in grid:" << grid.n << std::endl;
+    std::cout << "Number of pixels in grid:" << grid.n() << std::endl;
 
     // The Grid is wrapped around its y axis, so different values of y give different stripes. Here
     // we create some data with each row in the data set to an alternating 0 / increasing colour
-    morph::vvec<float> stripe_data (grid.n, 0.0f);
+    morph::vvec<float> stripe_data (grid.n(), 0.0f);
     for (unsigned int y = 0; y < n_y; ++y) {
         for (unsigned int x = 0; x < n_x; ++x) {
             stripe_data[x + n_x * y] = ((y+x) % 2 == 0 ? 1.0f : 0.0f);

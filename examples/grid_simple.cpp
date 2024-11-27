@@ -31,11 +31,11 @@ int main()
     // the constructor.
     morph::Grid grid(Nside, Nside, grid_spacing);
 
-    std::cout << "Number of pixels in grid:" << grid.n << std::endl;
+    std::cout << "Number of pixels in grid:" << grid.n() << std::endl;
 
     // Make some dummy data (a sine wave) to make an interesting surface
-    std::vector<float> data(grid.n, 0.0);
-    for (unsigned int ri=0; ri<grid.n; ++ri) {
+    std::vector<float> data(grid.n(), 0.0);
+    for (unsigned int ri=0; ri<grid.n(); ++ri) {
         auto coord = grid[ri];
         data[ri] = 0.05f + 0.05f * std::sin(20.0f * coord[0]) * std::sin(10.0f*coord[1]) ; // Range 0->1
     }

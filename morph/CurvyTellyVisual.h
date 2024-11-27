@@ -50,7 +50,7 @@ namespace morph {
             float hx = 0.5f * dx[0];
             float vy = 0.5f * dx[1];
 
-            unsigned int nrect = this->grid->n;
+            unsigned int nrect = this->grid->n();
             this->idx = 0;
 
             if (this->scalarData != nullptr) {

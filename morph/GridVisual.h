@@ -158,7 +158,7 @@ namespace morph {
             }
             if (this->scalarData != nullptr) {
                 // Check scalar data has same size as Grid
-                if (this->scalarData->size() != static_cast<std::size_t>(this->grid->n)) {
+                if (this->scalarData->size() != static_cast<std::size_t>(this->grid->n())) {
                     throw std::runtime_error ("GridVisual error: grid size does not match scalarData size");
                 }
 
@@ -170,7 +170,7 @@ namespace morph {
             } else if (this->vectorData != nullptr) {
 
                 // Check vector data
-                if (this->vectorData->size() != static_cast<std::size_t>(this->grid->n)) {
+                if (this->vectorData->size() != static_cast<std::size_t>(this->grid->n())) {
                     throw std::runtime_error ("GridVisual error: grid size does not match vectorData size");
                 }
 
@@ -254,7 +254,7 @@ namespace morph {
             this->idx = 0;
             this->setupScaling();
 
-            for (I ri = 0; ri < this->grid->n; ++ri) {
+            for (I ri = 0; ri < this->grid->n(); ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
                 this->vertex_push ((*this->grid)[ri][0]+centering_offset[0],
                                    (*this->grid)[ri][1]+centering_offset[1], dcopy[ri], this->vertexPositions);
@@ -325,7 +325,7 @@ namespace morph {
                 throw std::runtime_error ("morph::GridVisual: Unhandled morph::GridOrder");
             }
 
-            this->idx += this->grid->n;
+            this->idx += this->grid->n();
         }
 
         //! Initialize as a rectangle made of 4 triangles for each rect, with z position
@@ -354,7 +354,7 @@ namespace morph {
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
 
-            for (I ri = 0; ri < this->grid->n; ++ri) {
+            for (I ri = 0; ri < this->grid->n(); ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];
@@ -490,7 +490,7 @@ namespace morph {
 
             morph::vec<float> vtx_0, vtx_1, vtx_2, vtx_3, vtx_4;
 
-            for (I ri = 0; ri < this->grid->n; ++ri) {
+            for (I ri = 0; ri < this->grid->n(); ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];
@@ -666,7 +666,7 @@ namespace morph {
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
 
-            for (I ri = 0; ri < this->grid->n; ++ri) {
+            for (I ri = 0; ri < this->grid->n(); ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];

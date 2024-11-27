@@ -350,10 +350,10 @@ namespace morph {
         void setdata (const morph::Grid<unsigned int, Flt>& g, const morph::vvec<morph::vec<Flt, 2>>& _quivs,
                       const DatasetStyle& ds)
         {
-            // _quivs should have same size as g.n
-            if (_quivs.size() != g.n) {
+            // _quivs should have same size as g.n()
+            if (_quivs.size() != g.n()) {
                 std::stringstream ee;
-                ee << "Size mismatch. Grid has " << g.n << " elements but there are "
+                ee << "Size mismatch. Grid has " << g.n() << " elements but there are "
                    << _quivs.size() << " quivers";
                 throw std::runtime_error (ee.str());
             }
@@ -402,12 +402,12 @@ namespace morph {
 
             if (dsize > 0) {
                 // Transform the coordinate data into temporary containers
-                std::vector<Flt> ad (g.n, Flt{0});
-                std::vector<Flt> sd (g.n, Flt{0});
+                std::vector<Flt> ad (g.n(), Flt{0});
+                std::vector<Flt> sd (g.n(), Flt{0});
                 // Extract x coordinates and y coordinates from Grid
-                morph::vvec<Flt> g_v_x (g.n, Flt{0});
-                morph::vvec<Flt> g_v_y (g.n, Flt{0});
-                for (unsigned int i = 0; i < g.n; i++) {
+                morph::vvec<Flt> g_v_x (g.n(), Flt{0});
+                morph::vvec<Flt> g_v_y (g.n(), Flt{0});
+                for (unsigned int i = 0; i < g.n(); i++) {
                     g_v_x[i] = g.v_c[i][0];
                     g_v_y[i] = g.v_c[i][1];
                 }
