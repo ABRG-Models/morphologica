@@ -208,8 +208,14 @@ namespace morph {
             // but this has to happen BEFORE the call to VisualResources::freetype_init()
             this->init_window();
 
+#ifndef OWNED_MODE
+            this->setContext(); // For freetype_init
+#endif
             // Now make sure that Freetype is set up
             morph::VisualResources<glver>::i().freetype_init (this);
+#ifndef OWNED_MODE
+            this->releaseContext();
+#endif
         }
 
         //! Take a screenshot of the window. Return vec containing width * height or {-1, -1} on
@@ -330,6 +336,9 @@ namespace morph {
                                       const morph::vec<float, 3>& _toffset,
                                       const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
         {
+#ifndef OWNED_MODE
+            this->setContext(); // For VisualTextModel
+#endif
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
             auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures);
             if (tfeatures.centre_horz == true) {
@@ -353,6 +362,9 @@ namespace morph {
                                       morph::VisualTextModel<glver>*& tm,
                                       const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
         {
+#ifndef OWNED_MODE
+            this->setContext(); // For VisualTextModel
+#endif
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
             auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures);
             if (tfeatures.centre_horz == true) {
@@ -928,8 +940,6 @@ namespace morph {
             glfwSetWindowSizeCallback (this->window, window_size_callback_dispatch);
             glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
             glfwSetScrollCallback (this->window, scroll_callback_dispatch);
-
-            glfwMakeContextCurrent (this->window);
 #endif
         }
 
@@ -938,6 +948,10 @@ namespace morph {
         // required to render the Visual.
         void init_gl()
         {
+#ifndef OWNED_MODE
+            this->setContext();
+#endif
+
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
             GLenum error = glGetError();
@@ -1024,6 +1038,10 @@ namespace morph {
                                                                                morph::VisualFont::DVSans,
                                                                                0.035f, 64, morph::vec<float, 3>({0.0f, 0.0f, 0.0f}),
                                                                                this->title);
+#ifndef OWNED_MODE
+            // Release context after init_gl, meaning after constructor context is released.
+            this->releaseContext();
+#endif
         }
 
     private:
