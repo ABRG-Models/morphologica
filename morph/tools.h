@@ -13,6 +13,7 @@
 #include <map>
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <cstring>
 #include <sstream>
 #include <fstream>
@@ -53,7 +54,9 @@ extern "C" {
 /*!
  * Character sets useful when calling util::sanitize().
  *
- * These are ordered so that the most common chars appear earliest.
+ * These are ordered so that the most common chars appear earliest. Until C++20 (and constexpr
+ * std::string) I didn't fine a better way to express these (as string_view can't be
+ * concatenated). They're used to define std::string_views below.
  */
 #define CHARS_NUMERIC            "0123456789"
 #define CHARS_ALPHA              "etaoinshrdlcumwfgypbvkjxqzETAOINSHRDLCUMWFGYPBVKJXQZ"
@@ -63,25 +66,31 @@ extern "C" {
 #define CHARS_NUMERIC_ALPHALOWER "etaoinshrdlcumwfgypbvkjxqz0123456789"
 #define CHARS_NUMERIC_ALPHAUPPER "0123456789ETAOINSHRDLCUMWFGYPBVKJXQZ"
 
-/*!
- * These are the chars which are acceptable for use in both unix, mac AND windows file
- * names. This doesn't guarantee a safe Windows filename, as Windows imposes some extra
- * conditions (no '.' at end of name, some files such as NUL.txt AUX.txt disallowed).
- */
-#define COMMON_FILE_SAFE_CHARS        CHARS_NUMERIC_ALPHA"_-.{}^[]`=,;"
-
-/*!
- * Chars which are safe for IP domainnames
- */
-#define IP_DOMAINNAME_SAFE_CHARS      CHARS_NUMERIC_ALPHA"-."
-
-/*!
- * Chars which are safe for IP addresses
- */
-#define IP_ADDRESS_SAFE_CHARS         CHARS_NUMERIC"."
-
 namespace morph
 {
+    /*!
+     * Chars which are safe for IP domainnames. Allow numeric and alpha chars, the underscore and the
+     * hyphen. colon is strictly allowed, but best avoided.
+     */
+    static constexpr std::string_view chars_xml_safe {CHARS_NUMERIC_ALPHA"_-"};
+
+    /*!
+     * These are the chars which are acceptable for use in both unix, mac AND windows file
+     * names. This doesn't guarantee a safe Windows filename, as Windows imposes some extra
+     * conditions (no '.' at end of name, some files such as NUL.txt AUX.txt disallowed).
+     */
+    static constexpr std::string_view chars_common_file_safe {CHARS_NUMERIC_ALPHA"_-.{}^[]`=,;"};
+
+    /*!
+     * Chars which are safe for IP domainnames
+     */
+    static constexpr std::string_view chars_ip_domainname_safe {CHARS_NUMERIC_ALPHA"-."};
+
+    /*!
+     * Chars which are safe for IP addresses
+     */
+    static constexpr std::string_view chars_ip_address_safe {CHARS_NUMERIC"."};
+
     //! Allows use of transform and tolower() on strings with GNU compiler
     struct to_lower { char operator() (const char c) const { return tolower(c); } };
 
@@ -607,7 +616,7 @@ namespace morph
         void conditionAsFilename (std::string& str)
         {
             std::string::size_type ptr = std::string::npos;
-            while ((ptr = str.find_last_not_of (COMMON_FILE_SAFE_CHARS, ptr)) != std::string::npos) {
+            while ((ptr = str.find_last_not_of (morph::chars_common_file_safe, ptr)) != std::string::npos) {
                 str[ptr] = '_'; // Replacement character
                 ptr--;
             }
@@ -625,7 +634,7 @@ namespace morph
 
             // We allow numeric and alpha chars, the underscore and the hyphen. colon
             // strictly allowed, but best avoided.
-            while ((ptr = str.find_last_not_of (CHARS_NUMERIC_ALPHA"_-", ptr)) != std::string::npos) {
+            while ((ptr = str.find_last_not_of (morph::chars_xml_safe, ptr)) != std::string::npos) {
                 // Replace the char with an underscore:
                 str[ptr] = '_';
                 ptr--;
