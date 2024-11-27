@@ -32,11 +32,11 @@ int main()
     // the constructor.
     morph::Grid<unsigned int, float> grid(N_pix_w, N_pix_h, grid_spacing);
 
-    std::cout << "Number of pixels in grid:" << grid.n << std::endl;
+    std::cout << "Number of pixels in grid:" << grid.n() << std::endl;
 
     // Make some dummy data (a sine wave) to make an interesting surface
-    morph::vvec<morph::vec<float, 3>> data(grid.n, morph::vec<float, 3>({0.0f, 0.0f, 0.0f}));
-    for (unsigned int ri=0; ri<grid.n; ++ri) {
+    morph::vvec<morph::vec<float, 3>> data(grid.n(), morph::vec<float, 3>({0.0f, 0.0f, 0.0f}));
+    for (unsigned int ri=0; ri<grid.n(); ++ri) {
         // auto coord = grid[ri];
         data[ri][0] =  static_cast<double>(std::rand()) / RAND_MAX ; // Range 0->1
     }

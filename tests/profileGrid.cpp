@@ -41,7 +41,7 @@ int main()
 
     sc::time_point t4 = sc::now();
 
-    std::cout << "Grid sizes: " << grid_ct.n << " and " << grid_rt.n << " and " << cgrid.num() << std::endl;
+    std::cout << "Grid sizes: " << grid_ct.n << " and " << grid_rt.n() << " and " << cgrid.num() << std::endl;
 
     std::cout << "Gridct instantiation (without memory vecs): " << duration_cast<milliseconds>(t1-t0).count() << " ms\n";
     std::cout << "Gridct instantiation (WITH memory vecs):    " << duration_cast<milliseconds>(t2-t1).count() << " ms\n";
@@ -76,24 +76,24 @@ int main()
 
     one_coordinate = {0,0};
     t0 = sc::now();
-    for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt.coord(i); }
+    for (unsigned int i = 0; i < grid_rt.n(); ++i) { one_coordinate += grid_rt.coord(i); }
     t1 = sc::now();
     std::cout << "Grid (no mem) access as '+= grid_rt.coord(i)':        " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     one_coordinate = {0,0};
     std::cout << "\nGrid WITH memory\n------------------------------\n";
     t0 = sc::now();
-    for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt[i]; }
+    for (unsigned int i = 0; i < grid_rt.n(); ++i) { one_coordinate += grid_rt[i]; }
     t1 = sc::now();
     std::cout << "Grid (WITH mem) access as  '+= grid_rt[i]':           " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     t0 = sc::now();
-    for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt.coord_ne(i); }
+    for (unsigned int i = 0; i < grid_rt.n(); ++i) { one_coordinate += grid_rt.coord_ne(i); }
     t1 = sc::now();
     std::cout << "Grid neighbour access as  '+= grid_rt.coord_ne(i)':   " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     t0 = sc::now();
-    for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt.coord_nne(i); }
+    for (unsigned int i = 0; i < grid_rt.n(); ++i) { one_coordinate += grid_rt.coord_nne(i); }
     t1 = sc::now();
     std::cout << "Grid neighbour access as  '+= grid_rt.coord_nne(i)':  " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 

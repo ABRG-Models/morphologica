@@ -78,8 +78,8 @@ int main()
     constexpr morph::vec<float, 2> grid_spacing = { pw, pw };
     morph::Grid grid(N, N, grid_spacing);
     // Dummy data encodes 2D data
-    std::vector<morph::vec<float, 3>> data(grid.n);
-    for (int j = 0; j < grid.n; ++j) {
+    std::vector<morph::vec<float, 3>> data(grid.n());
+    for (int j = 0; j < grid.n(); ++j) {
         data[j] = (grid[j] / (N * pw)).plus_one_dim();
     }
 

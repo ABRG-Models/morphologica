@@ -87,6 +87,7 @@ namespace morph {
         GridOrder order = morph::GridOrder::bottomleft_to_topright;
 
     public:
+
         //! Setter for w
         void set_w (const I _w) { this->w = _w; this->init(); }
         //! Setter for h
@@ -113,7 +114,8 @@ namespace morph {
         // Getters
         I get_w() const { return this->w; }
         I get_h() const { return this->h; }
-        I get_n_pixels() const { return this->w * this->h; }
+        //! Get the number of pixels by computation.
+        I n() const { return this->w * this->h; }
         morph::vec<I, 2> get_dims() const { return morph::vec<I, 2>{this->w, this->h}; }
         morph::vec<C, 2> get_dx() const { return this->dx; }
         morph::vec<C, 2> get_offset() const { return this->offset; }
@@ -223,9 +225,6 @@ namespace morph {
             return ss.str();
         }
 
-        //! The number of elements in the grid. Public, but don't change it manually.
-        I n = w * h;
-
         //! Constructor
         Grid (const I _w, const I _h,
               const morph::vec<C, 2> _dx = { C{1}, C{1} },
@@ -271,15 +270,14 @@ namespace morph {
                 }
             }
 
-            this->n = this->w * this->h;
-            this->v_c.resize (this->n);
-            for (I i = 0; i < this->n; ++i) { this->v_c[i] = this->coord (i); }
+            this->v_c.resize (this->n());
+            for (I i = 0; i < this->n(); ++i) { this->v_c[i] = this->coord (i); }
         }
 
         //! Indexing the grid will return a memorized vec location.
         morph::vec<C, 2> operator[] (const I index) const
         {
-            return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()} : this->v_c[index];
+            return index >= this->n() ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()} : this->v_c[index];
         }
 
         //! A function to find the index of the grid that is closest to the given coordinate.
@@ -322,13 +320,13 @@ namespace morph {
         //! A named function that does the same as operator[]
         morph::vec<C, 2> coord_lookup (const I index) const
         {
-            return index >= this->n ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()} : this->v_c[index];
+            return index >= this->n() ? morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()} : this->v_c[index];
         }
 
         //! Compute and return the coordinate with the given index
         morph::vec<C, 2> coord (const I index) const
         {
-            if (index >= this->n) { return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}; }
+            if (index >= this->n()) { return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}; }
             morph::vec<C, 2> loc = this->offset;
             if (order == morph::GridOrder::bottomleft_to_topright) {
                 loc[I{0}] += this->dx[I{0}] * (index % this->w);
@@ -369,7 +367,7 @@ namespace morph {
         morph::vec<C, 2> coord_ne (const I index) const
         {
             I idx = index_ne (index);
-            if (idx < n) { return (*this)[idx]; }
+            if (idx < this->n()) { return (*this)[idx]; }
             return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
         //! Return true if the index has a neighbour to the east
@@ -393,7 +391,7 @@ namespace morph {
         morph::vec<C, 2> coord_nw (const I index) const
         {
             I idx = index_nw (index);
-            if (idx < n) { return (*this)[idx]; }
+            if (idx < this->n()) { return (*this)[idx]; }
             return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
         //! Return true if the index has a neighbour to the west
@@ -452,7 +450,7 @@ namespace morph {
         morph::vec<C, 2> coord_nn (const I index) const
         {
             I idx = index_nn (index);
-            if (idx < n) { return (*this)[idx]; }
+            if (idx < this->n()) { return (*this)[idx]; }
             return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
         //! Return true if the index has a neighbour to the north
@@ -512,7 +510,7 @@ namespace morph {
         morph::vec<C, 2> coord_ns (const I index) const
         {
             I idx = index_ns (index);
-            if (idx < n) { return (*this)[idx]; }
+            if (idx < this->n()) { return (*this)[idx]; }
             return morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
         //! Return true if the index has a neighbour to the south
@@ -523,12 +521,12 @@ namespace morph {
         I index_nne (const I index) const
         {
             I nn = this->index_nn (index);
-            return nn < n ? index_ne (nn) : std::numeric_limits<I>::max();
+            return nn < this->n() ? index_ne (nn) : std::numeric_limits<I>::max();
         }
         morph::vec<C, 2> coord_nne (const I index) const
         {
             I idx = this->index_nne (index);
-            return idx < n ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
+            return idx < this->n() ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
 
         //! Neighbour north west
@@ -536,12 +534,12 @@ namespace morph {
         I index_nnw (const I index) const
         {
             I nn = this->index_nn (index);
-            return nn < n ? index_nw (nn) : std::numeric_limits<I>::max();
+            return nn < this->n() ? index_nw (nn) : std::numeric_limits<I>::max();
         }
         morph::vec<C, 2> coord_nnw (const I index) const
         {
             I idx = this->index_nnw (index);
-            return idx < n ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
+            return idx < this->n() ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
 
         //! Neighbour south east
@@ -549,12 +547,12 @@ namespace morph {
         I index_nse (const I index) const
         {
             I ns = this->index_ns (index);
-            return ns < n ? index_ne (ns) : std::numeric_limits<I>::max();
+            return ns < this->n() ? index_ne (ns) : std::numeric_limits<I>::max();
         }
         morph::vec<C, 2> coord_nse (const I index) const
         {
             I idx = this->index_nse (index);
-            return idx < n ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
+            return idx < this->n() ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
 
         //! Neighbour south west
@@ -562,12 +560,12 @@ namespace morph {
         I index_nsw (const I index) const
         {
             I ns = this->index_ns (index);
-            return ns < n ? index_nw (ns) : std::numeric_limits<I>::max();
+            return ns < this->n() ? index_nw (ns) : std::numeric_limits<I>::max();
         }
         morph::vec<C, 2> coord_nsw (const I index) const
         {
             I idx = this->index_nsw (index);
-            return idx < n ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
+            return idx < this->n() ? (*this)[idx] : morph::vec<C, 2>{std::numeric_limits<C>::max(), std::numeric_limits<C>::max()};
         }
 
         /*!
@@ -654,17 +652,17 @@ namespace morph {
         //! Return the row for the index
         I row (const I index) const {
             if (this->rowmaj() == true) {
-                return index < n ? index / w : std::numeric_limits<I>::max();
+                return index < this->n() ? index / w : std::numeric_limits<I>::max();
             } // else colmaj
-            return index < n ? index % h : std::numeric_limits<I>::max();
+            return index < this->n() ? index % h : std::numeric_limits<I>::max();
         }
 
         //! Return the col for the index
         I col (const I index) const {
             if (this->rowmaj() == true) {
-                return index < n ? index % w : std::numeric_limits<I>::max();
+                return index < this->n() ? index % w : std::numeric_limits<I>::max();
             } // else colmaj
-            return index < n ? index / h : std::numeric_limits<I>::max();
+            return index < this->n() ? index / h : std::numeric_limits<I>::max();
         }
 
         /*!
