@@ -449,12 +449,12 @@ and `morph::VisualModel` automatically obtain the correct context
 whenever they require it.
 
 Note that the `morph::Visual` constructors will set the OpenGL
-context, and then release it when they are complete. VisualModel
-'Setup' code such as VisualModel::finalize and VisualModel::addLabel
-will also obtain and then release the context. Other calls, especually
-render calls, that require the context may acquire it when called and
-may not release it. It is usually unnecessary to release the context
-for one window before setting it for another.
+context, and then release it when they complete. VisualModel 'Setup'
+code such as `VisualModel::finalize` and `VisualModel::addLabel` will
+also obtain and then release the context. Other calls (such as the
+render calls) that require the context may acquire it when called and
+may not release it when they return. It is usually unnecessary to
+release the context for one window before setting it for another.
 
 ## OpenGL Version
 
