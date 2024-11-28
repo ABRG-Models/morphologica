@@ -63,9 +63,28 @@ int main()
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot
     hgv->finalize();
+
+    if (v.checkContext() == true) {
+        std::cout << "I have the context after hgv->finalize()\n";
+    } else {
+        std::cout << "I don't have the context after hgv->finalize()\n";
+    }
+
     v.addVisualModel (hgv);
 
+    if (v.checkContext() == true) {
+        std::cout << "I have the context after addVisualModel\n";
+    } else {
+        std::cout << "I don't have the context after addVisualModel()\n";
+    }
+
     v.keepOpen();
+
+    if (v.checkContext() == true) {
+        std::cout << "I have the context after user requested exit\n";
+    } else {
+        std::cout << "I don't have the context after user requested exit\n";
+    }
 
     return 0;
 }
