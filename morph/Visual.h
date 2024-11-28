@@ -263,6 +263,21 @@ namespace morph {
 
         //! Release the OpenGL context
         void releaseContext() { glfwMakeContextCurrent (nullptr); }
+        // A callback friendly wrapper
+        static void release_context (morph::Visual<glver>* _v) { _v->releaseContext(); };
+
+        /*!
+         * \brief OpenGL context check
+         *
+         * You can see if the OpenGL context is held at any time in your program. This function
+         * returns true if there is a non-null window and we currently 'have that context'. This
+         * should return true after a call to Visual::setContext and false after a call to
+         * Visual::releaseContext.
+         */
+        bool checkContext()
+        {
+            return this->window == nullptr ? false : (glfwGetCurrentContext() == this->window);
+        }
 #endif
 
         /*!
@@ -277,6 +292,7 @@ namespace morph {
             model->get_tprog = &morph::Visual<glver>::get_tprog;
 #ifndef OWNED_MODE
             model->setContext = &morph::Visual<glver>::set_context;
+            model->releaseContext = &morph::Visual<glver>::release_context;
 #endif
         }
 
@@ -351,6 +367,9 @@ namespace morph {
             }
             morph::VisualTextModel<glver>* tm = tmup.get();
             this->texts.push_back (std::move(tmup));
+#ifndef OWNED_MODE
+            this->releaseContext();
+#endif
             return tm->getTextGeometry();
         }
 
@@ -377,6 +396,9 @@ namespace morph {
             }
             tm = tmup.get();
             this->texts.push_back (std::move(tmup));
+#ifndef OWNED_MODE
+            this->releaseContext();
+#endif
             return tm->getTextGeometry();
         }
 

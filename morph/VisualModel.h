@@ -263,9 +263,13 @@ namespace morph {
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             this->initializeVertices();
             this->postVertexInitRequired = true;
+            // Release context after creating and finalizing this VisualModel. On Visual::render(),
+            // context will be re-acquired.
+            if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
         }
 
-        //! Render the VisualModel
+        //! Render the VisualModel. Note that it is assumed that the OpenGL context has been
+        //! obtained by the parent Visual::render call.
         virtual void render()
         {
             if (this->hide == true) { return; }
@@ -345,6 +349,10 @@ namespace morph {
             }
 
             this->texts.push_back (std::move(tmup));
+
+            // As this is a setup function, release the context
+            if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
+
             return this->texts.back()->getTextGeometry();
         }
 
@@ -377,6 +385,10 @@ namespace morph {
 
             this->texts.push_back (std::move(tmup));
             tm = this->texts.back().get();
+
+            // As this is a setup function, release the context
+            if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
+
             return this->texts.back()->getTextGeometry();
         }
 
@@ -675,6 +687,8 @@ namespace morph {
         std::function<GLuint(morph::Visual<glver>*)> get_tprog;
         //! Set OpenGL context. Should call parentVis->setContext(). Can be nullptr (if in OWNED_MODE).
         std::function<void(morph::Visual<glver>*)> setContext;
+        //! Release OpenGL context. Should call parentVis->releaseContext(). Can be nullptr (if in OWNED_MODE).
+        std::function<void(morph::Visual<glver>*)> releaseContext;
 
         //! Setter for the parent pointer, parentVis
         void set_parent (morph::Visual<glver>* _vis)

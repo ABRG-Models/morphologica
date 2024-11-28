@@ -415,7 +415,7 @@ event queues (for mouse and keyboard input) are managed. This differs
 between Mac, Windows and Linux/X windows. On some platforms there is a
 common event processing queue, on others there is per-window event
 processing. Calling `Visual::poll()`, `Visual::wait()` and
-`Visual::waitevents() only on the main thread will ensure
+`Visual::waitevents()` only on the main thread will ensure
 cross-platform compatibility for your code.  There's a useful
 discussion on this subject
 [here](https://discourse.glfw.org/t/multithreading-glfw/573) (see
@@ -425,11 +425,36 @@ There are no issues if you want to multi-thread the rest of your
 program - the parts that compute the values that will be visualized
 with `morph::Visual`.
 
-# OpenGL version and `OWNED_MODE`
+# OpenGL context, version and `OWNED_MODE`
 
 `morph::Visual` and `morph::VisualModel` conspire to hide most of the
 OpenGL internals away from you, the client coder. However, there *is*
 some background knowledge that it's useful to understand.
+
+## OpenGL context
+
+OpenGL has a concept called the 'context'. This refers to the memory
+structures created on the CPU and GPU for a given window of your
+program that make it possible to draw content. There's generally one
+context per window (though it is also possible to create a context
+without a window or any graphics).
+
+You program must always 'obtain the correct context' when drawing to a
+window. This is essential if your program has two or more windows,
+each with its own context.
+
+You won't generally have to worry about the OpenGL context when
+working with morphologica, because the functions in `morph::Visual`
+and `morph::VisualModel` automatically obtain the correct context
+whenever they require it.
+
+Note that the `morph::Visual` constructors will set the OpenGL
+context, and then release it when they are complete. VisualModel
+'Setup' code such as VisualModel::finalize and VisualModel::addLabel
+will also obtain and then release the context. Other calls, especually
+render calls, that require the context may acquire it when called and
+may not release it. It is usually unnecessary to release the context
+for one window before setting it for another.
 
 ## OpenGL Version
 
