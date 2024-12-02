@@ -261,14 +261,14 @@ namespace morph {
         //! Lock the context mutext to prevent locking across multiple. Then sets the context.
         void lockContext() { 
             this->context_mutex.lock(); 
-            setContext();
+            this->setContext();
         }
         
         //! Attempt to lock the context mutext returns if locking was successful. 
         //! If success sets the context.
         bool tryLockContext() { 
             if(this->context_mutex.try_lock()){
-                setContext();
+                this->setContext();
                 return true;
             } else {
                 return false;
@@ -277,7 +277,7 @@ namespace morph {
 
         //! releases the context and unlocks the context mutex.
         void unlockContext() {
-            releaseContext();
+            this->releaseContext();
             this->context_mutex.unlock(); 
         }
 
