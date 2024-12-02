@@ -1061,7 +1061,7 @@ namespace morph {
         morph::win_t* window = nullptr;
 
 #ifndef OWNED_MODE
-        //! Context mutex to prevent contexts being aquired in a none threadsafe manner.
+        //! Context mutex to prevent contexts being acquired in a non-threadsafe manner.
         std::mutex context_mutex;
 #endif
 
