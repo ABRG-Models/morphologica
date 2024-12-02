@@ -62,6 +62,38 @@ vectors on which mathematical operations can be called.
 
 `vvec` is very similar to `vec`, sharing many member functions with the same name.
 
+## Access
+
+As an `std::vector`-like object, your `vvec` is indexed just like your `vector`. Use any of the array access `operator[]`, the `at()` method, or STL iterators.
+
+```c++
+morph::vvec<int> vvf = { 1, 2, 3 };
+std::cout << "First element of array: " << vvf[0] << std::endl;
+try {
+  std::cout << "First element of array: " << vvf.at(0) << std::endl;
+} catch const (const std::out_of_range& e) { /* Uh oh */ }
+moprh::vvec<int>::iterator vvf_iter = vvf.begin();
+std::cout << "First element of array: " << *vvf_iter << std::endl;
+```
+
+### Signed indices
+
+`vvec` does introduce one new way to index its content. This is the ability to use a signed index with the methods `at_signed()` and `c_at_signed()`. This allows you to access elements at the end or your `vvec` with this code:
+
+```c++
+morph::vvec<int> vvf = { 1, 2, 3 };
+std::cout << "This will output '3'" << vvf.at_signed (-1) << std::endl;
+std::cout << "Non-negative indices work as usual:" << std::endl;
+std::cout << "This will output '1'" << vvf.at_signed (0) << std::endl;
+std::cout << "This will output '2'" << vvf.at_signed (1) << std::endl;
+std::cout << "This will output '3'" << vvf.at_signed (2) << std::endl;
+```
+
+It was added to access a quantity that was naturally indexed with a [-m +m] range of indices (the order of a spherical harmonic function). Internally, it uses `.at()` and iterators. It is a templated function that is only enabled for signed index type.
+
+
+`c_at_signed` is the `const` version of `at_signed`, for situations where you need to read from your `vvec` with a promise not to change any of the elements.
+
 ## Arithmetic operators
 
 You can use arithmetic operators on `vvec` objects with their operations being applied element wise. operations with other `vvec` objects and with scalars are all supported and should work as expected.
