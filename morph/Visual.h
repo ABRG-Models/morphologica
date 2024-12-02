@@ -267,19 +267,18 @@ namespace morph {
         //! Attempt to lock the context mutext returns if locking was successful. 
         //! If success sets the context.
         bool tryLockContext() { 
-          if(context_mutex.try_lock()){
-            set_context();
-            return true;
-          } else {
-            return false;
-          }
-          
+            if(context_mutex.try_lock()){
+                setContext();
+                return true;
+            } else {
+                return false;
+            }
         } 
 
         //! releases the context and unlocks the context mutex.
         void unlockContext() {
-          releaseContext();
-          context_mutex.unlock(); 
+            releaseContext();
+            context_mutex.unlock(); 
         }
 
         //! Release the OpenGL context
