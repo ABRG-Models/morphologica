@@ -260,14 +260,14 @@ namespace morph {
 
         //! Lock the context mutext to prevent locking across multiple. Then sets the context.
         void lockContext() { 
-            context_mutex.lock(); 
+            this->context_mutex.lock(); 
             setContext();
         }
         
         //! Attempt to lock the context mutext returns if locking was successful. 
         //! If success sets the context.
         bool tryLockContext() { 
-            if(context_mutex.try_lock()){
+            if(this->context_mutex.try_lock()){
                 setContext();
                 return true;
             } else {
@@ -278,7 +278,7 @@ namespace morph {
         //! releases the context and unlocks the context mutex.
         void unlockContext() {
             releaseContext();
-            context_mutex.unlock(); 
+            this->context_mutex.unlock(); 
         }
 
         //! Release the OpenGL context
