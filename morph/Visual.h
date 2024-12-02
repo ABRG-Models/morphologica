@@ -258,15 +258,16 @@ namespace morph {
         // A callback friendly wrapper
         static void set_context (morph::Visual<glver>* _v) { _v->setContext(); };
 
-        //! Lock the context mutext to prevent locking across multiple. Then sets the context.
+        //! Lock the context mutex to prevent accessing the OpenGL context from multiple threads
+        //! then obtain the context.
         void lockContext()
         {
             this->context_mutex.lock();
             this->setContext();
         }
 
-        //! Attempt to lock the context mutext returns if locking was successful. 
-        //! If success sets the context.
+        //! Attempt to lock the context mutex. If the lock is obtained, set the OpenGL context
+        //! and return true. If the lock is not obtained, return false.
         bool tryLockContext()
         {
             if (this->context_mutex.try_lock()) {
@@ -277,7 +278,7 @@ namespace morph {
             }
         }
 
-        //! releases the context and unlocks the context mutex.
+        //! Release the OpenGL context and unlock the context mutex.
         void unlockContext()
         {
             this->releaseContext();
