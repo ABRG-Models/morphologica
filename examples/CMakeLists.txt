@@ -442,6 +442,12 @@ if(USE_GLEW)
   target_link_libraries(twowindows GLEW::GLEW)
 endif()
 
+add_executable(twowindows_mutex twowindows_mutex.cpp)
+target_link_libraries(twowindows_mutex OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(twowindows_mutex GLEW::GLEW)
+endif()
+
 add_executable(threewindows threewindows.cpp)
 target_link_libraries(threewindows OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
