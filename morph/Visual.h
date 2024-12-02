@@ -81,6 +81,9 @@
 #include <cstddef>
 
 #include <morph/VisualDefaultShaders.h>
+#ifndef OWNED_MODE
+#include <mutex>
+#endif 
 
 // Use Lode Vandevenne's PNG encoder
 #define LODEPNG_NO_COMPILE_DECODER 1
@@ -254,6 +257,30 @@ namespace morph {
         void setContext() { glfwMakeContextCurrent (this->window); }
         // A callback friendly wrapper
         static void set_context (morph::Visual<glver>* _v) { _v->setContext(); };
+
+        //! Lock the context mutext to prevent locking across multiple. Then sets the context.
+        void lockContext() { 
+            context_mutex.lock(); 
+            setContext();
+        }
+        
+        //! Attempt to lock the context mutext returns if locking was successful. 
+        //! If success sets the context.
+        bool tryLockContext() { 
+          if(context_mutex.try_lock()){
+            set_context();
+            return true;
+          } else {
+            return false;
+          }
+          
+        } 
+
+        //! releases the context and unlocks the context mutex.
+        void unlockContext() {
+          releaseContext();
+          context_mutex.unlock(); 
+        }
 
         //! Release the OpenGL context
         void releaseContext() { glfwMakeContextCurrent (nullptr); }
@@ -1030,6 +1057,11 @@ namespace morph {
         //! The window (and OpenGL context) for this Visual
         morph::win_t* window = nullptr;
 
+#ifndef OWNED_MODE
+        //! Context mutext to prevent contexts being aquired in a none threadsafe manner.
+        std::mutex context_mutex;
+#endif
+
         //! Current window width
         int window_w = 640;
         //! Current window height
@@ -1216,6 +1248,7 @@ namespace morph {
                 std::cout << "Shift-Down: Halve cyl proj radius\n";
                 std::cout << "Ctrl-Up: Double cyl proj height\n";
                 std::cout << "Ctrl-Down: Halve cyl proj height\n";
+                std::cout << std::flush;
             }
 
             if (_key == key::l && (mods & keymod::control) && action == keyaction::press) {
