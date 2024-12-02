@@ -1430,6 +1430,14 @@ namespace morph {
             return needs_render;
         }
 
+        //! Rotate the scene about axis by angle (angle in radians)
+        void rotate_scene (const morph::vec<float>& axis, const float angle)
+        {
+            this->rotationAxis = axis;
+            morph::quaternion<float> rotnQuat (this->rotationAxis, -angle);
+            this->rotation.postmultiply (rotnQuat);
+        }
+
         virtual bool cursor_position_callback (double x, double y)
         {
             this->cursorpos[0] = static_cast<float>(x);

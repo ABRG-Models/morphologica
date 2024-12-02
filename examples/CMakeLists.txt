@@ -454,6 +454,12 @@ if(USE_GLEW)
   target_link_libraries(rod GLEW::GLEW)
 endif()
 
+add_executable(rod_pan rod_pan.cpp)
+target_link_libraries(rod_pan OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(rod_pan GLEW::GLEW)
+endif()
+
 # This example uses constexpr code
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   add_executable(grating grating.cpp)
