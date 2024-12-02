@@ -72,27 +72,42 @@ std::cout << "First element of array: " << vvf[0] << std::endl;
 try {
   std::cout << "First element of array: " << vvf.at(0) << std::endl;
 } catch const (const std::out_of_range& e) { /* Uh oh */ }
-moprh::vvec<int>::iterator vvf_iter = vvf.begin();
+morph::vvec<int>::iterator vvf_iter = vvf.begin();
 std::cout << "First element of array: " << *vvf_iter << std::endl;
 ```
 
 ### Signed indices
 
-`vvec` does introduce one new way to index its content. This is the ability to use a signed index with the methods `at_signed()` and `c_at_signed()`. This allows you to access elements at the end or your `vvec` with this code:
+`vvec` does introduce one new way to index its content.
+This is the ability to use a signed index with the methods `at_signed()` and `c_at_signed()`.
+This allows you to access elements at the end or your `vvec` with this code:
 
 ```c++
 morph::vvec<int> vvf = { 1, 2, 3 };
-std::cout << "This will output '3'" << vvf.at_signed (-1) << std::endl;
-std::cout << "Non-negative indices work as usual:" << std::endl;
-std::cout << "This will output '1'" << vvf.at_signed (0) << std::endl;
-std::cout << "This will output '2'" << vvf.at_signed (1) << std::endl;
-std::cout << "This will output '3'" << vvf.at_signed (2) << std::endl;
+try {
+  std::cout << "This will output '3'" << vvf.at_signed (-1) << std::endl;
+  std::cout << "This will output '2'" << vvf.at_signed (-2) << std::endl;
+  std::cout << "This will output '1'" << vvf.at_signed (-3) << std::endl;
+  std::cout << "This will cause an exception: " << vvf.at_signed (-4) << std::endl;
+} catch const (const std::out_of_range& e) { /* Too negative (or too positive) */ }
 ```
 
-It was added to access a quantity that was naturally indexed with a [-m +m] range of indices (the order of a spherical harmonic function). Internally, it uses `.at()` and iterators. It is a templated function that is only enabled for signed index type.
+Non-negative indices work as if you called `.at(index)`:
+```c++
+try {
+  std::cout << "This will output '1'" << vvf.at_signed (0) << std::endl;
+  std::cout << "This will output '2'" << vvf.at_signed (1) << std::endl;
+  std::cout << "This will output '3'" << vvf.at_signed (2) << std::endl;
+  std::cout << "This will cause an exception: " << vvf.at_signed (3) << std::endl;
+} catch const (const std::out_of_range& e) { /* Too positive (or too negative) */ }
+```
+
+`at_signed()` was added to access a quantity that was naturally indexed with a [-m +m] range of indices (the order of a spherical harmonic function).
+Internally, it uses `.at()` and iterators.
+It is a templated function that is only enabled for signed index type (`at_signed(1u)` will not compile)).
 
 
-`c_at_signed` is the `const` version of `at_signed`, for situations where you need to read from your `vvec` with a promise not to change any of the elements.
+`c_at_signed()` is the `const` version of `at_signed()` for situations where you need to read from your `vvec` with a promise not to change any of the elements.
 
 ## Arithmetic operators
 
