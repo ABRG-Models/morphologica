@@ -82,7 +82,7 @@
 
 #include <morph/VisualDefaultShaders.h>
 #ifndef OWNED_MODE
-#include <mutex>
+# include <mutex>
 #endif
 
 // Use Lode Vandevenne's PNG encoder
@@ -264,27 +264,26 @@ namespace morph {
         // A callback friendly wrapper
         static void set_context (morph::Visual<glver>* _v) { _v->setContext(); };
 
-        //! Lock the context  to prevent accessing the OpenGL context from multiple threads
+        //! Lock the context to prevent accessing the OpenGL context from multiple threads
         //! then obtain the context.
         void lockContext()
         {
-            this->context_.lock();
+            this->context_mutex.lock();
             this->setContext();
         }
 
-        //! Attempt to lock the context . If the lock is obtained, set the OpenGL context
-        //! and return true. If the lock is not obtained, return false.
+        //! Attempt to lock the context. If the mutex lock is obtained, set the OpenGL
+        //! context and return true. If the mutex lock is not obtained, return false.
         bool tryLockContext()
         {
-            if (this->context_.try_lock()) {
+            if (this->context_mutex.try_lock()) {
                 this->setContext();
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
 
-        //! Release the OpenGL context and unlock the context .
+        //! Release the OpenGL context and unlock the context mutex.
         void unlockContext()
         {
             this->releaseContext();
