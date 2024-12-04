@@ -117,8 +117,8 @@ namespace morph {
         }
 
 
-        //! Update the colours based on vvec<T> data
-        void updateColours()
+        //! reinit just the colours based on vvec<T> data
+        void reinitColours()
         {
             if (this->data.empty() && this->cdata.empty()) { return; }
 

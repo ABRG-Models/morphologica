@@ -42,6 +42,51 @@ namespace morph {
             // Note: VisualModel::finalize() should be called before rendering
         }
 
+        // If you only need to change the colours in your GridVisual (for example, if you are
+        // visualizing it flat), then it is about 4 times faster to only update the colours.
+        void reinitColours()
+        {
+            if (this->grid == nullptr) {
+                throw std::runtime_error ("grid is nullptr in reinitColours()");
+            }
+
+            std::size_t n_data = static_cast<std::size_t>(this->grid->n());
+            std::size_t n_cvertices_per_datum = 0;
+            // Different gridVisModes will have generated different numbers of OpenGL colour vertices
+            switch (this->gridVisMode) {
+            case GridVisMode::Triangles:
+            {
+                n_cvertices_per_datum = 1; // initializeVertices used initializeVerticesTris
+                break;
+            }
+            case GridVisMode::Columns:
+            {
+                n_cvertices_per_datum = 13; // used initializeVerticesCols
+                break;
+            }
+            case GridVisMode::Pixels:
+            case GridVisMode::RectInterp:
+            default:
+            {
+                n_cvertices_per_datum = 5; // used initializeVerticesRectsInterpolated or initializeVerticesPixels
+                break;
+            }
+            }
+            if (this->vertexColors.size() < n_data * n_cvertices_per_datum * 3) {
+                throw std::runtime_error ("vertexColors is not big enough to reinitColours()");
+            }
+
+            // now sub-call the scalar or vector reinit colours function
+            if (this->scalarData != nullptr) {
+                this->reinitColoursScalar (n_data, n_cvertices_per_datum);
+            } else if (this->vectorData != nullptr) {
+                this->reinitColoursVector (n_data, n_cvertices_per_datum);
+            } else {
+                throw std::runtime_error ("No data to reinitColours()");
+            }
+        }
+
+    public:
         // function that draw a border around the whole image
         void drawBorder()
         {
@@ -232,6 +277,8 @@ namespace morph {
             }
             }
 
+            // Note: For reinitColours to work, it's important to do all border/grid drawing AFTER
+            // the initializeVerticesTris/Cols/Pixels etc
             if (this->showborder == true) {
                 this->drawBorder();
             }
@@ -245,8 +292,6 @@ namespace morph {
                 this->computeSphere (morph::vec<float>{0, 0, 0}, morph::colour::crimson, 0.25f * this->grid->get_dx()[0]);
             }
         }
-
-        // Initialize vertex buffer objects and vertex array object.
 
         //! Initialize as a minimal, triangled surface
         void initializeVerticesTris()
@@ -792,6 +837,60 @@ namespace morph {
         std::array<float, 3> clr_north_column = morph::colour::black;
 
     protected:
+
+        //! Called by reinitColours when scalarData is not null
+        void reinitColoursScalar (const std::size_t n_data, const std::size_t n_cvertices_per_datum)
+        {
+            if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+            this->dcolour.resize (this->scalarData->size());
+            this->colourScale.transform (*(this->scalarData), dcolour);
+
+            // Replace elements of vertexColors
+            for (std::size_t i = 0u; i < n_data; ++i) {
+                auto c = this->cm.convert (this->dcolour[i]);
+                std::size_t d_idx = 3 * i * n_cvertices_per_datum;
+                for (std::size_t j = 0; j < n_cvertices_per_datum; ++j) {
+                    this->vertexColors[d_idx + 3 * j] = c[0];
+                    this->vertexColors[d_idx + 3 * j + 1] = c[1];
+                    this->vertexColors[d_idx + 3 * j + 2] = c[2];
+                }
+            }
+
+            // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
+            this->reinit_colour_buffer();
+        }
+
+        //! Called by reinitColours when vectorData is not null (vectors are probably RGB colour)
+        void reinitColoursVector (const std::size_t n_data, const std::size_t n_cvertices_per_datum)
+        {
+            if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+            for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                this->dcolour[i] = (*this->vectorData)[i][0];
+                this->dcolour2[i] = (*this->vectorData)[i][1];
+                this->dcolour3[i] = (*this->vectorData)[i][2];
+            }
+            if (this->cm.getType() != morph::ColourMapType::RGB) {
+                this->colourScale.transform (this->dcolour, this->dcolour);
+                this->colourScale2.transform (this->dcolour2, this->dcolour2);
+                this->colourScale3.transform (this->dcolour3, this->dcolour3);
+            } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
+
+
+            // Replace elements of vertexColors
+            for (std::size_t i = 0u; i < n_data; ++i) {
+                std::array<float, 3> c = this->setColour (i);
+                std::size_t d_idx = 3 * i * n_cvertices_per_datum;
+                for (std::size_t j = 0; j < n_cvertices_per_datum; ++j) {
+                    this->vertexColors[d_idx + 3 * j] = c[0];
+                    this->vertexColors[d_idx + 3 * j + 1] = c[1];
+                    this->vertexColors[d_idx + 3 * j + 2] = c[2];
+                }
+            }
+
+            // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
+            this->reinit_colour_buffer();
+        }
+
         //! An overridable function to set the colour of rect ri
         std::array<float, 3> setColour (I ri)
         {
