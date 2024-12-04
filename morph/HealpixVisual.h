@@ -25,13 +25,13 @@ namespace morph {
 
         // Update the VisualModel, changing only colours if that's enough, or doing a
         // full rebuild if we're displaying relief.
-        void update()
+        void reinit()
         {
-            if (this->relief == true) { this->reinit(); }
-            else { this->updateColours(); }
+            if (this->relief == true) { morph::VisualModel<glver>::reinit(); }
+            else { this->reinitColours(); }
         }
 
-        void updateColours()
+        void reinitColours()
         {
             size_t n_data = this->n_pixels();
 

@@ -39,7 +39,7 @@ int main()
             // sequential colouring:
             size_t sz1 = gv1p->data.size();
             gv1p->data.linspace (0.0f, 1+i * imax_mult, sz1);
-            gv1p->updateColours();
+            gv1p->reinitColours();
         }
 
         v.keepOpen();
