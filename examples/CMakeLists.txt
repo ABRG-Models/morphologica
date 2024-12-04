@@ -143,6 +143,12 @@ if(ARMADILLO_FOUND)
     target_link_libraries(grid_simple GLEW::GLEW)
   endif()
 
+  add_executable(grid_flat_dynamic grid_flat_dynamic.cpp)
+  target_link_libraries(grid_flat_dynamic OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(grid_flat_dynamic GLEW::GLEW)
+  endif()
+
   add_executable(colourmap_test colourmap_test.cpp)
   target_link_libraries(colourmap_test OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
