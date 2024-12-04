@@ -36,7 +36,7 @@ namespace morph {
             size_t n_data = this->n_pixels();
 
             if (this->vertexColors.size() < n_data * 3) {
-                throw std::runtime_error ("vertexColors is not big enough to updateColours()");
+                throw std::runtime_error ("vertexColors is not big enough to reinitColours()");
             }
 
             // Scale data
