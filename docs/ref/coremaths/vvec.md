@@ -209,15 +209,16 @@ If you want to set your vvec values from another container, such as a `std::vect
 
 ```c++
 template <typename Container>
-std::enable_if_t<morph::is_copyable_container<Container>::value, void>
-void set_from (const Container& c)
+std::enable_if_t<morph::is_copyable_container<Container>::value
+                 && !std::is_same<std::decay_t<Container>, S>::value, void>
+set_from (const Container& c)
 {
     this->resize (c.size());
     std::copy (c.begin(), c.end(), this->begin());
 }
 ```
 
-As long as you pass in a 'copyable container' (which means a `vector`, `array`, `deque`, `vvec`, `vec` or `set`, but *not* a `map`) then this will resize your `vvec` to match the passed in container and then std::copy the values into your `vvec`.
+As long as you pass in a 'copyable container' (which means a `vector`, `array`, `deque`, `vvec`, `vec` or `set`, but *not* a `map`) then this will resize your `vvec` to match the passed in container and then std::copy the values into your `vvec`. Note that this is *not* enabled if the copyable container type is the same as the element type 'S' of the `vvec`, which may occur if you have a '`vvec` of `vec`s' and you `set_from` a `vec`. In that case, you would set all elements of the `vvec` to the passed in `vec`.
 
 #### Setting all the elements of a vvec to the same value
 
@@ -229,7 +230,19 @@ void zero();
 void set_max();
 void set_lowest();
 ```
-The `set_from` overload fills all elements of the `morph::vvec` with `v`.
+The `set_from` overload fills all elements of the `morph::vvec` with `v`. For example:
+
+```c++
+morph::vvec<int> vi = { 1, 2, 3 };
+vi.set_from (4);
+std::cout << vi << std::endl; // output: (4, 4, 4)
+```
+This works even if you have a vvec of array types:
+```c++
+morph::vvec< morph::vec<float, 2> > vvecofvecs(2);
+vvecofvecs.set_from (morph::vec<float, 2>{3, 4});
+std::cout << vvecofvecs << std::endl; // output: ((3, 4), (3, 4))
+```
 
 `zero()`, `set_max()` and `set_lowest()` fill all elements with `S{0}`, the maximum possible value for the type and the lowest possible value, respectively.
 
