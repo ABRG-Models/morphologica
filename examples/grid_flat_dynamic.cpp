@@ -24,7 +24,7 @@ int main()
     v.addLabel ("Unknown", {0.23f, -0.03f, 0.0f}, mode_tm); // With fps_tm can update the VisualTextModel with fps_tm->setupText("new text")
 
     // Create a grid to show in the scene
-    constexpr unsigned int Nside = 600; // You can change this
+    constexpr unsigned int Nside = 200; // You can change this
     constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.01f};
     morph::Grid grid(Nside, Nside, grid_spacing);
     std::cout << "Number of pixels in grid:" << grid.n() << std::endl;
@@ -38,7 +38,7 @@ int main()
 
     auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
-    gv->gridVisMode = morph::GridVisMode::Triangles;
+    gv->gridVisMode = morph::GridVisMode::Triangles; // Choose [fastest-->] Triangles, Pixels, RectInterp or Columns [-->slowest]
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Cork);
     gv->zScale.do_autoscale = false;
@@ -48,6 +48,8 @@ int main()
     gv->addLabel (std::string("GridVisMode::Triangles, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03f));
     gv->finalize();
     auto gvp = v.addVisualModel (gv);
+
+    v.render();
 
     using namespace std::chrono;
     using sc = std::chrono::steady_clock;
@@ -76,7 +78,16 @@ int main()
             ddata = sc::duration{0};
             fcount = 0;
             std::stringstream ss;
-            ss << "Calling " << (reinitJustColours ? "reinitColours()" : "full reinit()" ) << " for " << grid.n() << " Grid pixels";
+            std::string gvmode = "Pixels";
+            if (gvp->gridVisMode == morph::GridVisMode::RectInterp) {
+                gvmode = "RectInterp";
+            } else if (gvp->gridVisMode == morph::GridVisMode::Triangles) {
+                gvmode = "Triangles";
+            } else if (gvp->gridVisMode == morph::GridVisMode::Columns) {
+                gvmode = "Columns";
+            }
+            ss << "Calling " << (reinitJustColours ? "reinitColours()" : "full reinit()" ) << " for " << grid.n()
+               << " Grid pixels in " << gvmode << " mode";
             mode_tm->setupText (ss.str());
         }
 
