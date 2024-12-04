@@ -121,12 +121,19 @@ namespace morph {
          * https://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
          */
         template <typename Container>
-        std::enable_if_t<morph::is_copyable_container<Container>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Container>::value && !std::is_same<std::decay_t<Container>, S>::value, void>
         set_from (const Container& c)
         {
             this->resize (c.size());
             std::copy (c.begin(), c.end(), this->begin());
         }
+
+        //! What if we want to set all elements to something of type S, but S is itself a copyable
+        //! container. In that case, enable this function.
+        template <typename Container>
+        std::enable_if_t<morph::is_copyable_container<Container>::value && std::is_same<std::decay_t<Container>, S>::value, void>
+        set_from (const Container& v) { std::fill (this->begin(), this->end(), v); }
+
         //! Set all elements from the value type v.
         template <typename _S=S>
         std::enable_if_t<!morph::is_copyable_container<_S>::value, void>

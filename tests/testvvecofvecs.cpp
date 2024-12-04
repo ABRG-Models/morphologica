@@ -73,6 +73,13 @@ int main()
     vV3.zero();
     std::cout << "After zero: " << vV3 << std::endl;
 
+    // Can you set_from(vec<>)? Previously no, but now, yes:
+    vV3.set_from (morph::vec<float, 2>{5, 7});
+    std::cout << "After set_from ({5,7}): " << vV3 << std::endl;
+    if (vV3[0][0] != 5 || vV3[0][1] != 7 || vV3[1][0] != 5 || vV3[1][1] != 7) {
+        --rtn;
+    }
+
     // Test we can find max, min, longest, shortest of a vvec of vecs
     morph::vvec<morph::vec<double, 3>> vvshrt = { {-0,-0,6.78819124e-05}, {-0,1.78819124e-05,1.78819124e-05}, {0,6.78819124e-05,0}, {0,2,0}, {7.34092391e-05,0,0}, {6.78819124e-05,0,0}, {-6.78819124e-05,-0,0} };
 
