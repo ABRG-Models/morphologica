@@ -19,12 +19,12 @@ int main()
     v.bindmodel (gv);
 
     morph::DatasetStyle ds(morph::stylepolicy::bar); // Draw a bar graph by creating a bar policy DatasetStyle
-    ds.markercolour = morph::colour::aquamarine; // bar colour
+    ds.markercolour = morph::colour::aquamarine;     // markercolour sets the bar 'fill' colour
     ds.datalabel = "bar";
-    ds.markersize = 0.2f;
-    ds.showlines = true;
-    ds.linecolour = morph::colour::royalblue; // 'lines around the bar' colour
-    ds.linewidth = ds.markersize/8.0f;
+    ds.markersize = 0.2f;                     // The width of each bar
+    ds.showlines = true;                      // Whether or not to draw the lines around the bar
+    ds.linecolour = morph::colour::royalblue; // linecolour sets the 'lines around the bar' colour
+    ds.linewidth = ds.markersize/20.0f;       // The linewidth of the lines around the bar
     // Bar graphs usually need to extend up from 0, so set scaling policy for the y axis accordingly:
     gv->scalingpolicy_y = morph::scalingpolicy::manual_min;
     gv->datarange_y.min = 0;
@@ -32,7 +32,7 @@ int main()
     gv->setdataaxisdist (0.04f + ds.markersize/2.0f);
     gv->setdata (absc, ord, ds);
 
-    // condense the above into a convenience function:
+    // It may be nice to condense the above into a convenience function:
     //    gv->add_bargraph (absc, ord, 0.2, morph::colour::aquamarine, morph::colour::royalblue);
     // with similar convenience functions:
     //    gv->add_linegraph (absc, ord, 0.03, morph::markerstyle::square, morph::colour::aquamarine, morph::colour::royalblue);
