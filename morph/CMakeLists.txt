@@ -4,7 +4,7 @@
 
 # Header installation
 install(
-  FILES quaternion.h tools.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h mathconst.h MathAlgo.h MathImpl.h geometry.h number_type.h Hex.h HexGrid.h hexyhisto.h CartGrid.h histo.h keys.h Grid.h HdfData.h Process.h RD_Base.h DirichVtx.h DirichDom.h ShapeAnalysis.h NM_Simplex.h Rect.h Anneal.h Config.h vec.h vvec.h mat22.h mat33.h mat44.h colour.h ColourMap.h ColourMap_Lists.h lenthe_colormap.hpp colourmaps_cet.h colourmaps_crameri.h scale.h Random.h rngd.h rng.h rngs.h RecurrentNetworkTools.h RecurrentNetwork.h range.h Winder.h trait_tests.h base64.h unicode.h Mnist.h bootstrap.h rapidxml.hpp rapidxml_iterators.hpp rapidxml_print.hpp rapidxml_utils.hpp version.h
+  FILES quaternion.h tools.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h mathconst.h MathAlgo.h MathImpl.h geometry.h number_type.h Hex.h HexGrid.h hexyhisto.h CartGrid.h histo.h keys.h Grid.h HdfData.h Process.h RD_Base.h DirichVtx.h DirichDom.h ShapeAnalysis.h NM_Simplex.h Rect.h Anneal.h Config.h vec.h vvec.h mat22.h mat33.h mat44.h colour.h ColourMap.h ColourMap_Lists.h lenthe_colormap.hpp colourmaps_cet.h colourmaps_crameri.h scale.h Random.h rngd.h rng.h rngs.h RecurrentNetworkTools.h RecurrentNetwork.h range.h Winder.h trait_tests.h base64.h unicode.h Mnist.h bootstrap.h rapidxml.hpp rapidxml_iterators.hpp rapidxml_print.hpp rapidxml_utils.hpp version.h delaunator.hpp
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
 # There are also headers in sub directories

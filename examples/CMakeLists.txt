@@ -543,6 +543,12 @@ if(USE_GLEW)
   target_link_libraries(draw_triangles GLEW::GLEW)
 endif()
 
+add_executable(arbsurface arbsurface.cpp)
+target_link_libraries(arbsurface OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(arbsurface GLEW::GLEW)
+endif()
+
 add_executable(rectangle rectangle.cpp)
 target_link_libraries(rectangle OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
