@@ -379,7 +379,7 @@ You can see how this works in the [myvisual.cpp](https://github.com/ABRG-Models/
 
 # Working with multiple windows
 
-You can create more than one `morph::Visual` in your program. Each `Visual` will be related to a separate OpenGL context. morphoglogica will handle the switching of the context automatically (by calling `Visual::setContext()` as needed, for example if you call `Visual::render()`).
+You can create more than one `morph::Visual` in your program. Each `Visual` will be related to a separate OpenGL context. morphologica will handle the switching of the context automatically (by calling `Visual::setContext()` as needed, for example if you call `Visual::render()`).
 
 ![Screenshot of two computer windows each backed by a morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/morph_two_visuals.png?raw=true)
 

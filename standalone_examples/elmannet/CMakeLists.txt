@@ -36,10 +36,10 @@ if (APPLE)
   set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -O3")
 else()
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -D__ICC__")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -O3 -D__ICC__")
   else () # GCC or Clang
     # This assumes a gcc compiler (or a gcc mimic like Clang)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -O3")
   endif()
 endif()
 
