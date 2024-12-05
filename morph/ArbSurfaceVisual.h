@@ -145,6 +145,9 @@ namespace morph {
 
             this->setupScaling (this->scalarData->size());
 
+            // Next up: Need to use this to generate https://github.com/JCash/voronoi/ the Voronoi
+            // diagram rather than the Delaunay triangulation of the points.
+
             // Make delaunay
             // coords should be [ x0, y0, x1, y1, x2, y2 etc ]
             std::vector<double> coords2d (ncoords * 2);
