@@ -282,7 +282,7 @@ namespace morph {
 
         //! A function to find the index of the grid that is closest to the given coordinate.
         //! If the coordinate is off the grid, throw an exception
-        I index_lookup (const morph::vec<C, 2>& _coord)
+        I index_lookup (const morph::vec<C, 2>& _coord) const
         {
             I index = I{0};
             morph::vec<C, 2> xyf = ((_coord - this->offset) / this->dx);
@@ -673,14 +673,14 @@ namespace morph {
          */
         I col_after_x_shift (const I ind, const I dx) const
         {
-            I new_col = this->col (ind) + dx;
+            I new_col = this->col(ind) + dx;
             if (new_col >= I{0} && new_col < this->w) {
                 return new_col;
             } else {    // new column is off grid and result will depend on the horizontal wrapping
                 if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical) {
                     return std::numeric_limits<I>::max();
                 } else if (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both) {
-                    if (new_col >= this->w){
+                    if (new_col >= this->w) {
                         return new_col % this->w;
                     } else { // new_col < 0 i.e. off the left side of the grid
                         return this->w + (new_col % this->w);
@@ -696,7 +696,7 @@ namespace morph {
          * \param dy The vertical displacement (in units of number of pixels).
          * \return The row index of the moved pixel
          */
-        I row_after_y_shift (const I ind, const I dy)const
+        I row_after_y_shift (const I ind, const I dy) const
         {
             I new_row = this->row (ind) + dy;
             if (new_row >= I{0} && new_row < this->h) {
@@ -705,7 +705,7 @@ namespace morph {
                 if (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal) {
                     return std::numeric_limits<I>::max();
                 } else if (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both) {
-                    if (new_row >= this->h){
+                    if (new_row >= this->h) {
                         return new_row % this->h;
                     } else {    // new_row < 0 i.e. off the bottom of the grid
                         return h + (new_row % this->h);
@@ -824,7 +824,7 @@ namespace morph {
          */
         void indices_in_radius (const morph::vec<C,2> loc,
                                 const C radius,
-                                morph::vvec<I>& inds_in_radius)
+                                morph::vvec<I>& inds_in_radius) const
         {
             morph::vvec<I> inds_in_circle;
             morph::vvec<I> inds_in_previous_circle;
@@ -841,18 +841,18 @@ namespace morph {
                 inds_in_previous_circle = inds_in_circle;
                 inds_in_circle.clear();
                 morph::vvec<I> nearest_neighbours;
-                find_nearest_neighbours (inds_in_previous_circle, nearest_neighbours);
+                this->find_nearest_neighbours (inds_in_previous_circle, nearest_neighbours);
 
-                for (auto n : nearest_neighbours){
-                    if (!seen.count (n)){
-                        if ((this->coord_lookup (n) - loc).length() < radius){
+                for (auto n : nearest_neighbours) {
+                    if (!seen.count(n)) {
+                        if ((this->coord_lookup (n) - loc).length() < radius) {
                             inds_in_circle.push_back (n);
                         }
                     }
-                    seen.insert (n);
+                    seen.insert(n);
                 }
 
-                if (!inds_in_circle.empty()){
+                if (!inds_in_circle.empty()) {
                     inds_in_radius.concat (inds_in_circle);
                 }
             }
@@ -864,19 +864,19 @@ namespace morph {
          * \param inds A vector of indices whose neighbours we want to find
          * \param neighbour_inds Empty vector, passed by reference, that the function populates with the nearest neighbours.
          */
-        void find_nearest_neighbours (const morph::vvec<I>& inds, morph::vvec<I>& neighbour_inds)
+        void find_nearest_neighbours (const morph::vvec<I>& inds, morph::vvec<I>& neighbour_inds) const
         {
             neighbour_inds.reserve (4 * inds.size());
             I tmp = I{0};
             for (const I & i : inds) {
                 tmp = this->index_nn(i);
-                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back (tmp);}
+                if (tmp != std::numeric_limits<I>::max()) { neighbour_inds.push_back (tmp); }
                 tmp = this->index_ne(i);
-                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back (tmp);}
+                if (tmp != std::numeric_limits<I>::max()) { neighbour_inds.push_back (tmp); }
                 tmp = this->index_ns(i);
-                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back (tmp);}
+                if (tmp != std::numeric_limits<I>::max()) { neighbour_inds.push_back (tmp); }
                 tmp = this->index_nw(i);
-                if (tmp != std::numeric_limits<I>::max()){neighbour_inds.push_back (tmp);}
+                if (tmp != std::numeric_limits<I>::max()) { neighbour_inds.push_back (tmp); }
             }
         }
 
