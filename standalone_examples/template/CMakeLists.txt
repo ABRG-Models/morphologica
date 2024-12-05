@@ -27,7 +27,7 @@ if (APPLE)
   set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas -march=native")
+  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas")
 endif()
 
 # Tell clang to be quiet about brace initialisers:

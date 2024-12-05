@@ -57,7 +57,7 @@ cd /home/seb/models/morphologica/examples
     -D__GLN__ -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES \                 # Important flags to set
     -DMORPH_FONTS_DIR="\"/home/seb/models/morphologica/fonts\"" \
     -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas \  # Almost all warnings
-    -march=native -O3 -fopenmp -std=gnu++17 \                          # More compiler flags
+    -O3 -fopenmp -std=gnu++17 \                                        # More compiler flags
     -o helloworld helloworld.cpp  \                                    # Input code file and name for output
     /usr/lib/x86_64-linux-gnu/libglfw.so.3.3 \                         # Links to shared libraries
     /usr/lib/x86_64-linux-gnu/libfreetype.so \
