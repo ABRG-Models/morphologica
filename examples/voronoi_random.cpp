@@ -1,5 +1,13 @@
 /*
- * Visualize a XYz surface from points.
+ * This example generates a number (n_points) of random (but bounded) coordinates and
+ * uses the VoronoiVisual to display the coordinates as a map, with the order of
+ * random-choice being used to colourize the Voronoi cells.
+ *
+ * This shows you how to use VoronoiVisual to visualize a surface from a non regular
+ * grid (i.e. non morph::Grid or morph::HexGrid or morph::HealpixVisual ordered values)
+ *
+ * Author Seb James
+ * Date 2024
  */
 #include <morph/Visual.h>
 #include <morph/VoronoiVisual.h>
@@ -18,7 +26,7 @@ int main()
     morph::RandUniform<float> rngxy(-1.0f, 2.0f);
     morph::RandUniform<float> rngz(0.8f, 1.0f);
 
-    // make 100 random coordinates
+    // make n_points random coordinates
     std::vector<morph::vec<float>> points(n_points);
     std::vector<float> data(n_points);
 
@@ -30,6 +38,8 @@ int main()
     morph::vec<float, 3> offset = { 0.0f };
     auto asv = std::make_unique<morph::VoronoiVisual<float>> (offset);
     v.bindmodel (asv);
+    asv->debug_edges = false;
+    asv->debug_dataCoords = false;
     asv->cm.setType (morph::ColourMapType::Plasma);
     asv->setDataCoords (&points);
     asv->setScalarData (&data);

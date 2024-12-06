@@ -1,5 +1,5 @@
 /*
- * Visualize a XYz surface from points.
+ * Make a very small Voronoi surface. Used to debug VoronoiVisual
  */
 #include <morph/Visual.h>
 #include <morph/VoronoiVisual.h>
