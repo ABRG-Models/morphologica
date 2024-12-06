@@ -17,7 +17,8 @@
 #include <vector>
 #include <array>
 
-#include <morph/delaunator.hpp>
+#define JC_VORONOI_IMPLEMENTATION
+#include <morph/jcvoronoi/jc_voronoi.h>
 
 namespace morph {
 
@@ -148,40 +149,38 @@ namespace morph {
             // Next up: Need to use this to generate https://github.com/JCash/voronoi/ the Voronoi
             // diagram rather than the Delaunay triangulation of the points.
 
-            // Make delaunay
-            // coords should be [ x0, y0, x1, y1, x2, y2 etc ]
-            std::vector<double> coords2d (ncoords * 2);
+            // int numpoints,
+            //const jcv_point* points; // what's this struct with x, y members
+            std::vector<jcv_point> coords2d (ncoords);
             for (unsigned int i = 0; i < ncoords; ++i) {
-                coords2d[i*2] = static_cast<double>((*this->dataCoords)[i][0]);
-                coords2d[i*2+1] = static_cast<double>((*this->dataCoords)[i][1]);
+                coords2d[i] = { (*this->dataCoords)[i][0], (*this->dataCoords)[i][1] };
             }
-            delaunator::Delaunator d(coords2d);
+            jcv_diagram diagram;
+            memset (&diagram, 0, sizeof(jcv_diagram));
+            jcv_diagram_generate (ncoords, coords2d.data(), 0, 0, &diagram);
 
-            std::cout << "There are " << d.triangles.size()/3 << " triangles from Delaunator d\n";
+            // To draw triangles iterate over the 'sites' and get the edges
+            const jcv_site* sites = jcv_diagram_get_sites (&diagram);
+            for (int i = 0; i < diagram.numsites; ++i) {
+                const jcv_site* site = &sites[i];
+                const jcv_graphedge* e = site->edges;
+                while (e) {
+                    // These are the three vertices for the triangle
+                    morph::vec<float> t0 = { site->p.x, site->p.y, (*this->dataCoords)[i][2] };
+                    morph::vec<float> t1 = { e->pos[0].x, e->pos[0].y, (*this->dataCoords)[i][2] };
+                    morph::vec<float> t2 = { e->pos[1].x, e->pos[1].y, (*this->dataCoords)[i][2] };
 
-            for (std::size_t i = 0; i < d.triangles.size(); i+=3) {
-                // What's corresponding data index?
-                std::size_t di = i/3;
-
-                // We have: (*this->dataCoords)[di] (*this->scalarData)[di] and (*this->vectorData)[di]
-                // And points for the triangulation
-
-                // x, y coords of the triangles.
-                morph::vec<double> t0 = { d.coords[2 * d.triangles[i]],     d.coords[2 * d.triangles[i] + 1],     (*this->dataCoords)[di][2] };
-                morph::vec<double> t1 = { d.coords[2 * d.triangles[i + 1]], d.coords[2 * d.triangles[i + 1] + 1], (*this->dataCoords)[di][2] };
-                morph::vec<double> t2 = { d.coords[2 * d.triangles[i + 2]], d.coords[2 * d.triangles[i + 2] + 1], (*this->dataCoords)[di][2] };
-
-
-                this->computeTriangle (t0.as_float(), t1.as_float(), t2.as_float(), this->setColour(di));
-
-                if (this->labelIndices == true) {
-                    // Draw an index label...
-                    this->addLabel (std::to_string (i), (*this->dataCoords)[i] + labelOffset, morph::TextFeatures(labelSize) );
+                    this->computeTriangle (t0.as_float(), t1.as_float(), t2.as_float(), this->setColour(i));
+                    e = e->next;
                 }
             }
 
+            // At end free
+            jcv_diagram_free( &diagram );
+
+            // Add some spheres at the original data points for debugging
             for (unsigned int i = 0; i < ncoords; ++i) {
-                this->computeSphere ((*this->dataCoords)[i], morph::colour::crimson, 0.1f);
+                this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.03f);
             }
         }
 

@@ -4,6 +4,7 @@
 #include <morph/Visual.h>
 #include <morph/ArbSurfaceVisual.h>
 #include <morph/vec.h>
+#include <morph/Random.h>
 #include <iostream>
 
 int main()
@@ -12,16 +13,17 @@ int main()
 
     morph::Visual v(1024, 768, "ArbSurfaceVisual", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
 
-    std::vector<morph::vec<float>> points = {
-        {0,0,1},
-        {1,0,1.1},
-        {2,0,1},
-        {1,1,1.3},
-        {0,2,1},
-        {1,2,0.9},
-        {2,2,1},
-    };
-    std::vector<float> data = { .1, .2, .3, .4, .4, .4, .9 };
+    morph::RandUniform<float> rngxy(-2.0f, 2.0f);
+    morph::RandUniform<float> rngz(0.8f, 1.0f);
+
+    // make 100 random coordinates
+    std::vector<morph::vec<float>> points(100);
+    std::vector<float> data(100);
+
+    for (unsigned int i = 0; i < points.size(); ++i) {
+        points[i] = { rngxy.get(), rngxy.get(), rngz.get() };
+        data[i] = static_cast<float>(i) / points.size();
+    }
 
     morph::vec<float, 3> offset = { 0.0f };
     auto asv = std::make_unique<morph::ArbSurfaceVisual<float>> (offset);
