@@ -24,6 +24,9 @@ int main()
     morph::vec<float, 3> offset = { 0.0f };
     auto asv = std::make_unique<morph::VoronoiVisual<float>> (offset);
     v.bindmodel (asv);
+    asv->show_voronoi2d = true;
+    asv->debug_edges = false;
+    asv->debug_dataCoords = true;
     asv->setDataCoords (&points);
     asv->setScalarData (&data);
     asv->finalize();

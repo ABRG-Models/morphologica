@@ -38,8 +38,8 @@ int main()
     morph::vec<float, 3> offset = { 0.0f };
     auto asv = std::make_unique<morph::VoronoiVisual<float>> (offset);
     v.bindmodel (asv);
-    asv->debug_edges = false;
-    asv->debug_dataCoords = false;
+    asv->show_voronoi2d = true; // true to show the 2D voronoi edges
+    asv->debug_dataCoords = false; // true to show coordinate spheres
     asv->cm.setType (morph::ColourMapType::Plasma);
     asv->setDataCoords (&points);
     asv->setScalarData (&data);

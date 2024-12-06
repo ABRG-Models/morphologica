@@ -240,7 +240,6 @@ namespace morph {
 
             // To draw triangles iterate over the 'sites' and get the edges
             // Note: The order of sites in the jcv_diagram is *not* same as original coordinate order...
-            unsigned int vtx_count = 0;
             for (int i = 0; i < diagram.numsites; ++i) {
                 const jcv_site* site = &sites[i];
                 const jcv_graphedge* e = site->edges;
@@ -248,14 +247,14 @@ namespace morph {
                     morph::vec<float> t0 = { site->p.x, site->p.y, site->p.z };
                     morph::vec<float> t1 = { e->pos[0].x, e->pos[0].y, e->pos[0].z };
                     morph::vec<float> t2 = { e->pos[1].x, e->pos[1].y, e->pos[1].z };
-                    // ...but site->index is the index into the original data
-                    // 3 indices, 3 each of pos/col/norm vertices per triangle. Could be reduced in principle
+                    // ...but site->index is the index into the original data 3 indices.
+                    // NB: There are 3 each of pos/col/norm vertices (and 3 indices) per
+                    // triangle. Could be reduced in principle. For a random map, it
+                    // comes out as about about 17*4 vertices per coordinate.
                     this->computeTriangle (t0, t1, t2, this->setColour(site->index));
-                    vtx_count += 3;
                     e = e->next;
                 }
             }
-            std::cout << "This surface has " << vtx_count << " position vertices for " << ncoords << " data coordinates\n";
 
             if (this->debug_edges) {
                 // Now scan through the edges drawing tubes for debug
@@ -263,10 +262,21 @@ namespace morph {
                     const jcv_site* site = &sites[i];
                     const jcv_graphedge* e = site->edges;
                     while (e) {
-                        // The actual edges:
-                        this->computeTube ({ e->pos[0].x, e->pos[0].y, e->pos[0].z }, { e->pos[1].x, e->pos[1].y, e->pos[1].z }, morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
-                        // The 0 height flat voronoi diagram:
-                        this->computeTube ({ e->pos[0].x, e->pos[0].y, 0.0f }, { e->pos[1].x, e->pos[1].y, 0.0f }, morph::colour::black, morph::colour::black, 0.01f, 6);
+                        this->computeTube ({ e->pos[0].x, e->pos[0].y, e->pos[0].z }, { e->pos[1].x, e->pos[1].y, e->pos[1].z },
+                                           morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                        e = e->next;
+                    }
+                }
+            }
+
+            if (this->show_voronoi2d) {
+                // Show the 2D Voronoi diagram's edges at z=0
+                for (int i = 0; i < diagram.numsites; ++i) {
+                    const jcv_site* site = &sites[i];
+                    const jcv_graphedge* e = site->edges;
+                    while (e) {
+                        this->computeTube ({ e->pos[0].x, e->pos[0].y, 0.0f }, { e->pos[1].x, e->pos[1].y, 0.0f },
+                                           morph::colour::black, morph::colour::black, 0.01f, 6);
                         e = e->next;
                     }
                 }
@@ -290,7 +300,11 @@ namespace morph {
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
 
+        //! If true, show 2.5D Voronoi edges
         bool debug_edges = false;
+        //! If true, show 2D Voronoi edges
+        bool show_voronoi2d = false;
+        //! If true, show black spheres at dataCoord locations
         bool debug_dataCoords = false;
 
         // Do we add index labels?
