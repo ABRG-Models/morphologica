@@ -146,18 +146,99 @@ namespace morph {
 
             this->setupScaling (this->scalarData->size());
 
-            // Compute 2.5D Voronoi diagram
+            // Compute 2.5D Voronoi diagram using code adapted from
+            // https://github.com/JCash/voronoi. The adaptation is to add a third
+            // dimension to jcv_point.
+
+            // FIrst make a vector of jcv_point objects as input
             std::vector<jcv_point> coords2d (ncoords);
             for (unsigned int i = 0; i < ncoords; ++i) {
                 coords2d[i] = { (*this->dataCoords)[i][0], (*this->dataCoords)[i][1],  (*this->dataCoords)[i][2] };
             }
+
+            // Generate the 2D Voronoi diagram
             jcv_diagram diagram;
             memset (&diagram, 0, sizeof(jcv_diagram));
-            jcv_diagram_generate (ncoords, coords2d.data(), 0, 0, &diagram);
+            jcv_rect domain = {jcv_point{-1,-1,0}, jcv_point{2,2,0}};
+            jcv_diagram_generate (ncoords, coords2d.data(), &domain, 0, &diagram);
+
+            // We obtain access the the Voronoi cell sites:
+            const jcv_site* sites = jcv_diagram_get_sites (&diagram);
+
+            // Need a vec comparison function for a set of morph::vec. See:
+            // https://abrg-models.github.io/morphologica/ref/coremaths/vvec/#using-morphvvec-as-a-key-in-stdmap-or-within-an-stdset
+            auto _veccmp = [](morph::vec<float> a, morph::vec<float> b) { return a.lexical_lessthan(b); };
+
+            // Now scan through the Voronoi cell 'sites' and 'edges' to re-assign z
+            // values in the edges. This is not going to be particularly efficient, but
+            // it will be fine for grids of the size that we generally visualize.
+            //
+            // For each site, we have a set of edges around that site. We examine each
+            // edge in turn, considering the sites that cluster around each end of the
+            // edge. We assign the mean z of the sites in the cluster to the edge's
+            // postion at that end of the edge.
+            for (int i = 0; i < diagram.numsites; ++i) {
+
+                // We have the current edge_1, the next edge_2 and the previous edge_0
+                const jcv_site* site = &sites[i];
+                jcv_graphedge* edge_first = site->edges; // The very first edge
+                jcv_graphedge* edge_1 = edge_first;
+                jcv_graphedge* edge_2 = edge_first;
+                jcv_graphedge* edge_0 = edge_first;
+                while (edge_0->next) { edge_0 = edge_0->next; }
+
+                while (edge_1) {
+
+                    std::set<morph::vec<float>, decltype(_veccmp)> cellcentres_1 (_veccmp);
+                    std::set<morph::vec<float>, decltype(_veccmp)> cellcentres_0 (_veccmp);
+
+                    edge_2 = edge_1->next ? edge_1->next : edge_first;
+                    // edge_0 already set
+
+                    // populate cellcentres
+                    for (unsigned int j = 0; j < 2; ++j) {
+                        if (edge_1->edge->sites[j]) {
+                            // Both cellcentres get edge_1 sites
+                            cellcentres_1.insert ({edge_1->edge->sites[j]->p.x, edge_1->edge->sites[j]->p.y, edge_1->edge->sites[j]->p.z});
+                            cellcentres_0.insert ({edge_1->edge->sites[j]->p.x, edge_1->edge->sites[j]->p.y, edge_1->edge->sites[j]->p.z});
+                        }
+                        // By definition, cellcentres_1 also gets edge_2 sites...
+                        if (edge_2->edge->sites[j]) {
+                            cellcentres_1.insert ({edge_2->edge->sites[j]->p.x, edge_2->edge->sites[j]->p.y, edge_2->edge->sites[j]->p.z});
+                        }
+                        // and cellcentres_0 gets edge_0 sites
+                        if (edge_0->edge->sites[j]) {
+                            cellcentres_0.insert ({edge_0->edge->sites[j]->p.x, edge_0->edge->sites[j]->p.y, edge_0->edge->sites[j]->p.z});
+                        }
+                    }
+
+                    // Find the mean of the cell centres associated with edge_1 and edge_2
+                    float zsum_1= 0.0f;
+                    morph::vec<float, 2> mean_cc_1 = {0.0f};
+                    for (auto cce : cellcentres_1) {
+                        zsum_1 += cce[2];
+                        mean_cc_1 += cce.less_one_dim();
+                    }
+
+                    // Find mean associated with the other end of edge_1 - the cell centres associated with edge_1 and edge_0
+                    float zsum_0 = 0.0f;
+                    morph::vec<float, 2> mean_cc_0 = {0.0f};
+                    for (auto cce : cellcentres_0) {
+                        zsum_0 += cce[2];
+                        mean_cc_0 += cce.less_one_dim();
+                    }
+
+                    edge_1->pos[1].z = (zsum_1 / cellcentres_1.size());
+                    edge_1->pos[0].z = (zsum_0 / cellcentres_0.size());
+
+                    edge_0 = edge_1;
+                    edge_1 = edge_1->next;
+                }
+            } // finished reassignment of z values
 
             // To draw triangles iterate over the 'sites' and get the edges
-            const jcv_site* sites = jcv_diagram_get_sites (&diagram);
             // Note: The order of sites in the jcv_diagram is *not* same as original coordinate order...
+            unsigned int vtx_count = 0;
             for (int i = 0; i < diagram.numsites; ++i) {
                 const jcv_site* site = &sites[i];
                 const jcv_graphedge* e = site->edges;
@@ -166,50 +247,37 @@ namespace morph {
                     morph::vec<float> t1 = { e->pos[0].x, e->pos[0].y, e->pos[0].z };
                     morph::vec<float> t2 = { e->pos[1].x, e->pos[1].y, e->pos[1].z };
                     // ...but site->index is the index into the original data
-                    this->computeTriangle (t0.as_float(), t1.as_float(), t2.as_float(), this->setColour(site->index));
+                    // 3 indices, 3 each of pos/col/norm vertices per triangle. Could be reduced in principle
+                    this->computeTriangle (t0, t1, t2, this->setColour(site->index));
+                    vtx_count += 3;
                     e = e->next;
                 }
             }
+            std::cout << "This surface has " << vtx_count << " position vertices for " << ncoords << " data coordinates\n";
 
-            // Draw edges for debug
-#if 0
-            const jcv_edge* edge = jcv_diagram_get_edges (&diagram);
-            while (edge) {
-                morph::vec<float> ep0 = { edge->pos[0].x, edge->pos[0].y, edge->pos[0].z };
-                morph::vec<float> ep1 = { edge->pos[1].x, edge->pos[1].y, edge->pos[1].z };
-                this->computeTube (ep0, ep1, morph::colour::springgreen, morph::colour::crimson, 0.02f, 6);
-                edge = jcv_diagram_get_next_edge(edge);
-            }
-#else
-            // Draw half edges of one site for debug
-            for (int i = 0; i < diagram.numsites; ++i) {
-                const jcv_site* site = &sites[i];
-                if (site->index == 4) { // our central site
-                    const jcv_graphedge* edge = site->edges;
-                    while (edge) {
-
-                        morph::vec<float> ep0 = { edge->pos[0].x, edge->pos[0].y, edge->pos[0].z };
-                        morph::vec<float> ep1 = { edge->pos[1].x, edge->pos[1].y, edge->pos[1].z };
-
-                        std::cout << "This edge ["<<ep0<<"->"<<ep1<<"] is between coord " << edge->edge->sites[0]->index << " at ("
-                                  << edge->edge->sites[0]->p.x << "," << edge->edge->sites[0]->p.y << "," << edge->edge->sites[0]->p.z
-                                  << ") and coord " << edge->edge->sites[1]->index << " at ("
-                                  << edge->edge->sites[1]->p.x << "," << edge->edge->sites[1]->p.y << "," << edge->edge->sites[1]->p.z << ")\n";
-
-                        this->computeTube (ep0, ep1, morph::colour::springgreen, morph::colour::crimson, 0.02f, 6);
-                        edge = edge->next;
+            if (this->debug_edges) {
+                // Now scan through the edges drawing tubes for debug
+                for (int i = 0; i < diagram.numsites; ++i) {
+                    const jcv_site* site = &sites[i];
+                    const jcv_graphedge* e = site->edges;
+                    while (e) {
+                        // The actual edges:
+                        this->computeTube ({ e->pos[0].x, e->pos[0].y, e->pos[0].z }, { e->pos[1].x, e->pos[1].y, e->pos[1].z }, morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                        // The 0 height flat voronoi diagram:
+                        this->computeTube ({ e->pos[0].x, e->pos[0].y, 0.0f }, { e->pos[1].x, e->pos[1].y, 0.0f }, morph::colour::black, morph::colour::black, 0.01f, 6);
+                        e = e->next;
                     }
                 }
             }
-#endif
-
 
             // At end free
-            jcv_diagram_free( &diagram );
+            jcv_diagram_free (&diagram);
 
-            // Add some spheres at the original data points for debugging
-            for (unsigned int i = 0; i < ncoords; ++i) {
-                this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.03f);
+            if (this->debug_dataCoords) {
+                // Add some spheres at the original data points for debugging
+                for (unsigned int i = 0; i < ncoords; ++i) {
+                    this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.03f);
+                }
             }
         }
 
@@ -219,6 +287,9 @@ namespace morph {
         std::vector<float> dcolour;
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
+
+        bool debug_edges = false;
+        bool debug_dataCoords = false;
 
         // Do we add index labels?
         bool labelIndices = false;

@@ -7,7 +7,7 @@
 #include <morph/Random.h>
 #include <iostream>
 
-static constexpr int n_points = 4;
+static constexpr int n_points = 1000;
 
 int main()
 {
@@ -15,7 +15,7 @@ int main()
 
     morph::Visual v(1024, 768, "ArbSurfaceVisual", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
 
-    morph::RandUniform<float> rngxy(-2.0f, 2.0f);
+    morph::RandUniform<float> rngxy(-1.0f, 2.0f);
     morph::RandUniform<float> rngz(0.8f, 1.0f);
 
     // make 100 random coordinates
