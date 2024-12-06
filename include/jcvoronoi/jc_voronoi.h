@@ -119,6 +119,7 @@ struct jcv_point_
 {
     jcv_real x;
     jcv_real y;
+    jcv_real z; // for 2.5D
 };
 
 struct jcv_graphedge_
@@ -850,6 +851,22 @@ static int jcv_halfedge_intersect(const jcv_halfedge* he1, const jcv_halfedge* h
     out->x = (e1->c * e2->b - e1->b * e2->c) / d;
     out->y = (e1->a * e2->c - e1->c * e2->a) / d;
 
+    // Figure out a candidate z?
+    printf ("e1 sites[0] (x,y)z: (%f,%f)%f, e1 sites[1] (x,y)z: (%f,%f)%f\n",
+            e1->sites[0]->p.x, e1->sites[0]->p.y, e1->sites[0]->p.z,
+            e1->sites[1]->p.x, e1->sites[1]->p.y, e1->sites[1]->p.z);
+    printf ("e2 sites[0] (x,y)z: (%f,%f)%f, e2 sites[1] (x,y)z: (%f,%f)%f\n",
+            e2->sites[0]->p.x, e2->sites[0]->p.y, e2->sites[0]->p.z,
+            e2->sites[1]->p.x, e2->sites[1]->p.y, e2->sites[1]->p.z);
+
+    jcv_real e1_zavg = (e1->sites[0]->p.z + e1->sites[1]->p.z) / jcv_real{2};
+    jcv_real e2_zavg = (e2->sites[0]->p.z + e2->sites[1]->p.z) / jcv_real{2};
+    printf ("e1_zavg: %f, e2_zavg: %f\n", e1_zavg, e2_zavg);
+    //out->z = e1_zavg;
+    //out->z = e2_zavg;
+    //out->z = (e1_zavg + e2_zavg) / jcv_real{2};
+    out->z = 0.0f;
+
     const jcv_edge* e;
     const jcv_halfedge* he;
     if( jcv_point_less( &e1->sites[1]->p, &e2->sites[1]->p) )
@@ -866,6 +883,7 @@ static int jcv_halfedge_intersect(const jcv_halfedge* he1, const jcv_halfedge* h
     int right_of_site = out->x >= e->sites[1]->p.x;
     if ((right_of_site && he->direction == JCV_DIRECTION_LEFT) || (!right_of_site && he->direction == JCV_DIRECTION_RIGHT))
     {
+        printf ("right_of_site and dirn left or !right_ofsite and dirn right, so return 0\n");
         return 0;
     }
 
@@ -1051,6 +1069,7 @@ static void jcv_site_event(jcv_context_internal* internal, jcv_site* site)
     jcv_point p;
     if( jcv_check_circle_event( left, edge1, &p ) )
     {
+        printf ("p for left-edge1: (%f, %f, %f)\n", p.x, p.y, p.z);
         jcv_pq_remove(internal->eventqueue, left);
         left->vertex    = p;
         left->y         = p.y + jcv_point_dist(&site->p, &p);
@@ -1058,6 +1077,7 @@ static void jcv_site_event(jcv_context_internal* internal, jcv_site* site)
     }
     if( jcv_check_circle_event( edge2, right, &p ) )
     {
+        printf ("p for edge2-right: (%f, %f, %f)\n", p.x, p.y, p.z);
         edge2->vertex   = p;
         edge2->y        = p.y + jcv_point_dist(&site->p, &p);
         jcv_pq_push(internal->eventqueue, edge2);

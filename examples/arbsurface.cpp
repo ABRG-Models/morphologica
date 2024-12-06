@@ -7,6 +7,8 @@
 #include <morph/Random.h>
 #include <iostream>
 
+static constexpr int n_points = 4;
+
 int main()
 {
     int rtn = -1;
@@ -17,12 +19,12 @@ int main()
     morph::RandUniform<float> rngz(0.8f, 1.0f);
 
     // make 100 random coordinates
-    std::vector<morph::vec<float>> points(100);
-    std::vector<float> data(100);
+    std::vector<morph::vec<float>> points(n_points);
+    std::vector<float> data(n_points);
 
-    for (unsigned int i = 0; i < points.size(); ++i) {
+    for (unsigned int i = 0; i < n_points; ++i) {
         points[i] = { rngxy.get(), rngxy.get(), rngz.get() };
-        data[i] = static_cast<float>(i) / points.size();
+        data[i] = static_cast<float>(i) / n_points;
     }
 
     morph::vec<float, 3> offset = { 0.0f };

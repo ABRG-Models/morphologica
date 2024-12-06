@@ -549,6 +549,12 @@ if(USE_GLEW)
   target_link_libraries(arbsurface GLEW::GLEW)
 endif()
 
+add_executable(arbsurface_fixed arbsurface_fixed.cpp)
+target_link_libraries(arbsurface_fixed OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(arbsurface_fixed GLEW::GLEW)
+endif()
+
 add_executable(rectangle rectangle.cpp)
 target_link_libraries(rectangle OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)

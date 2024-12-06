@@ -146,14 +146,10 @@ namespace morph {
 
             this->setupScaling (this->scalarData->size());
 
-            // Next up: Need to use this to generate https://github.com/JCash/voronoi/ the Voronoi
-            // diagram rather than the Delaunay triangulation of the points.
-
-            // int numpoints,
-            //const jcv_point* points; // what's this struct with x, y members
+            // Compute 2.5D Voronoi diagram
             std::vector<jcv_point> coords2d (ncoords);
             for (unsigned int i = 0; i < ncoords; ++i) {
-                coords2d[i] = { (*this->dataCoords)[i][0], (*this->dataCoords)[i][1] };
+                coords2d[i] = { (*this->dataCoords)[i][0], (*this->dataCoords)[i][1],  (*this->dataCoords)[i][2] };
             }
             jcv_diagram diagram;
             memset (&diagram, 0, sizeof(jcv_diagram));
@@ -161,19 +157,52 @@ namespace morph {
 
             // To draw triangles iterate over the 'sites' and get the edges
             const jcv_site* sites = jcv_diagram_get_sites (&diagram);
+            // Note: The order of sites in the jcv_diagram is *not* same as original coordinate order...
             for (int i = 0; i < diagram.numsites; ++i) {
                 const jcv_site* site = &sites[i];
                 const jcv_graphedge* e = site->edges;
                 while (e) {
-                    // These are the three vertices for the triangle
-                    morph::vec<float> t0 = { site->p.x, site->p.y, (*this->dataCoords)[i][2] };
-                    morph::vec<float> t1 = { e->pos[0].x, e->pos[0].y, (*this->dataCoords)[i][2] };
-                    morph::vec<float> t2 = { e->pos[1].x, e->pos[1].y, (*this->dataCoords)[i][2] };
-
-                    this->computeTriangle (t0.as_float(), t1.as_float(), t2.as_float(), this->setColour(i));
+                    morph::vec<float> t0 = { site->p.x, site->p.y, site->p.z };
+                    morph::vec<float> t1 = { e->pos[0].x, e->pos[0].y, e->pos[0].z };
+                    morph::vec<float> t2 = { e->pos[1].x, e->pos[1].y, e->pos[1].z };
+                    // ...but site->index is the index into the original data
+                    this->computeTriangle (t0.as_float(), t1.as_float(), t2.as_float(), this->setColour(site->index));
                     e = e->next;
                 }
             }
+
+            // Draw edges for debug
+#if 0
+            const jcv_edge* edge = jcv_diagram_get_edges (&diagram);
+            while (edge) {
+                morph::vec<float> ep0 = { edge->pos[0].x, edge->pos[0].y, edge->pos[0].z };
+                morph::vec<float> ep1 = { edge->pos[1].x, edge->pos[1].y, edge->pos[1].z };
+                this->computeTube (ep0, ep1, morph::colour::springgreen, morph::colour::crimson, 0.02f, 6);
+                edge = jcv_diagram_get_next_edge(edge);
+            }
+#else
+            // Draw half edges of one site for debug
+            for (int i = 0; i < diagram.numsites; ++i) {
+                const jcv_site* site = &sites[i];
+                if (site->index == 4) { // our central site
+                    const jcv_graphedge* edge = site->edges;
+                    while (edge) {
+
+                        morph::vec<float> ep0 = { edge->pos[0].x, edge->pos[0].y, edge->pos[0].z };
+                        morph::vec<float> ep1 = { edge->pos[1].x, edge->pos[1].y, edge->pos[1].z };
+
+                        std::cout << "This edge ["<<ep0<<"->"<<ep1<<"] is between coord " << edge->edge->sites[0]->index << " at ("
+                                  << edge->edge->sites[0]->p.x << "," << edge->edge->sites[0]->p.y << "," << edge->edge->sites[0]->p.z
+                                  << ") and coord " << edge->edge->sites[1]->index << " at ("
+                                  << edge->edge->sites[1]->p.x << "," << edge->edge->sites[1]->p.y << "," << edge->edge->sites[1]->p.z << ")\n";
+
+                        this->computeTube (ep0, ep1, morph::colour::springgreen, morph::colour::crimson, 0.02f, 6);
+                        edge = edge->next;
+                    }
+                }
+            }
+#endif
+
 
             // At end free
             jcv_diagram_free( &diagram );
