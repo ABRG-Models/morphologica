@@ -2,7 +2,7 @@
  * Visualize a XYz surface from points.
  */
 #include <morph/Visual.h>
-#include <morph/ArbSurfaceVisual.h>
+#include <morph/VoronoiVisual.h>
 #include <morph/vec.h>
 #include <morph/Random.h>
 #include <iostream>
@@ -13,7 +13,7 @@ int main()
 {
     int rtn = -1;
 
-    morph::Visual v(1024, 768, "ArbSurfaceVisual", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
+    morph::Visual v(1024, 768, "VoronoiVisual", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
 
     morph::RandUniform<float> rngxy(-1.0f, 2.0f);
     morph::RandUniform<float> rngz(0.8f, 1.0f);
@@ -28,7 +28,7 @@ int main()
     }
 
     morph::vec<float, 3> offset = { 0.0f };
-    auto asv = std::make_unique<morph::ArbSurfaceVisual<float>> (offset);
+    auto asv = std::make_unique<morph::VoronoiVisual<float>> (offset);
     v.bindmodel (asv);
     asv->cm.setType (morph::ColourMapType::Plasma);
     asv->setDataCoords (&points);

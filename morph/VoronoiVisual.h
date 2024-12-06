@@ -1,8 +1,10 @@
 /*!
  * Visualize an arbitrary surface defined by values at points in 3D space (similar to
- * ScatterVisual). Compute a 2.5D Delaunay triangulization around the data points to create the
- * 'panels' to colourize. An assumption is that the z value of the data coordinates can be 'set
- * aside' and then a 2D Delaunay triangulation applied to the (x,y) coordinates.
+ * ScatterVisual). Using code from https://github.com/JCash/voronoi compute a 2D Voronoi
+ * diagram around the data points (using their x/y values) to create the 'panels' to
+ * colourize. interpolate the z values of the data points to determine the z values of
+ * the edges in the Voronoi diagram. Colourize the panels based on the scalarData or
+ * vectorData of the underlying VisualDataModel.
  *
  * \author Seb James
  * \date 2024
@@ -22,13 +24,13 @@
 
 namespace morph {
 
-    //! The template argument F is the type of the data which this ArbSurfaceVisual
+    //! The template argument F is the type of the data which this VoronoiVisual
     //! will visualize.
     template <typename F, int glver = morph::gl::version_4_1>
-    class ArbSurfaceVisual : public VisualDataModel<F, glver>
+    class VoronoiVisual : public VisualDataModel<F, glver>
     {
     public:
-        ArbSurfaceVisual (const vec<float> _offset)
+        VoronoiVisual (const vec<float> _offset)
         {
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
@@ -136,11 +138,11 @@ namespace morph {
             unsigned int nvdata = this->vectorData == nullptr ? 0 : this->vectorData->size();
 
             if (ndata > 0 && ncoords != ndata) {
-                std::cout << "ArbSurfaceVisual Error: ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return (no model)." << std::endl;
+                std::cout << "VoronoiVisual Error: ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return (no model)." << std::endl;
                 return;
             }
             if (nvdata > 0 && ncoords != nvdata) {
-                std::cout << "ArbSurfaceVisual Error: ncoords ("<<ncoords<<") != nvdata ("<<nvdata<<"), return (no model)." << std::endl;
+                std::cout << "VoronoiVisual Error: ncoords ("<<ncoords<<") != nvdata ("<<nvdata<<"), return (no model)." << std::endl;
                 return;
             }
 
