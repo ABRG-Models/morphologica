@@ -30,6 +30,7 @@ int main()
     morph::vec<float, 3> offset = { 0.0f };
     auto asv = std::make_unique<morph::ArbSurfaceVisual<float>> (offset);
     v.bindmodel (asv);
+    asv->cm.setType (morph::ColourMapType::Plasma);
     asv->setDataCoords (&points);
     asv->setScalarData (&data);
     asv->finalize();
