@@ -23,7 +23,7 @@ int main()
 
     morph::Visual v(1024, 768, "VoronoiVisual", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
 
-    morph::RandUniform<float> rngxy(-1.0f, 2.0f);
+    morph::RandUniform<float> rngxy(-2.0f, 2.0f);
     morph::RandUniform<float> rngz(0.8f, 1.0f);
 
     // make n_points random coordinates
@@ -40,6 +40,8 @@ int main()
     v.bindmodel (asv);
     asv->show_voronoi2d = true; // true to show the 2D voronoi edges
     asv->debug_dataCoords = false; // true to show coordinate spheres
+    float length_scale = 4.0f / std::sqrt (n_points);
+    asv->border_width  = length_scale;
     asv->cm.setType (morph::ColourMapType::Plasma);
     asv->setDataCoords (&points);
     asv->setScalarData (&data);

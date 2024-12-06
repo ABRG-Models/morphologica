@@ -27,6 +27,9 @@ int main()
     asv->show_voronoi2d = true;
     asv->debug_edges = false;
     asv->debug_dataCoords = true;
+    // There's an issue with this if border_width is left at 0.0f
+    //float length_scale = 4.0f / std::sqrt (points.size());
+    //asv->border_width  = length_scale;
     asv->setDataCoords (&points);
     asv->setScalarData (&data);
     asv->finalize();

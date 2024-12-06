@@ -38,7 +38,9 @@ namespace morph {
             this->colourScale.do_autoscale = true;
         }
 
-        //! Compute the triangulization
+        //! Compute 2.5D Voronoi diagram using code adapted from
+        // https://github.com/JCash/voronoi. The adaptation is to add a third dimension
+        // to jcv_point.
         void initializeVertices()
         {
             unsigned int ncoords = this->dataCoords == nullptr ? 0 : this->dataCoords->size();
@@ -58,20 +60,26 @@ namespace morph {
 
             this->setupScaling (this->scalarData->size());
 
-            // Compute 2.5D Voronoi diagram using code adapted from
-            // https://github.com/JCash/voronoi. The adaptation is to add a third
-            // dimension to jcv_point.
-
-            // FIrst make a vector of jcv_point objects as input
+            // First make a vector of jcv_point objects as input
             std::vector<jcv_point> coords2d (ncoords);
+            // Use morph::range to find the extents as we make the vector
+            morph::range<float> rx, ry;
+            rx.search_init();
+            ry.search_init();
             for (unsigned int i = 0; i < ncoords; ++i) {
+                rx.update ((*this->dataCoords)[i][0]);
+                ry.update ((*this->dataCoords)[i][1]);
                 coords2d[i] = { (*this->dataCoords)[i][0], (*this->dataCoords)[i][1],  (*this->dataCoords)[i][2] };
             }
 
             // Generate the 2D Voronoi diagram
             jcv_diagram diagram;
             memset (&diagram, 0, sizeof(jcv_diagram));
-            jcv_rect domain = {jcv_point{-1,-1,0}, jcv_point{2,2,0}};
+
+            jcv_rect domain = {
+                jcv_point{rx.min - this->border_width, ry.min - this->border_width, 0.0f},
+                jcv_point{rx.max + this->border_width, ry.max + this->border_width, 0.0f}
+            };
             jcv_diagram_generate (ncoords, coords2d.data(), &domain, 0, &diagram);
 
             // We obtain access the the Voronoi cell sites:
@@ -149,7 +157,6 @@ namespace morph {
             } // finished reassignment of z values
 
             // To draw triangles iterate over the 'sites' and get the edges
-            // Note: The order of sites in the jcv_diagram is *not* same as original coordinate order...
             for (int i = 0; i < diagram.numsites; ++i) {
                 const jcv_site* site = &sites[i];
                 const jcv_graphedge* e = site->edges;
@@ -157,7 +164,6 @@ namespace morph {
                     morph::vec<float> t0 = { site->p.x, site->p.y, site->p.z };
                     morph::vec<float> t1 = { e->pos[0].x, e->pos[0].y, e->pos[0].z };
                     morph::vec<float> t2 = { e->pos[1].x, e->pos[1].y, e->pos[1].z };
-                    // ...but site->index is the index into the original data 3 indices.
                     // NB: There are 3 each of pos/col/norm vertices (and 3 indices) per
                     // triangle. Could be reduced in principle. For a random map, it
                     // comes out as about about 17*4 vertices per coordinate.
@@ -166,6 +172,7 @@ namespace morph {
                 }
             }
 
+            // Draw optional objects
             if (this->debug_edges) {
                 // Now scan through the edges drawing tubes for debug
                 for (int i = 0; i < diagram.numsites; ++i) {
@@ -192,15 +199,15 @@ namespace morph {
                 }
             }
 
-            // At end free
-            jcv_diagram_free (&diagram);
-
             if (this->debug_dataCoords) {
                 // Add some spheres at the original data points for debugging
                 for (unsigned int i = 0; i < ncoords; ++i) {
                     this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.03f);
                 }
             }
+
+            // At end free the Voronoi diagram memory
+            jcv_diagram_free (&diagram);
         }
 
         //! If true, show 2.5D Voronoi edges
@@ -209,6 +216,9 @@ namespace morph {
         bool show_voronoi2d = false;
         //! If true, show black spheres at dataCoord locations
         bool debug_dataCoords = false;
+
+        //! You can add a little extra to the rectangle that is auto-detected from the datacoordinate ranges
+        float border_width = 0.0f;
 
         // Do we add index labels?
         bool labelIndices = false;
