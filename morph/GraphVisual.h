@@ -1355,7 +1355,7 @@ namespace morph {
                     this->texts.push_back (std::move(lbl));
                 }
             }
-            if (this->axisstyle == axisstyle::twinax && !this->omit_y_tick_labels) {
+            if ((this->axisstyle == axisstyle::twinax || !this->ytick_posns2.empty()) && !this->omit_y_tick_labels) {
                 x_for_yticks = this->width;
                 this->ytick_label_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
@@ -1473,7 +1473,7 @@ namespace morph {
                                                {this->width + tl, (float)yt, -this->thickness}, this->uz,
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
-                } else if (this->axisstyle == axisstyle::twinax) {
+                } else if (this->axisstyle == axisstyle::twinax || !this->ytick_posns2.empty()) {
                     // Draw ticks for y2
                     for (auto yt : this->ytick_posns2) {
                         this->computeFlatLine ({this->width,      (float)yt, -this->thickness},
@@ -1699,14 +1699,22 @@ namespace morph {
             if (this->manualticks == true) {
                 std::cout << "Writeme: Implement a manual tick-setting scheme\n";
             } else {
-                if (!(this->abscissa_scale.ready() && this->ord1_scale.ready())) {
+                if (this->ord2_scale.ready()) {
+                    if (!this->abscissa_scale.ready()) {
+                        throw std::runtime_error ("abscissa scale is not set (though ord2 scale is set). Is there abscissa (x) data?");
+                    }
+                } else if (!(this->abscissa_scale.ready() && this->ord1_scale.ready())) {
                     throw std::runtime_error ("abscissa and ordinate scales not set. Is there data?");
                 }
                 // Compute locations for ticks...
                 Flt _xmin = this->abscissa_scale.inverse_one (this->abscissa_scale.output_range.min);
                 Flt _xmax = this->abscissa_scale.inverse_one (this->abscissa_scale.output_range.max);
-                Flt _ymin = this->ord1_scale.inverse_one (this->ord1_scale.output_range.min);
-                Flt _ymax = this->ord1_scale.inverse_one (this->ord1_scale.output_range.max);
+                Flt _ymin = Flt{0};
+                Flt _ymax = Flt{1};
+                if (this->ord1_scale.ready()) {
+                    _ymin = this->ord1_scale.inverse_one (this->ord1_scale.output_range.min);
+                    _ymax = this->ord1_scale.inverse_one (this->ord1_scale.output_range.max);
+                }
                 Flt _ymin2 = Flt{0};
                 Flt _ymax2 = Flt{1};
                 if (this->ord2_scale.ready()) {
@@ -1724,11 +1732,13 @@ namespace morph {
                 this->xtick_posns.resize (this->xticks.size());
                 this->abscissa_scale.transform (xticks, xtick_posns);
 
-                realmin = this->ord1_scale.inverse_one (0);
-                realmax = this->ord1_scale.inverse_one (this->height);
-                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax, this->num_ticks_range);
-                this->ytick_posns.resize (this->yticks.size());
-                this->ord1_scale.transform (yticks, ytick_posns);
+                if (this->ord1_scale.ready()) {
+                    realmin = this->ord1_scale.inverse_one (0);
+                    realmax = this->ord1_scale.inverse_one (this->height);
+                    this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax, this->num_ticks_range);
+                    this->ytick_posns.resize (this->yticks.size());
+                    this->ord1_scale.transform (yticks, ytick_posns);
+                }
 
                 if (this->ord2_scale.ready()) {
                     realmin = this->ord2_scale.inverse_one (0);

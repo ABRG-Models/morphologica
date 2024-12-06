@@ -320,10 +320,10 @@ namespace morph {
         virtual S transform_one (const T& datum) const
         {
             if (this->type != scaling_function::Linear) {
-                throw std::runtime_error ("This transform function is for Linear scaling only");
+                throw std::runtime_error ("scale_impl<0=vector>::transform_one(): This transform function is for Linear scaling only");
             }
             if (params.size() != 2) {
-                throw std::runtime_error ("For linear scaling of ND vector lengths, need 2 params (set do_autoscale or call setParams())");
+                throw std::runtime_error ("scale_impl<0=vector>::transform_one(): For linear scaling of ND vector lengths, need 2 params (set do_autoscale or call setParams())");
             }
             S rtn(datum);
             T_el vec_len = this->vec_length (datum);
@@ -364,7 +364,7 @@ namespace morph {
             } else if (this->type == scaling_function::Linear) {
                 rtn = this->inverse_one_linear (datum);
             } else {
-                throw std::runtime_error ("Unknown scaling");
+                throw std::runtime_error ("scale_impl<0=vector>::inverse_one(): Unknown scaling");
             }
             return rtn;
         }
@@ -380,7 +380,7 @@ namespace morph {
         virtual void compute_scaling (const T input_min, const T input_max)
         {
             if (this->type != scaling_function::Linear) {
-                throw std::runtime_error ("This scaling function is for Linear scaling only");
+                throw std::runtime_error ("scale_impl<0=vector>::compute_scaling)(): This scaling function is for Linear scaling only");
             }
             this->params.resize (2, T_el{0});
             // Vector version: get lengths of input_min/max
@@ -445,7 +445,7 @@ namespace morph {
         //! The inverse linear transform; x = (y-c)/m
         T inverse_one_linear (const T& datum) const
         {
-            if (this->params.size() < 2) { throw std::runtime_error ("Scaling params not set"); }
+            if (this->params.size() < 2) { throw std::runtime_error ("scale_impl<0=vector>::inverse_one_linear(): scaling params not set"); }
             T rtn (datum);
             std::size_t i = 0;
             for (auto el : datum) {
@@ -499,7 +499,7 @@ namespace morph {
             } else if (this->type == scaling_function::Linear) {
                 rtn = this->transform_one_linear (datum);
             } else {
-                throw std::runtime_error ("Unknown scaling");
+                throw std::runtime_error ("scale_impl<1=scalar>::transform_one(): Unknown scaling");
             }
             return rtn;
         }
@@ -533,7 +533,7 @@ namespace morph {
             } else if (this->type == scaling_function::Linear) {
                 rtn = this->inverse_one_linear (datum);
             } else {
-                throw std::runtime_error ("Unknown scaling");
+                throw std::runtime_error ("scale_impl<1=scalar>::inverse_one(): Unknown scaling");
             }
             return rtn;
         }
@@ -553,7 +553,7 @@ namespace morph {
             } else if (this->type == scaling_function::Linear) {
                 this->compute_scaling_linear (input_min, input_max);
             } else {
-                throw std::runtime_error ("Unknown scaling");
+                throw std::runtime_error ("scale_impl<1=scalar>::compute_scaling(): Unknown scaling");
             }
         }
 
@@ -589,7 +589,7 @@ namespace morph {
         //! Linear transform for scalar type; y = mx + c
         S transform_one_linear (const T& datum) const
         {
-            if (this->params.size() < 2) { throw std::runtime_error ("Scaling params not set"); }
+            if (this->params.size() < 2) { throw std::runtime_error ("scale_impl<1=scalar>::transform_one_linear(): (scalar) scaling params not set"); }
             return (datum * this->params[0] + this->params[1]);
         }
 
@@ -602,7 +602,7 @@ namespace morph {
         //! The inverse linear transform; x = (y-c)/m
         T inverse_one_linear (const S& datum) const
         {
-            if (this->params.size() < 2) { throw std::runtime_error ("Scaling params not set"); }
+            if (this->params.size() < 2) { throw std::runtime_error ("scale_impl<1=scalar>::inverse_one_linear(): (scalar) scaling params not set"); }
             return ((datum-this->params[1])/this->params[0]);
         }
 
@@ -634,7 +634,7 @@ namespace morph {
             // Have to check here as scale_impl<2, T, S> is built from scale_impl<1, T, S> but <= operator makes no sense
             if constexpr (morph::number_type<T>::value == 1) {
                 if (input_min <= T{0} || input_max <= T{0}) {
-                    throw std::runtime_error ("Can't logarithmically autoscale a range which includes zeros or negatives");
+                    throw std::runtime_error ("scale_impl<1=scalar>::compute_scaling_log(): Can't logarithmically autoscale a range which includes zeros or negatives");
                 }
             }
             T ln_imin = std::log(input_min);
@@ -702,7 +702,7 @@ namespace morph {
         {
             // Log scaling complex range?
             if (std::abs(input_min) == T{0} || std::abs(input_max) == T{0}) {
-                throw std::runtime_error ("Can't logarithmically autoscale a complex range which includes zeros");
+                throw std::runtime_error ("scale_impl<2, T, S>::compute_scaling_log(): Can't logarithmically autoscale a complex range which includes zeros");
             }
             T ln_imin = std::log(input_min);
             T ln_imax = std::log(input_max);
