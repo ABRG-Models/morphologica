@@ -388,6 +388,12 @@ if(USE_GLEW)
   target_link_libraries(graph_twinax GLEW::GLEW)
 endif()
 
+add_executable(graph_rightaxis graph_rightaxis.cpp)
+target_link_libraries(graph_rightaxis OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph_rightaxis GLEW::GLEW)
+endif()
+
 add_executable(graph_dynamic_sine graph_dynamic_sine.cpp)
 target_link_libraries(graph_dynamic_sine OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
