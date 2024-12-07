@@ -22,18 +22,18 @@ int main()
     std::vector<float> data = {1,2,3,4,5};
 
     morph::vec<float, 3> offset = { 0.0f };
-    auto asv = std::make_unique<morph::VoronoiVisual<float>> (offset);
-    v.bindmodel (asv);
-    asv->show_voronoi2d = true;
-    asv->debug_edges = false;
-    asv->debug_dataCoords = true;
+    auto vorv = std::make_unique<morph::VoronoiVisual<float>> (offset);
+    v.bindmodel (vorv);
+    vorv->show_voronoi2d = true;
+    vorv->debug_edges = false;
+    vorv->debug_dataCoords = true;
     // There's an issue with this if border_width is left at 0.0f
     //float length_scale = 4.0f / std::sqrt (points.size());
-    //asv->border_width  = length_scale;
-    asv->setDataCoords (&points);
-    asv->setScalarData (&data);
-    asv->finalize();
-    v.addVisualModel (asv);
+    //vorv->border_width  = length_scale;
+    vorv->setDataCoords (&points);
+    vorv->setScalarData (&data);
+    vorv->finalize();
+    v.addVisualModel (vorv);
 
     v.keepOpen();
 
