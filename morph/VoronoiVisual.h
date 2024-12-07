@@ -89,9 +89,6 @@ namespace morph {
             // Time jcv_diagram_generate:
             sc::time_point t1 = sc::now();
 
-            // Time jcv_diagram_generate:
-            sc::time_point t1 = sc::now();
-
             // We obtain access the the Voronoi cell sites:
             const jcv_site* sites = jcv_diagram_get_sites (&diagram);
 
