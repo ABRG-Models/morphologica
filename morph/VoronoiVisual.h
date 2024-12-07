@@ -157,9 +157,13 @@ namespace morph {
             } // finished reassignment of z values
 
             // To draw triangles iterate over the 'sites' and get the edges
+            this->triangle_counts.resize (ncoords, 0);
+            this->site_indices.resize (ncoords, 0);
+            this->triangle_count_sum = 0;
             for (int i = 0; i < diagram.numsites; ++i) {
                 const jcv_site* site = &sites[i];
                 const jcv_graphedge* e = site->edges;
+                unsigned int site_triangles = 0;
                 while (e) {
                     morph::vec<float> t0 = { site->p.x, site->p.y, site->p.z };
                     morph::vec<float> t1 = { e->pos[0].x, e->pos[0].y, e->pos[0].z };
@@ -168,8 +172,16 @@ namespace morph {
                     // triangle. Could be reduced in principle. For a random map, it
                     // comes out as about about 17*4 vertices per coordinate.
                     this->computeTriangle (t0, t1, t2, this->setColour(site->index));
+                    ++site_triangles;
                     e = e->next;
                 }
+                //std::cout << "Voronoi cell " << i << " had " << site_triangles << " triangles\n";
+                this->triangle_counts[i] = site_triangles;
+                this->site_indices[i] = site->index;
+                this->triangle_count_sum += site_triangles;
+            }
+            if (static_cast<unsigned int>(diagram.numsites) != ncoords) {
+                std::cout << "WARNING: numsites != ncoords ?!?!\n";
             }
 
             // Draw optional objects
@@ -209,6 +221,72 @@ namespace morph {
             // At end free the Voronoi diagram memory
             jcv_diagram_free (&diagram);
         }
+
+        void reinitColoursScalar()
+        {
+            if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+            this->dcolour.resize (this->scalarData->size());
+            this->colourScale.transform (*(this->scalarData), dcolour);
+
+            // Replace elements of vertexColors
+            unsigned int tcounts = 0;
+            for (std::size_t i = 0u; i < this->triangle_counts.size(); ++i) {
+                auto c = this->cm.convert (this->dcolour[this->site_indices[i]]);
+                std::size_t d_idx = tcounts * 9; // 3 floats per vtx, 3 vtxs per tri
+                for (std::size_t j = 0; j < this->triangle_counts[i]; ++j) {
+                    this->vertexColors[d_idx + 3 * j]     = c[0];
+                    this->vertexColors[d_idx + 3 * j + 1] = c[1];
+                    this->vertexColors[d_idx + 3 * j + 2] = c[2];
+                }
+                tcounts += this->triangle_counts[i];
+            }
+
+            // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
+            this->reinit_colour_buffer();
+        }
+
+        //! Called by reinitColours when vectorData is not null (vectors are probably RGB colour)
+        void reinitColoursVector()
+        {
+            if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+            for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                this->dcolour[i] = (*this->vectorData)[i][0];
+                this->dcolour2[i] = (*this->vectorData)[i][1];
+                this->dcolour3[i] = (*this->vectorData)[i][2];
+            }
+            if (this->cm.getType() != morph::ColourMapType::RGB) {
+                this->colourScale.transform (this->dcolour, this->dcolour);
+                this->colourScale2.transform (this->dcolour2, this->dcolour2);
+                this->colourScale3.transform (this->dcolour3, this->dcolour3);
+            } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
+
+            // copy loop from above
+
+            // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
+            this->reinit_colour_buffer();
+        }
+
+        void reinitColours()
+        {
+            if (this->vertexColors.size() < this->triangle_count_sum * 3) {
+                throw std::runtime_error ("vertexColors is not big enough to reinitColours()");
+            }
+
+            // now sub-call the scalar or vector reinit colours function
+            if (this->scalarData != nullptr) {
+                this->reinitColoursScalar();
+            } else if (this->vectorData != nullptr) {
+                this->reinitColoursVector();
+            } else {
+                throw std::runtime_error ("No data to reinitColours()");
+            }
+        }
+
+        //! Have to record the number of triangles in each cell in order to update the colours
+        morph::vvec<unsigned int> triangle_counts;
+        //! Record the data index for each Voronoi cell index
+        morph::vvec<unsigned int> site_indices;
+        unsigned int triangle_count_sum = 0;
 
         //! If true, show 2.5D Voronoi edges
         bool debug_edges = false;

@@ -24,7 +24,7 @@ int main()
     v.addLabel ("Unknown", {0.23f, -0.03f, 0.0f}, mode_tm); // With fps_tm can update the VisualTextModel with fps_tm->setupText("new text")
 
     // Create a grid to show in the scene
-    constexpr unsigned int Nside = 200; // You can change this
+    constexpr unsigned int Nside = 400; // You can change this
     constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.01f};
     morph::Grid grid(Nside, Nside, grid_spacing);
     std::cout << "Number of pixels in grid:" << grid.n() << std::endl;
@@ -67,6 +67,14 @@ int main()
     while (!v.readyToFinish) {
 
         v.poll();
+
+        if (incrementer %500 == 0) { // change colourmap
+            if (gvp->cm.getType() == morph::ColourMapType::Cork) {
+                gvp->cm.setType (morph::ColourMapType::Jet);
+            } else {
+                gvp->cm.setType (morph::ColourMapType::Cork);
+            }
+        }
 
         if (incrementer % 1000 == 0) { // switch modes
             reinitJustColours = reinitJustColours ? false : true;

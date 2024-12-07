@@ -23,8 +23,8 @@ int main()
 
     morph::Visual v(1024, 768, "VoronoiVisual", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
 
-    morph::RandUniform<float> rngxy(-2.0f, 2.0f);
-    morph::RandUniform<float> rngz(0.8f, 1.0f);
+    morph::RandUniform<float> rngxy(-2.0f, 2.0f, 1000);
+    morph::RandUniform<float> rngz(0.8f, 1.0f, 1000);
 
     // make n_points random coordinates
     std::vector<morph::vec<float>> points(n_points);
@@ -36,19 +36,27 @@ int main()
     }
 
     morph::vec<float, 3> offset = { 0.0f };
-    auto asv = std::make_unique<morph::VoronoiVisual<float>> (offset);
-    v.bindmodel (asv);
-    asv->show_voronoi2d = true; // true to show the 2D voronoi edges
-    asv->debug_dataCoords = false; // true to show coordinate spheres
+    auto vorv = std::make_unique<morph::VoronoiVisual<float>> (offset);
+    v.bindmodel (vorv);
+    vorv->show_voronoi2d = true; // true to show the 2D voronoi edges
+    vorv->debug_dataCoords = false; // true to show coordinate spheres
     float length_scale = 4.0f / std::sqrt (n_points);
-    asv->border_width  = length_scale;
-    asv->cm.setType (morph::ColourMapType::Plasma);
-    asv->setDataCoords (&points);
-    asv->setScalarData (&data);
-    asv->finalize();
-    v.addVisualModel (asv);
+    vorv->border_width  = length_scale;
+    vorv->cm.setType (morph::ColourMapType::Plasma);
+    vorv->setDataCoords (&points);
+    vorv->setScalarData (&data);
+    vorv->finalize();
+    auto vorvp = v.addVisualModel (vorv);
 
-    v.keepOpen();
+    int fcount = 0;
+    while (!v.readyToFinish) {
+        if (fcount++ > 600) {
+            vorvp->cm.setType (morph::ColourMapType::Magma);
+            vorvp->reinitColours(); // Not quite working when I change the colourmap
+        }
+        v.waitevents(0.018);
+        v.render();
+    }
 
     return rtn;
 }
