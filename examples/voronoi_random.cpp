@@ -35,6 +35,8 @@ int main()
         data[i] = static_cast<float>(i) / n_points;
     }
 
+    morph::ColourMapType cmap_t = morph::ColourMapType::Plasma;
+
     morph::vec<float, 3> offset = { 0.0f };
     auto vorv = std::make_unique<morph::VoronoiVisual<float>> (offset);
     v.bindmodel (vorv);
@@ -42,7 +44,7 @@ int main()
     vorv->debug_dataCoords = false; // true to show coordinate spheres
     float length_scale = 4.0f / std::sqrt (n_points);
     vorv->border_width  = length_scale;
-    vorv->cm.setType (morph::ColourMapType::Plasma);
+    vorv->cm.setType (cmap_t);
     vorv->setDataCoords (&points);
     vorv->setScalarData (&data);
     vorv->finalize();
@@ -50,8 +52,8 @@ int main()
 
     int fcount = 0;
     while (!v.readyToFinish) {
-        if (fcount++ > 600) {
-            vorvp->cm.setType (morph::ColourMapType::Magma);
+        if (fcount++% 600 == 0) {
+            vorvp->cm.setType (++cmap_t);
             vorvp->reinitColours(); // Not quite working when I change the colourmap
         }
         v.waitevents(0.018);
