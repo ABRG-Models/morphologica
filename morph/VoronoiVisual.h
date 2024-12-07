@@ -162,6 +162,7 @@ namespace morph {
                     edge_1 = edge_1->next;
                 }
             } // finished reassignment of z values
+            sc::time_point t1r = sc::now();
 
             // To draw triangles iterate over the 'sites' and get the edges
             this->triangle_counts.resize (ncoords, 0);
@@ -187,6 +188,7 @@ namespace morph {
             if (static_cast<unsigned int>(diagram.numsites) != ncoords) {
                 std::cout << "WARNING: numsites != ncoords ?!?!\n";
             }
+            sc::time_point t1t = sc::now(); // time draw triangles
 
             // Draw optional objects
             if (this->debug_edges) {
@@ -220,6 +222,7 @@ namespace morph {
                     this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.03f);
                 }
             }
+            sc::time_point t1o = sc::now(); // time draw extra objects
 
             // At end free the Voronoi diagram memory
             jcv_diagram_free (&diagram);
@@ -229,6 +232,13 @@ namespace morph {
 
             sc::duration t_d = t1 - t0;
             std::cout << "jcv_diagram_generate: " << duration_cast<microseconds>(t_d).count() << " us\n";
+            sc::duration t_d1 = t1r - t1;
+            std::cout << "regenerate z values: " << duration_cast<microseconds>(t_d1).count() << " us\n";
+            sc::duration t_d1t = t1t - t1r;
+            std::cout << "Draw triangles: " << duration_cast<microseconds>(t_d1t).count() << " us\n";
+            sc::duration t_d1o = t1o - t1t;
+            std::cout << "Draw extra objects: " << duration_cast<microseconds>(t_d1o).count() << " us\n";
+
             sc::duration t_d2 = t2 - t0;
             std::cout << "Everything: " << duration_cast<microseconds>(t_d2).count() << " us\n";
         }

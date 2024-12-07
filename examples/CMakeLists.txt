@@ -549,6 +549,18 @@ if(USE_GLEW)
   target_link_libraries(voronoi_random GLEW::GLEW)
 endif()
 
+add_executable(voronoi_function voronoi_function.cpp)
+target_link_libraries(voronoi_function OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(voronoi_function GLEW::GLEW)
+endif()
+
+add_executable(voronoi_function_flat voronoi_function_flat.cpp)
+target_link_libraries(voronoi_function_flat OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(voronoi_function_flat GLEW::GLEW)
+endif()
+
 add_executable(voronoi_fixed voronoi_fixed.cpp)
 target_link_libraries(voronoi_fixed OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
