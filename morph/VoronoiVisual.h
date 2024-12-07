@@ -383,11 +383,15 @@ namespace morph {
                     // Differs from above as we divide by 255 to get value in range 0-1
                     clr = this->cm.convert (this->dcolour[ri]/255.0f, this->dcolour2[ri]/255.0f, this->dcolour3[ri]/255.0f);
                 } else {
-                    clr = this->cm.convert (this->dcolour[ri], this->dcolour2[ri], this->dcolour3[ri]);
+                    if (!this->dcolour2.empty() && ! this->dcolour3.empty()) {
+                        clr = this->cm.convert (this->dcolour[ri], this->dcolour2[ri], this->dcolour3[ri]);
+                    }
                 }
             } else if (this->cm.numDatums() == 2) {
                 // Use vectorData
-                clr = this->cm.convert (this->dcolour[ri], this->dcolour2[ri]);
+                if (!this->dcolour2.empty()) {
+                    clr = this->cm.convert (this->dcolour[ri], this->dcolour2[ri]);
+                }
             } else {
                 clr = this->cm.convert (this->dcolour[ri]);
             }

@@ -60,9 +60,8 @@ int main()
             points[i][2] = data[i];
         }
 
-        if (fcount++% 600 == 0) {
-            vorvp->cm.setType (++cmap_t);
-        }
+        // Periodically change the colourmap
+        if (fcount++% 1800 == 0) { vorvp->cm.setType (++cmap_t); }
 
         vorvp->reinit(); // slow, but map has to be rebuilt
 
