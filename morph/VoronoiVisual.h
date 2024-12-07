@@ -233,7 +233,8 @@ namespace morph {
             for (std::size_t i = 0u; i < this->triangle_counts.size(); ++i) {
                 auto c = this->cm.convert (this->dcolour[this->site_indices[i]]);
                 std::size_t d_idx = tcounts * 9; // 3 floats per vtx, 3 vtxs per tri
-                for (std::size_t j = 0; j < this->triangle_counts[i]; ++j) {
+                for (std::size_t j = 0; j < 3 * this->triangle_counts[i]; ++j) {
+                    // This is ONE colour vertex. Need 3 per triangle.
                     this->vertexColors[d_idx + 3 * j]     = c[0];
                     this->vertexColors[d_idx + 3 * j + 1] = c[1];
                     this->vertexColors[d_idx + 3 * j + 2] = c[2];
