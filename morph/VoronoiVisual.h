@@ -18,6 +18,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <chrono>
 
 #define JC_VORONOI_IMPLEMENTATION
 #include <morph/jcvoronoi/jc_voronoi.h>
@@ -72,6 +73,11 @@ namespace morph {
                 coords2d[i] = { (*this->dataCoords)[i][0], (*this->dataCoords)[i][1],  (*this->dataCoords)[i][2] };
             }
 
+            using namespace std::chrono;
+            using sc = std::chrono::steady_clock;
+
+
+            sc::time_point t0 = sc::now();
             // Generate the 2D Voronoi diagram
             jcv_diagram diagram;
             memset (&diagram, 0, sizeof(jcv_diagram));
@@ -81,6 +87,9 @@ namespace morph {
                 jcv_point{rx.max + this->border_width, ry.max + this->border_width, 0.0f}
             };
             jcv_diagram_generate (ncoords, coords2d.data(), &domain, 0, &diagram);
+
+            // Time jcv_diagram_generate:
+            sc::time_point t1 = sc::now();
 
             // We obtain access the the Voronoi cell sites:
             const jcv_site* sites = jcv_diagram_get_sites (&diagram);
@@ -220,6 +229,14 @@ namespace morph {
 
             // At end free the Voronoi diagram memory
             jcv_diagram_free (&diagram);
+
+            // Time the rest
+            sc::time_point t2 = sc::now();
+
+            sc::duration t_d = t1 - t0;
+            std::cout << "jcv_diagram_generate: " << duration_cast<microseconds>(t_d).count() << " us\n";
+            sc::duration t_d2 = t2 - t0;
+            std::cout << "Everything: " << duration_cast<microseconds>(t_d2).count() << " us\n";
         }
 
         void reinitColoursScalar()
