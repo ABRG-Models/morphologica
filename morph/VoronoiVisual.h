@@ -61,16 +61,14 @@ namespace morph {
 
             this->setupScaling (this->scalarData->size());
 
-            // First make a vector of jcv_point objects as input
-            std::vector<jcv_point> coords2d (ncoords);
-            // Use morph::range to find the extents as we make the vector
+            // Use morph::range to find the extents of dataCoords. From these create a
+            // rectangle to pass to jcv_diagram_generate.
             morph::range<float> rx, ry;
             rx.search_init();
             ry.search_init();
             for (unsigned int i = 0; i < ncoords; ++i) {
                 rx.update ((*this->dataCoords)[i][0]);
                 ry.update ((*this->dataCoords)[i][1]);
-                coords2d[i] = { (*this->dataCoords)[i][0], (*this->dataCoords)[i][1],  (*this->dataCoords)[i][2] };
             }
 
             using namespace std::chrono;
@@ -86,7 +84,10 @@ namespace morph {
                 jcv_point{rx.min - this->border_width, ry.min - this->border_width, 0.0f},
                 jcv_point{rx.max + this->border_width, ry.max + this->border_width, 0.0f}
             };
-            jcv_diagram_generate (ncoords, coords2d.data(), &domain, 0, &diagram);
+            jcv_diagram_generate (ncoords, this->dataCoords->data(), &domain, 0, &diagram);
+
+            // Time jcv_diagram_generate:
+            sc::time_point t1 = sc::now();
 
             // Time jcv_diagram_generate:
             sc::time_point t1 = sc::now();
@@ -128,16 +129,16 @@ namespace morph {
                     for (unsigned int j = 0; j < 2; ++j) {
                         if (edge_1->edge->sites[j]) {
                             // Both cellcentres get edge_1 sites
-                            cellcentres_1.insert ({edge_1->edge->sites[j]->p.x, edge_1->edge->sites[j]->p.y, edge_1->edge->sites[j]->p.z});
-                            cellcentres_0.insert ({edge_1->edge->sites[j]->p.x, edge_1->edge->sites[j]->p.y, edge_1->edge->sites[j]->p.z});
+                            cellcentres_1.insert (edge_1->edge->sites[j]->p);
+                            cellcentres_0.insert (edge_1->edge->sites[j]->p);
                         }
                         // By definition, cellcentres_1 also gets edge_2 sites...
                         if (edge_2->edge->sites[j]) {
-                            cellcentres_1.insert ({edge_2->edge->sites[j]->p.x, edge_2->edge->sites[j]->p.y, edge_2->edge->sites[j]->p.z});
+                            cellcentres_1.insert (edge_2->edge->sites[j]->p);
                         }
                         // and cellcentres_0 gets edge_0 sites
                         if (edge_0->edge->sites[j]) {
-                            cellcentres_0.insert ({edge_0->edge->sites[j]->p.x, edge_0->edge->sites[j]->p.y, edge_0->edge->sites[j]->p.z});
+                            cellcentres_0.insert (edge_0->edge->sites[j]->p);
                         }
                     }
 
@@ -157,8 +158,8 @@ namespace morph {
                         mean_cc_0 += cce.less_one_dim();
                     }
 
-                    edge_1->pos[1].z = (zsum_1 / cellcentres_1.size());
-                    edge_1->pos[0].z = (zsum_0 / cellcentres_0.size());
+                    edge_1->pos[1][2] = (zsum_1 / cellcentres_1.size());
+                    edge_1->pos[0][2] = (zsum_0 / cellcentres_0.size());
 
                     edge_0 = edge_1;
                     edge_1 = edge_1->next;
@@ -174,13 +175,10 @@ namespace morph {
                 const jcv_graphedge* e = site->edges;
                 unsigned int site_triangles = 0;
                 while (e) {
-                    morph::vec<float> t0 = { site->p.x, site->p.y, site->p.z };
-                    morph::vec<float> t1 = { e->pos[0].x, e->pos[0].y, e->pos[0].z };
-                    morph::vec<float> t2 = { e->pos[1].x, e->pos[1].y, e->pos[1].z };
                     // NB: There are 3 each of pos/col/norm vertices (and 3 indices) per
                     // triangle. Could be reduced in principle. For a random map, it
                     // comes out as about about 17*4 vertices per coordinate.
-                    this->computeTriangle (t0, t1, t2, this->setColour(site->index));
+                    this->computeTriangle (site->p, e->pos[0], e->pos[1], this->setColour(site->index));
                     ++site_triangles;
                     e = e->next;
                 }
@@ -200,8 +198,7 @@ namespace morph {
                     const jcv_site* site = &sites[i];
                     const jcv_graphedge* e = site->edges;
                     while (e) {
-                        this->computeTube ({ e->pos[0].x, e->pos[0].y, e->pos[0].z }, { e->pos[1].x, e->pos[1].y, e->pos[1].z },
-                                           morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                        this->computeTube (e->pos[0], e->pos[1], morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
                         e = e->next;
                     }
                 }
@@ -213,7 +210,7 @@ namespace morph {
                     const jcv_site* site = &sites[i];
                     const jcv_graphedge* e = site->edges;
                     while (e) {
-                        this->computeTube ({ e->pos[0].x, e->pos[0].y, 0.0f }, { e->pos[1].x, e->pos[1].y, 0.0f },
+                        this->computeTube ({ e->pos[0].x(), e->pos[0].y(), 0.0f }, { e->pos[1].x(), e->pos[1].y(), 0.0f },
                                            morph::colour::black, morph::colour::black, 0.01f, 6);
                         e = e->next;
                     }
