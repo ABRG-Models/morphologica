@@ -1,3 +1,7 @@
+// This version of jc_voronoi.h has been modified by Seb James. jcv_point has been
+// changed (from a struct of two jcv_reals to a morph::vec<jcv_real, 3> allowing the
+// formation of a '2.5D' Voronoi surface)
+
 // Copyright (c) 2015-2023 Mathias Westerdahl
 // For LICENSE (MIT), USAGE or HISTORY, see bottom of file
 
@@ -49,7 +53,6 @@ typedef JCV_REAL_TYPE jcv_real;
 
 #include <morph/vec.h>
 
-//typedef struct jcv_point_           jcv_point;
 typedef morph::vec<jcv_real, 3>     jcv_point;
 typedef struct jcv_rect_            jcv_rect;
 typedef struct jcv_site_            jcv_site;
@@ -117,13 +120,6 @@ extern void jcv_boxshape_fillgaps(const jcv_clipper* clipper, jcv_context_intern
 
 
 #pragma pack(push, 1)
-
-struct jcv_point_
-{
-    jcv_real x;
-    jcv_real y;
-    jcv_real z; // for 2.5D
-};
 
 struct jcv_graphedge_
 {
