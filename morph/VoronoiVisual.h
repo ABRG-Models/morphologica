@@ -59,7 +59,7 @@ namespace morph {
                 return;
             }
 
-            this->setupScaling (this->scalarData->size());
+            this->setupScaling (ncoords); // should be same size as nvdata or data
 
             // Use morph::range to find the extents of dataCoords. From these create a
             // rectangle to pass to jcv_diagram_generate.
@@ -271,6 +271,7 @@ namespace morph {
         void reinitColoursVector()
         {
             if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+
             for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
                 this->dcolour[i] = (*this->vectorData)[i][0];
                 this->dcolour2[i] = (*this->vectorData)[i][1];
@@ -282,7 +283,19 @@ namespace morph {
                 this->colourScale3.transform (this->dcolour3, this->dcolour3);
             } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
 
-            // copy loop from above
+            // Replace elements of vertexColors
+            unsigned int tcounts = 0;
+            for (std::size_t i = 0u; i < this->triangle_counts.size(); ++i) {
+                std::array<float, 3> c = this->setColour (this->site_indices[i]);
+                std::size_t d_idx = tcounts * 9; // 3 floats per vtx, 3 vtxs per tri
+                for (std::size_t j = 0; j < 3 * this->triangle_counts[i]; ++j) {
+                    // This is ONE colour vertex. Need 3 per triangle.
+                    this->vertexColors[d_idx + 3 * j]     = c[0];
+                    this->vertexColors[d_idx + 3 * j + 1] = c[1];
+                    this->vertexColors[d_idx + 3 * j + 2] = c[2];
+                }
+                tcounts += this->triangle_counts[i];
+            }
 
             // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
             this->reinit_colour_buffer();
