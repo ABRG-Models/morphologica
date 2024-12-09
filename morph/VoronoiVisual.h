@@ -61,19 +61,33 @@ namespace morph {
 
             this->setupScaling (ncoords); // should be same size as nvdata or data
 
+            morph::quaternion<float> rq;
+            if (this->data_z_direction != this->uz) {
+                // Compute a rotation but for now:
+                this->dcoords.resize (ncoords);
+                morph::vec<float> r_axis = this->data_z_direction.cross (this->uz);
+                float r_angle = this->data_z_direction.angle (this->uz);
+                rq.rotate(r_axis, r_angle);
+                for (size_t i = 0; i < ncoords; ++i) {
+                    this->dcoords[i] = rq * (*this->dataCoords)[i];
+                }
+                this->dcoords_ptr = &this->dcoords;
+            } else {
+                this->dcoords_ptr = this->dataCoords;
+            }
+
             // Use morph::range to find the extents of dataCoords. From these create a
             // rectangle to pass to jcv_diagram_generate.
             morph::range<float> rx, ry;
             rx.search_init();
             ry.search_init();
             for (unsigned int i = 0; i < ncoords; ++i) {
-                rx.update ((*this->dataCoords)[i][0]);
-                ry.update ((*this->dataCoords)[i][1]);
+                rx.update ((*this->dcoords_ptr)[i][0]);
+                ry.update ((*this->dcoords_ptr)[i][1]);
             }
 
             using namespace std::chrono;
             using sc = std::chrono::steady_clock;
-
 
             sc::time_point t0 = sc::now();
             // Generate the 2D Voronoi diagram
@@ -84,7 +98,7 @@ namespace morph {
                 jcv_point{rx.min - this->border_width, ry.min - this->border_width, 0.0f},
                 jcv_point{rx.max + this->border_width, ry.max + this->border_width, 0.0f}
             };
-            jcv_diagram_generate (ncoords, this->dataCoords->data(), &domain, 0, &diagram);
+            jcv_diagram_generate (ncoords, this->dcoords_ptr->data(), &domain, 0, &diagram);
 
             // Time jcv_diagram_generate:
             sc::time_point t1 = sc::now();
@@ -168,22 +182,48 @@ namespace morph {
             this->triangle_counts.resize (ncoords, 0);
             this->site_indices.resize (ncoords, 0);
             this->triangle_count_sum = 0;
-            for (int i = 0; i < diagram.numsites; ++i) {
-                const jcv_site* site = &sites[i];
-                const jcv_graphedge* e = site->edges;
-                unsigned int site_triangles = 0;
-                while (e) {
-                    // NB: There are 3 each of pos/col/norm vertices (and 3 indices) per
-                    // triangle. Could be reduced in principle. For a random map, it
-                    // comes out as about about 17*4 vertices per coordinate.
-                    this->computeTriangle (site->p, e->pos[0], e->pos[1], this->setColour(site->index));
-                    ++site_triangles;
-                    e = e->next;
+
+            if (this->data_z_direction != this->uz) {
+                // inverse rotate
+                morph::vec<float> t0 = {0.0f};
+                morph::vec<float> t1 = {0.0f};
+                morph::vec<float> t2 = {0.0f};
+                morph::quaternion<float> rqinv = rq.invert();
+                for (int i = 0; i < diagram.numsites; ++i) {
+                    const jcv_site* site = &sites[i];
+                    const jcv_graphedge* e = site->edges;
+                    unsigned int site_triangles = 0;
+                    while (e) {
+                        // NB: There are 3 each of pos/col/norm vertices (and 3 indices) per
+                        // triangle. Could be reduced in principle. For a random map, it
+                        // comes out as about about 17*4 vertices per coordinate.
+                        t0 = rqinv * site->p;
+                        t1 = rqinv * e->pos[0];
+                        t2 = rqinv * e->pos[1];
+                        this->computeTriangle (t0, t1, t2, this->setColour(site->index));
+                        ++site_triangles;
+                        e = e->next;
+                    }
+                    //std::cout << "Voronoi cell " << i << " had " << site_triangles << " triangles\n";
+                    this->triangle_counts[i] = site_triangles;
+                    this->site_indices[i] = site->index;
+                    this->triangle_count_sum += site_triangles;
                 }
-                //std::cout << "Voronoi cell " << i << " had " << site_triangles << " triangles\n";
-                this->triangle_counts[i] = site_triangles;
-                this->site_indices[i] = site->index;
-                this->triangle_count_sum += site_triangles;
+            } else {
+                // No need to inverse rotate
+                for (int i = 0; i < diagram.numsites; ++i) {
+                    const jcv_site* site = &sites[i];
+                    const jcv_graphedge* e = site->edges;
+                    unsigned int site_triangles = 0;
+                    while (e) {
+                        this->computeTriangle (site->p, e->pos[0], e->pos[1], this->setColour(site->index));
+                        ++site_triangles;
+                        e = e->next;
+                    }
+                    this->triangle_counts[i] = site_triangles;
+                    this->site_indices[i] = site->index;
+                    this->triangle_count_sum += site_triangles;
+                }
             }
             if (static_cast<unsigned int>(diagram.numsites) != ncoords) {
                 std::cout << "WARNING: numsites != ncoords ?!?!\n";
@@ -317,18 +357,16 @@ namespace morph {
             }
         }
 
-        //! Have to record the number of triangles in each cell in order to update the colours
-        morph::vvec<unsigned int> triangle_counts;
-        //! Record the data index for each Voronoi cell index
-        morph::vvec<unsigned int> site_indices;
-        unsigned int triangle_count_sum = 0;
-
         //! If true, show 2.5D Voronoi edges
         bool debug_edges = false;
         //! If true, show 2D Voronoi edges
         bool show_voronoi2d = false;
         //! If true, show black spheres at dataCoord locations
         bool debug_dataCoords = false;
+
+        //! What direction should be considered 'z' when converting the data into a voronoi diagram?
+        //! The data values will be rotated before the Voronoi pass, then rotated back.
+        morph::vec<float> data_z_direction = this->uz;
 
         //! You can add a little extra to the rectangle that is auto-detected from the datacoordinate ranges
         float border_width = 0.0f;
@@ -433,6 +471,11 @@ namespace morph {
             this->indices.push_back (this->idx++);
         }
 
+        //! Have to record the number of triangles in each cell in order to update the colours
+        morph::vvec<unsigned int> triangle_counts;
+        //! Record the data index for each Voronoi cell index
+        morph::vvec<unsigned int> site_indices;
+        unsigned int triangle_count_sum = 0;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;
@@ -440,6 +483,11 @@ namespace morph {
         std::vector<float> dcolour;
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
+
+        //! Internally owned version of dataCoords after rotation
+        std::vector<morph::vec<float>> dcoords;
+        //! A pointer either to dcoords or this->dataCoords
+        const std::vector<morph::vec<float>>* dcoords_ptr;
     };
 
 } // namespace morph
