@@ -157,13 +157,10 @@ namespace morph {
 
             unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
 
-            // check if the size of selected_pix_border_colour is the same as the size of selected_pix_indexes
-            if (selected_pix_indexes.size()>selected_pix_border_colour.size()){
-                std::cerr << "[GridVisual::drawSelectedPixBorder] the number of pixel indices is higher than the number of colours,"
-                          << " the last color will be used for the remaining pixels" << std::endl;
-                while(selected_pix_border_colour.size() < selected_pix_indexes.size()) {
-                    selected_pix_border_colour.push_back(selected_pix_border_colour.back());
-                }
+            // If user has NOT resized and populated selected_pix_border_colour AND
+            // selected_pix_indexes, resize and default the colour here.
+            if (this->selected_pix_border_colour.size() < this->selected_pix_indexes.size()) {
+                this->selected_pix_border_colour.resize (this->selected_pix_indexes.size(), this->border_colour);
             }
 
             float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
@@ -822,12 +819,11 @@ namespace morph {
         //! new option for border around selected pixels
         bool showselectedpixborder = false;
 
-        //! list of the pixel to have a border
-        std::vector<unsigned int> selected_pix_indexes;
+        //! list of those pixel indices that should be drawn with a border
+        std::vector<I> selected_pix_indexes;
 
         //! The colour for the border
         std::vector<std::array<float, 3>> selected_pix_border_colour;
-
 
         // If true, interpolate the colour of the sides of columns on a column grid
         bool interpolate_colour_sides = false;
