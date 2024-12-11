@@ -158,7 +158,7 @@ namespace morph {
             float grid_bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
 
             // loop through each pixel
-            for (unsigned int i=0; i < selected_pix_indexes.size(); ++i ) {
+            for (std::size_t i=0; i < selected_pix_indexes.size(); ++i ) {
                 unsigned int r = selected_pix_indexes[i] % pix_width;
                 unsigned int c = selected_pix_indexes[i] / pix_width;
                 // {xmin, xmax, ymin, ymax}
@@ -213,7 +213,7 @@ namespace morph {
             t_r.search_init();
 
             // Find extents of our selected pixels
-            for (I i = 0; i < this->selected_pix_indexes.size(); ++i) {
+            for (std::size_t i = 0; i < this->selected_pix_indexes.size(); ++i) {
                 I r = this->selected_pix_indexes[i] % pix_width;
                 I c = this->selected_pix_indexes[i] / pix_width;
                 float left = grid_left + (r * dx[0]);
