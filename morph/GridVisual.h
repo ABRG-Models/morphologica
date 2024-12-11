@@ -94,13 +94,12 @@ namespace morph {
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
-            float bz = 0.02f;
             float left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
             float right = cg_extents[1] + (dx[0]/2.0f) + this->centering_offset[0];
             float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
             float top   = cg_extents[3] + (dx[1]/2.0f) + this->centering_offset[1];
             morph::vec<float, 4> r_extents = { left, right, bot, top };
-            this->rectangularBorder (r_extents, bz, bthick, this->border_colour);
+            this->rectangularBorder (r_extents, this->border_z_offset, bthick, this->border_colour);
         }
 
         //! function to draw the grid (border around each pixel)
@@ -146,7 +145,6 @@ namespace morph {
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float gridthick = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
-            float bz = 0.05f;
 
             unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
 
@@ -165,7 +163,7 @@ namespace morph {
                 unsigned int c = selected_pix_indexes[i] / pix_width;
                 // {xmin, xmax, ymin, ymax}
                 morph::vec<float, 4> r_extents = { (grid_left + r * dx[0]), (grid_left + (r+1) * dx[0]), (grid_bot + c * dx[1]), (grid_bot + (c+1) * dx[1]) };
-                this->rectangularBorder (r_extents, bz, gridthick, this->selected_pix_border_colour[i]);
+                this->rectangularBorder (r_extents, this->grid_z_offset, gridthick, this->selected_pix_border_colour[i]);
             }
         }
 
@@ -195,7 +193,6 @@ namespace morph {
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
             float gridthick = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
-            float bz = 0.05f;
 
             unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
 
@@ -231,7 +228,7 @@ namespace morph {
 
             // xmin xmax ymin ymax
             morph::vec<float, 4> r_extents = { l_r.min, r_r.max, b_r.min, t_r.max };
-            this->rectangularBorder (r_extents, bz, gridthick, this->selected_pix_border_colour[0]);
+            this->rectangularBorder (r_extents, this->grid_z_offset, gridthick, this->selected_pix_border_colour[0]);
         }
 
         // Common function to setup scaling. Called by all initializeVertices subroutines. Also
@@ -850,6 +847,9 @@ namespace morph {
         //! If you need to override the pixels-relationship to the grid thickness, set it here
         float grid_thickness_fixed = 0.0f;
 
+        //! How far in z to locate the grid lines?
+        float grid_z_offset = 0.02f;
+
         //! Set true to draw a border around the outside
         bool showborder = false;
 
@@ -861,6 +861,9 @@ namespace morph {
 
         //! If you need to override the pixels-relationship to the border thickness, set it here
         float border_thickness_fixed = 0.0f;
+
+        //! How far in z to locate the border lines?
+        float border_z_offset = 0.02f;
 
         /*!
          * If true, draw a border around selected pixels (with a full border around each selected
