@@ -99,15 +99,8 @@ namespace morph {
             float right = cg_extents[1] + (dx[0]/2.0f) + this->centering_offset[0];
             float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
             float top   = cg_extents[3] + (dx[1]/2.0f) + this->centering_offset[1];
-            morph::vec<float> lb = {{left, bot, bz}}; // z?
-            morph::vec<float> lt = {{left, top, bz}};
-            morph::vec<float> rt = {{right, top, bz}};
-            morph::vec<float> rb = {{right, bot, bz}};
-
-            this->computeFlatLine(lb, lt, rb, rt, this->uz, this->border_colour, bthick);
-            this->computeFlatLine(lt, rt, lb, rb, this->uz, this->border_colour, bthick);
-            this->computeFlatLine(rt, rb, lt, lb, this->uz, this->border_colour, bthick);
-            this->computeFlatLine(rb, lb, rt, lt, this->uz, this->border_colour, bthick);
+            morph::vec<float, 4> r_extents = { left, right, bot, top };
+            this->rectangularBorder (r_extents, bz, bthick, this->border_colour);
         }
 
         //! function to draw the grid (border around each pixel)
@@ -152,7 +145,7 @@ namespace morph {
             // Draw around all pixels
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
-            float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
+            float gridthick = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
             float bz = 0.05f;
 
             unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
@@ -170,25 +163,29 @@ namespace morph {
             for (unsigned int i=0; i < selected_pix_indexes.size(); ++i ) {
                 unsigned int r = selected_pix_indexes[i] % pix_width;
                 unsigned int c = selected_pix_indexes[i] / pix_width;
-
-                float left = grid_left + (r * dx[0]);
-                float right = left + dx[0];
-                float bot = grid_bot + (c * dx[1]);
-                float top = bot + dx[1];
-                morph::vec<float> lb = {{left, bot, bz}}; // z?
-                morph::vec<float> lt = {{left, top, bz}};
-                morph::vec<float> rt = {{right, top, bz}};
-                morph::vec<float> rb = {{right, bot, bz}};
-
-                // draw the vertical from bottom left to top left
-                this->computeFlatLine(lb, lt, rb, rt, this->uz, this->selected_pix_border_colour[i], gridthick);
-                // draw the horizontal from bottom left to bottom right
-                this->computeFlatLine(rb, lb, rt, lt, this->uz, this->selected_pix_border_colour[i], gridthick);
-                // draw the vertical from bottom right to top right
-                this->computeFlatLine(rt, rb, lt, lb, this->uz, this->selected_pix_border_colour[i], gridthick);
-                // draw the horizontal from top left to top right
-                this->computeFlatLine(lt, rt, lb, rb, this->uz, this->selected_pix_border_colour[i], gridthick);
+                // {xmin, xmax, ymin, ymax}
+                morph::vec<float, 4> r_extents = { (grid_left + r * dx[0]), (grid_left + (r+1) * dx[0]), (grid_bot + c * dx[1]), (grid_bot + (c+1) * dx[1]) };
+                this->rectangularBorder (r_extents, bz, gridthick, this->selected_pix_border_colour[i]);
             }
+        }
+
+        // Draw a GridVisual border
+        void rectangularBorder (const morph::vec<float, 4>& r_extents,
+                                const float bz, const float linethickness,
+                                const std::array<float, 3>& clr)
+        {
+                morph::vec<float> lb = {{r_extents[0], r_extents[2], bz}};
+                morph::vec<float> lt = {{r_extents[0], r_extents[3], bz}};
+                morph::vec<float> rt = {{r_extents[1], r_extents[3], bz}};
+                morph::vec<float> rb = {{r_extents[1], r_extents[2], bz}};
+                // draw the vertical from bottom left to top left
+                this->computeFlatLine(lb, lt, rb, rt, this->uz, clr, linethickness);
+                // draw the horizontal from bottom left to bottom right
+                this->computeFlatLine(rb, lb, rt, lt, this->uz, clr, linethickness);
+                // draw the vertical from bottom right to top right
+                this->computeFlatLine(rt, rb, lt, lb, this->uz, clr, linethickness);
+                // draw the horizontal from top left to top right
+                this->computeFlatLine(lt, rt, lb, rb, this->uz, clr, linethickness);
         }
 
         //! Draw a border around the selected pixels, using the first selected pix colour
@@ -197,7 +194,7 @@ namespace morph {
             // Draw around all pixels
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
-            float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
+            float gridthick = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
             float bz = 0.05f;
 
             unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
@@ -226,26 +223,15 @@ namespace morph {
                 float right = left + dx[0];
                 float bot = grid_bot + (c * dx[1]);
                 float top = bot + dx[1];
-
                 l_r.update (left);
                 r_r.update (right);
                 b_r.update (bot);
                 t_r.update (top);
             }
 
-            morph::vec<float> lb = { l_r.min, b_r.min, bz };
-            morph::vec<float> lt = { l_r.min, t_r.max, bz };
-            morph::vec<float> rt = { r_r.max, t_r.max, bz };
-            morph::vec<float> rb = { r_r.max, b_r.min, bz };
-
-            // draw the vertical from bottom left to top left
-            this->computeFlatLine(lb, lt, rb, rt, this->uz, this->selected_pix_border_colour[0], gridthick);
-            // draw the horizontal from bottom left to bottom right
-            this->computeFlatLine(rb, lb, rt, lt, this->uz, this->selected_pix_border_colour[0], gridthick);
-            // draw the vertical from bottom right to top right
-            this->computeFlatLine(rt, rb, lt, lb, this->uz, this->selected_pix_border_colour[0], gridthick);
-            // draw the horizontal from top left to top right
-            this->computeFlatLine(lt, rt, lb, rb, this->uz, this->selected_pix_border_colour[0], gridthick);
+            // xmin xmax ymin ymax
+            morph::vec<float, 4> r_extents = { l_r.min, r_r.max, b_r.min, t_r.max };
+            this->rectangularBorder (r_extents, bz, gridthick, this->selected_pix_border_colour[0]);
         }
 
         // Common function to setup scaling. Called by all initializeVertices subroutines. Also
