@@ -11,6 +11,7 @@
  */
 
 #include <ostream>
+#include <sstream>
 #include <limits>
 #include <complex>
 #include <morph/trait_tests.h>
@@ -38,6 +39,14 @@ namespace morph {
         {
             this->min = _min;
             this->max = _max;
+        }
+
+        // Output a string representation of the min and max. Rewrite with <format> at some point.
+        std::string str() const
+        {
+            std::stringstream ss;
+            ss << "[" << this->min << ", " << this->max << "]";
+            return ss.str();
         }
 
         // Initialise the range to participate in a search for the max and min through a range of data.
