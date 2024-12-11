@@ -191,6 +191,63 @@ namespace morph {
             }
         }
 
+        //! Draw a border around the selected pixels, using the first selected pix colour
+        void drawSelectedPixBorderEnclosing()
+        {
+            // Draw around all pixels
+            morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
+            morph::vec<float, 2> dx = this->grid->get_dx();
+            float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
+            float bz = 0.05f;
+
+            unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
+
+            if (this->selected_pix_border_colour.empty()) {
+                this->selected_pix_border_colour.push_back (this->border_colour);
+            }
+
+            float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
+            float grid_bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
+
+            morph::range<float> l_r; // left extent range
+            l_r.search_init();
+            morph::range<float> r_r;
+            r_r.search_init();
+            morph::range<float> b_r;
+            b_r.search_init();
+            morph::range<float> t_r;
+            t_r.search_init();
+
+            // Find extents of our selected pixels
+            for (I i = 0; i < this->selected_pix_indexes.size(); ++i) {
+                I r = this->selected_pix_indexes[i] % pix_width;
+                I c = this->selected_pix_indexes[i] / pix_width;
+                float left = grid_left + (r * dx[0]);
+                float right = left + dx[0];
+                float bot = grid_bot + (c * dx[1]);
+                float top = bot + dx[1];
+
+                l_r.update (left);
+                r_r.update (right);
+                b_r.update (bot);
+                t_r.update (top);
+            }
+
+            morph::vec<float> lb = { l_r.min, b_r.min, bz };
+            morph::vec<float> lt = { l_r.min, t_r.max, bz };
+            morph::vec<float> rt = { r_r.max, t_r.max, bz };
+            morph::vec<float> rb = { r_r.max, b_r.min, bz };
+
+            // draw the vertical from bottom left to top left
+            this->computeFlatLine(lb, lt, rb, rt, this->uz, this->selected_pix_border_colour[0], gridthick);
+            // draw the horizontal from bottom left to bottom right
+            this->computeFlatLine(rb, lb, rt, lt, this->uz, this->selected_pix_border_colour[0], gridthick);
+            // draw the vertical from bottom right to top right
+            this->computeFlatLine(rt, rb, lt, lb, this->uz, this->selected_pix_border_colour[0], gridthick);
+            // draw the horizontal from top left to top right
+            this->computeFlatLine(lt, rt, lb, rb, this->uz, this->selected_pix_border_colour[0], gridthick);
+        }
+
         // Common function to setup scaling. Called by all initializeVertices subroutines. Also
         // checks size of scalar/vectorData and the Grid match.
         void setupScaling()
@@ -284,6 +341,9 @@ namespace morph {
             }
             if (this->showselectedpixborder == true) {
                 this->drawSelectedPixBorder();
+            }
+            if (this->showselectedpixborder_enclosing == true) {
+                this->drawSelectedPixBorderEnclosing();
             }
             if (this->showorigin == true) {
                 this->computeSphere (morph::vec<float>{0, 0, 0}, morph::colour::crimson, 0.25f * this->grid->get_dx()[0]);
@@ -816,8 +876,15 @@ namespace morph {
         //! If you need to override the pixels-relationship to the border thickness, set it here
         float border_thickness_fixed = 0.0f;
 
-        //! new option for border around selected pixels
+        /*!
+         * If true, draw a border around selected pixels (with a full border around each selected
+         * pixel). The selected pixels are chosen by the client code, which should populate
+         * selected_pix_indexes.
+         */
         bool showselectedpixborder = false;
+
+        //! If true, draw a rectangular border enclosing the selected pixels
+        bool showselectedpixborder_enclosing = false;
 
         //! list of those pixel indices that should be drawn with a border
         std::vector<I> selected_pix_indexes;
