@@ -159,11 +159,11 @@ namespace morph {
 
             // check if the size of selected_pix_border_colour is the same as the size of selected_pix_indexes
             if (selected_pix_indexes.size()>selected_pix_border_colour.size()){
-              std::cerr << "[GridVisual::drawSelectedPixBorder] the number of pixel indices is higher than the number of colours,"
-                        << " the last color will be used for the remaining pixels" << std::endl;
-              while(selected_pix_border_colour.size() < selected_pix_indexes.size()) {
-                selected_pix_border_colour.push_back(selected_pix_border_colour.back());
-              }
+                std::cerr << "[GridVisual::drawSelectedPixBorder] the number of pixel indices is higher than the number of colours,"
+                          << " the last color will be used for the remaining pixels" << std::endl;
+                while(selected_pix_border_colour.size() < selected_pix_indexes.size()) {
+                    selected_pix_border_colour.push_back(selected_pix_border_colour.back());
+                }
             }
 
             float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
@@ -286,7 +286,7 @@ namespace morph {
                 this->drawGrid();
             }
             if (this->showselectedpixborder == true) {
-              this->drawSelectedPixBorder();
+                this->drawSelectedPixBorder();
             }
             if (this->showorigin == true) {
                 this->computeSphere (morph::vec<float>{0, 0, 0}, morph::colour::crimson, 0.25f * this->grid->get_dx()[0]);
