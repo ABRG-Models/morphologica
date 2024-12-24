@@ -298,25 +298,62 @@ namespace morph {
             // Draw optional objects
             if (this->debug_edges) {
                 // Now scan through the edges drawing tubes for debug
-                for (int i = 0; i < diagram.numsites; ++i) {
-                    const jcv_site* site = &sites[i];
-                    const jcv_graphedge* e = site->edges;
-                    while (e) {
-                        this->computeTube (e->pos[0], e->pos[1], morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
-                        e = e->next;
+                if (this->data_z_direction != this->uz) {
+                    // Apply rotations then compute
+                    morph::vec<float> t0 = {0.0f};
+                    morph::vec<float> t1 = {0.0f};
+                    morph::quaternion<float> rqinv = rq.invert();
+                    for (int i = 0; i < diagram.numsites; ++i) {
+                        const jcv_site* site = &sites[i];
+                        const jcv_graphedge* e = site->edges;
+                        while (e) {
+                            t0 = rqinv * e->pos[0];
+                            t1 = rqinv * e->pos[1];
+                            this->computeTube (t0, t1, morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                            e = e->next;
+                        }
+                    }
+
+                } else {
+                    // No rotations required
+                    for (int i = 0; i < diagram.numsites; ++i) {
+                        const jcv_site* site = &sites[i];
+                        const jcv_graphedge* e = site->edges;
+                        while (e) {
+                            this->computeTube (e->pos[0], e->pos[1], morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                            e = e->next;
+                        }
                     }
                 }
             }
 
             if (this->show_voronoi2d) {
-                // Show the 2D Voronoi diagram's edges at z=0
-                for (int i = 0; i < diagram.numsites; ++i) {
-                    const jcv_site* site = &sites[i];
-                    const jcv_graphedge* e = site->edges;
-                    while (e) {
-                        this->computeTube ({ e->pos[0].x(), e->pos[0].y(), 0.0f }, { e->pos[1].x(), e->pos[1].y(), 0.0f },
-                                           morph::colour::black, morph::colour::black, 0.01f, 6);
-                        e = e->next;
+                if (this->data_z_direction != this->uz) {
+                    // Apply rotations then compute
+                    morph::vec<float> t0 = {0.0f};
+                    morph::vec<float> t1 = {0.0f};
+                    morph::quaternion<float> rqinv = rq.invert();
+                    for (int i = 0; i < diagram.numsites; ++i) {
+                        const jcv_site* site = &sites[i];
+                        const jcv_graphedge* e = site->edges;
+                        while (e) {
+                            t0 = rqinv * morph::vec<float>{ e->pos[0].x(), e->pos[0].y(), 0.0f };
+                            t1 = rqinv * morph::vec<float>{ e->pos[1].x(), e->pos[1].y(), 0.0f };
+                            this->computeTube (t0, t1, morph::colour::black, morph::colour::black, 0.01f, 6);
+                            e = e->next;
+                        }
+                    }
+
+                } else {
+                    // Show the 2D Voronoi diagram's edges at z=0
+                    for (int i = 0; i < diagram.numsites; ++i) {
+                        const jcv_site* site = &sites[i];
+                        const jcv_graphedge* e = site->edges;
+                        while (e) {
+                            this->computeTube ({ e->pos[0].x(), e->pos[0].y(), 0.0f }, { e->pos[1].x(), e->pos[1].y(), 0.0f },
+                                               morph::colour::black, morph::colour::black, 0.01f, 6);
+                            e = e->next;
+                        }
                     }
                 }
             }

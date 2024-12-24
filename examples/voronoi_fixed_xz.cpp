@@ -1,5 +1,6 @@
 /*
- * Make a very small Voronoi surface. Used to debug VoronoiVisual
+ * Make a very small Voronoi surface where it makes sense to plot with surface heights
+ * in the y direction. Demonstrates setting of VoronoiVisual::data_z_direction
  */
 #include <morph/Visual.h>
 #include <morph/VoronoiVisual.h>
@@ -24,12 +25,9 @@ int main()
     morph::vec<float, 3> offset = { 0.0f };
     auto vorv = std::make_unique<morph::VoronoiVisual<float>> (offset);
     v.bindmodel (vorv);
-    vorv->show_voronoi2d = true;
-    vorv->debug_edges = false;
+    vorv->show_voronoi2d = true; // needs fix
+    vorv->debug_edges = true; // needs fix
     vorv->debug_dataCoords = true;
-    // There's an issue with this if border_width is left at 0.0f
-    //float length_scale = 4.0f / std::sqrt (points.size());
-    //vorv->border_width  = length_scale;
     vorv->data_z_direction = morph::vec<float>{0,1,0};
     vorv->setDataCoords (&points);
     vorv->setScalarData (&data);
