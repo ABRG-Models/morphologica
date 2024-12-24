@@ -11,7 +11,7 @@
 struct myvisual final : public morph::Visual<>
 {
     myvisual (int width, int height, const std::string& title) : morph::Visual<> (width, height, title) {}
-    float border_width = 0.0f;
+    float border_width = std::numeric_limits<float>::epsilon();
 protected:
     void key_callback_extra (int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) override
     {
