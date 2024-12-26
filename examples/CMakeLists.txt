@@ -197,6 +197,12 @@ if(ARMADILLO_FOUND)
     target_link_libraries(grid_border GLEW::GLEW)
   endif()
 
+  add_executable(grid_border2 grid_border2.cpp)
+  target_link_libraries(grid_border2 OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(grid_border2 GLEW::GLEW)
+  endif()
+
 
   # Like HexGrid::resampleImage, this one uses an omp call that only works on Mac with
   # libomp, so avoid compiling this example on a Mac.

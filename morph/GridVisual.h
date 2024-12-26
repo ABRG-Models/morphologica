@@ -168,22 +168,35 @@ namespace morph {
         }
 
         // Draw a GridVisual border
+        // r_extents: rectangular extents of the Grid
         void rectangularBorder (const morph::vec<float, 4>& r_extents,
                                 const float bz, const float linethickness,
                                 const std::array<float, 3>& clr)
         {
-                morph::vec<float> lb = {{r_extents[0], r_extents[2], bz}};
-                morph::vec<float> lt = {{r_extents[0], r_extents[3], bz}};
-                morph::vec<float> rt = {{r_extents[1], r_extents[3], bz}};
-                morph::vec<float> rb = {{r_extents[1], r_extents[2], bz}};
-                // draw the vertical from bottom left to top left
-                this->computeFlatLine(lb, lt, rb, rt, this->uz, clr, linethickness);
-                // draw the horizontal from bottom left to bottom right
-                this->computeFlatLine(rb, lb, rt, lt, this->uz, clr, linethickness);
-                // draw the vertical from bottom right to top right
-                this->computeFlatLine(rt, rb, lt, lb, this->uz, clr, linethickness);
-                // draw the horizontal from top left to top right
-                this->computeFlatLine(lt, rt, lb, rb, this->uz, clr, linethickness);
+            morph::vec<float> lb = { r_extents[0], r_extents[2], bz };
+            morph::vec<float> lt = { r_extents[0], r_extents[3], bz };
+            morph::vec<float> rt = { r_extents[1], r_extents[3], bz };
+            morph::vec<float> rb = { r_extents[1], r_extents[2], bz };
+#if 1
+            morph::vec<float> lbout = { r_extents[0] - linethickness, r_extents[2] - linethickness, bz };
+            morph::vec<float> ltout = { r_extents[0] - linethickness, r_extents[3] + linethickness, bz };
+            morph::vec<float> rtout = { r_extents[1] + linethickness, r_extents[3] + linethickness, bz };
+            morph::vec<float> rbout = { r_extents[1] + linethickness, r_extents[2] - linethickness, bz };
+
+            this->computeFlatQuad (lbout, ltout, lt, lb, clr);
+            this->computeFlatQuad (lt, ltout, rtout, rt, clr);
+            this->computeFlatQuad (rt, rtout, rbout, rb, clr);
+            this->computeFlatQuad (rb, rbout, lbout, lb, clr);
+#else
+            // draw the vertical from bottom left to top left
+            this->computeFlatLine(lb, lt, rb, rt, this->uz, clr, linethickness);
+            // draw the horizontal from bottom left to bottom right
+            this->computeFlatLine(rb, lb, rt, lt, this->uz, clr, linethickness);
+            // draw the vertical from bottom right to top right
+            this->computeFlatLine(rt, rb, lt, lb, this->uz, clr, linethickness);
+            // draw the horizontal from top left to top right
+            this->computeFlatLine(lt, rt, lb, rb, this->uz, clr, linethickness);
+#endif
         }
 
         //! Draw a border around the selected pixels, using the first selected pix colour
@@ -862,7 +875,7 @@ namespace morph {
         //! If you need to override the pixels-relationship to the border thickness, set it here
         float border_thickness_fixed = 0.0f;
 
-        //! How far in z to locate the border lines?
+        //! Where in z to locate the border lines?
         float border_z_offset = 0.02f;
 
         /*!
