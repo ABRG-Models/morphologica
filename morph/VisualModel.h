@@ -1982,7 +1982,7 @@ namespace morph {
                 vend = end - v * shorten;
             }
 
-            // vv is normal to v and uz
+            // vv is normal to v and _uz
             vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
@@ -2005,11 +2005,11 @@ namespace morph {
             angles[6] = morph::mathconst<float>::two_pi - angles[0];
             angles[7] = angles[6];
             // The normals for the vertices around the line
-            std::array<vec<float>, 8> norms = { vv, uz, uz, -vv, -vv, -uz, -uz, vv };
+            std::array<vec<float>, 8> norms = { vv, _uz, _uz, -vv, -vv, -_uz, -_uz, vv };
 
             // Start cap vertices (a triangle fan)
             for (int j = 0; j < segments; j++) {
-                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -2017,7 +2017,7 @@ namespace morph {
 
             // Intermediate, near start cap. Normals point outwards. Need Additional vertices
             for (int j = 0; j < segments; j++) {
-                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (norms[j], this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -2025,7 +2025,7 @@ namespace morph {
 
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (norms[j], this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -2033,7 +2033,7 @@ namespace morph {
 
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
-                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -2106,7 +2106,7 @@ namespace morph {
 
         // Like computeLine, but this line has no thickness.
         void computeFlatLine (vec<float> start, vec<float> end,
-                              vec<float> uz,
+                              vec<float> _uz,
                               std::array<float, 3> col,
                               float w = 0.1f, float shorten = 0.0f)
         {
@@ -2122,8 +2122,8 @@ namespace morph {
                 vend = end - v * shorten;
             }
 
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
+            // vv is normal to v and _uz
+            vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
@@ -2134,19 +2134,19 @@ namespace morph {
             vec<float> c4 = vend + ww;
 
             this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             // Number of vertices = segments * 4 + 2.
@@ -2170,7 +2170,7 @@ namespace morph {
         // draw a whole circle around start/end to achieve this, rather than figuring
         // out a semi-circle).
         void computeFlatLineRnd (vec<float> start, vec<float> end,
-                                 vec<float> uz,
+                                 vec<float> _uz,
                                  std::array<float, 3> col,
                                  float w = 0.1f, float shorten = 0.0f, bool startcaps = true, bool endcaps = true)
         {
@@ -2186,8 +2186,8 @@ namespace morph {
                 vend = end - v * shorten;
             }
 
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
+            // vv is normal to v and _uz
+            vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
@@ -2203,7 +2203,7 @@ namespace morph {
             if (startcaps) {
                 // Push the central point of the start cap - this is at location vstart
                 this->vertex_push (vstart, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
                 ++startvertices;
                 // Start cap vertices (a triangle fan)
@@ -2211,33 +2211,33 @@ namespace morph {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                     morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
                     this->vertex_push (vstart+c, this->vertexPositions);
-                    this->vertex_push (uz, this->vertexNormals);
+                    this->vertex_push (_uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
                     ++startvertices;
                 }
             }
 
             this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             unsigned int endvertices = 0u;
             if (endcaps) {
                 // Push the central point of the end cap - this is at location vend
                 this->vertex_push (vend, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
                 ++endvertices;
                 // End cap vertices (a triangle fan)
@@ -2245,7 +2245,7 @@ namespace morph {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                     morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
                     this->vertex_push (vend+c, this->vertexPositions);
-                    this->vertex_push (uz, this->vertexNormals);
+                    this->vertex_push (_uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
                     ++endvertices;
                 }
@@ -2293,7 +2293,7 @@ namespace morph {
         //! next line can line up perfectly without drawing a circular rounded 'end cap'!
         void computeFlatLine (vec<float> start, vec<float> end,
                               vec<float> prev, vec<float> next,
-                              vec<float> uz,
+                              vec<float> _uz,
                               std::array<float, 3> col,
                               float w = 0.1f)
         {
@@ -2301,7 +2301,7 @@ namespace morph {
             vec<float> vstart = start;
             vec<float> vend = end;
 
-            // line segment vectors
+            // line segment unit vectors
             vec<float> v = vend - vstart;
             v.renormalize();
             vec<float> vp = vstart - prev;
@@ -2309,39 +2309,49 @@ namespace morph {
             vec<float> vn = next - vend;
             vn.renormalize();
 
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
+            // vv is normal to v and _uz
+            vec<float> vv = v.cross(_uz);
             vv.renormalize();
-            vec<float> vvp = vp.cross(uz);
+            vec<float> vvp = vp.cross(_uz);
             vvp.renormalize();
-            vec<float> vvn = vn.cross(uz);
+            vec<float> vvn = vn.cross(_uz);
             vvn.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = ( (vv+vvp) * 0.5f * w * 0.5f );
+            vec<float> ww = (vv + vvp) * 0.5f * w * 0.5f;
+            // If the 'prev' data point is just the start of the line, then we have a
+            // different expression for the width
+            if (vp.length() < std::numeric_limits<float>::epsilon()) {
+                ww = vv * w * 0.5f;
+            }
 
             vec<float> c1 = vstart + ww;
             vec<float> c2 = vstart - ww;
 
-            ww = ( (vv+vvn) * 0.5f * w * 0.5f );
+            ww = (vv + vvn) * 0.5f * w * 0.5f;
+            // If the 'next' data point is just the end of the line, then we have a
+            // different expression for the width
+            if (vn.length() < std::numeric_limits<float>::epsilon()) {
+                ww = vv * w * 0.5f;
+            }
 
             vec<float> c3 = vend - ww;
             vec<float> c4 = vend + ww;
 
             this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->indices.push_back (this->idx);
@@ -2359,132 +2369,28 @@ namespace morph {
         //! Make a joined up line with previous.
         void computeFlatLineP (vec<float> start, vec<float> end,
                                vec<float> prev,
-                               vec<float> uz,
+                               vec<float> _uz,
                                std::array<float, 3> col,
                                float w = 0.1f)
         {
-            // The vector from start to end defines direction of the tube
-            vec<float> vstart = start;
-            vec<float> vend = end;
-
-            // line segment vectors
-            vec<float> v = vend - vstart;
-            v.renormalize();
-            vec<float> vp = vstart - prev;
-            vp.renormalize();
-
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
-            vv.renormalize();
-            vec<float> vvp = vp.cross(uz);
-            vvp.renormalize();
-
-            // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
-
-            vec<float> c1 = vstart + ww;
-            vec<float> c2 = vstart - ww;
-
-            ww = vv * w * 0.5f;
-
-            vec<float> c3 = vend - ww;
-            vec<float> c4 = vend + ww;
-
-            this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->indices.push_back (this->idx);
-            this->indices.push_back (this->idx+1);
-            this->indices.push_back (this->idx+2);
-
-            this->indices.push_back (this->idx);
-            this->indices.push_back (this->idx+2);
-            this->indices.push_back (this->idx+3);
-
-            // Update idx
-            this->idx += 4;
+            this->computeFlatLine (start, end, prev, end, _uz, col, w);
         } // end computeFlatLine that joins perfectly with prev
 
         //! Flat line, joining up with next
         void computeFlatLineN (vec<float> start, vec<float> end,
                                vec<float> next,
-                               vec<float> uz,
+                               vec<float> _uz,
                                std::array<float, 3> col,
                                float w = 0.1f)
         {
-            // The vector from start to end defines direction of the tube
-            vec<float> vstart = start;
-            vec<float> vend = end;
-
-            // line segment vectors
-            vec<float> v = vend - vstart;
-            v.renormalize();
-            vec<float> vn = next - vend;
-            vn.renormalize();
-
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
-            vv.renormalize();
-            vec<float> vvn = vn.cross(uz);
-            vvn.renormalize();
-
-            // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = vv * w * 0.5f;
-
-            vec<float> c1 = vstart + ww;
-            vec<float> c2 = vstart - ww;
-
-            ww = ( (vv+vvn) * 0.5f * w * 0.5f );
-
-            vec<float> c3 = vend - ww;
-            vec<float> c4 = vend + ww;
-
-            this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->indices.push_back (this->idx);
-            this->indices.push_back (this->idx+1);
-            this->indices.push_back (this->idx+2);
-
-            this->indices.push_back (this->idx);
-            this->indices.push_back (this->idx+2);
-            this->indices.push_back (this->idx+3);
-
-            // Update idx
-            this->idx += 4;
-        } // end computeFlatLine that joins perfectly with next line
+            this->computeFlatLine (start, end, start, next, _uz, col, w);
+        }
 
         // Like computeLine, but this line has no thickness and it's dashed.
         // dashlen: the length of dashes
         // gap prop: The proportion of dash length used for the gap
         void computeFlatDashedLine (vec<float> start, vec<float> end,
-                                    vec<float> uz,
+                                    vec<float> _uz,
                                     std::array<float, 3> col,
                                     float w = 0.1f, float shorten = 0.0f,
                                     float dashlen = 0.1f, float gapprop = 0.3f)
@@ -2506,8 +2412,8 @@ namespace morph {
                 linelen = v.length() - shorten * 2.0f;
             }
 
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
+            // vv is normal to v and _uz
+            vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
             // Loop, creating the dashes
@@ -2525,19 +2431,19 @@ namespace morph {
                 vec<float> c4 = dash_e + ww;
 
                 this->vertex_push (c1, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
 
                 this->vertex_push (c2, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
 
                 this->vertex_push (c3, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
 
                 this->vertex_push (c4, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
 
                 // Number of vertices = segments * 4 + 2.
