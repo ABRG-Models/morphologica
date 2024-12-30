@@ -17,7 +17,7 @@ namespace morph {
         void initializeVertices()
         {
             float lth = 0.1f; // line thickness
-
+#if 0
             // A black horizontal line, length 1, width 0.1
             this->computeFlatLine ({0, 0, 0}, {1, 0, 0}, this->uz, morph::colour::black, lth, 0.0f);
 
@@ -41,29 +41,36 @@ namespace morph {
                                    this->uz,
                                    morph::colour::black,
                                    lth);
-
-            // Using the intentional line-ender functions (VisualModel::computeFlatLineN/P)
-            this->computeFlatLineN ({-0.5, 1.5-0.2, 0},        {0, 1.5, 0},
-                                   {1, 1.5, 0},
+#endif
+            // Draw 3 lines with a different angle and one extra line
+            this->computeFlatLine ({-0.5, 2-0.5, 0},        {0, 2, 0},
+                                   {-0.5, 2-0.5, 0},        {1, 2, 0},
                                    this->uz,
                                    morph::colour::black,
                                    lth);
-            this->computeFlatLine ({0, 1.5, 0},        {1, 1.5, 0},
-                                   {-0.5, 1.5-0.2, 0}, {1+0.5, 1.5+0.2, 0},
+            this->computeFlatLine ({0, 2, 0},        {1, 2, 0},
+                                   {-0.5, 2-0.5, 0}, {1+0.5, 2+0.5, 0},
                                    this->uz,
-                                   morph::colour::black,
+                                   morph::colour::crimson,
                                    lth);
-            this->computeFlatLineP ({1, 1.5, 0},        {1+0.5, 1.5+0.2, 0},
-                                   {0, 1.5, 0},
+#if 1
+            this->computeFlatLine ({1, 2, 0},        {1+0.5, 2+0.5, 0},
+                                   {0, 2, 0},        {1+1, 2, 0},
                                    this->uz,
-                                   morph::colour::black,
+                                   morph::colour::goldenrod1,
                                    lth);
-
+            this->computeFlatLine ({1+0.5, 2+0.5, 0},        {1+1, 2, 0},
+                                   {1, 2, 0},        {1+1, 2, 0},
+                                   this->uz,
+                                   morph::colour::dodgerblue2,
+                                   lth);
+#endif
+#if 0
             // Draw a square with computeFlatLine
             float left = 0.0f;
             float right = 1.0f;
-            float bot = 2.0f;
-            float top = 3.0f;
+            float bot = 3.0f;
+            float top = 4.0f;
             morph::vec<float> lb = { left,  bot, 0.0f };
             morph::vec<float> lt = { left,  top, 0.0f };
             morph::vec<float> rt = { right, top, 0.0f };
@@ -76,6 +83,7 @@ namespace morph {
             this->computeFlatLine (rt, rb, lt, lb, this->uz, morph::colour::black, lth);
             // complete the last top border (from top left to top right)
             this->computeFlatLine (lt, rt, lb, rb, this->uz, morph::colour::black, lth);
+#endif
         }
     };
 

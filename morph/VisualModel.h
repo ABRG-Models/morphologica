@@ -37,6 +37,7 @@
 #include <morph/VisualFace.h>
 #include <morph/colour.h>
 #include <morph/base64.h>
+#include <morph/MathAlgo.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -2288,15 +2289,205 @@ namespace morph {
             }
         } // end computeFlatLine
 
-        //! Like computeFlatLine, but this line has no thickness and you can provide the
-        //! previous and next data points so that this line, the previous line and the
-        //! next line can line up perfectly without drawing a circular rounded 'end cap'!
+        /*!
+         * Like computeFlatLine, but this line has no thickness and you can provide the
+         * previous and next data points so that this line, the previous line and the
+         * next line can line up perfectly without drawing a circular rounded 'end cap'!
+         *
+         * This code assumes that the coordinates prev, start, end, next all lie on a 2D
+         * plane normal to _uz. In fact, the 3D coordinates start, end, prev and next
+         * will all be projected onto the plane defined by _uz, so that they can be
+         * reduced to 2D coordinates. This then allows crossing points of lines to be
+         * computed.
+         *
+         * If you want to make a ribbon between points that do *not* lie on a 2D plane,
+         * you'll need to write another graphics primitive function.
+         */
         void computeFlatLine (vec<float> start, vec<float> end,
                               vec<float> prev, vec<float> next,
                               vec<float> _uz,
                               std::array<float, 3> col,
                               float w = 0.1f)
         {
+            // Corner coordinates for this line section
+            vec<float> c1 = { 0.0f };
+            vec<float> c2 = { 0.0f };
+            vec<float> c3 = { 0.0f };
+            vec<float> c4 = { 0.0f };
+#if 1
+            std::cout << "prev/start/end/next: " << prev << "/" << start << "/" << end << "/" << next << "\n";
+            std::cout << "w = " << w << std::endl;
+            // This is the new code
+            vec<float> __uz = _uz;
+            __uz.renormalize(); // Ensure _uz was normalized
+
+            // Transform so that start is the origin
+            vec<float> s_o = { 0.0f }; // by defn
+            vec<float> e_o = end - start;
+            vec<float> p_o = prev - start;
+            vec<float> n_o = next - start;
+
+            // Use the vector from start to end as the in-plane x dirn
+            vec<float> plane_x = e_o;
+            plane_x.renormalize();
+            vec<float> plane_y = __uz.cross (plane_x);
+            plane_y.renormalize();
+
+            // Find the in-plane coordinates in the rotated coordinate system
+            vec<float> e_p = { plane_x.dot (e_o), plane_y.dot (e_o), __uz.dot (e_o) };
+
+            // One epsilon is exacting
+            if (std::abs(e_p[2]) > std::numeric_limits<float>::epsilon()) {
+                throw std::runtime_error ("uz not orthogonal to the line start -> end?");
+            }
+
+            // From e_p and e_o can now figure out what angle of rotation this was
+            float basis_rotn_angle = e_p.angle (e_o);
+            //std::cout << "Basis coordinates rotated " << basis_rotn_angle << " radians/"
+            //          << basis_rotn_angle * morph::mathconst<float>::rad2deg << " deg\n";
+
+            // A rotation quaternion to rotate our coordinates back at the end
+            morph::quaternion<float> basis_rotn_inv (__uz, basis_rotn_angle);
+            morph::quaternion<float> basis_rotn (__uz, -basis_rotn_angle);
+
+            vec<float> p_p = basis_rotn * p_o;
+            vec<float> n_p = basis_rotn * n_o;
+            vec<float> s_p = basis_rotn * s_o; // not necessary, s_p = (0,0,0) by defn
+
+            // NOW we *could* create new line segments and compute crossings. but first
+            // check the inverse process:
+            vec<float> prev_ret = (basis_rotn_inv * p_p) + start;
+            vec<float> start_ret = (basis_rotn_inv * s_p) + start; // s_o = s_p = (0,0,0)
+            vec<float> end_ret = (basis_rotn_inv * e_p) + start;
+            vec<float> next_ret = (basis_rotn_inv * n_p) + start;
+            std::cout << "prev/start/end/next: " << prev_ret << "/" << start_ret << "/" << end_ret << "/" << next_ret << " (retrieved)\n";
+
+            // Line crossings time.
+            vec<float, 2> c1_p = { 0.0f }; // 2D crossing coords that we're going to find
+            vec<float, 2> c2_p = { 0.0f };
+            vec<float, 2> c3_p = e_p.less_one_dim();
+            vec<float, 2> c4_p = e_p.less_one_dim();
+
+            // 3 lines on each side. l_p, l_c (current) and l_n. Each has two ends. l_p_1, l_p_2 etc.
+
+            // 'prev' 'cur' and 'next' vectors
+            vec<float, 2> p_vec = (s_p - p_p).less_one_dim();
+            vec<float, 2> c_vec = e_p.less_one_dim();
+            vec<float, 2> n_vec = (n_p - e_p).less_one_dim();
+
+            vec<float, 2> p_ortho = (s_p - p_p).cross (__uz).less_one_dim();
+            vec<float, 2> c_ortho = plane_y.less_one_dim(); // by defn
+            vec<float, 2> n_ortho = (n_p - e_p).cross (__uz).less_one_dim();
+
+            const float hw = w / 2.0f;
+            std::cout << "p_p : " << p_p.less_one_dim() << " p_ortho * hw: " << (p_ortho * hw) << std::endl;
+            vec<float, 2> l_p_1 = p_p.less_one_dim() + (p_ortho * hw) - p_vec; // makes it 3 times as long as the line.
+            vec<float, 2> l_p_2 = s_p.less_one_dim() + (p_ortho * hw) + p_vec;
+            vec<float, 2> l_c_1 = s_p.less_one_dim() + (c_ortho * hw) - c_vec;
+            vec<float, 2> l_c_2 = e_p.less_one_dim() + (c_ortho * hw) + c_vec;
+            vec<float, 2> l_n_1 = e_p.less_one_dim() + (n_ortho * hw) - n_vec;
+            vec<float, 2> l_n_2 = n_p.less_one_dim() + (n_ortho * hw) + n_vec;
+            std::cout << "l_p_1 -> l_p_2 => " << l_p_1 << " -> " << l_p_2 << std::endl;
+            std::cout << "l_c_1 -> l_c_2 => " << l_c_1 << " -> " << l_c_2 << std::endl;
+
+            std::bitset<2> isect = morph::MathAlgo::segments_intersect<float> (l_p_1, l_p_2, l_c_1, l_c_2);
+            if (isect.test(0) == true && isect.test(1) == false) { // test for intersection but not colinear
+                c1_p = morph::MathAlgo::crossing_point (l_p_1, l_p_2, l_c_1, l_c_2);
+            } else if (isect.test(0) == true && isect.test(1) == true) {
+                c1_p = s_p.less_one_dim() + (c_ortho * hw);
+            } else { // no intersection. prev could have been start
+                c1_p = s_p.less_one_dim() + (c_ortho * hw);
+            }
+            isect = morph::MathAlgo::segments_intersect<float> (l_c_1, l_c_2, l_n_1, l_n_2);
+            if (isect.test(0) == true && isect.test(1) == false) {
+                c4_p = morph::MathAlgo::crossing_point (l_c_1, l_c_2, l_n_1, l_n_2);
+            } else if (isect.test(0) == true && isect.test(1) == true) {
+                c4_p = e_p.less_one_dim() + (c_ortho * hw);
+            } else { // no intersection, prev could have been end
+                c4_p = e_p.less_one_dim() + (c_ortho * hw);
+            }
+            // o for 'other side'. Could re-use vars in future version. Or just subtract (*_ortho * w) from each.
+            vec<float, 2> o_l_p_1 = p_p.less_one_dim() - (p_ortho * hw) - p_vec; // makes it 3 times as long as the line.
+            vec<float, 2> o_l_p_2 = s_p.less_one_dim() - (p_ortho * hw) + p_vec;
+            vec<float, 2> o_l_c_1 = s_p.less_one_dim() - (c_ortho * hw) - c_vec;
+            vec<float, 2> o_l_c_2 = e_p.less_one_dim() - (c_ortho * hw) + c_vec;
+            vec<float, 2> o_l_n_1 = e_p.less_one_dim() - (n_ortho * hw) - n_vec;
+            vec<float, 2> o_l_n_2 = n_p.less_one_dim() - (n_ortho * hw) + n_vec;
+
+            isect = morph::MathAlgo::segments_intersect<float> (o_l_p_1, o_l_p_2, o_l_c_1, o_l_c_2);
+            if (isect.test(0) == true && isect.test(1) == false) { // test for intersection but not colinear
+                c2_p = morph::MathAlgo::crossing_point (o_l_p_1, o_l_p_2, o_l_c_1, o_l_c_2);
+            } else if (isect.test(0) == true && isect.test(1) == true) {
+                c2_p = s_p.less_one_dim() - (c_ortho * hw);
+            } else { // no intersection. prev could have been start
+                c2_p = s_p.less_one_dim() - (c_ortho * hw);
+            }
+
+            isect = morph::MathAlgo::segments_intersect<float> (o_l_c_1, o_l_c_2, o_l_n_1, o_l_n_2);
+            if (isect.test(0) == true && isect.test(1) == false) {
+                c3_p = morph::MathAlgo::crossing_point (o_l_c_1, o_l_c_2, o_l_n_1, o_l_n_2);
+            } else if (isect.test(0) == true && isect.test(1) == true) {
+                c3_p = e_p.less_one_dim() - (c_ortho * hw);
+            } else { // no intersection. next could have been end
+                c3_p = e_p.less_one_dim() - (c_ortho * hw);
+            }
+
+            // Transform and rotate back into c1-c4
+            c1 = (basis_rotn_inv * c1_p.plus_one_dim()) + start;
+            c2 = (basis_rotn_inv * c2_p.plus_one_dim()) + start;
+            c3 = (basis_rotn_inv * c3_p.plus_one_dim()) + start;
+            c4 = (basis_rotn_inv * c4_p.plus_one_dim()) + start;
+
+# if 0
+            // Create line segments and determine their crossings to get coords _uz
+            // gives our effective 'up'. We make line segments that are moved across in
+            // width from the main line.
+            float hw = w * 0.5f; // halfwidth
+
+            vec<float> v = end - start;
+            vec<float> vp = start - prev;
+            vec<float> vn = next - end;
+            v.renormalize();
+            vp.renormalize();
+            vn.renormalize();
+
+            vec<float> nvec = v.cross (__uz);
+            vec<float> p_nvec = vp.cross (__uz);
+            vec<float> n_nvec = vn.cross (__uz);
+
+            float phi_p = vp.angle (v);
+            if (phi_p != 0.0f) {
+                // l ~ w / tan phi
+                float l_p = 2.0f * w / std::tan (phi_p);
+                vec<float> longv = v * l_p;
+
+                // Make longer line segments to compute crossings
+                vec<float> m_start_1 = (start + hw * nvec) - longv;
+                vec<float> m_end_1 = (end + hw * nvec) + longv;
+                vec<float> m_start_2 = (start - hw * nvec) - longv;
+                vec<float> m_end_2 = (end - hw * nvec) + longv;
+
+                // make long line segments
+                longv = vp * l_p;
+                vec<float> p_start_1 = (prev + hw * p_nvec) - longv;
+                vec<float> p_end_1 = (start + hw * p_nvec) + longv;
+                vec<float> p_start_2 = (prev - hw * p_nvec) - longv;
+                vec<float> p_end_2 = (start - hw * p_nvec) + longv;
+                // etc
+
+                // Compute crossings... but have to project those lines into 2D first.
+
+            } else {
+                // Special handling for c1, c2.
+            }
+
+            float phi_n = v.angle (vn);
+            if (phi_n != 0.0f) {
+            } else {
+                // Special handling for c3, c4
+            }
+# endif
+#else // Previous method using normals
             // The vector from start to end defines direction of the tube
             vec<float> vstart = start;
             vec<float> vend = end;
@@ -2325,8 +2516,8 @@ namespace morph {
                 ww = vv * w * 0.5f;
             }
 
-            vec<float> c1 = vstart + ww;
-            vec<float> c2 = vstart - ww;
+            c1 = vstart + ww;
+            c2 = vstart - ww;
 
             ww = (vv + vvn) * 0.5f * w * 0.5f;
             // If the 'next' data point is just the end of the line, then we have a
@@ -2335,9 +2526,9 @@ namespace morph {
                 ww = vv * w * 0.5f;
             }
 
-            vec<float> c3 = vend - ww;
-            vec<float> c4 = vend + ww;
-
+            c3 = vend - ww;
+            c4 = vend + ww;
+#endif
             this->vertex_push (c1, this->vertexPositions);
             this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
