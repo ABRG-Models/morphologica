@@ -364,6 +364,12 @@ if(USE_GLEW)
   target_link_libraries(graph1 GLEW::GLEW)
 endif()
 
+add_executable(graph_line graph_line.cpp)
+target_link_libraries(graph_line OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph_line GLEW::GLEW)
+endif()
+
 add_executable(graph_dynamic_x2 graph_dynamic_x2.cpp)
 target_link_libraries(graph_dynamic_x2 OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
