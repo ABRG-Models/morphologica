@@ -2337,7 +2337,7 @@ namespace morph {
 
             // Find the in-plane coordinates in the rotated coordinate system
             vec<float> e_p = { plane_x.dot (e_o), plane_y.dot (e_o), __uz.dot (e_o) };
-            // std::cout << "end coord: " << end << ", offset e_o: " << e_o << " in-plane e_p: " << e_p << std::endl;
+            std::cout << "end coord: " << end << ", offset e_o: " << e_o << " in-plane e_p: " << e_p << std::endl;
 
             // One epsilon is exacting
             if (std::abs(e_p[2]) > std::numeric_limits<float>::epsilon()) {
@@ -2347,18 +2347,34 @@ namespace morph {
             // From e_p and e_o could now figure out what angle of rotation this was
             // with e_p.angle (e_o); BUT NB: This returns an angle magnitude; it does
             // not give rotn dirn So use 2D version of angle function:
-            float basis_rotn_angle = e_p.less_one_dim().angle() - e_o.less_one_dim().angle();
-            //std::cout << "Basis coordinates rotated " << basis_rotn_angle << " radians/"
-            //          << basis_rotn_angle * morph::mathconst<float>::rad2deg << " deg\n";
+            // float basis_rotn_angle = e_p.less_one_dim().angle() - e_o.less_one_dim().angle();
+            // BUT.... that's no good unless __uz == this->uz
+            // What's angle/rotn transform between __uz and uz?? Need this to recapitulate
+            // simples:
+            morph::vec<float> basis_rotn_axis = __uz.cross (this->uz);
+            if (basis_rotn_axis.length() == 0.0f) { basis_rotn_axis = this->uz; }
+
+            float basis_rotn_angle = plane_x.angle (this->ux, basis_rotn_axis);
+            // Now use basis_rotn_axis to determine the sign of the angle?
+            std::cout << "rotation axis: " << basis_rotn_axis << std::endl;
+            std::cout << "rotation angle: " << basis_rotn_angle << std::endl;
+            // std::cout << "Basis coordinates rotated " << basis_rotn_angle << " radians/"
+            //           << basis_rotn_angle * morph::mathconst<float>::rad2deg << " deg\n";
 
             // A rotation quaternion to rotate our coordinates back at the end
-            morph::quaternion<float> basis_rotn_inv (__uz, -basis_rotn_angle);
-            morph::quaternion<float> basis_rotn (__uz, basis_rotn_angle);
+            morph::quaternion<float> basis_rotn (basis_rotn_axis, basis_rotn_angle);
+            morph::quaternion<float> basis_rotn_inv (basis_rotn_axis, -basis_rotn_angle);
 
+#if 1
             vec<float> p_p = basis_rotn * p_o;
             vec<float> n_p = basis_rotn * n_o;
             vec<float> s_p = basis_rotn * s_o; // not necessary, s_p = (0,0,0) by defn
-
+#else
+            // *should* be equivalent
+            vec<float> p_p = { plane_x.dot (p_o), plane_y.dot (p_o), __uz.dot (s_o) };
+            vec<float> n_p = { plane_x.dot (n_o), plane_y.dot (n_o), __uz.dot (s_o) };
+            vec<float> s_p = { plane_x.dot (s_o), plane_y.dot (s_o), __uz.dot (s_o) };
+#endif
             // Line crossings time.
             vec<float, 2> c1_p = { 0.0f }; // 2D crossing coords that we're going to find
             vec<float, 2> c2_p = { 0.0f };
@@ -2367,27 +2383,29 @@ namespace morph {
 
             // 3 lines on each side. l_p, l_c (current) and l_n. Each has two ends. l_p_1, l_p_2 etc.
 
+            std::cout << "s_p (sanity check): " << s_p  << " should be (0,0,0)\n";
             // 'prev' 'cur' and 'next' vectors
             vec<float, 2> p_vec = (s_p - p_p).less_one_dim();
             vec<float, 2> c_vec = e_p.less_one_dim();
             vec<float, 2> n_vec = (n_p - e_p).less_one_dim();
 
-            vec<float, 2> p_ortho = (s_p - p_p).cross (__uz).less_one_dim();
+            vec<float, 2> p_ortho = (s_p - p_p).cross (this->uz).less_one_dim();
             p_ortho.renormalize();
-            vec<float, 2> c_ortho = (e_p - s_p).cross (__uz).less_one_dim();
+            vec<float, 2> c_ortho = (e_p - s_p).cross (this->uz).less_one_dim();
             c_ortho.renormalize();
-            vec<float, 2> n_ortho = (n_p - e_p).cross (__uz).less_one_dim();
+            vec<float, 2> n_ortho = (n_p - e_p).cross (this->uz).less_one_dim();
             n_ortho.renormalize();
 
             const float hw = w / 2.0f;
 
+            std::cout << "prev in-plane: " << p_p << " and start in-plane: " << s_p << std::endl;
             vec<float, 2> l_p_1 = p_p.less_one_dim() + (p_ortho * hw) - p_vec; // makes it 3 times as long as the line.
             vec<float, 2> l_p_2 = s_p.less_one_dim() + (p_ortho * hw) + p_vec;
             vec<float, 2> l_c_1 = s_p.less_one_dim() + (c_ortho * hw) - c_vec;
             vec<float, 2> l_c_2 = e_p.less_one_dim() + (c_ortho * hw) + c_vec;
             vec<float, 2> l_n_1 = e_p.less_one_dim() + (n_ortho * hw) - n_vec;
             vec<float, 2> l_n_2 = n_p.less_one_dim() + (n_ortho * hw) + n_vec;
-#if 0
+#if 1
             std::cout << "l_p_1 -> l_p_2 => " << l_p_1 << " -> " << l_p_2 << std::endl;
             std::cout << "l_c_1 -> l_c_2 => " << l_c_1 << " -> " << l_c_2 << std::endl;
             std::cout << "l_n_1 -> l_n_2 => " << l_n_1 << " -> " << l_n_2 << std::endl;
@@ -2408,6 +2426,7 @@ namespace morph {
             } else { // no intersection, prev could have been end
                 c4_p = e_p.less_one_dim() + (c_ortho * hw);
             }
+            std::cout << "c1_p: " << c1_p << " and c_4p: " << c4_p << std::endl;
             // o for 'other side'. Could re-use vars in future version. Or just subtract (*_ortho * w) from each.
             vec<float, 2> o_l_p_1 = p_p.less_one_dim() - (p_ortho * hw) - p_vec; // makes it 3 times as long as the line.
             vec<float, 2> o_l_p_2 = s_p.less_one_dim() - (p_ortho * hw) + p_vec;
@@ -2415,7 +2434,7 @@ namespace morph {
             vec<float, 2> o_l_c_2 = e_p.less_one_dim() - (c_ortho * hw) + c_vec;
             vec<float, 2> o_l_n_1 = e_p.less_one_dim() - (n_ortho * hw) - n_vec;
             vec<float, 2> o_l_n_2 = n_p.less_one_dim() - (n_ortho * hw) + n_vec;
-#if 0
+#if 1
             std::cout << "o_l_p_1 -> o_l_p_2 => " << o_l_p_1 << " -> " << o_l_p_2 << std::endl;
             std::cout << "o_l_c_1 -> o_l_c_2 => " << o_l_c_1 << " -> " << o_l_c_2 << std::endl;
             std::cout << "o_l_n_1 -> o_l_n_2 => " << o_l_n_1 << " -> " << o_l_n_2 << std::endl;
@@ -2443,6 +2462,8 @@ namespace morph {
             c2 = (basis_rotn_inv * c2_p.plus_one_dim()) + start;
             c3 = (basis_rotn_inv * c3_p.plus_one_dim()) + start;
             c4 = (basis_rotn_inv * c4_p.plus_one_dim()) + start;
+
+            //std::cout << "c1 to c4: " << c1 << ", " << c2 << ", " << c3 << ", " << c4 << "\n";
 
             // Now create the vertices from these four corners, c1-c4
             this->vertex_push (c1, this->vertexPositions);
