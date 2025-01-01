@@ -1109,12 +1109,27 @@ namespace morph {
         }
 
         /*!
-         * Return this angle between this vector and the other. Works for any N.
+         * Return the magnitude of the angle between this vector and the other. Works
+         * for any N.
          */
         constexpr S angle (const vec<S, N>& other) const
         {
             S cos_theta = this->dot(other) / (this->length() * other.length());
             return std::acos (cos_theta);
+        }
+
+        /*!
+         * Return this angle between this vector and the other. Works for any N.
+         *
+         * axis is the axis of rotation, so this angle IS signed, positive if 'other' is
+         * at a positive right-handed angle wrt *this. axis does not need to be
+         * *exactly* the axis of rotation, though it could be. The exact direction of
+         * the axis of rotation can be obtained from this->cross (other), but this
+         */
+        constexpr S angle (const vec<S, N>& other, const vec<S, N>& axis) const
+        {
+            S angle_magn = this->angle (other);
+            return (this->cross (other).dot (axis) > S{0}) ? angle_magn : -angle_magn;
         }
 
         /*!
