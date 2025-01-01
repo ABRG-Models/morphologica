@@ -79,6 +79,20 @@ namespace morph {
             this->computeFlatLine (rt, rb, lt, lb, this->uz, morph::colour::goldenrod1, lth);
             // complete the last top border (from top left to top right)
             this->computeFlatLine (lt, rt, lb, rb, this->uz, morph::colour::dodgerblue1, lth);
+
+            // Test a straight line
+            morph::vec<float> p0 = { 0, 4.5, 0 };
+            p1 = { 1, 4.5, 0 };
+            p2 = { 2, 4.5, 0 };
+            this->computeFlatLine (p0, p1, p0, p2, this->uz, morph::colour::black, lth);
+            this->computeFlatLine (p1, p2, p0, p2, this->uz, morph::colour::black, lth);
+
+            // Different dirn vector (uy, not uz). This fails to work as expected.
+            p0 = { 0, 5, 0 };
+            p1 = { 1, 5, 1 };
+            p2 = { 2, 5, 0 };
+            this->computeFlatLine (p0, p1, p0, p2, this->uy, morph::colour::black, lth);
+            this->computeFlatLine (p1, p2, p0, p2, this->uy, morph::colour::black, lth);
         }
     };
 
