@@ -39,7 +39,27 @@ int main()
     // Add a GridVisual to display the Grid within the morph::Visual scene
     morph::vec<float, 3> offset = { -step * grid.width(), -step * grid.width(), 0.0f };
 
+    // Grid with border
     auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Pixels;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Cork);
+    gv->zScale.do_autoscale = false;
+    gv->zScale.setParams (0, 0);
+    gv->colourScale.do_autoscale = false;
+    gv->colourScale.compute_scaling (-1, 1);
+    // Border specific parameters
+    gv->showborder = true;
+    gv->border_thickness = 0.15f; // of a pixel
+    gv->border_z_offset = 0.0f;
+    gv->border_colour = morph::colour::black;
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    // Grid with no border
+    offset[0] += grid.width_of_pixels() * 1.2f;
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setScalarData (&data);
@@ -48,13 +68,31 @@ int main()
     gv->zScale.setParams (0, 0);
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
+    gv->showborder = false;
+    gv->finalize();
+    v.addVisualModel (gv);
 
+    // 'Grid with grid' (but no outer border)
+    offset[0] += grid.width_of_pixels() * 1.2f;
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Pixels;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Cork);
+    gv->zScale.do_autoscale = false;
+    gv->zScale.setParams (0, 0);
+    gv->colourScale.do_autoscale = false;
+    gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters
     gv->showborder = true;
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
     gv->border_colour = morph::colour::black;
-
+    // Grid params
+    gv->implygrid = true;
+    gv->showgrid = true;
+    gv->grid_thickness = 0.08f; // of a pixel
+    gv->grid_colour = morph::colour::grey30;
     gv->finalize();
     v.addVisualModel (gv);
 
