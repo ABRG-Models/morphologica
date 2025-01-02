@@ -16,9 +16,9 @@ namespace morph {
         void initializeVertices()
         {
             float lth = 0.1f; // line thickness
-
-            // Draw 3 lines with a different angle and one extra line
             morph::vvec<vec<float>> p(5);
+#ifdef LINE_Z
+            // Draw 3 lines with a different angle and one extra line
             p[0] = {-0.5, -0.5, 0};
             p[1] = {0,    0,   0};
             p[2] = {1,    0,   0};
@@ -28,7 +28,6 @@ namespace morph {
             this->computeFlatLine (p[0],        p[1],
                                    p[0],        p[2],
                                    this->uz, morph::colour::black, lth);
-#if 1
             this->computeFlatLine (p[1],        p[2],
                                    p[0],        p[3],
                                    this->uz, morph::colour::crimson, lth);
@@ -38,6 +37,16 @@ namespace morph {
             this->computeFlatLine (p[3],        p[4],
                                    p[2],        p[4],
                                    this->uz, morph::colour::dodgerblue2, lth);
+#else
+            p[0] = {0,    0,   0};
+            p[1] = {1,    0,   1};
+            p[2] = {2,    0,   0};
+
+
+            this->computeFlatLine (p[0],        p[1],
+                                   p[0],        p[2],
+                                   this->uy, morph::colour::black, lth);
+
 #endif
         }
     };
