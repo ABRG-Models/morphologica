@@ -76,7 +76,7 @@ int main()
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
     gv->showborder = true;
-    gv->border_thickness = 0.5f;
+    gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::cyan;
     gv->addLabel ("3) 2 + border", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
@@ -90,7 +90,7 @@ int main()
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->showborder = true;
-    gv->border_thickness = 0.5f;
+    gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::cyan;
     gv->addLabel ("4) 1 + border", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
@@ -106,7 +106,7 @@ int main()
     gv->zScale.setParams(0.0f, 0.0f);
     gv->showgrid = true;
     gv->grid_colour = morph::colour::red;
-    gv->grid_thickness = 0.2f;
+    gv->grid_thickness = 0.1f;
     gv->addLabel ("5) 2 + grid ", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -121,9 +121,9 @@ int main()
     gv->zScale.setParams(0.0f, 0.0f);
     gv->showgrid = true;
     gv->grid_colour = morph::colour::red;
-    gv->grid_thickness = 0.2f;
+    gv->grid_thickness = 0.1f;
     gv->showborder = true;
-    gv->border_thickness = 0.5f;
+    gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::magenta;
     gv->addLabel ("6) 5 + border ", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
@@ -150,7 +150,7 @@ int main()
     gv->selected_pix_indexes.push_back(90);
     gv->selected_pix_indexes.push_back(99);
 
-    gv->grid_thickness = 0.2f;
+    gv->grid_thickness = 0.1f;
 
     gv->selected_pix_border_colour.push_back(morph::colour::forestgreen);
     gv->selected_pix_border_colour.push_back(morph::colour::yellow3);
@@ -177,7 +177,7 @@ int main()
 
     gv->showgrid = true;
     gv->grid_colour = morph::colour::red;
-    gv->grid_thickness = 0.2f;
+    gv->grid_thickness = 0.1f;
 
     gv->showselectedpixborder = true;
     gv->selected_pix_indexes.reserve(9);
@@ -191,7 +191,7 @@ int main()
     gv->selected_pix_indexes.push_back(90);
     gv->selected_pix_indexes.push_back(99);
 
-    gv->grid_thickness = 0.2f;
+    gv->grid_thickness = 0.1f;
 
     gv->selected_pix_border_colour.push_back(morph::colour::forestgreen);
     gv->selected_pix_border_colour.push_back(morph::colour::yellow3);
