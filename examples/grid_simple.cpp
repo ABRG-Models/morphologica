@@ -58,6 +58,14 @@ int main()
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setScalarData (&data);
+
+    // To show a grid first set the scaling so that the whole image is flat
+    //gv->zScale.setParams (0, 0);
+    // Say you want a grid
+    //gv->showgrid = true;
+    // Choose the thickness. This is a proportion of the pixel dimensions
+    //gv->grid_thickness = 0.1f;
+
     gv->cm.setType (morph::ColourMapType::Buda);
     gv->addLabel (std::string("GridVisMode::RectInterp, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03f));
     gv->finalize();
