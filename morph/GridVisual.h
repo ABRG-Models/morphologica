@@ -90,14 +90,14 @@ namespace morph {
         // function that draws a border around the whole image
         void drawBorder()
         {
-            morph::vec<float, 2> grid_half_thickness = this->get_grid_half_thickness();
+            morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
             // Draw around the outside. Find grid extents
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             // Adjust for any implied or shown interpixel grid
-            cg_extents[0] -= grid_half_thickness[0];
-            cg_extents[1] += grid_half_thickness[0];
-            cg_extents[2] -= grid_half_thickness[1];
-            cg_extents[3] += grid_half_thickness[1];
+            cg_extents[0] -= gridline_ht[0];
+            cg_extents[1] += gridline_ht[0];
+            cg_extents[2] -= gridline_ht[1];
+            cg_extents[3] += gridline_ht[1];
             morph::vec<float, 2> dx = this->grid->get_dx();
             float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
             float left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
@@ -323,11 +323,17 @@ namespace morph {
             switch (this->gridVisMode) {
             case GridVisMode::Triangles:
             {
+                if (this->showgrid == true || this->implygrid == true) {
+                    throw std::runtime_error ("GridVisual: Can't draw an inter-pixel grid in gridVisMode == Triangles");
+                }
                 this->initializeVerticesTris();
                 break;
             }
             case GridVisMode::Columns:
             {
+                if (this->showgrid == true || this->implygrid == true) {
+                    throw std::runtime_error ("GridVisual: Can't (currently) draw an inter-pixel grid in gridVisMode == Columns");
+                }
                 this->initializeVerticesCols();
                 break;
             }
@@ -452,7 +458,7 @@ namespace morph {
             float hx = 0.5f * dx[0];
             float vy = 0.5f * dx[1];
 
-            morph::vec<float, 2> grid_half_thickness = this->get_grid_half_thickness();
+            morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
 
             this->idx = 0;
             this->setupScaling();
@@ -507,7 +513,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0] - grid_half_thickness[0], (*this->grid)[ri][1] + vy + centering_offset[1] - grid_half_thickness[1], datum };
+                vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0], (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1], datum };
                 this->vertex_push (vtx_1, this->vertexPositions);
 
                 // SE vertex
@@ -522,7 +528,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                vtx_2 = {{(*this->grid)[ri][0] + hx + centering_offset[0] - grid_half_thickness[0], (*this->grid)[ri][1] - vy + centering_offset[1] + grid_half_thickness[1], datum}};
+                vtx_2 = {{(*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0], (*this->grid)[ri][1] - vy + centering_offset[1] + gridline_ht[1], datum}};
                 this->vertex_push (vtx_2, this->vertexPositions);
 
 
@@ -537,7 +543,7 @@ namespace morph {
                     datum = datumC;
                 }
                 // vtx_3
-                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + grid_half_thickness[0], (*this->grid)[ri][1] - vy + centering_offset[1] + grid_half_thickness[1], datum, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + gridline_ht[0], (*this->grid)[ri][1] - vy + centering_offset[1] + gridline_ht[1], datum, this->vertexPositions);
 
                 // NW vertex
                 if (this->grid->has_nn(ri) && this->grid->has_nw(ri) && this->grid->has_nnw(ri)) {
@@ -550,7 +556,7 @@ namespace morph {
                     datum = datumC;
                 }
                 // vtx_4
-                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + grid_half_thickness[0], (*this->grid)[ri][1] + vy + centering_offset[1] - grid_half_thickness[1], datum, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + gridline_ht[0], (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1], datum, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note that there
                 // is only one 'layer' of vertices; the back of the GridVisual will be coloured the
@@ -600,6 +606,10 @@ namespace morph {
             float hx = 0.5f * dx[0];
             float vy = 0.5f * dx[1];
 
+            // Note: No handling of an implied grid here, but it is possible. It does
+            // mean drawing complete columns for each pixel, and so until there's a
+            // need, I'll leave it unimplemented.
+
             this->idx = 0;
             this->setupScaling();
 
@@ -626,47 +636,45 @@ namespace morph {
                     clr_n = this->setColour (this->grid->has_nn(ri) ? this->grid->index_nn(ri) : ri);
                 }
 
-                // First push the 5 positions of the triangle vertices, starting with the centre
-                this->vertex_push ((*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC, this->vertexPositions);
-
+                // First push the 5 positions of the pixel top face, starting with the centre
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{(*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC}};
+                vtx_0 = { (*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC };
+                this->vertex_push (vtx_0, this->vertexPositions);
 
                 // NE vertex
-                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC, this->vertexPositions);
-                vtx_1 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumC}};
+                vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC };
+                this->vertex_push (vtx_1, this->vertexPositions);
 
                 // SE vertex
-                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumC, this->vertexPositions);
-                vtx_2 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumC}};
-
+                vtx_2 = { (*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] - vy + centering_offset[1], datumC };
+                this->vertex_push (vtx_2, this->vertexPositions);
 
                 // SW vertex
-                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0], (*this->grid)[ri][1] - vy + centering_offset[1], datumC, this->vertexPositions);
 
                 // NW vertex
-                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC, this->vertexPositions);
 
                 // 4 Neighbour East vertices
                 // NE
                 this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC, this->vertexPositions);
                 // SE
-                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] - vy + centering_offset[1], datumC, this->vertexPositions);
 
                 // NE
-                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumNE, this->vertexPositions);
-                vtx_3 = {{(*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumNE}};
+                vtx_3 = { (*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumNE };
+                this->vertex_push (vtx_3, this->vertexPositions);
                 // SE
-                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumNE, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] - vy + centering_offset[1], datumNE, this->vertexPositions);
 
                 // 4 Neighbour North vertices
                 // NW high
-                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC, this->vertexPositions);
                 // NE high
                 this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC, this->vertexPositions);
                 // NW low
-                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumNN, this->vertexPositions);
-                vtx_4 = {{(*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumNN}};
+                vtx_4 = { (*this->grid)[ri][0] - hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumNN };
+                this->vertex_push (vtx_4, this->vertexPositions);
                 // NE low
                 this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumNN, this->vertexPositions);
 
@@ -781,7 +789,7 @@ namespace morph {
             this->idx = 0;
             this->setupScaling();
 
-            morph::vec<float, 2> grid_half_thickness = this->get_grid_half_thickness();
+            morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
 
             float datumC = 0.0f;   // datum at the centre
 
@@ -803,18 +811,18 @@ namespace morph {
                 vtx_0 = {{(*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC}};
 
                 // NE vertex
-                vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0] - grid_half_thickness[0], (*this->grid)[ri][1] + vy + centering_offset[1] - grid_half_thickness[1], datumC };
+                vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0], (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1], datumC };
                 this->vertex_push (vtx_1, this->vertexPositions);
 
                 // SE vertex
-                vtx_2 = { (*this->grid)[ri][0] + hx + centering_offset[0] - grid_half_thickness[0], (*this->grid)[ri][1] - vy + centering_offset[1] + grid_half_thickness[1], datumC };
+                vtx_2 = { (*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0], (*this->grid)[ri][1] - vy + centering_offset[1] + gridline_ht[1], datumC };
                 this->vertex_push (vtx_2, this->vertexPositions);
 
                 // SW vertex
-                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + grid_half_thickness[0], (*this->grid)[ri][1] - vy + centering_offset[1] + grid_half_thickness[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + gridline_ht[0], (*this->grid)[ri][1] - vy + centering_offset[1] + gridline_ht[1], datumC, this->vertexPositions);
 
                 // NW vertex
-                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + grid_half_thickness[0], (*this->grid)[ri][1] + vy + centering_offset[1] - grid_half_thickness[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + gridline_ht[0], (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1], datumC, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note that there
                 // is only one 'layer' of vertices; the back of the GridVisual will be coloured the
@@ -929,19 +937,19 @@ namespace morph {
 
     protected:
 
-        //! GridVisual specific getter for grid half thickness, which is non-zero only
-        //! if showgrid or implygrid are true.
-        morph::vec<float, 2> get_grid_half_thickness() const
+        //! GridVisual specific getter for grid-line half thickness, which is non-zero
+        //! only if showgrid or implygrid are true.
+        morph::vec<float, 2> get_gridline_ht() const
         {
-            morph::vec<float, 2> grid_half_thickness = { 0.0f, 0.0f };
+            morph::vec<float, 2> gridline_ht = { 0.0f, 0.0f };
             if (this->showgrid == true || this->implygrid == true) {
                 if (this->grid_thickness_fixed == 0.0f) {
-                    grid_half_thickness = this->grid->get_dx() * this->grid_thickness * 0.5f;
+                    gridline_ht = this->grid->get_dx() * this->grid_thickness * 0.5f;
                 } else {
-                    grid_half_thickness.set_from (this->grid_thickness_fixed * 0.5f);
+                    gridline_ht.set_from (this->grid_thickness_fixed * 0.5f);
                 }
             }
-            return grid_half_thickness;
+            return gridline_ht;
         }
 
         //! Called by reinitColours when scalarData is not null
