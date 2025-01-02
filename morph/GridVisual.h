@@ -149,32 +149,56 @@ namespace morph {
         //! function to draw the border around selected pixels
         void drawSelectedPixBorder()
         {
-#if 0 // to rewrite
             // Draw around all pixels
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
-            float gridthick = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
 
-            unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
+            // Take into account any inter-pixel gridlines
+            morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
 
-            // If user has NOT resized and populated selected_pix_border_colour AND
-            // selected_pix_indexes, resize and default the colour here.
-            if (this->selected_pix_border_colour.size() < this->selected_pix_indexes.size()) {
-                this->selected_pix_border_colour.resize (this->selected_pix_indexes.size(), this->border_colour);
-            }
+            // The grid width in pixels
+            I gw = this->grid->get_w();
+
+            // Thickness of spacing for selected pixels
+            morph::vec<float, 2> selth = dx * this->selected_pix_thickness;
+            if (this->selected_pix_thickness_fixed) { selth.set_from (this->selected_pix_thickness_fixed); }
 
             float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
             float grid_bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
 
             // loop through each pixel
-            for (std::size_t i=0; i < selected_pix_indexes.size(); ++i ) {
-                unsigned int r = selected_pix_indexes[i] % pix_width;
-                unsigned int c = selected_pix_indexes[i] / pix_width;
+            for (auto sp : this->selected_pix) {
+                // sp.first is index, sp.second is colour
+                I r = sp.first % gw;
+                I c = sp.first / gw;
                 // {xmin, xmax, ymin, ymax}
-                morph::vec<float, 4> r_extents = { (grid_left + r * dx[0]), (grid_left + (r+1) * dx[0]), (grid_bot + c * dx[1]), (grid_bot + (c+1) * dx[1]) };
-                this->rectangularBorder (r_extents, this->grid_z_offset, gridthick, this->selected_pix_border_colour[i]);
+                morph::vec<float, 4> r_extents =
+                {
+                    (grid_left + r     * dx[0] + gridline_ht[0]),
+                    (grid_left + (r+1) * dx[0] - gridline_ht[0]),
+                    (grid_bot  + c     * dx[1] + gridline_ht[1]),
+                    (grid_bot  + (c+1) * dx[1] - gridline_ht[1])
+                };
+                this->rectangularInnerBorder (r_extents, this->grid_z_offset, selth, sp.second);
             }
-#endif
+        }
+
+        void rectangularInnerBorder (const morph::vec<float, 4>& r_extents,
+                                     const float bz, const morph::vec<float, 2> linethickness,
+                                     const std::array<float, 3>& clr)
+        {
+            morph::vec<float> lb = { r_extents[0], r_extents[2], bz };
+            morph::vec<float> lt = { r_extents[0], r_extents[3], bz };
+            morph::vec<float> rt = { r_extents[1], r_extents[3], bz };
+            morph::vec<float> rb = { r_extents[1], r_extents[2], bz };
+            morph::vec<float> lbin = { r_extents[0] + linethickness[0], r_extents[2] + linethickness[1], bz };
+            morph::vec<float> ltin = { r_extents[0] + linethickness[0], r_extents[3] - linethickness[1], bz };
+            morph::vec<float> rtin = { r_extents[1] - linethickness[0], r_extents[3] - linethickness[1], bz };
+            morph::vec<float> rbin = { r_extents[1] - linethickness[0], r_extents[2] + linethickness[1], bz };
+            this->computeFlatQuad (lb, lt, ltin, lbin, clr);
+            this->computeFlatQuad (lt, rt, rtin, ltin, clr);
+            this->computeFlatQuad (rt, rb, rbin, rtin, clr);
+            this->computeFlatQuad (rb, lb, lbin, rbin, clr);
         }
 
         // Draw a GridVisual border *outside* r_extents. Used for a border around the entire grid.
@@ -224,7 +248,7 @@ namespace morph {
             morph::vec<float, 2> dx = this->grid->get_dx();
             float gridthick = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
 
-            unsigned int pix_width = static_cast<unsigned int>(std::round((cg_extents[1] - cg_extents[0] + dx[0])/dx[0]));
+            I gw = this->grid->get_w();
 
             if (this->selected_pix_border_colour.empty()) {
                 this->selected_pix_border_colour.push_back (this->border_colour);
@@ -244,8 +268,8 @@ namespace morph {
 
             // Find extents of our selected pixels
             for (std::size_t i = 0; i < this->selected_pix_indexes.size(); ++i) {
-                I r = this->selected_pix_indexes[i] % pix_width;
-                I c = this->selected_pix_indexes[i] / pix_width;
+                I r = this->selected_pix_indexes[i] % gw;
+                I c = this->selected_pix_indexes[i] / gw;
                 float left = grid_left + (r * dx[0]);
                 float right = left + dx[0];
                 float bot = grid_bot + (c * dx[1]);
@@ -808,21 +832,26 @@ namespace morph {
 
             morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
 
+            // Thickness of spacing for selected pixels
+            const float selth_x = this->selected_pix_thickness_fixed ? this->selected_pix_thickness_fixed : dx[0] * this->selected_pix_thickness;
+            const float selth_y = this->selected_pix_thickness_fixed ? this->selected_pix_thickness_fixed : dx[1] * this->selected_pix_thickness;
+            float sx = 0.0f;
+            float sy = 0.0f;
+
             float datumC = 0.0f;   // datum at the centre
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
 
-            bool sel = false; // is it a selected pixel?
-
             for (I ri = 0; ri < this->grid->n(); ++ri) {
 
-                sel = false;
                 try { // Is ri in selected_pix?
                     this->selected_pix.at (ri);
-                    sel = true;
-                } catch (const std::out_of_range& e) {} // do nothing if index not found
-
-                if (sel) { std::cout << "selected!\n"; }
+                    sx = selth_x;
+                    sy = selth_y;
+                } catch (const std::out_of_range& e) { // ri is not in selected_pix
+                    sx = 0.0f;
+                    sy = 0.0f;
+                }
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];
@@ -838,18 +867,18 @@ namespace morph {
                 vtx_0 = {{(*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC}};
 
                 // NE vertex
-                vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0], (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1], datumC };
+                vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0] - sx, (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1] - sy, datumC };
                 this->vertex_push (vtx_1, this->vertexPositions);
 
                 // SE vertex
-                vtx_2 = { (*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0], (*this->grid)[ri][1] - vy + centering_offset[1] + gridline_ht[1], datumC };
+                vtx_2 = { (*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0] - sx, (*this->grid)[ri][1] - vy + centering_offset[1] + gridline_ht[1] + sy, datumC };
                 this->vertex_push (vtx_2, this->vertexPositions);
 
                 // SW vertex
-                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + gridline_ht[0], (*this->grid)[ri][1] - vy + centering_offset[1] + gridline_ht[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + gridline_ht[0] + sx, (*this->grid)[ri][1] - vy + centering_offset[1] + gridline_ht[1] + sy, datumC, this->vertexPositions);
 
                 // NW vertex
-                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + gridline_ht[0], (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + gridline_ht[0] + sx, (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1] - sy, datumC, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note that there
                 // is only one 'layer' of vertices; the back of the GridVisual will be coloured the
@@ -916,7 +945,7 @@ namespace morph {
         std::array<float, 3> grid_colour = morph::colour::grey80;
 
         //! The grid thickness in multiples of a pixel in the Grid
-        float grid_thickness = 0.33f;
+        float grid_thickness = 0.07f;
 
         //! If you need to override the pixels-relationship to the grid thickness, set it here
         float grid_thickness_fixed = 0.0f;
@@ -931,7 +960,7 @@ namespace morph {
         std::array<float, 3> border_colour = morph::colour::grey80;
 
         //! The border thickness in multiples of a pixel in the Grid
-        float border_thickness = 0.33f;
+        float border_thickness = 0.15f;
 
         //! If you need to override the pixels-relationship to the border thickness, set it here
         float border_thickness_fixed = 0.0f;
