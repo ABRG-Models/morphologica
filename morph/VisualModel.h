@@ -2315,11 +2315,9 @@ namespace morph {
             vec<float> c3 = { 0.0f };
             vec<float> c4 = { 0.0f };
 
-            // std::cout << "prev/start/end/next: " << prev << "/" << start << "/" << end << "/" << next << "\n";
-            // std::cout << "w = " << w << std::endl;
-            // This is the new code
+            // Ensure _uz is a unit vector
             vec<float> __uz = _uz;
-            __uz.renormalize(); // Ensure _uz is a unit vector
+            __uz.renormalize();
 
             // First find the rotation to make __uz into the actual unit z dirn
             morph::quaternion<float> rotn;
@@ -2394,11 +2392,7 @@ namespace morph {
             vec<float, 2> l_c_2 = e_p.less_one_dim() + (c_ortho * hw) + c_vec;
             vec<float, 2> l_n_1 = e_p.less_one_dim() + (n_ortho * hw) - n_vec;
             vec<float, 2> l_n_2 = n_p.less_one_dim() + (n_ortho * hw) + n_vec;
-#if 0
-            std::cout << "l_p_1 -> l_p_2 => " << l_p_1 << " -> " << l_p_2 << std::endl;
-            std::cout << "l_c_1 -> l_c_2 => " << l_c_1 << " -> " << l_c_2 << std::endl;
-            std::cout << "l_n_1 -> l_n_2 => " << l_n_1 << " -> " << l_n_2 << std::endl;
-#endif
+
             std::bitset<2> isect = morph::MathAlgo::segments_intersect<float> (l_p_1, l_p_2, l_c_1, l_c_2);
             if (isect.test(0) == true && isect.test(1) == false) { // test for intersection but not colinear
                 c1_p = morph::MathAlgo::crossing_point (l_p_1, l_p_2, l_c_1, l_c_2);
@@ -2423,11 +2417,7 @@ namespace morph {
             vec<float, 2> o_l_c_2 = e_p.less_one_dim() - (c_ortho * hw) + c_vec;
             vec<float, 2> o_l_n_1 = e_p.less_one_dim() - (n_ortho * hw) - n_vec;
             vec<float, 2> o_l_n_2 = n_p.less_one_dim() - (n_ortho * hw) + n_vec;
-#if 0
-            std::cout << "o_l_p_1 -> o_l_p_2 => " << o_l_p_1 << " -> " << o_l_p_2 << std::endl;
-            std::cout << "o_l_c_1 -> o_l_c_2 => " << o_l_c_1 << " -> " << o_l_c_2 << std::endl;
-            std::cout << "o_l_n_1 -> o_l_n_2 => " << o_l_n_1 << " -> " << o_l_n_2 << std::endl;
-#endif
+
             isect = morph::MathAlgo::segments_intersect<float> (o_l_p_1, o_l_p_2, o_l_c_1, o_l_c_2);
             if (isect.test(0) == true && isect.test(1) == false) { // test for intersection but not colinear
                 c2_p = morph::MathAlgo::crossing_point (o_l_p_1, o_l_p_2, o_l_c_1, o_l_c_2);
