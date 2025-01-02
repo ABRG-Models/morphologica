@@ -108,31 +108,32 @@ namespace morph {
             // Draw around all pixels
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
-            float gridthick    = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
-            float bz = 0.01f;
+            float gridthick_x = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
+            float gridthick_y = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[1] * this->grid_thickness;
+
             // loop through each pixel
             for (float left = cg_extents[0] - (dx[0]/2.0f); left < cg_extents[1]; left += dx[0]) {
-                for (float bot = cg_extents[2] - (dx[1]/2.0f); bot < cg_extents[3] + (dx[1]/2.0f); bot += dx[1]) {
+                for (float bot = cg_extents[2] - (dx[1]/2.0f); bot < cg_extents[3]; bot += dx[1]) {
                     float right = left + dx[0];
                     float top = bot + dx[1];
 
-                    morph::vec<float> lb = {{left + this->centering_offset[0], bot + this->centering_offset[0], bz}}; // z?
-                    morph::vec<float> lt = {{left + this->centering_offset[0], top + this->centering_offset[0], bz}};
-                    morph::vec<float> rt = {{right + this->centering_offset[0], top + this->centering_offset[0], bz}};
-                    morph::vec<float> rb = {{right + this->centering_offset[0], bot + this->centering_offset[0], bz}};
+                    morph::vec<float> lb = { left + this->centering_offset[0],  bot + this->centering_offset[0], this->grid_z_offset };
+                    morph::vec<float> lt = { left + this->centering_offset[0],  top + this->centering_offset[0], this->grid_z_offset };
+                    morph::vec<float> rt = { right + this->centering_offset[0], top + this->centering_offset[0], this->grid_z_offset };
+                    morph::vec<float> rb = { right + this->centering_offset[0], bot + this->centering_offset[0], this->grid_z_offset };
 
                     // draw the vertical from bottom left to top left
-                    this->computeFlatLine(lb, lt, rb, rt, this->uz, this->grid_colour, gridthick);
+                    this->computeFlatLine (lb, lt, rb, rt, this->uz, this->grid_colour, gridthick_y);
                     // draw the horizontal from bottom left to bottom right
-                    this->computeFlatLine(rb, lb, rt, lt, this->uz, this->grid_colour, gridthick);
+                    this->computeFlatLine (rb, lb, rt, lt, this->uz, this->grid_colour, gridthick_x);
 
                     // complete the last right border (from bottom right to top right)
                     if (right >= cg_extents[1]) {
-                        this->computeFlatLine(rt, rb, lt, lb, this->uz, this->grid_colour, gridthick);
+                        this->computeFlatLine (rt, rb, lt, lb, this->uz, this->grid_colour, gridthick_y);
                     }
                     // complete the last top border (from top left to top right)
-                    if (top >= cg_extents[3] + (dx[1]/2.0f)) {
-                        this->computeFlatLine(lt, rt, lb, rb, this->uz, this->grid_colour, gridthick);
+                    if (top >= cg_extents[3]) {
+                        this->computeFlatLine (lt, rt, lb, rb, this->uz, this->grid_colour, gridthick_x);
                     }
                 }
             }
@@ -435,6 +436,15 @@ namespace morph {
             float hx = 0.5f * dx[0];
             float vy = 0.5f * dx[1];
 
+            morph::vec<float, 2> grid_half_thickness = { 0.0f, 0.0f };
+            if (this->showgrid == true) {
+                if (this->grid_thickness_fixed == 0.0f) {
+                    grid_half_thickness = dx * this->grid_thickness * 0.5f;
+                } else {
+                    grid_half_thickness.set_from (this->grid_thickness_fixed * 0.5f);
+                }
+            }
+
             this->idx = 0;
             this->setupScaling();
 
@@ -488,8 +498,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datum, this->vertexPositions);
-                vtx_1 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datum}};
+                vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0] - grid_half_thickness[0], (*this->grid)[ri][1] + vy + centering_offset[1] - grid_half_thickness[1], datum };
+                this->vertex_push (vtx_1, this->vertexPositions);
 
                 // SE vertex
                 if (this->grid->has_ns(ri) && this->grid->has_ne(ri) && this->grid->has_nse(ri)) {
@@ -503,8 +513,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datum, this->vertexPositions);
-                vtx_2 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datum}};
+                vtx_2 = {{(*this->grid)[ri][0] + hx + centering_offset[0] - grid_half_thickness[0], (*this->grid)[ri][1] - vy + centering_offset[1] + grid_half_thickness[1], datum}};
+                this->vertex_push (vtx_2, this->vertexPositions);
 
 
                 // SW vertex
@@ -517,7 +527,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datum, this->vertexPositions);
+                // vtx_3
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + grid_half_thickness[0], (*this->grid)[ri][1] - vy + centering_offset[1] + grid_half_thickness[1], datum, this->vertexPositions);
 
                 // NW vertex
                 if (this->grid->has_nn(ri) && this->grid->has_nw(ri) && this->grid->has_nnw(ri)) {
@@ -529,7 +540,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datum, this->vertexPositions);
+                // vtx_4
+                this->vertex_push ((*this->grid)[ri][0] - hx + centering_offset[0] + grid_half_thickness[0], (*this->grid)[ri][1] + vy + centering_offset[1] - grid_half_thickness[1], datum, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note that there
                 // is only one 'layer' of vertices; the back of the GridVisual will be coloured the
@@ -843,13 +855,13 @@ namespace morph {
         //! that the Grid is centralised around the VisualModel::mv_offset.
         bool centralize = false;
 
-        //! Set true to draw a grid (border around each pixels)
-        bool showgrid = false;
-
         //! Show a sphere at the grid's origin? This can be useful when placing several Grids with
         //! different sized pixels in a scene - it helps you to figure out the scene coordinates at
         //! which to place each grid.
         bool showorigin = false;
+
+        //! Set true to draw a grid (border around each pixels)
+        bool showgrid = false;
 
         //! The colour used for the grid (default is grey)
         std::array<float, 3> grid_colour = morph::colour::grey80;
@@ -861,7 +873,7 @@ namespace morph {
         float grid_thickness_fixed = 0.0f;
 
         //! How far in z to locate the grid lines?
-        float grid_z_offset = 0.02f;
+        float grid_z_offset = 0.0f;
 
         //! Set true to draw a border around the outside
         bool showborder = false;
@@ -876,7 +888,7 @@ namespace morph {
         float border_thickness_fixed = 0.0f;
 
         //! Where in z to locate the border lines?
-        float border_z_offset = 0.02f;
+        float border_z_offset = 0.0f;
 
         /*!
          * If true, draw a border around selected pixels (with a full border around each selected
