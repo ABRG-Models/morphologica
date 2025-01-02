@@ -42,10 +42,12 @@ namespace morph {
             p[1] = {1,    0,   1};
             p[2] = {2,    0,   0};
 
-
             this->computeFlatLine (p[0],        p[1],
                                    p[0],        p[2],
                                    this->uy, morph::colour::black, lth);
+            this->computeFlatLine (p[1],        p[2],
+                                   p[0],        p[2],
+                                   this->uy, morph::colour::crimson, lth);
 
 #endif
         }
@@ -57,6 +59,7 @@ namespace morph {
 int main()
 {
     morph::Visual v(1024, 768, "Lines");
+    v.coordArrowsInScene = true;
     auto vm = std::make_unique<morph::LinestestVisual<>>();
     v.bindmodel (vm);
     vm->finalize();
