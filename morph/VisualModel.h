@@ -2362,9 +2362,9 @@ namespace morph {
             morph::quaternion<float> inplane_rotn (this->uz, inplane_rotn_angle);
             morph::quaternion<float> inplane_rotn_inv (this->uz, -inplane_rotn_angle);
 
-            vec<float> p_p = basis_rotn * inplane_rotn * p_o;
-            vec<float> n_p = basis_rotn * inplane_rotn * n_o;
-            vec<float> s_p = basis_rotn * inplane_rotn * s_o; // not necessary, s_p = (0,0,0) by defn
+            vec<float> p_p =  inplane_rotn * basis_rotn * p_o;
+            vec<float> n_p = inplane_rotn * basis_rotn * n_o;
+            vec<float> s_p = inplane_rotn * basis_rotn * s_o; // not necessary, s_p = (0,0,0) by defn
 
             // Line crossings time.
             vec<float, 2> c1_p = { 0.0f }; // 2D crossing coords that we're going to find
@@ -2398,7 +2398,7 @@ namespace morph {
             vec<float, 2> l_c_2 = e_p.less_one_dim() + (c_ortho * hw) + c_vec;
             vec<float, 2> l_n_1 = e_p.less_one_dim() + (n_ortho * hw) - n_vec;
             vec<float, 2> l_n_2 = n_p.less_one_dim() + (n_ortho * hw) + n_vec;
-#if 1
+#if 0
             std::cout << "l_p_1 -> l_p_2 => " << l_p_1 << " -> " << l_p_2 << std::endl;
             std::cout << "l_c_1 -> l_c_2 => " << l_c_1 << " -> " << l_c_2 << std::endl;
             std::cout << "l_n_1 -> l_n_2 => " << l_n_1 << " -> " << l_n_2 << std::endl;
@@ -2427,7 +2427,7 @@ namespace morph {
             vec<float, 2> o_l_c_2 = e_p.less_one_dim() - (c_ortho * hw) + c_vec;
             vec<float, 2> o_l_n_1 = e_p.less_one_dim() - (n_ortho * hw) - n_vec;
             vec<float, 2> o_l_n_2 = n_p.less_one_dim() - (n_ortho * hw) + n_vec;
-#if 1
+#if 0
             std::cout << "o_l_p_1 -> o_l_p_2 => " << o_l_p_1 << " -> " << o_l_p_2 << std::endl;
             std::cout << "o_l_c_1 -> o_l_c_2 => " << o_l_c_1 << " -> " << o_l_c_2 << std::endl;
             std::cout << "o_l_n_1 -> o_l_n_2 => " << o_l_n_1 << " -> " << o_l_n_2 << std::endl;
