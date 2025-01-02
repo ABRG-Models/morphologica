@@ -105,7 +105,7 @@ int main()
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
     gv->showgrid = true;
-    gv->grid_colour = morph::colour::red;
+    gv->grid_colour = morph::colour::black;
     gv->grid_thickness = 0.1f;
     gv->addLabel ("5) 2 + grid ", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
@@ -120,7 +120,7 @@ int main()
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
     gv->showgrid = true;
-    gv->grid_colour = morph::colour::red;
+    gv->grid_colour = morph::colour::black;
     gv->grid_thickness = 0.1f;
     gv->showborder = true;
     gv->border_thickness = 0.25f;
@@ -165,10 +165,11 @@ int main()
     gv->zScale.setParams(0.0f, 0.0f);
 
     gv->showgrid = true;
-    gv->grid_colour = morph::colour::red;
-    gv->grid_thickness = 0.1f;
+    gv->grid_colour = morph::colour::black;
+    gv->grid_thickness = 0.05f;
 
     gv->showselectedpixborder = true;
+    gv->selected_pix_thickness = 0.1f;
 
     gv->selected_pix[6] = morph::colour::forestgreen;
     gv->selected_pix[0] = morph::colour::yellow3;
@@ -179,8 +180,6 @@ int main()
     gv->selected_pix[49] = morph::colour::red2;
     gv->selected_pix[90] = morph::colour::tan1;
     gv->selected_pix[99] = morph::colour::gold;
-
-    gv->grid_thickness = 0.1f;
 
     gv->addLabel ("8) 7 + grid", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
