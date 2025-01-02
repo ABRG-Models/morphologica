@@ -2330,7 +2330,7 @@ namespace morph {
             } // else nothing to do  - basis rotn is null
 
             // Transform so that start is the origin
-            vec<float> s_o = { 0.0f }; // by defn
+            // vec<float> s_o = { 0.0f }; // by defn
             vec<float> e_o = end - start;
             vec<float> p_o = prev - start;
             vec<float> n_o = next - start;
@@ -2353,10 +2353,9 @@ namespace morph {
                 throw std::runtime_error ("uz not orthogonal to the line start -> end?");
             }
 
-            // From e_p and e_o could now figure out what angle of rotation this was
-            // with e_p.angle (e_o); BUT NB: This returns an angle magnitude; it does
-            // not give rotn dirn So use 2D version of angle function:
-            float inplane_rotn_angle = e_p.less_one_dim().angle() - e_b.less_one_dim().angle();
+            // From e_p and e_b (which should both be in a 2D plane) figure out what
+            // angle of rotation brings e_b into the x axis
+            float inplane_rotn_angle = e_b.angle (e_p, this->uz);
             morph::quaternion<float> inplane_rotn (this->uz, inplane_rotn_angle);
 
             // Apply the in-plane rotation to the basis rotation
@@ -2365,7 +2364,7 @@ namespace morph {
             // Transform points
             vec<float> p_p = rotn * p_o;
             vec<float> n_p = rotn * n_o;
-            vec<float> s_p = rotn * s_o; // not necessary, s_p = (0,0,0) by defn
+            //vec<float> s_p = rotn * s_o; // not necessary, s_p = (0,0,0) by defn
 
             // Line crossings time.
             vec<float, 2> c1_p = { 0.0f }; // 2D crossing coords that we're going to find
@@ -2376,13 +2375,13 @@ namespace morph {
             // 3 lines on each side. l_p, l_c (current) and l_n. Each has two ends. l_p_1, l_p_2 etc.
 
             // 'prev' 'cur' and 'next' vectors
-            vec<float, 2> p_vec = (s_p - p_p).less_one_dim();
+            vec<float, 2> p_vec = (/*s_p*/ -p_p).less_one_dim();
             vec<float, 2> c_vec = e_p.less_one_dim();
             vec<float, 2> n_vec = (n_p - e_p).less_one_dim();
 
-            vec<float, 2> p_ortho = (s_p - p_p).cross (this->uz).less_one_dim();
+            vec<float, 2> p_ortho = (/*s_p*/ - p_p).cross (this->uz).less_one_dim();
             p_ortho.renormalize();
-            vec<float, 2> c_ortho = (e_p - s_p).cross (this->uz).less_one_dim();
+            vec<float, 2> c_ortho = (e_p /*- s_p*/).cross (this->uz).less_one_dim();
             c_ortho.renormalize();
             vec<float, 2> n_ortho = (n_p - e_p).cross (this->uz).less_one_dim();
             n_ortho.renormalize();
@@ -2390,8 +2389,8 @@ namespace morph {
             const float hw = w / 2.0f;
 
             vec<float, 2> l_p_1 = p_p.less_one_dim() + (p_ortho * hw) - p_vec; // makes it 3 times as long as the line.
-            vec<float, 2> l_p_2 = s_p.less_one_dim() + (p_ortho * hw) + p_vec;
-            vec<float, 2> l_c_1 = s_p.less_one_dim() + (c_ortho * hw) - c_vec;
+            vec<float, 2> l_p_2 = /*s_p.less_one_dim() +*/ (p_ortho * hw) + p_vec;
+            vec<float, 2> l_c_1 = /*s_p.less_one_dim() +*/ (c_ortho * hw) - c_vec;
             vec<float, 2> l_c_2 = e_p.less_one_dim() + (c_ortho * hw) + c_vec;
             vec<float, 2> l_n_1 = e_p.less_one_dim() + (n_ortho * hw) - n_vec;
             vec<float, 2> l_n_2 = n_p.less_one_dim() + (n_ortho * hw) + n_vec;
@@ -2404,9 +2403,9 @@ namespace morph {
             if (isect.test(0) == true && isect.test(1) == false) { // test for intersection but not colinear
                 c1_p = morph::MathAlgo::crossing_point (l_p_1, l_p_2, l_c_1, l_c_2);
             } else if (isect.test(0) == true && isect.test(1) == true) {
-                c1_p = s_p.less_one_dim() + (c_ortho * hw);
+                c1_p = /*s_p.less_one_dim() +*/ (c_ortho * hw);
             } else { // no intersection. prev could have been start
-                c1_p = s_p.less_one_dim() + (c_ortho * hw);
+                c1_p = /*s_p.less_one_dim() +*/ (c_ortho * hw);
             }
             isect = morph::MathAlgo::segments_intersect<float> (l_c_1, l_c_2, l_n_1, l_n_2);
             if (isect.test(0) == true && isect.test(1) == false) {
@@ -2419,8 +2418,8 @@ namespace morph {
 
             // o for 'other side'. Could re-use vars in future version. Or just subtract (*_ortho * w) from each.
             vec<float, 2> o_l_p_1 = p_p.less_one_dim() - (p_ortho * hw) - p_vec; // makes it 3 times as long as the line.
-            vec<float, 2> o_l_p_2 = s_p.less_one_dim() - (p_ortho * hw) + p_vec;
-            vec<float, 2> o_l_c_1 = s_p.less_one_dim() - (c_ortho * hw) - c_vec;
+            vec<float, 2> o_l_p_2 = /*s_p.less_one_dim()*/ - (p_ortho * hw) + p_vec;
+            vec<float, 2> o_l_c_1 = /*s_p.less_one_dim()*/ - (c_ortho * hw) - c_vec;
             vec<float, 2> o_l_c_2 = e_p.less_one_dim() - (c_ortho * hw) + c_vec;
             vec<float, 2> o_l_n_1 = e_p.less_one_dim() - (n_ortho * hw) - n_vec;
             vec<float, 2> o_l_n_2 = n_p.less_one_dim() - (n_ortho * hw) + n_vec;
@@ -2433,9 +2432,9 @@ namespace morph {
             if (isect.test(0) == true && isect.test(1) == false) { // test for intersection but not colinear
                 c2_p = morph::MathAlgo::crossing_point (o_l_p_1, o_l_p_2, o_l_c_1, o_l_c_2);
             } else if (isect.test(0) == true && isect.test(1) == true) {
-                c2_p = s_p.less_one_dim() - (c_ortho * hw);
+                c2_p = /*s_p.less_one_dim()*/ - (c_ortho * hw);
             } else { // no intersection. prev could have been start
-                c2_p = s_p.less_one_dim() - (c_ortho * hw);
+                c2_p = /*s_p.less_one_dim()*/ - (c_ortho * hw);
             }
 
             isect = morph::MathAlgo::segments_intersect<float> (o_l_c_1, o_l_c_2, o_l_n_1, o_l_n_2);
