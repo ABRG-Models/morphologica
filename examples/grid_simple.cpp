@@ -105,6 +105,18 @@ int main()
     gv->finalize();
     v.addVisualModel (gv);
 
+    offset = { 3 * step * grid.width(), -step * grid.width(), 0.0f };
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::RectInterp;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Navia);
+    gv->addLabel (std::string("GridVisMode::RectInterp, implygrid=true, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03));
+    gv->implygrid = true;
+    gv->grid_thickness = 0.18f; // of a pixel
+    gv->finalize();
+    v.addVisualModel (gv);
+
     v.keepOpen();
 
     return 0;
