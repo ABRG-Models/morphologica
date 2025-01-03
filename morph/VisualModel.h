@@ -1202,6 +1202,133 @@ namespace morph {
             this->idx += nverts;
         } // end computeFlaredTube with randomly initialized end vertices
 
+        /*!
+         * Create an open (no end caps) flared tube from \a start to \a end, with radius
+         * \a r at the start and a colour which transitions from the colour \a colStart
+         * to \a colEnd. The radius of the end is r_end, given as a function argument.
+         *
+         * This has a normal vector for the start and end of the tube, so that the
+         * circles can be angled.
+         *
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param colStart The tube starting colour
+         * \param colEnd The tube's ending colour
+         * \param n_start The normal of the start 'face'
+         * \param n_end The normal of the end 'face'
+         *
+         * \param z_start A vector pointing to the first vertex on the tube. allows
+         * orientation of tube faces for connected tubes (which is what this primitive
+         * is all about)
+         *
+         * \param r Radius of the tube's start circle
+         * \param r_end radius of the end circle
+         * \param segments Number of segments used to render the tube
+         */
+        void computeOpenFlaredTube (morph::vec<float> start, morph::vec<float> end,
+                                    morph::vec<float> n_start, morph::vec<float> n_end,
+                                    std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                                    float r = 1.0f, float r_end = 1.0f, int segments = 12)
+        {
+            // The vector from start to end defines a vector and a plane. Find a
+            // 'circle' of points in that plane.
+            morph::vec<float> vstart = start;
+            morph::vec<float> vend = end;
+            morph::vec<float> v = vend - vstart;
+            v.renormalize();
+
+            // Two rotations about our face normals
+            morph::quaternion<float> rotn_start (n_start, morph::mathconst<float>::pi_over_2);
+            morph::quaternion<float> rotn_end (-n_end, morph::mathconst<float>::pi_over_2);
+
+            morph::vec<float> inplane = v.cross (n_start);
+            // The above is no good if n_start and v are colinear. In that case choose random inplane:
+            if (inplane.length() < std::numeric_limits<float>::epsilon()) {
+                vec<float> rand_vec;
+                rand_vec.randomize();
+                inplane = rand_vec.cross(v);
+            }
+            inplane.renormalize();
+
+            // inplane defines a plane, n_start defines a plane. Our first point is the
+            // intersection of the two planes and the circle of the end.
+            morph::vec<float> v_x_inplane = n_start.cross (inplane);// rotn_start * inplane;
+            v_x_inplane.renormalize();
+
+            // If r == r_end we want a circular cross section tube (and not an elliptical cross section).
+            float r_mod = r / v_x_inplane.cross (v).length();
+
+            // Start ring of vertices. Normals point in direction c
+            // Now use parameterization of circle inplane = p1-x1 and
+            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
+            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r_mod;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // end ring of vertices. Normals point in direction c
+            v_x_inplane = inplane.cross (n_end);
+            v_x_inplane.renormalize();
+            r_mod = r_end / v_x_inplane.cross (v).length();
+
+            for (int j = 0; j < segments; j++) {
+                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r_end + v_x_inplane * std::cos(t) * r_mod;
+                this->vertex_push (vend+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Number of vertices
+            int nverts = (segments * 2);
+
+            // After creating vertices, push all the indices.
+            GLuint sIdx = this->idx;
+            GLuint eIdx = sIdx + segments;
+            // This does sides between start and end
+            for (int j = 0; j < segments; j++) {
+                // Triangle 1
+                this->indices.push_back (sIdx + j);
+                if (j == (segments-1)) {
+                    this->indices.push_back (sIdx);
+                } else {
+                    this->indices.push_back (sIdx + 1 + j);
+                }
+                this->indices.push_back (eIdx + j);
+                // Triangle 2
+                this->indices.push_back (eIdx + j);
+                if (j == (segments-1)) {
+                    this->indices.push_back (eIdx);
+                } else {
+                    this->indices.push_back (eIdx + 1 + j);
+                }
+                if (j == (segments-1)) {
+                    this->indices.push_back (sIdx);
+                } else {
+                    this->indices.push_back (sIdx + j + 1);
+                }
+            }
+
+            // Update idx
+            this->idx += nverts;
+        } // end computeOpenFlaredTube
+
+        // An open, but un-flared tube with no end caps
+        void computeOpenTube (morph::vec<float> start, morph::vec<float> end,
+                              morph::vec<float> n_start, morph::vec<float> n_end,
+                              std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                              float r = 1.0f, int segments = 12)
+        {
+            this->computeOpenFlaredTube (start, end, n_start, n_end, colStart, colEnd, r, r, segments);
+        }
+
+
         //! Compute a Quad from 4 arbitrary corners which must be ordered clockwise around the quad.
         void computeFlatQuad (vec<float> c1, vec<float> c2,
                               vec<float> c3, vec<float> c4,
