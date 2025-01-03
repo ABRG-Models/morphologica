@@ -106,7 +106,16 @@ namespace morph {
             float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
             float top   = cg_extents[3] + (dx[1]/2.0f) + this->centering_offset[1];
             morph::vec<float, 4> r_extents = { left, right, bot, top };
-            this->rectangularOuterBorder (r_extents, this->border_z_offset, bthick, this->border_colour);
+            if (this->border_tubular) {
+                // Have to add a bit for the tubular border
+                r_extents[0] -= bthick/2.0f;
+                r_extents[1] += bthick/2.0f;
+                r_extents[2] -= bthick/2.0f;
+                r_extents[3] += bthick/2.0f;
+                this->tubularBorder (r_extents, this->border_z_offset, bthick, this->border_colour);
+            } else {
+                this->rectangularOuterBorder (r_extents, this->border_z_offset, bthick, this->border_colour);
+            }
         }
 
         //! function to draw the grid (border around each pixel)
@@ -143,43 +152,6 @@ namespace morph {
                         this->computeFlatLine (lt, rt, lb, rb, this->uz, this->grid_colour, gridthick_x);
                     }
                 }
-            }
-        }
-
-        //! function to draw the border around selected pixels
-        void drawSelectedPixBorder()
-        {
-            // Draw around all pixels
-            morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
-            morph::vec<float, 2> dx = this->grid->get_dx();
-
-            // Take into account any inter-pixel gridlines
-            morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
-
-            // The grid width in pixels
-            I gw = this->grid->get_w();
-
-            // Thickness of spacing for selected pixels
-            morph::vec<float, 2> selth = dx * this->selected_pix_thickness;
-            if (this->selected_pix_thickness_fixed) { selth.set_from (this->selected_pix_thickness_fixed); }
-
-            float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
-            float grid_bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
-
-            // loop through each pixel
-            for (auto sp : this->selected_pix) {
-                // sp.first is index, sp.second is colour
-                I r = sp.first % gw;
-                I c = sp.first / gw;
-                // {xmin, xmax, ymin, ymax}
-                morph::vec<float, 4> r_extents =
-                {
-                    (grid_left + r     * dx[0] + gridline_ht[0]),
-                    (grid_left + (r+1) * dx[0] - gridline_ht[0]),
-                    (grid_bot  + c     * dx[1] + gridline_ht[1]),
-                    (grid_bot  + (c+1) * dx[1] - gridline_ht[1])
-                };
-                this->rectangularInnerBorder (r_extents, this->grid_z_offset, selth, sp.second);
             }
         }
 
@@ -221,38 +193,87 @@ namespace morph {
             this->computeFlatQuad (rb, rbout, lbout, lb, clr);
         }
 
-        void rectangularBorder (const morph::vec<float, 4>& r_extents,
-                                const float bz, const float linethickness,
-                                const std::array<float, 3>& clr)
+        void tubularBorder (const morph::vec<float, 4>& r_extents, // xmin xmax ymin ymax
+
+                            const float bz, const float tubedia,
+                            const std::array<float, 3>& clr)
         {
             morph::vec<float> lb = { r_extents[0], r_extents[2], bz };
             morph::vec<float> lt = { r_extents[0], r_extents[3], bz };
             morph::vec<float> rt = { r_extents[1], r_extents[3], bz };
             morph::vec<float> rb = { r_extents[1], r_extents[2], bz };
-            // draw the vertical from bottom left to top left
-            this->computeFlatLine(lb, lt, rb, rt, this->uz, clr, linethickness);
-            // draw the horizontal from bottom left to bottom right
-            this->computeFlatLine(rb, lb, rt, lt, this->uz, clr, linethickness);
-            // draw the vertical from bottom right to top right
-            this->computeFlatLine(rt, rb, lt, lb, this->uz, clr, linethickness);
-            // draw the horizontal from top left to top right
-            this->computeFlatLine(lt, rt, lb, rb, this->uz, clr, linethickness);
+
+            morph::vec<float> lblt = lt - lb;
+            lblt.renormalize();
+            morph::vec<float> ltrt = rt - lt;
+            ltrt.renormalize();
+            morph::vec<float> rtrb = rb - rt;
+            rtrb.renormalize();
+            morph::vec<float> rblb = lb - rb;
+            rblb.renormalize();
+
+            float rad = tubedia * 0.5f;
+            this->computeOpenTube (lb, lt,  -(rblb + lblt), (lblt + ltrt),  clr, clr, rad, 20);
+            this->computeOpenTube (lt, rt,  -(lblt + ltrt), (ltrt + rtrb),  clr, clr, rad, 20);
+            this->computeOpenTube (rt, rb,  -(ltrt + rtrb), (rtrb + rblb),  clr, clr, rad, 20);
+            this->computeOpenTube (rb, lb,  -(rtrb + rblb), (rblb + lblt),  clr, clr, rad, 20);
+        }
+
+        //! function to draw the border around selected pixels
+        void drawSelectedPixBorder()
+        {
+            // Draw around all pixels
+            morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
+            morph::vec<float, 2> dx = this->grid->get_dx();
+
+            // Take into account any inter-pixel gridlines
+            morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
+
+            // The grid width in pixels
+            I gw = this->grid->get_w();
+
+            // Thickness of spacing for selected pixels
+            morph::vec<float, 2> selth = dx * this->selected_pix_thickness;
+            if (this->selected_pix_thickness_fixed) { selth.set_from (this->selected_pix_thickness_fixed); }
+
+            float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
+            float grid_bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
+
+            // loop through each pixel
+            for (auto sp : this->selected_pix) {
+                // sp.first is index, sp.second is colour
+                I r = sp.first % gw;
+                I c = sp.first / gw;
+                // {xmin, xmax, ymin, ymax}
+                morph::vec<float, 4> r_extents =
+                {
+                    (grid_left + r     * dx[0] + gridline_ht[0]),
+                    (grid_left + (r+1) * dx[0] - gridline_ht[0]),
+                    (grid_bot  + c     * dx[1] + gridline_ht[1]),
+                    (grid_bot  + (c+1) * dx[1] - gridline_ht[1])
+                };
+                this->rectangularInnerBorder (r_extents, this->grid_z_offset, selth, sp.second);
+            }
         }
 
         //! Draw a border around the selected pixels, using the first selected pix colour
         void drawSelectedPixBorderEnclosing()
         {
-#if 0
-            // Draw around all pixels
-            morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
-            morph::vec<float, 2> dx = this->grid->get_dx();
-            float gridthick = this->grid_thickness_fixed ? this->grid_thickness_fixed : dx[0] * this->grid_thickness;
+            if (this->selected_pix.empty()) { return; }
 
+            // Draw around all pixels using a tubular frame
+            morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
+
+            // Take into account any inter-pixel gridlines
+            morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
+
+            // The grid width in pixels
             I gw = this->grid->get_w();
 
-            if (this->selected_pix_border_colour.empty()) {
-                this->selected_pix_border_colour.push_back (this->border_colour);
-            }
+            // Thickness of spacing for selected pixels
+            morph::vec<float, 2> dx = this->grid->get_dx();
+            morph::vec<float, 2> selth = dx * this->selected_pix_thickness;
+            if (this->selected_pix_thickness_fixed) { selth.set_from (this->selected_pix_thickness_fixed); }
 
             float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
             float grid_bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
@@ -267,13 +288,15 @@ namespace morph {
             t_r.search_init();
 
             // Find extents of our selected pixels
-            for (std::size_t i = 0; i < this->selected_pix_indexes.size(); ++i) {
-                I r = this->selected_pix_indexes[i] % gw;
-                I c = this->selected_pix_indexes[i] / gw;
-                float left = grid_left + (r * dx[0]);
-                float right = left + dx[0];
-                float bot = grid_bot + (c * dx[1]);
-                float top = bot + dx[1];
+            for (auto sp : this->selected_pix) {
+                // sp.first is index, sp.second is colour
+                I r = sp.first % gw;
+                I c = sp.first / gw;
+                // {xmin, xmax, ymin, ymax}
+                float left  = grid_left + r * dx[0] + gridline_ht[0];
+                float right = left      +     dx[0] - gridline_ht[0];
+                float bot   = grid_bot  + c * dx[1] + gridline_ht[0];
+                float top   = bot       +     dx[1] - gridline_ht[0];
                 l_r.update (left);
                 r_r.update (right);
                 b_r.update (bot);
@@ -282,9 +305,7 @@ namespace morph {
 
             // xmin xmax ymin ymax
             morph::vec<float, 4> r_extents = { l_r.min, r_r.max, b_r.min, t_r.max };
-            // But what kind of border? Inner? Outer? Hmm. How to avoid overpainting?
-            this->rectangularBorder (r_extents, this->grid_z_offset, gridthick, this->selected_pix_border_colour[0]);
-#endif
+            this->tubularBorder (r_extents, this->grid_z_offset, selth[0], this->selected_pix.begin()->second);
         }
 
         // Common function to setup scaling. Called by all initializeVertices subroutines. Also
@@ -511,14 +532,16 @@ namespace morph {
 
             for (I ri = 0; ri < this->grid->n(); ++ri) {
 
-                try { // Is ri in selected_pix?
-                    this->selected_pix.at (ri);
-                    sx = selth_x;
-                    sy = selth_y;
-                } catch (const std::out_of_range& e) { // ri is not in selected_pix
-                    sx = 0.0f;
-                    sy = 0.0f;
-                }
+                if (this->showselectedpixborder == true) {
+                    try { // Is ri in selected_pix?
+                        this->selected_pix.at (ri);
+                        sx = selth_x;
+                        sy = selth_y;
+                    } catch (const std::out_of_range& e) { // ri is not in selected_pix
+                        sx = 0.0f;
+                        sy = 0.0f;
+                    }
+                } // else sx = sy = 0
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];
@@ -844,13 +867,15 @@ namespace morph {
 
             for (I ri = 0; ri < this->grid->n(); ++ri) {
 
-                try { // Is ri in selected_pix?
-                    this->selected_pix.at (ri);
-                    sx = selth_x;
-                    sy = selth_y;
-                } catch (const std::out_of_range& e) { // ri is not in selected_pix
-                    sx = 0.0f;
-                    sy = 0.0f;
+                if (this->showselectedpixborder == true) {
+                    try { // Is ri in selected_pix?
+                        this->selected_pix.at (ri);
+                        sx = selth_x;
+                        sy = selth_y;
+                    } catch (const std::out_of_range& e) { // ri is not in selected_pix
+                        sx = 0.0f;
+                        sy = 0.0f;
+                    }
                 }
 
                 // Use the linear scaled copy of the data, dcopy.
@@ -967,6 +992,9 @@ namespace morph {
 
         //! Where in z to locate the border lines?
         float border_z_offset = 0.0f;
+
+        //! If true draw a tubular border, else draw a flat border
+        bool border_tubular = true;
 
         /*!
          * If true, draw a border around selected pixels (with a full border around each selected

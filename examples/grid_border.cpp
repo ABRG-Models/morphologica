@@ -78,7 +78,8 @@ int main()
     gv->showborder = true;
     gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::cyan;
-    gv->addLabel ("3) 2 + border", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
+    gv->border_tubular = false;
+    gv->addLabel ("3) 2 + flat border", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -92,7 +93,8 @@ int main()
     gv->showborder = true;
     gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::cyan;
-    gv->addLabel ("4) 1 + border", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
+    gv->border_tubular = false;
+    gv->addLabel ("4) 1 + flat border", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -125,7 +127,8 @@ int main()
     gv->showborder = true;
     gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::magenta;
-    gv->addLabel ("6) 5 + border ", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
+    gv->border_tubular = true; // true is default
+    gv->addLabel ("6) 5 + tubular border ", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
 
