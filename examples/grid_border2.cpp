@@ -39,7 +39,9 @@ int main()
     // Add a GridVisual to display the Grid within the morph::Visual scene
     morph::vec<float, 3> offset = { -step * grid.width(), -step * grid.width(), 0.0f };
 
+    // A label position offset for use below
     auto dx = grid.get_dx();
+    auto lblpos = -dx.plus_one_dim() + morph::vec<float>{dx[0]/2.0f,0,0};
 
     // Grid with border
     auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
@@ -56,7 +58,7 @@ int main()
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
     gv->border_colour = morph::colour::black;
-    gv->addLabel ("Pixels, border", -dx.plus_one_dim() + morph::vec<float>{dx[0]/2.0f,0,0}, morph::TextFeatures(0.08f));
+    gv->addLabel ("Pixels, border", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -73,7 +75,7 @@ int main()
     gv->colourScale.compute_scaling (-1, 1);
     gv->showborder = false;
     gv->implygrid = true;
-    gv->addLabel ("Rectinterp, No border, implied grid", -dx.plus_one_dim() + morph::vec<float>{dx[0]/2.0f,0,0}, morph::TextFeatures(0.08f));
+    gv->addLabel ("Rectinterp, No border, implied grid", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -90,7 +92,7 @@ int main()
     gv->showborder = false;
     gv->showgrid = true;
     gv->grid_colour = morph::colour::grey48;
-    gv->addLabel ("Rectinterp, No border, filled grid", -dx.plus_one_dim() + morph::vec<float>{dx[0]/2.0f,0,0}, morph::TextFeatures(0.08f));
+    gv->addLabel ("Rectinterp, No border, filled grid", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
 
@@ -117,11 +119,13 @@ int main()
     gv->selected_pix[10] = morph::colour::crimson;
     gv->showselectedpixborder = false;
     gv->showselectedpixborder_enclosing = true;
-    gv->addLabel ("Pixels, border, selected pix with border", -dx.plus_one_dim() + morph::vec<float>{dx[0]/2.0f,0,0}, morph::TextFeatures(0.08f));
+    gv->addLabel ("Pixels, border, selected pix with border", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
 
-    offset[0] += grid.width_of_pixels() * 1.2f;
+    offset = { -step * grid.width(), -step * grid.width(), 0.0f };
+
+    offset[1] -= grid.height_of_pixels() * 1.2f;
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::Pixels;
@@ -144,10 +148,28 @@ int main()
     gv->selected_pix[3+12] = morph::colour::royalblue2;
     gv->showselectedpixborder = true;
     gv->showselectedpixborder_enclosing = false;
-    gv->addLabel ("Pixels, flat border, selected pix coloured", -dx.plus_one_dim() + morph::vec<float>{dx[0]/2.0f,0,0}, morph::TextFeatures(0.08f));
+    gv->addLabel ("Pixels, flat border, selected pix coloured", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
 
+    offset[0] += grid.width_of_pixels() * 1.2f;
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Triangles;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Cork);
+    gv->zScale.do_autoscale = false;
+    gv->zScale.setParams (0, 0);
+    gv->colourScale.do_autoscale = false;
+    gv->colourScale.compute_scaling (-1, 1);
+    // Border specific parameters
+    gv->showborder = true;
+    gv->border_thickness = 0.15f; // of a pixel
+    gv->border_z_offset = 0.0f;
+    gv->border_colour = morph::colour::black;
+    gv->addLabel ("Triangles, border (smaller is as expected)", lblpos, morph::TextFeatures(0.08f));
+    gv->finalize();
+    v.addVisualModel (gv);
     v.keepOpen();
 
     return 0;

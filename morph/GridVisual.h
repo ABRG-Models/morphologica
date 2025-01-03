@@ -101,10 +101,17 @@ namespace morph {
             cg_extents[3] += gridline_ht[1];
             morph::vec<float, 2> dx = this->grid->get_dx();
             float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
-            float left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
-            float right = cg_extents[1] + (dx[0]/2.0f) + this->centering_offset[0];
-            float bot   = cg_extents[2] - (dx[1]/2.0f) + this->centering_offset[1];
-            float top   = cg_extents[3] + (dx[1]/2.0f) + this->centering_offset[1];
+            float left  = cg_extents[0] + this->centering_offset[0];
+            float right = cg_extents[1] + this->centering_offset[0];
+            float bot   = cg_extents[2] + this->centering_offset[1];
+            float top   = cg_extents[3] + this->centering_offset[1];
+            if (this->gridVisMode != GridVisMode::Triangles) {
+                // These account for the size of the pixels representing each element of the grid
+                left  -= (dx[0]/2.0f);
+                right += (dx[0]/2.0f);
+                bot   -= (dx[1]/2.0f);
+                top   += (dx[1]/2.0f);
+            }
             morph::vec<float, 4> r_extents = { left, right, bot, top };
             if (this->border_tubular) {
                 // Have to add a bit for the tubular border
