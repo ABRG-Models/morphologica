@@ -566,10 +566,10 @@ namespace morph {
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
-                this->vertex_push ((*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC, this->vertexPositions);
-
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{(*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC}};
+                vtx_0 = { (*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC };
+                this->vertex_push (vtx_0, this->vertexPositions);
+
 
                 // NE vertex
                 // Compute mean of this->data[ri] and N, NE and E elements
@@ -893,10 +893,10 @@ namespace morph {
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
-                this->vertex_push ((*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC, this->vertexPositions);
-
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{(*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC}};
+                vtx_0 = { (*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC };
+                this->vertex_push (vtx_0, this->vertexPositions);
+
 
                 // NE vertex
                 vtx_1 = { (*this->grid)[ri][0] + hx + centering_offset[0] - gridline_ht[0] - sx, (*this->grid)[ri][1] + vy + centering_offset[1] - gridline_ht[1] - sy, datumC };
