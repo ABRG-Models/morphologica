@@ -296,7 +296,7 @@ namespace morph {
 
             // Find extents of our selected pixels
             for (auto sp : this->selected_pix) {
-                // sp.first is index, sp.second is colour
+                // sp.first is index, sp.second is colour (unused in this function)
                 I r = sp.first % gw;
                 I c = sp.first / gw;
                 // {xmin, xmax, ymin, ymax}
@@ -312,7 +312,7 @@ namespace morph {
 
             // xmin xmax ymin ymax
             morph::vec<float, 4> r_extents = { l_r.min, r_r.max, b_r.min, t_r.max };
-            this->tubularBorder (r_extents, this->grid_z_offset, selth[0], this->selected_pix.begin()->second);
+            this->tubularBorder (r_extents, this->grid_z_offset, selth[0], this->enclosing_border_colour);
         }
 
         // Common function to setup scaling. Called by all initializeVertices subroutines. Also
@@ -954,7 +954,12 @@ namespace morph {
             }
         }
 
-        //! How to render the elements. Triangles are faster. RectInterp is chosen more often.
+        /*!
+         * Choice of method for rendering the elements. Triangles are fastest, this
+         * places an OpenGL vertex at each grid centre and renders the surface with the
+         * minimum number of triangles. RectInterp shows the area of each element. Other
+         * options are Pixels and Columns.
+         */
         GridVisMode gridVisMode = GridVisMode::RectInterp;
 
         //! Set this to true to adjust the positions that the GridVisual uses to plot the Grid so
@@ -1010,16 +1015,29 @@ namespace morph {
          */
         bool showselectedpixborder = false;
 
-        //! If true, draw a rectangular border enclosing the selected pixels
-        bool showselectedpixborder_enclosing = false;
-
-        //! list of those pixel indices that should be drawn with a border. key is pixel index, value is the colour
+        /*!
+         * A list of those pixel indices that should be drawn with an individual
+         * border. The key is the pixel index within the Grid. The value is the colour
+         * for the border. This container may also be filled (with arbitrary colours) if
+         * the 'enclosing' border is to be drawn.
+         */
         std::unordered_map<I, std::array<float, 3>> selected_pix;
 
         //! Thickness of the inner border for each selected pixel
         float selected_pix_thickness = 0.1f;
 
+        //! If non-zero, use this fixed value for the thickness of selected inner borders
         float selected_pix_thickness_fixed = 0.0f;
+
+        /*!
+         * If true, draw a rectangular border enclosing all of the selected pixels. The
+         * selected_pix_thickness(_fixed) value is used for the thickness of this
+         * border.
+         */
+        bool showselectedpixborder_enclosing = false;
+
+        //! The colour for the selected pixels enclosure border (showselectedpixborder_enclosing)
+        std::array<float, 3> enclosing_border_colour = morph::colour::grey60;
 
         // If true, interpolate the colour of the sides of columns on a column grid
         bool interpolate_colour_sides = false;
