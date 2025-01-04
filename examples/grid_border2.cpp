@@ -18,6 +18,7 @@
 int main()
 {
     morph::Visual v(1600, 1000, "Flat GridVisual grids with borders");
+    v.lightingEffects();
 
     // Create a grid to show in the scene
     constexpr unsigned int Nside = 4; // You can change this
@@ -57,7 +58,7 @@ int main()
     gv->showborder (true);
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
-    gv->border_colour = morph::colour::black;
+    gv->border_colour = morph::colour::aquamarine3;
     gv->addLabel ("Pixels, border", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -139,7 +140,7 @@ int main()
     gv->showborder (true);
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
-    gv->border_colour = morph::colour::black;
+    gv->border_colour = morph::colour::grey10;
     gv->border_tubular (false);
     // selected pix
     gv->selected_pix[0] = morph::colour::crimson;
@@ -166,7 +167,7 @@ int main()
     gv->showborder (true);
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
-    gv->border_colour = morph::colour::black;
+    gv->border_colour = morph::colour::grey32;
     gv->addLabel ("Triangles, border (smaller is as expected)", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
