@@ -54,7 +54,7 @@ int main()
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters
-    gv->showborder = true;
+    gv->showborder (true);
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
     gv->border_colour = morph::colour::black;
@@ -73,8 +73,8 @@ int main()
     gv->zScale.setParams (0, 0);
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
-    gv->showborder = false;
-    gv->implygrid = true;
+    gv->showborder (false);
+    gv->implygrid (true);
     gv->addLabel ("Rectinterp, No border, implied grid", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -89,8 +89,8 @@ int main()
     gv->zScale.setParams (0, 0);
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
-    gv->showborder = false;
-    gv->showgrid = true;
+    gv->showborder (false);
+    gv->showgrid (true);
     gv->grid_colour = morph::colour::grey48;
     gv->addLabel ("Rectinterp, No border, filled grid", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
@@ -108,7 +108,7 @@ int main()
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters
-    gv->showborder = true;
+    gv->showborder (true);
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
     gv->border_colour = morph::colour::black;
@@ -117,8 +117,8 @@ int main()
     gv->selected_pix[6] = morph::colour::crimson;
     gv->selected_pix[9] = morph::colour::crimson;
     gv->selected_pix[10] = morph::colour::crimson;
-    gv->showselectedpixborder = false;
-    gv->showselectedpixborder_enclosing = true;
+    gv->showselectedpixborder (false);
+    gv->showselectedpixborder_enclosing (true);
     gv->addLabel ("Pixels, border, selected pix with border", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -136,18 +136,18 @@ int main()
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters
-    gv->showborder = true;
+    gv->showborder (true);
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
     gv->border_colour = morph::colour::black;
-    gv->border_tubular = false;
+    gv->border_tubular (false);
     // selected pix
     gv->selected_pix[0] = morph::colour::crimson;
     gv->selected_pix[1+4] = morph::colour::blue2;
     gv->selected_pix[2+8] = morph::colour::goldenrod2;
     gv->selected_pix[3+12] = morph::colour::royalblue2;
-    gv->showselectedpixborder = true;
-    gv->showselectedpixborder_enclosing = false;
+    gv->showselectedpixborder (true);
+    gv->showselectedpixborder_enclosing (false);
     gv->addLabel ("Pixels, flat border, selected pix coloured", lblpos, morph::TextFeatures(0.08f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -163,7 +163,7 @@ int main()
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters
-    gv->showborder = true;
+    gv->showborder (true);
     gv->border_thickness = 0.15f; // of a pixel
     gv->border_z_offset = 0.0f;
     gv->border_colour = morph::colour::black;

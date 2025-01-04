@@ -75,10 +75,10 @@ int main()
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
-    gv->showborder = true;
+    gv->showborder (true);
     gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::cyan;
-    gv->border_tubular = false;
+    gv->border_tubular (false);
     gv->addLabel ("3) 2 + flat border", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -90,10 +90,10 @@ int main()
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->showborder = true;
+    gv->showborder (true);
     gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::cyan;
-    gv->border_tubular = false;
+    gv->border_tubular (false);
     gv->addLabel ("4) 1 + flat border", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -106,7 +106,7 @@ int main()
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
-    gv->showgrid = true;
+    gv->showgrid (true);
     gv->grid_colour = morph::colour::black;
     gv->grid_thickness = 0.1f;
     gv->addLabel ("5) 2 + grid ", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
@@ -121,13 +121,13 @@ int main()
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
-    gv->showgrid = true;
+    gv->showgrid (true);
     gv->grid_colour = morph::colour::black;
     gv->grid_thickness = 0.1f;
-    gv->showborder = true;
+    gv->showborder (true);
     gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::magenta;
-    gv->border_tubular = true; // true is default
+    gv->border_tubular (true); // it's true by default
     gv->addLabel ("6) 5 + tubular border ", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -141,7 +141,7 @@ int main()
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
 
-    gv->showselectedpixborder = true;
+    gv->showselectedpixborder (true);
     gv->selected_pix[6] = morph::colour::forestgreen;
     gv->selected_pix[0] = morph::colour::yellow3;
     gv->selected_pix[9] = {1,0.2431372549,0.5882352941};
@@ -167,11 +167,11 @@ int main()
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->zScale.setParams(0.0f, 0.0f);
 
-    gv->showgrid = true;
+    gv->showgrid (true);
     gv->grid_colour = morph::colour::black;
     gv->grid_thickness = 0.05f;
 
-    gv->showselectedpixborder = true;
+    gv->showselectedpixborder (true);
     gv->selected_pix_thickness = 0.1f;
 
     gv->selected_pix[6] = morph::colour::forestgreen;
