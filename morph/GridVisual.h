@@ -52,6 +52,7 @@ namespace morph {
         GridVisual(const morph::Grid<I, C>* _grid, const vec<float> _offset)
         {
             // Set up...
+            this->options_defaults();
             morph::vec<float> pixel_offset = _grid->get_dx().plus_one_dim (0.0f);
             this->mv_offset = _offset + pixel_offset;
             this->viewmatrix.translate (this->mv_offset);
