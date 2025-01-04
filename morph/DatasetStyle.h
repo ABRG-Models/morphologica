@@ -10,7 +10,7 @@
 namespace morph {
 
     // Boolean flags relating to quiver plots that form part of a DatasetStyle
-    enum class quiver_flags
+    enum class quiver_flags : unsigned int
     {
         length_fixed,
         thickness_fixed,
@@ -67,6 +67,8 @@ namespace morph {
             //! If true, use markersize for quiver length. Setting a fixed quiver length can be useful
             //! to focus on the flow of the field.
             this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::length_fixed), false);
+            // C++23 will allow the slightly preferable:
+            // this->quiver_flagset.set (std::to_underlying(quiver_flags::length_fixed), false);
             //! If true, use line width for quiver thickness
             this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::thickness_fixed), false);
             //! If true, show a marker indicating the location of zero length quivers

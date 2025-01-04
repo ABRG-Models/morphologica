@@ -259,5 +259,14 @@ int main() {
               << (avec1.angle(avec2) * morph::mathconst<float>::rad2deg)
               << " or " << (avec2.angle(avec1) * morph::mathconst<float>::rad2deg) << std::endl;
 
+    morph::vec<float, 3> testvec = {1, 0, 0};
+    morph::vec<float, 3> othervec = {0.707, 0.707, 0};
+    float tv_ov = testvec.angle(othervec, morph::vec<float>{0, 0, 1});
+    std::cout << othervec << " is at angle " << tv_ov << " wrt " << testvec << " around the uz axis" << std::endl;
+    if (tv_ov < 0.0f) { --rtn; }
+    float ov_tv = othervec.angle(testvec, morph::vec<float>{0, 0, 1});
+    std::cout << testvec << " is at angle " << ov_tv << " wrt " << othervec << " around the uz axis" << std::endl;
+    if (ov_tv > 0.0f) { --rtn; }
+
     return rtn;
 }

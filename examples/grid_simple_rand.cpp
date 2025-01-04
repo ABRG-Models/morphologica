@@ -65,7 +65,7 @@ int main()
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::Columns;
-    gv->interpolate_colour_sides = true;
+    gv->interpolate_colour_sides (true);
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->addLabel ("GridVisMode::Columns, interpolated sides", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));

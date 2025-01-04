@@ -282,7 +282,7 @@ namespace morph {
         /*!
          * Find the coordinate of the crossing point of the two line segments p1-q1 and p2-q2,
          * *assuming* the segments intersect. Call this *after* you have used
-         * MathAlgo::segments_intesect!
+         * MathAlgo::segments_intersect!
          *
          * \param p1 Start of line segment 1
          * \param q1 End of line segment 1

@@ -58,6 +58,14 @@ int main()
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setScalarData (&data);
+
+    // To show a grid first set the scaling so that the whole image is flat
+    //gv->zScale.setParams (0, 0);
+    // Say you want a grid
+    //gv->showgrid (true);
+    // Choose the thickness. This is a proportion of the pixel dimensions
+    //gv->grid_thickness = 0.1f;
+
     gv->cm.setType (morph::ColourMapType::Buda);
     gv->addLabel (std::string("GridVisMode::RectInterp, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03f));
     gv->finalize();
@@ -67,7 +75,7 @@ int main()
     gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::Columns;
-    gv->interpolate_colour_sides = true;
+    gv->interpolate_colour_sides (true);
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Imola);
     gv->addLabel (std::string("GridVisMode::Columns, interpolated sides, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03f));
@@ -94,6 +102,18 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Navia);
     gv->addLabel (std::string("GridVisMode::Pixels, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03));
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    offset = { 3 * step * grid.width(), -step * grid.width(), 0.0f };
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::RectInterp;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Navia);
+    gv->addLabel (std::string("GridVisMode::RectInterp, implygrid=true, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03));
+    gv->implygrid (true);
+    gv->grid_thickness = 0.18f; // of a pixel
     gv->finalize();
     v.addVisualModel (gv);
 

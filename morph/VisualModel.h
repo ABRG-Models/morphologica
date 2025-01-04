@@ -37,6 +37,7 @@
 #include <morph/VisualFace.h>
 #include <morph/colour.h>
 #include <morph/base64.h>
+#include <morph/MathAlgo.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -1201,6 +1202,133 @@ namespace morph {
             this->idx += nverts;
         } // end computeFlaredTube with randomly initialized end vertices
 
+        /*!
+         * Create an open (no end caps) flared tube from \a start to \a end, with radius
+         * \a r at the start and a colour which transitions from the colour \a colStart
+         * to \a colEnd. The radius of the end is r_end, given as a function argument.
+         *
+         * This has a normal vector for the start and end of the tube, so that the
+         * circles can be angled.
+         *
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param colStart The tube starting colour
+         * \param colEnd The tube's ending colour
+         * \param n_start The normal of the start 'face'
+         * \param n_end The normal of the end 'face'
+         *
+         * \param z_start A vector pointing to the first vertex on the tube. allows
+         * orientation of tube faces for connected tubes (which is what this primitive
+         * is all about)
+         *
+         * \param r Radius of the tube's start circle
+         * \param r_end radius of the end circle
+         * \param segments Number of segments used to render the tube
+         */
+        void computeOpenFlaredTube (morph::vec<float> start, morph::vec<float> end,
+                                    morph::vec<float> n_start, morph::vec<float> n_end,
+                                    std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                                    float r = 1.0f, float r_end = 1.0f, int segments = 12)
+        {
+            // The vector from start to end defines a vector and a plane. Find a
+            // 'circle' of points in that plane.
+            morph::vec<float> vstart = start;
+            morph::vec<float> vend = end;
+            morph::vec<float> v = vend - vstart;
+            v.renormalize();
+
+            // Two rotations about our face normals
+            morph::quaternion<float> rotn_start (n_start, morph::mathconst<float>::pi_over_2);
+            morph::quaternion<float> rotn_end (-n_end, morph::mathconst<float>::pi_over_2);
+
+            morph::vec<float> inplane = v.cross (n_start);
+            // The above is no good if n_start and v are colinear. In that case choose random inplane:
+            if (inplane.length() < std::numeric_limits<float>::epsilon()) {
+                vec<float> rand_vec;
+                rand_vec.randomize();
+                inplane = rand_vec.cross(v);
+            }
+            inplane.renormalize();
+
+            // inplane defines a plane, n_start defines a plane. Our first point is the
+            // intersection of the two planes and the circle of the end.
+            morph::vec<float> v_x_inplane = n_start.cross (inplane);// rotn_start * inplane;
+            v_x_inplane.renormalize();
+
+            // If r == r_end we want a circular cross section tube (and not an elliptical cross section).
+            float r_mod = r / v_x_inplane.cross (v).length();
+
+            // Start ring of vertices. Normals point in direction c
+            // Now use parameterization of circle inplane = p1-x1 and
+            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
+            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r_mod;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // end ring of vertices. Normals point in direction c
+            v_x_inplane = inplane.cross (n_end);
+            v_x_inplane.renormalize();
+            r_mod = r_end / v_x_inplane.cross (v).length();
+
+            for (int j = 0; j < segments; j++) {
+                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
+                morph::vec<float> c = inplane * std::sin(t) * r_end + v_x_inplane * std::cos(t) * r_mod;
+                this->vertex_push (vend+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Number of vertices
+            int nverts = (segments * 2);
+
+            // After creating vertices, push all the indices.
+            GLuint sIdx = this->idx;
+            GLuint eIdx = sIdx + segments;
+            // This does sides between start and end
+            for (int j = 0; j < segments; j++) {
+                // Triangle 1
+                this->indices.push_back (sIdx + j);
+                if (j == (segments-1)) {
+                    this->indices.push_back (sIdx);
+                } else {
+                    this->indices.push_back (sIdx + 1 + j);
+                }
+                this->indices.push_back (eIdx + j);
+                // Triangle 2
+                this->indices.push_back (eIdx + j);
+                if (j == (segments-1)) {
+                    this->indices.push_back (eIdx);
+                } else {
+                    this->indices.push_back (eIdx + 1 + j);
+                }
+                if (j == (segments-1)) {
+                    this->indices.push_back (sIdx);
+                } else {
+                    this->indices.push_back (sIdx + j + 1);
+                }
+            }
+
+            // Update idx
+            this->idx += nverts;
+        } // end computeOpenFlaredTube
+
+        // An open, but un-flared tube with no end caps
+        void computeOpenTube (morph::vec<float> start, morph::vec<float> end,
+                              morph::vec<float> n_start, morph::vec<float> n_end,
+                              std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                              float r = 1.0f, int segments = 12)
+        {
+            this->computeOpenFlaredTube (start, end, n_start, n_end, colStart, colEnd, r, r, segments);
+        }
+
+
         //! Compute a Quad from 4 arbitrary corners which must be ordered clockwise around the quad.
         void computeFlatQuad (vec<float> c1, vec<float> c2,
                               vec<float> c3, vec<float> c4,
@@ -1982,7 +2110,7 @@ namespace morph {
                 vend = end - v * shorten;
             }
 
-            // vv is normal to v and uz
+            // vv is normal to v and _uz
             vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
@@ -2005,11 +2133,11 @@ namespace morph {
             angles[6] = morph::mathconst<float>::two_pi - angles[0];
             angles[7] = angles[6];
             // The normals for the vertices around the line
-            std::array<vec<float>, 8> norms = { vv, uz, uz, -vv, -vv, -uz, -uz, vv };
+            std::array<vec<float>, 8> norms = { vv, _uz, _uz, -vv, -vv, -_uz, -_uz, vv };
 
             // Start cap vertices (a triangle fan)
             for (int j = 0; j < segments; j++) {
-                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -2017,7 +2145,7 @@ namespace morph {
 
             // Intermediate, near start cap. Normals point outwards. Need Additional vertices
             for (int j = 0; j < segments; j++) {
-                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (norms[j], this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -2025,7 +2153,7 @@ namespace morph {
 
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (norms[j], this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -2033,7 +2161,7 @@ namespace morph {
 
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
-                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -2106,7 +2234,7 @@ namespace morph {
 
         // Like computeLine, but this line has no thickness.
         void computeFlatLine (vec<float> start, vec<float> end,
-                              vec<float> uz,
+                              vec<float> _uz,
                               std::array<float, 3> col,
                               float w = 0.1f, float shorten = 0.0f)
         {
@@ -2122,8 +2250,8 @@ namespace morph {
                 vend = end - v * shorten;
             }
 
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
+            // vv is normal to v and _uz
+            vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
@@ -2134,19 +2262,19 @@ namespace morph {
             vec<float> c4 = vend + ww;
 
             this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             // Number of vertices = segments * 4 + 2.
@@ -2170,7 +2298,7 @@ namespace morph {
         // draw a whole circle around start/end to achieve this, rather than figuring
         // out a semi-circle).
         void computeFlatLineRnd (vec<float> start, vec<float> end,
-                                 vec<float> uz,
+                                 vec<float> _uz,
                                  std::array<float, 3> col,
                                  float w = 0.1f, float shorten = 0.0f, bool startcaps = true, bool endcaps = true)
         {
@@ -2186,8 +2314,8 @@ namespace morph {
                 vend = end - v * shorten;
             }
 
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
+            // vv is normal to v and _uz
+            vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
@@ -2203,7 +2331,7 @@ namespace morph {
             if (startcaps) {
                 // Push the central point of the start cap - this is at location vstart
                 this->vertex_push (vstart, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
                 ++startvertices;
                 // Start cap vertices (a triangle fan)
@@ -2211,33 +2339,33 @@ namespace morph {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                     morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
                     this->vertex_push (vstart+c, this->vertexPositions);
-                    this->vertex_push (uz, this->vertexNormals);
+                    this->vertex_push (_uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
                     ++startvertices;
                 }
             }
 
             this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             unsigned int endvertices = 0u;
             if (endcaps) {
                 // Push the central point of the end cap - this is at location vend
                 this->vertex_push (vend, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
                 ++endvertices;
                 // End cap vertices (a triangle fan)
@@ -2245,7 +2373,7 @@ namespace morph {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                     morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
                     this->vertex_push (vend+c, this->vertexPositions);
-                    this->vertex_push (uz, this->vertexNormals);
+                    this->vertex_push (_uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
                     ++endvertices;
                 }
@@ -2288,60 +2416,175 @@ namespace morph {
             }
         } // end computeFlatLine
 
-        //! Like computeFlatLine, but this line has no thickness and you can provide the
-        //! previous and next data points so that this line, the previous line and the
-        //! next line can line up perfectly without drawing a circular rounded 'end cap'!
+        /*!
+         * Like computeFlatLine, but this line has no thickness and you can provide the
+         * previous and next data points so that this line, the previous line and the
+         * next line can line up perfectly without drawing a circular rounded 'end cap'!
+         *
+         * This code assumes that the coordinates prev, start, end, next all lie on a 2D
+         * plane normal to _uz. In fact, the 3D coordinates start, end, prev and next
+         * will all be projected onto the plane defined by _uz, so that they can be
+         * reduced to 2D coordinates. This then allows crossing points of lines to be
+         * computed.
+         *
+         * If you want to make a ribbon between points that do *not* lie on a 2D plane,
+         * you'll need to write another graphics primitive function.
+         */
         void computeFlatLine (vec<float> start, vec<float> end,
                               vec<float> prev, vec<float> next,
-                              vec<float> uz,
+                              vec<float> _uz,
                               std::array<float, 3> col,
                               float w = 0.1f)
         {
-            // The vector from start to end defines direction of the tube
-            vec<float> vstart = start;
-            vec<float> vend = end;
+            // Corner coordinates for this line section
+            vec<float> c1 = { 0.0f };
+            vec<float> c2 = { 0.0f };
+            vec<float> c3 = { 0.0f };
+            vec<float> c4 = { 0.0f };
 
-            // line segment vectors
-            vec<float> v = vend - vstart;
-            v.renormalize();
-            vec<float> vp = vstart - prev;
-            vp.renormalize();
-            vec<float> vn = next - vend;
-            vn.renormalize();
+            // Ensure _uz is a unit vector
+            vec<float> __uz = _uz;
+            __uz.renormalize();
 
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
-            vv.renormalize();
-            vec<float> vvp = vp.cross(uz);
-            vvp.renormalize();
-            vec<float> vvn = vn.cross(uz);
-            vvn.renormalize();
+            // First find the rotation to make __uz into the actual unit z dirn
+            morph::quaternion<float> rotn;
+            morph::vec<float> basis_rotn_axis = __uz.cross (this->uz);
+            if (basis_rotn_axis.length() > 0.0f) {
+                float basis_rotn_angle = __uz.angle (this->uz, basis_rotn_axis);
+                rotn.rotate (basis_rotn_axis, basis_rotn_angle);
+            } // else nothing to do  - basis rotn is null
 
-            // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = ( (vv+vvp) * 0.5f * w * 0.5f );
+            // Transform so that start is the origin
+            // vec<float> s_o = { 0.0f }; // by defn
+            vec<float> e_o = end - start;
+            vec<float> p_o = prev - start;
+            vec<float> n_o = next - start;
 
-            vec<float> c1 = vstart + ww;
-            vec<float> c2 = vstart - ww;
+            // Apply basis rotation just to the end point. e_b: 'end point in rotated basis'
+            vec<float> e_b = rotn * e_o;
 
-            ww = ( (vv+vvn) * 0.5f * w * 0.5f );
+            // Use the vector from start to end as the in-plane x dirn. Do this AFTER
+            // first coord rotn.  In other words: find the rotation about the new unit z
+            // direction to force the end point to be on the x axis
+            vec<float> plane_x = e_b; // - s_b but s_b is (0,0,0) by defn
+            plane_x.renormalize();
+            vec<float> plane_y = this->uz.cross (plane_x);
+            plane_y.renormalize();
+            // Find the in-plane coordinates in the rotated plane system
+            vec<float> e_p = { plane_x.dot (e_b), plane_y.dot (e_b), this->uz.dot (e_b) };
 
-            vec<float> c3 = vend - ww;
-            vec<float> c4 = vend + ww;
+            // One epsilon is exacting
+            if (std::abs(e_p[2]) > std::numeric_limits<float>::epsilon()) {
+                throw std::runtime_error ("uz not orthogonal to the line start -> end?");
+            }
 
+            // From e_p and e_b (which should both be in a 2D plane) figure out what
+            // angle of rotation brings e_b into the x axis
+            float inplane_rotn_angle = e_b.angle (e_p, this->uz);
+            morph::quaternion<float> inplane_rotn (this->uz, inplane_rotn_angle);
+
+            // Apply the in-plane rotation to the basis rotation
+            rotn.premultiply (inplane_rotn);
+
+            // Transform points
+            vec<float> p_p = rotn * p_o;
+            vec<float> n_p = rotn * n_o;
+            //vec<float> s_p = rotn * s_o; // not necessary, s_p = (0,0,0) by defn
+
+            // Line crossings time.
+            vec<float, 2> c1_p = { 0.0f }; // 2D crossing coords that we're going to find
+            vec<float, 2> c2_p = { 0.0f };
+            vec<float, 2> c3_p = e_p.less_one_dim();
+            vec<float, 2> c4_p = e_p.less_one_dim();
+
+            // 3 lines on each side. l_p, l_c (current) and l_n. Each has two ends. l_p_1, l_p_2 etc.
+
+            // 'prev' 'cur' and 'next' vectors
+            vec<float, 2> p_vec = (/*s_p*/ -p_p).less_one_dim();
+            vec<float, 2> c_vec = e_p.less_one_dim();
+            vec<float, 2> n_vec = (n_p - e_p).less_one_dim();
+
+            vec<float, 2> p_ortho = (/*s_p*/ - p_p).cross (this->uz).less_one_dim();
+            p_ortho.renormalize();
+            vec<float, 2> c_ortho = (e_p /*- s_p*/).cross (this->uz).less_one_dim();
+            c_ortho.renormalize();
+            vec<float, 2> n_ortho = (n_p - e_p).cross (this->uz).less_one_dim();
+            n_ortho.renormalize();
+
+            const float hw = w / 2.0f;
+
+            vec<float, 2> l_p_1 = p_p.less_one_dim() + (p_ortho * hw) - p_vec; // makes it 3 times as long as the line.
+            vec<float, 2> l_p_2 = /*s_p.less_one_dim() +*/ (p_ortho * hw) + p_vec;
+            vec<float, 2> l_c_1 = /*s_p.less_one_dim() +*/ (c_ortho * hw) - c_vec;
+            vec<float, 2> l_c_2 = e_p.less_one_dim() + (c_ortho * hw) + c_vec;
+            vec<float, 2> l_n_1 = e_p.less_one_dim() + (n_ortho * hw) - n_vec;
+            vec<float, 2> l_n_2 = n_p.less_one_dim() + (n_ortho * hw) + n_vec;
+
+            std::bitset<2> isect = morph::MathAlgo::segments_intersect<float> (l_p_1, l_p_2, l_c_1, l_c_2);
+            if (isect.test(0) == true && isect.test(1) == false) { // test for intersection but not colinear
+                c1_p = morph::MathAlgo::crossing_point (l_p_1, l_p_2, l_c_1, l_c_2);
+            } else if (isect.test(0) == true && isect.test(1) == true) {
+                c1_p = /*s_p.less_one_dim() +*/ (c_ortho * hw);
+            } else { // no intersection. prev could have been start
+                c1_p = /*s_p.less_one_dim() +*/ (c_ortho * hw);
+            }
+            isect = morph::MathAlgo::segments_intersect<float> (l_c_1, l_c_2, l_n_1, l_n_2);
+            if (isect.test(0) == true && isect.test(1) == false) {
+                c4_p = morph::MathAlgo::crossing_point (l_c_1, l_c_2, l_n_1, l_n_2);
+            } else if (isect.test(0) == true && isect.test(1) == true) {
+                c4_p = e_p.less_one_dim() + (c_ortho * hw);
+            } else { // no intersection, prev could have been end
+                c4_p = e_p.less_one_dim() + (c_ortho * hw);
+            }
+
+            // o for 'other side'. Could re-use vars in future version. Or just subtract (*_ortho * w) from each.
+            vec<float, 2> o_l_p_1 = p_p.less_one_dim() - (p_ortho * hw) - p_vec; // makes it 3 times as long as the line.
+            vec<float, 2> o_l_p_2 = /*s_p.less_one_dim()*/ - (p_ortho * hw) + p_vec;
+            vec<float, 2> o_l_c_1 = /*s_p.less_one_dim()*/ - (c_ortho * hw) - c_vec;
+            vec<float, 2> o_l_c_2 = e_p.less_one_dim() - (c_ortho * hw) + c_vec;
+            vec<float, 2> o_l_n_1 = e_p.less_one_dim() - (n_ortho * hw) - n_vec;
+            vec<float, 2> o_l_n_2 = n_p.less_one_dim() - (n_ortho * hw) + n_vec;
+
+            isect = morph::MathAlgo::segments_intersect<float> (o_l_p_1, o_l_p_2, o_l_c_1, o_l_c_2);
+            if (isect.test(0) == true && isect.test(1) == false) { // test for intersection but not colinear
+                c2_p = morph::MathAlgo::crossing_point (o_l_p_1, o_l_p_2, o_l_c_1, o_l_c_2);
+            } else if (isect.test(0) == true && isect.test(1) == true) {
+                c2_p = /*s_p.less_one_dim()*/ - (c_ortho * hw);
+            } else { // no intersection. prev could have been start
+                c2_p = /*s_p.less_one_dim()*/ - (c_ortho * hw);
+            }
+
+            isect = morph::MathAlgo::segments_intersect<float> (o_l_c_1, o_l_c_2, o_l_n_1, o_l_n_2);
+            if (isect.test(0) == true && isect.test(1) == false) {
+                c3_p = morph::MathAlgo::crossing_point (o_l_c_1, o_l_c_2, o_l_n_1, o_l_n_2);
+            } else if (isect.test(0) == true && isect.test(1) == true) {
+                c3_p = e_p.less_one_dim() - (c_ortho * hw);
+            } else { // no intersection. next could have been end
+                c3_p = e_p.less_one_dim() - (c_ortho * hw);
+            }
+
+            // Transform and rotate back into c1-c4
+            morph::quaternion<float> rotn_inv = rotn.invert();
+            c1 = rotn_inv * c1_p.plus_one_dim() + start;
+            c2 = rotn_inv * c2_p.plus_one_dim() + start;
+            c3 = rotn_inv * c3_p.plus_one_dim() + start;
+            c4 = rotn_inv * c4_p.plus_one_dim() + start;
+
+            // Now create the vertices from these four corners, c1-c4
             this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (_uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
             this->indices.push_back (this->idx);
@@ -2359,132 +2602,28 @@ namespace morph {
         //! Make a joined up line with previous.
         void computeFlatLineP (vec<float> start, vec<float> end,
                                vec<float> prev,
-                               vec<float> uz,
+                               vec<float> _uz,
                                std::array<float, 3> col,
                                float w = 0.1f)
         {
-            // The vector from start to end defines direction of the tube
-            vec<float> vstart = start;
-            vec<float> vend = end;
-
-            // line segment vectors
-            vec<float> v = vend - vstart;
-            v.renormalize();
-            vec<float> vp = vstart - prev;
-            vp.renormalize();
-
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
-            vv.renormalize();
-            vec<float> vvp = vp.cross(uz);
-            vvp.renormalize();
-
-            // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
-
-            vec<float> c1 = vstart + ww;
-            vec<float> c2 = vstart - ww;
-
-            ww = vv * w * 0.5f;
-
-            vec<float> c3 = vend - ww;
-            vec<float> c4 = vend + ww;
-
-            this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->indices.push_back (this->idx);
-            this->indices.push_back (this->idx+1);
-            this->indices.push_back (this->idx+2);
-
-            this->indices.push_back (this->idx);
-            this->indices.push_back (this->idx+2);
-            this->indices.push_back (this->idx+3);
-
-            // Update idx
-            this->idx += 4;
+            this->computeFlatLine (start, end, prev, end, _uz, col, w);
         } // end computeFlatLine that joins perfectly with prev
 
         //! Flat line, joining up with next
         void computeFlatLineN (vec<float> start, vec<float> end,
                                vec<float> next,
-                               vec<float> uz,
+                               vec<float> _uz,
                                std::array<float, 3> col,
                                float w = 0.1f)
         {
-            // The vector from start to end defines direction of the tube
-            vec<float> vstart = start;
-            vec<float> vend = end;
-
-            // line segment vectors
-            vec<float> v = vend - vstart;
-            v.renormalize();
-            vec<float> vn = next - vend;
-            vn.renormalize();
-
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
-            vv.renormalize();
-            vec<float> vvn = vn.cross(uz);
-            vvn.renormalize();
-
-            // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = vv * w * 0.5f;
-
-            vec<float> c1 = vstart + ww;
-            vec<float> c2 = vstart - ww;
-
-            ww = ( (vv+vvn) * 0.5f * w * 0.5f );
-
-            vec<float> c3 = vend - ww;
-            vec<float> c4 = vend + ww;
-
-            this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->vertex_push (c4, this->vertexPositions);
-            this->vertex_push (uz, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
-
-            this->indices.push_back (this->idx);
-            this->indices.push_back (this->idx+1);
-            this->indices.push_back (this->idx+2);
-
-            this->indices.push_back (this->idx);
-            this->indices.push_back (this->idx+2);
-            this->indices.push_back (this->idx+3);
-
-            // Update idx
-            this->idx += 4;
-        } // end computeFlatLine that joins perfectly with next line
+            this->computeFlatLine (start, end, start, next, _uz, col, w);
+        }
 
         // Like computeLine, but this line has no thickness and it's dashed.
         // dashlen: the length of dashes
         // gap prop: The proportion of dash length used for the gap
         void computeFlatDashedLine (vec<float> start, vec<float> end,
-                                    vec<float> uz,
+                                    vec<float> _uz,
                                     std::array<float, 3> col,
                                     float w = 0.1f, float shorten = 0.0f,
                                     float dashlen = 0.1f, float gapprop = 0.3f)
@@ -2506,8 +2645,8 @@ namespace morph {
                 linelen = v.length() - shorten * 2.0f;
             }
 
-            // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
+            // vv is normal to v and _uz
+            vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
             // Loop, creating the dashes
@@ -2525,19 +2664,19 @@ namespace morph {
                 vec<float> c4 = dash_e + ww;
 
                 this->vertex_push (c1, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
 
                 this->vertex_push (c2, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
 
                 this->vertex_push (c3, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
 
                 this->vertex_push (c4, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (_uz, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
 
                 // Number of vertices = segments * 4 + 2.

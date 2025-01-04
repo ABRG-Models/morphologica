@@ -197,6 +197,12 @@ if(ARMADILLO_FOUND)
     target_link_libraries(grid_border GLEW::GLEW)
   endif()
 
+  add_executable(grid_border2 grid_border2.cpp)
+  target_link_libraries(grid_border2 OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(grid_border2 GLEW::GLEW)
+  endif()
+
 
   # Like HexGrid::resampleImage, this one uses an omp call that only works on Mac with
   # libomp, so avoid compiling this example on a Mac.
@@ -356,6 +362,12 @@ add_executable(graph1 graph1.cpp)
 target_link_libraries(graph1 OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(graph1 GLEW::GLEW)
+endif()
+
+add_executable(graph_line graph_line.cpp)
+target_link_libraries(graph_line OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph_line GLEW::GLEW)
 endif()
 
 add_executable(graph_dynamic_x2 graph_dynamic_x2.cpp)
@@ -747,4 +759,16 @@ add_executable(healpix healpix.cpp)
 target_link_libraries(healpix OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(healpix GLEW::GLEW)
+endif()
+
+add_executable(lines lines.cpp)
+target_link_libraries(lines OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(lines GLEW::GLEW)
+endif()
+
+add_executable(line line.cpp)
+target_link_libraries(line OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(line GLEW::GLEW)
 endif()
