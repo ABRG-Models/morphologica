@@ -63,10 +63,11 @@ namespace morph {
 
             morph::quaternion<float> rq;
             if (this->data_z_direction != this->uz) {
-                // Compute a rotation but for now:
+                // Find the rotation between data_z_direction and uz
                 this->dcoords.resize (ncoords);
                 morph::vec<float> r_axis = this->data_z_direction.cross (this->uz);
-                float r_angle = this->data_z_direction.angle (this->uz);
+                r_axis.renormalize();
+                float r_angle = this->data_z_direction.angle (this->uz, r_axis);
                 rq.rotate(r_axis, r_angle);
                 for (size_t i = 0; i < ncoords; ++i) {
                     this->dcoords[i] = rq * (*this->dataCoords)[i];
@@ -333,6 +334,7 @@ namespace morph {
                     morph::vec<float> t0 = {0.0f};
                     morph::vec<float> t1 = {0.0f};
                     morph::quaternion<float> rqinv = rq.invert();
+
                     for (int i = 0; i < diagram.numsites; ++i) {
                         const jcv_site* site = &sites[i];
                         const jcv_graphedge* e = site->edges;
