@@ -31,6 +31,7 @@ int main()
     int rtn = -1;
 
     myvisual v(1024, 768, "VoronoiVisual");
+    v.coordArrowsInScene = true;
 
     std::vector<morph::vec<float>> points = {
         {0,0,1},
@@ -45,17 +46,16 @@ int main()
     auto vorv = std::make_unique<morph::VoronoiVisual<float>> (offset);
     v.bindmodel (vorv);
     vorv->show_voronoi2d = true;
-    vorv->debug_edges = false;
+    vorv->debug_edges = true;
     vorv->debug_dataCoords = true;
-    // There's an issue with this if border_width is left at 0.0f
-    //float length_scale = 4.0f / std::sqrt (points.size());
+    vorv->data_z_direction = morph::vec<float>{1,0,1};
+    vorv->data_z_direction.renormalize();
     vorv->border_width  = v.border_width;
     vorv->setDataCoords (&points);
     vorv->setScalarData (&data);
     vorv->finalize();
     auto p_vorv = v.addVisualModel (vorv);
 
-    // A vector showing the data direction
     offset[0] -= 0.5f;
     auto vvm = std::make_unique<morph::VectorVisual<float, 3>>(offset);
     v.bindmodel (vvm);

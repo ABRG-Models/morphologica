@@ -597,6 +597,12 @@ if(USE_GLEW)
   target_link_libraries(voronoi_fixed_xz GLEW::GLEW)
 endif()
 
+add_executable(voronoi_fixed_nearlyz voronoi_fixed_nearlyz.cpp)
+target_link_libraries(voronoi_fixed_nearlyz OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(voronoi_fixed_nearlyz GLEW::GLEW)
+endif()
+
 add_executable(rectangle rectangle.cpp)
 target_link_libraries(rectangle OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)

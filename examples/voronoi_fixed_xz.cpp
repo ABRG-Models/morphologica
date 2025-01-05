@@ -4,6 +4,7 @@
  */
 #include <morph/Visual.h>
 #include <morph/VoronoiVisual.h>
+#include <morph/VectorVisual.h>
 #include <morph/vec.h>
 #include <iostream>
 
@@ -32,7 +33,18 @@ int main()
     vorv->setDataCoords (&points);
     vorv->setScalarData (&data);
     vorv->finalize();
-    v.addVisualModel (vorv);
+    auto p_vorv = v.addVisualModel (vorv);
+
+    offset[0] -= 0.5f;
+    auto vvm = std::make_unique<morph::VectorVisual<float, 3>>(offset);
+    v.bindmodel (vvm);
+    vvm->thevec = p_vorv->data_z_direction;
+    vvm->fixed_colour = true;
+    vvm->thickness = 0.03f;
+    vvm->single_colour = morph::colour::dodgerblue2;
+    vvm->addLabel ("Arrow gives data direction", {-0.8, -0.3, 0.2}, morph::TextFeatures(0.1f));
+    vvm->finalize();
+    v.addVisualModel (vvm);
 
     v.keepOpen();
 
