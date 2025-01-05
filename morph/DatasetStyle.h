@@ -2,7 +2,7 @@
 
 #include <array>
 #include <string>
-#include <bitset>
+#include <morph/flags.h>
 #include <morph/graphstyles.h>
 #include <morph/ColourMap.h>
 #include <morph/colour.h>
@@ -61,20 +61,18 @@ namespace morph {
         //! Quiver parameters
         ///@{
         //! Flags for quiver features
-        std::bitset<4> quiver_flagset;
+        morph::flags<quiver_flags> quiver_flagset;
         void quiver_flag_defaults()
         {
             //! If true, use markersize for quiver length. Setting a fixed quiver length can be useful
             //! to focus on the flow of the field.
-            this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::length_fixed), false);
-            // C++23 will allow the slightly preferable:
-            // this->quiver_flagset.set (std::to_underlying(quiver_flags::length_fixed), false);
+            this->quiver_flagset.set (quiver_flags::length_fixed, false);
             //! If true, use line width for quiver thickness
-            this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::thickness_fixed), false);
+            this->quiver_flagset.set (quiver_flags::thickness_fixed, false);
             //! If true, show a marker indicating the location of zero length quivers
-            this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::show_zeros), true);
+            this->quiver_flagset.set (quiver_flags::show_zeros, true);
             //! If true then show a markersize sphere drawn on the coordinate location
-            this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::marker_sphere), false);
+            this->quiver_flagset.set (quiver_flags::marker_sphere, false);
         }
         //! Allows user to linearly scale the size of the quivers that are plotted.
         float quiver_length_gain = 1.0f;

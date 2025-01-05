@@ -290,7 +290,7 @@ namespace morph {
             // Compute an offset (in Grid frame of ref) to ensure that the curved representation of
             // the Grid has it's centre at 0 degrees. Turn centralize on/off to see the
             // difference. It's true by default.
-            if (this->options.test (static_cast<uint32_t>(morph::gridvisual_flags::centralize)) == true) {
+            if (this->options.test (morph::gridvisual_flags::centralize) == true) {
                 this->centering_offset = -this->grid->centre().plus_one_dim();
             }
             this->drawcurvygrid();

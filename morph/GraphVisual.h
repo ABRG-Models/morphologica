@@ -1495,7 +1495,7 @@ namespace morph {
 
             Flt dlength = quiv.length();
             if ((std::isnan(dlength) || dlength == Flt{0})
-                && style.quiver_flagset.test(static_cast<unsigned int>(morph::quiver_flags::show_zeros)) == true) {
+                && style.quiver_flagset.test(morph::quiver_flags::show_zeros) == true) {
                 // NaNs denote zero vectors when the lengths have been log scaled.
                 this->computeSphere (coords_i, style.quiver_zero_colour,
                                      style.markersize * style.quiver_thickness_gain);
@@ -1515,7 +1515,7 @@ namespace morph {
 
                 // Quiver thickness is either the linewidth (* user-supplied thickness_gain) or a
                 // tenth of the length (* thickness_gain)
-                float quiv_thick = style.quiver_flagset.test(static_cast<unsigned int>(morph::quiver_flags::thickness_fixed))
+                float quiv_thick = style.quiver_flagset.test(morph::quiver_flags::thickness_fixed)
                 ? style.linewidth * style.quiver_thickness_gain : quiv.length() * 0.1f * style.quiver_thickness_gain;
 
                 // The right way to draw an arrow.
@@ -1530,7 +1530,7 @@ namespace morph {
                     this->computeCone (cone_start, end, 0.0f, clr, quiv_thick * style.quiver_conewidth, shapesides);
                 }
 
-                if (style.quiver_flagset.test(static_cast<unsigned int>(morph::quiver_flags::marker_sphere)) == true) {
+                if (style.quiver_flagset.test(morph::quiver_flags::marker_sphere) == true) {
                     // Draw a sphere on the coordinate:
                     this->computeSphere (coords_i, clr, quiv_thick * style.quiver_conewidth, shapesides/2, shapesides);
                 }

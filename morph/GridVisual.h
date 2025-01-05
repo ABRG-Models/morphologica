@@ -5,11 +5,11 @@
 #include <morph/Grid.h>
 #include <morph/GridFeatures.h>
 #include <morph/vec.h>
+#include <morph/flags.h>
 #include <iostream>
 #include <vector>
 #include <array>
 #include <unordered_map>
-#include <bitset>
 
 namespace morph {
 
@@ -122,7 +122,7 @@ namespace morph {
             cg_extents[2] -= gridline_ht[1];
             cg_extents[3] += gridline_ht[1];
             morph::vec<float, 2> dx = this->grid->get_dx();
-            float bthick    = this->options.test (static_cast<uint32_t>(gridvisual_flags::border_thickness_fixed)) ? this->border_thickness : dx[0] * this->border_thickness;
+            float bthick    = this->options.test (gridvisual_flags::border_thickness_fixed) ? this->border_thickness : dx[0] * this->border_thickness;
             float left  = cg_extents[0] + this->centering_offset[0];
             float right = cg_extents[1] + this->centering_offset[0];
             float bot   = cg_extents[2] + this->centering_offset[1];
@@ -135,7 +135,7 @@ namespace morph {
                 top   += (dx[1]/2.0f);
             }
             morph::vec<float, 4> r_extents = { left, right, bot, top };
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::border_tubular))) {
+            if (this->options.test (gridvisual_flags::border_tubular)) {
                 // Have to add a bit for the tubular border
                 r_extents[0] -= bthick/2.0f;
                 r_extents[1] += bthick/2.0f;
@@ -153,8 +153,8 @@ namespace morph {
             // Draw around all pixels
             morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
             morph::vec<float, 2> dx = this->grid->get_dx();
-            float gridthick_x = this->options.test (static_cast<uint32_t>(gridvisual_flags::grid_thickness_fixed)) ? this->grid_thickness : dx[0] * this->grid_thickness;
-            float gridthick_y = this->options.test (static_cast<uint32_t>(gridvisual_flags::grid_thickness_fixed)) ? this->grid_thickness : dx[1] * this->grid_thickness;
+            float gridthick_x = this->options.test (gridvisual_flags::grid_thickness_fixed) ? this->grid_thickness : dx[0] * this->grid_thickness;
+            float gridthick_y = this->options.test (gridvisual_flags::grid_thickness_fixed) ? this->grid_thickness : dx[1] * this->grid_thickness;
 
             // loop through each pixel
             for (float left = cg_extents[0] - (dx[0]/2.0f); left < cg_extents[1]; left += dx[0]) {
@@ -263,7 +263,7 @@ namespace morph {
 
             // Thickness of spacing for selected pixels
             morph::vec<float, 2> selth = dx * this->selected_pix_thickness;
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::selected_pix_thickness_fixed))) {
+            if (this->options.test (gridvisual_flags::selected_pix_thickness_fixed)) {
                 selth.set_from (this->selected_pix_thickness);
             }
 
@@ -304,7 +304,7 @@ namespace morph {
             // Thickness of spacing for selected pixels
             morph::vec<float, 2> dx = this->grid->get_dx();
             morph::vec<float, 2> selth = dx * this->selected_pix_thickness;
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::selected_pix_thickness_fixed))) {
+            if (this->options.test (gridvisual_flags::selected_pix_thickness_fixed)) {
                 selth.set_from (this->selected_pix_thickness);
             }
             float grid_left  = cg_extents[0] - (dx[0]/2.0f) + this->centering_offset[0];
@@ -397,15 +397,15 @@ namespace morph {
         virtual void initializeVertices()
         {
             // Optionally compute an offset to ensure that the cartgrid is centred about the mv_offset.
-            if (this->options.test(static_cast<uint32_t>(gridvisual_flags::centralize)) == true) {
+            if (this->options.test(gridvisual_flags::centralize) == true) {
                 this->centering_offset = -this->grid->centre().plus_one_dim();
             }
 
             switch (this->gridVisMode) {
             case GridVisMode::Triangles:
             {
-                if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showgrid)) == true
-                    || this->options.test (static_cast<uint32_t>(gridvisual_flags::implygrid)) == true) {
+                if (this->options.test (gridvisual_flags::showgrid) == true
+                    || this->options.test (gridvisual_flags::implygrid) == true) {
                     throw std::runtime_error ("GridVisual: Can't draw an inter-pixel grid in gridVisMode == Triangles");
                 }
                 this->initializeVerticesTris();
@@ -413,8 +413,8 @@ namespace morph {
             }
             case GridVisMode::Columns:
             {
-                if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showgrid)) == true
-                    || this->options.test (static_cast<uint32_t>(gridvisual_flags::implygrid)) == true) {
+                if (this->options.test (gridvisual_flags::showgrid) == true
+                    || this->options.test (gridvisual_flags::implygrid) == true) {
                     throw std::runtime_error ("GridVisual: Can't (currently) draw an inter-pixel grid in gridVisMode == Columns");
                 }
                 this->initializeVerticesCols();
@@ -435,19 +435,19 @@ namespace morph {
 
             // Note: For reinitColours to work, it's important to do all border/grid drawing AFTER
             // the initializeVerticesTris/Cols/Pixels etc
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showborder)) == true) {
+            if (this->options.test (gridvisual_flags::showborder) == true) {
                 this->drawBorder();
             }
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showgrid)) == true) {
+            if (this->options.test (gridvisual_flags::showgrid) == true) {
                 this->drawGrid();
             }
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showselectedpixborder)) == true) {
+            if (this->options.test (gridvisual_flags::showselectedpixborder) == true) {
                 this->drawSelectedPixBorder();
             }
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showselectedpixborder_enclosing)) == true) {
+            if (this->options.test (gridvisual_flags::showselectedpixborder_enclosing) == true) {
                 this->drawSelectedPixBorderEnclosing();
             }
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showorigin)) == true) {
+            if (this->options.test (gridvisual_flags::showorigin) == true) {
                 this->computeSphere (morph::vec<float>{0, 0, 0}, morph::colour::crimson, 0.25f * this->grid->get_dx()[0]);
             }
         }
@@ -561,14 +561,14 @@ namespace morph {
             morph::vec<float> vtx_0, vtx_1, vtx_2;
 
             // Thickness of spacing for selected pixels
-            const float selth_x = this->options.test (static_cast<uint32_t>(gridvisual_flags::selected_pix_thickness_fixed)) ? this->selected_pix_thickness : dx[0] * this->selected_pix_thickness;
-            const float selth_y = this->options.test (static_cast<uint32_t>(gridvisual_flags::selected_pix_thickness_fixed)) ? this->selected_pix_thickness : dx[1] * this->selected_pix_thickness;
+            const float selth_x = this->options.test (gridvisual_flags::selected_pix_thickness_fixed) ? this->selected_pix_thickness : dx[0] * this->selected_pix_thickness;
+            const float selth_y = this->options.test (gridvisual_flags::selected_pix_thickness_fixed) ? this->selected_pix_thickness : dx[1] * this->selected_pix_thickness;
             float sx = 0.0f;
             float sy = 0.0f;
 
             for (I ri = 0; ri < this->grid->n(); ++ri) {
 
-                if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showselectedpixborder)) == true) {
+                if (this->options.test (gridvisual_flags::showselectedpixborder) == true) {
                     try { // Is ri in selected_pix?
                         this->selected_pix.at (ri);
                         sx = selth_x;
@@ -731,7 +731,7 @@ namespace morph {
                 std::array<float, 3> clr = this->setColour (ri);
                 std::array<float, 3> clr_e;
                 std::array<float, 3> clr_n;
-                if (this->options.test (static_cast<uint32_t>(gridvisual_flags::interpolate_colour_sides)) == true) {
+                if (this->options.test (gridvisual_flags::interpolate_colour_sides) == true) {
                     clr_e = this->setColour (this->grid->has_ne(ri) ? this->grid->index_ne(ri) : ri);
                     clr_n = this->setColour (this->grid->has_nn(ri) ? this->grid->index_nn(ri) : ri);
                 }
@@ -818,7 +818,7 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
 
-                if (this->options.test (static_cast<uint32_t>(gridvisual_flags::interpolate_colour_sides)) == true) {
+                if (this->options.test (gridvisual_flags::interpolate_colour_sides) == true) {
                     this->vertex_push (clr, this->vertexColors);
                     this->vertex_push (clr, this->vertexColors);
                     this->vertex_push (clr_e, this->vertexColors);
@@ -892,8 +892,8 @@ namespace morph {
             morph::vec<float, 2> gridline_ht = this->get_gridline_ht();
 
             // Thickness of spacing for selected pixels
-            const float selth_x = this->options.test (static_cast<uint32_t>(gridvisual_flags::selected_pix_thickness_fixed)) ? this->selected_pix_thickness : dx[0] * this->selected_pix_thickness;
-            const float selth_y = this->options.test (static_cast<uint32_t>(gridvisual_flags::selected_pix_thickness_fixed)) ? this->selected_pix_thickness : dx[1] * this->selected_pix_thickness;
+            const float selth_x = this->options.test (gridvisual_flags::selected_pix_thickness_fixed) ? this->selected_pix_thickness : dx[0] * this->selected_pix_thickness;
+            const float selth_y = this->options.test (gridvisual_flags::selected_pix_thickness_fixed) ? this->selected_pix_thickness : dx[1] * this->selected_pix_thickness;
             float sx = 0.0f;
             float sy = 0.0f;
 
@@ -903,7 +903,7 @@ namespace morph {
 
             for (I ri = 0; ri < this->grid->n(); ++ri) {
 
-                if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showselectedpixborder)) == true) {
+                if (this->options.test (gridvisual_flags::showselectedpixborder) == true) {
                     try { // Is ri in selected_pix?
                         this->selected_pix.at (ri);
                         sx = selth_x;
@@ -992,34 +992,34 @@ namespace morph {
         GridVisMode gridVisMode = GridVisMode::RectInterp;
 
         // Option flags
-        std::bitset<32> options;
+        morph::flags<gridvisual_flags> options;
         void options_defaults()
         {
             this->options.reset();
             // Most options are false by default except:
-            this->options.set (static_cast<uint32_t>(gridvisual_flags::border_tubular), true);
+            this->options.set (gridvisual_flags::border_tubular, true);
         }
 
         //! Set this to true to adjust the positions that the GridVisual uses to plot the Grid so
         //! that the Grid is centralised around the VisualModel::mv_offset.
         void centralize (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::centralize), flag_value); }
+        { this->options.set (gridvisual_flags::centralize, flag_value); }
 
         //! Show a sphere at the grid's origin? This can be useful when placing several Grids with
         //! different sized pixels in a scene - it helps you to figure out the scene coordinates at
         //! which to place each grid.
         void showorigin (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::showorigin), flag_value); }
+        { this->options.set (gridvisual_flags::showorigin, flag_value); }
 
         //! Set true to draw a grid (border around each pixels)
         void showgrid (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::showgrid), flag_value); }
+        { this->options.set (gridvisual_flags::showgrid, flag_value); }
 
 
         //! showgrid overrides this, but if this is true and showgrid is false, then
         //! imply a grid by shrinking the pixels that are drawn.
         void implygrid (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::implygrid), flag_value); }
+        { this->options.set (gridvisual_flags::implygrid, flag_value); }
 
         //! The colour used for the grid (default is grey)
         std::array<float, 3> grid_colour = morph::colour::grey80;
@@ -1029,14 +1029,14 @@ namespace morph {
 
         //! If you need to override the pixels-relationship to the grid thickness, set it here
         void grid_thickness_fixed (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::grid_thickness_fixed), flag_value); }
+        { this->options.set (gridvisual_flags::grid_thickness_fixed, flag_value); }
 
         //! How far in z to locate the grid lines?
         float grid_z_offset = 0.0f;
 
         //! Set true to draw a border around the outside
         void showborder (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::showborder), flag_value); }
+        { this->options.set (gridvisual_flags::showborder, flag_value); }
 
         //! The colour for the border
         std::array<float, 3> border_colour = morph::colour::grey80;
@@ -1046,14 +1046,14 @@ namespace morph {
 
         //! If you need to override the pixels-relationship to the border thickness, set it here
         void border_thickness_fixed (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::border_thickness_fixed), flag_value); }
+        { this->options.set (gridvisual_flags::border_thickness_fixed, flag_value); }
 
         //! Where in z to locate the border lines?
         float border_z_offset = 0.0f;
 
         //! If true draw a tubular border, else draw a flat border
         void border_tubular (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::border_tubular), flag_value); }
+        { this->options.set (gridvisual_flags::border_tubular, flag_value); }
 
         /*!
          * If true, draw a border around selected pixels (with a full border around each selected
@@ -1061,7 +1061,7 @@ namespace morph {
          * selected_pix_indexes.
          */
         void showselectedpixborder (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::showselectedpixborder), flag_value); }
+        { this->options.set (gridvisual_flags::showselectedpixborder, flag_value); }
 
         /*!
          * A list of those pixel indices that should be drawn with an individual
@@ -1076,7 +1076,7 @@ namespace morph {
 
         //! If non-zero, use this fixed value for the thickness of selected inner borders
         void selected_pix_thickness_fixed (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::selected_pix_thickness_fixed), flag_value); }
+        { this->options.set (gridvisual_flags::selected_pix_thickness_fixed, flag_value); }
 
         /*!
          * If true, draw a rectangular border enclosing all of the selected pixels. The
@@ -1084,14 +1084,14 @@ namespace morph {
          * border.
          */
         void showselectedpixborder_enclosing (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::showselectedpixborder_enclosing), flag_value); }
+        { this->options.set (gridvisual_flags::showselectedpixborder_enclosing, flag_value); }
 
         //! The colour for the selected pixels enclosure border (showselectedpixborder_enclosing)
         std::array<float, 3> enclosing_border_colour = morph::colour::grey60;
 
         // If true, interpolate the colour of the sides of columns on a column grid
         void interpolate_colour_sides (bool flag_value = true)
-        { this->options.set (static_cast<uint32_t>(gridvisual_flags::interpolate_colour_sides), flag_value); }
+        { this->options.set (gridvisual_flags::interpolate_colour_sides, flag_value); }
 
         // User-modifiable colours for the columns if interpolated_colour_sides == false
         std::array<float, 3> clr_east_column = morph::colour::black;
@@ -1104,9 +1104,9 @@ namespace morph {
         morph::vec<float, 2> get_gridline_ht() const
         {
             morph::vec<float, 2> gridline_ht = { 0.0f, 0.0f };
-            if (this->options.test (static_cast<uint32_t>(gridvisual_flags::showgrid)) == true
-                || this->options.test (static_cast<uint32_t>(gridvisual_flags::implygrid)) == true) {
-                if (this->options.test (static_cast<uint32_t>(gridvisual_flags::grid_thickness_fixed)) == false) {
+            if (this->options.test (gridvisual_flags::showgrid) == true
+                || this->options.test (gridvisual_flags::implygrid) == true) {
+                if (this->options.test (gridvisual_flags::grid_thickness_fixed) == false) {
                     gridline_ht = this->grid->get_dx() * this->grid_thickness * 0.5f;
                 } else {
                     gridline_ht.set_from (this->grid_thickness * 0.5f);
