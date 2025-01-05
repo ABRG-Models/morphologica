@@ -7,6 +7,8 @@
 // template <typename E>
 // requires std::is_enum_v<E>
 
+#pragma once
+
 #include <compare>
 #include <type_traits>
 
@@ -33,7 +35,11 @@ namespace morph {
         constexpr flags<E> operator~() const noexcept { return flags<E>(bits ^ I{-1}); }
 
         // assignment operators
-        constexpr flags<E>& operator=(flags<E> const& rhs) noexcept { this->bits = rhs.bits; }; // can default in C++20
+        constexpr flags<E>& operator=(flags<E> const& rhs) noexcept
+        {
+            this->bits = rhs.bits;
+            return *this;
+        }; // can default this function in C++20
 
         constexpr flags<E>& operator|=(flags<E> const& rhs) noexcept
         {
@@ -58,9 +64,13 @@ namespace morph {
             return *this;
         }
         // Set from a bit (std::bitset-like function name)
-        constexpr void set (const E& flag) noexcept
+        constexpr void set (const E& flag, bool value = true) noexcept
         {
-            this->bits |= (I{1} << static_cast<I>(flag));
+            if (value == true) {
+                this->bits |= (I{1} << static_cast<I>(flag));
+            } else {
+                this->bits &= ~(I{1} << static_cast<I>(flag));
+            }
         }
 
         // Unset from a bit (in enum form)
@@ -85,7 +95,7 @@ namespace morph {
         }
 
         // Test a flag  (std::bitset-like function name)
-        constexpr bool test (const E& flag) noexcept
+        constexpr bool test (const E& flag) const noexcept
         {
             return (this->bits & (I{1} << static_cast<I>(flag))) > I{0} ? true : false;
         }
