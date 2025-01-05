@@ -1,40 +1,28 @@
 // C++20 Flag enum class converted to C++17. This code came from an idea in the Vulkan
 // code base via https://gist.github.com/fschoenberger/54c5342f220af510e1f78308a8994a45
-// Have left CXX20 stuff so that this can be neatened when morphologica goes C++20.
+//
+// The (more readable) C++20 equivalent to the C++17 compatible template declaration:
+// template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+// is:
+// template <typename E>
+// requires std::is_enum_v<E>
 
 #include <compare>
 #include <type_traits>
 
 namespace morph {
-#ifdef _HAVE_CXX20_ // Neat C++20 concept code
-    template <typename E> // You pass in your own enum class type
-    requires std::is_enum_v<E>
-#else // C++17 compatible enable_if version
-    template <typename E, typename std::enable_if< std::is_enum<E>{}, bool>::type = true>
-#endif
+
+    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
     class flags {
     public:
         using I = std::underlying_type_t<E>;
 
         // constructors
-        constexpr flags() noexcept : bits(0) {}
-
-#ifdef _HAVE_CXX20_
-        explicit(false) // explicit(false) in C++20 means "not explicit"
-#endif
-        constexpr flags(E bit) noexcept : bits(static_cast<I>(bit)) {}
-
-#ifdef _HAVE_CXX20_
-        constexpr flags(flags<E> const& rhs) noexcept = default; // require C++20 to default a constexpr constructor
-#else
-        constexpr flags(flags<E> const& rhs) noexcept : bits(rhs.bits) {}
-#endif
+        constexpr flags() noexcept : bits(I{0}) {}
+        constexpr flags(E flag) noexcept : bits( I{1} << static_cast<I>(flag) ) {}
+        constexpr flags(flags<E> const& rhs) noexcept : bits(rhs.bits) {} // can default in C++20
         constexpr explicit flags(I _bits) noexcept : bits(_bits) {}
 
-        // relational operators
-#ifdef _HAVE_CXX20_
-        constexpr auto operator<=>(flags<E> const&) const = default;
-#endif
         // logical operator
         constexpr bool operator!() const noexcept { return !this->bits; }
 
@@ -42,14 +30,11 @@ namespace morph {
         constexpr flags<E> operator&(flags<E> const& rhs) const noexcept { return flags<E>(this->bits & rhs.bits); }
         constexpr flags<E> operator|(flags<E> const& rhs) const noexcept { return flags<E>(this->bits | rhs.bits); }
         constexpr flags<E> operator^(flags<E> const& rhs) const noexcept { return flags<E>(this->bits ^ rhs.bits); }
-        constexpr flags<E> operator~() const noexcept { return flags<E>(bits ^ static_cast<I>(-1)); }
+        constexpr flags<E> operator~() const noexcept { return flags<E>(bits ^ I{-1}); }
 
         // assignment operators
-#ifdef _HAVE_CXX20_
-        constexpr flags<E>& operator=(flags<E> const& rhs) noexcept = default;
-#else
-        constexpr flags<E>& operator=(flags<E> const& rhs) noexcept { this->bits = rhs.bits; };
-#endif
+        constexpr flags<E>& operator=(flags<E> const& rhs) noexcept { this->bits = rhs.bits; }; // can default in C++20
+
         constexpr flags<E>& operator|=(flags<E> const& rhs) noexcept
         {
             this->bits |= rhs.bits;
@@ -72,6 +57,7 @@ namespace morph {
             this->bits |= (I{1} << static_cast<I>(rhs));
             return *this;
         }
+        // Set from a bit (std::bitset-like function name)
         constexpr void set (const E& flag) noexcept
         {
             this->bits |= (I{1} << static_cast<I>(flag));
@@ -83,12 +69,22 @@ namespace morph {
             this->bits ^= (I{1} << static_cast<I>(rhs));
             return *this;
         }
+        // Unset from a big (std::bitset-like function name)
         constexpr void reset (const E& flag) noexcept
+        {
+            this->bits &= ~(I{1} << static_cast<I>(flag));
+        }
+
+        // Unset all (std::bitset-like function name)
+        constexpr void reset() noexcept { this->bits = I{0}; }
+
+        // Flip a flag (std::bitset-like function name)
+        constexpr void flip (const E& flag) noexcept
         {
             this->bits ^= (I{1} << static_cast<I>(flag));
         }
 
-        // Test a flag
+        // Test a flag  (std::bitset-like function name)
         constexpr bool test (const E& flag) noexcept
         {
             return (this->bits & (I{1} << static_cast<I>(flag))) > I{0} ? true : false;
@@ -97,63 +93,65 @@ namespace morph {
         // Get the underlying bits
         constexpr I get() const noexcept { return this->bits; }
 
+        // Return the number of flags set true
+        constexpr I count() const noexcept
+        {
+            I n = this->bits;
+            I c = I{0};
+            while (n) { n &= n--, ++c; } // Kernighan's algorithm
+            return c;
+        }
+
         // cast operators
         explicit constexpr operator bool() const noexcept { return !!this->bits; }
         explicit constexpr operator I() const noexcept { return this->bits; }
 
     private:
-        I bits;
+        I bits = I{0};
     };
-#if 0
+
     // bitwise operators
-    template <typename E>
-    requires std::is_enum_v<E>
-    constexpr flags<E> operator&(E bit, flags<E> const& flags) noexcept
+    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    constexpr flags<E> operator&(E flag, flags<E> const& flags) noexcept
     {
-        return flags.operator&(bit);
+        return flags.operator&(flag);
     }
 
-    template <typename E>
-    requires std::is_enum_v<E>
-    constexpr flags<E> operator|(E bit, flags<E> const& flags) noexcept
+    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    constexpr flags<E> operator|(E flag, flags<E> const& flags) noexcept
     {
-        return flags.operator|(bit);
+        return flags.operator|(flag);
     }
 
-    template <typename E>
-    requires std::is_enum_v<E>
-    constexpr flags<E> operator^(E bit, flags<E> const& flags) noexcept
+    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    constexpr flags<E> operator^(E flag, flags<E> const& flags) noexcept
     {
-        return flags.operator^(bit);
+        return flags.operator^(flag);
     }
 
     // bitwise operators on E
-    template <typename E>
-    requires std::is_enum_v<E>
+    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
     inline constexpr flags<E> operator&(E lhs, E rhs) noexcept
     {
         return flags<E>(lhs) & rhs;
     }
 
-    template <typename E>
-    requires std::is_enum_v<E>
+    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
     inline constexpr flags<E> operator|(E lhs, E rhs) noexcept
     {
         return flags<E>(lhs) | rhs;
     }
 
-    template <typename E>
-    requires std::is_enum_v<E>
+    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
     inline constexpr flags<E> operator^(E lhs, E rhs) noexcept
     {
         return flags<E>(lhs) ^ rhs;
     }
 
-    template <typename E>
-    requires std::is_enum_v<E>
-    inline constexpr flags<E> operator~(E bit) noexcept
+    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    inline constexpr flags<E> operator~(E flag) noexcept
     {
-        return ~(flags<E>(bit));
+        return ~(flags<E>(flag));
     }
-#endif
+
 } // namespace util
