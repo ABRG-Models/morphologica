@@ -164,4 +164,4 @@ namespace morph {
         return ~(flags<E>(flag));
     }
 
-} // namespace util
+} // namespace morph
