@@ -147,6 +147,7 @@ namespace morph {
                     // solution would be to modify the jcvoronoi algorithm to populate
                     // both ends of all edges with additional logic.
                     if constexpr (debug_border_edge_sites == false) {
+                        std::cout << edge_1->edge->pos[0] << " --> " << edge_1->edge->pos[1] << std::endl;
                         for (unsigned int j = 0; j < 2; ++j) {
                             if (edge_1->edge->sites[j]) {
                                 cellcentres_1.insert (edge_1->edge->sites[j]->p);
@@ -186,6 +187,9 @@ namespace morph {
                             }
                         }
                     }
+
+                    std::cout << "cellcentres_1.size(): " << cellcentres_1.size() << std::endl;
+
                     // Find the mean of the cell centres associated with edge_1 and edge_2
                     float zsum_1 = 0.0f;
                     morph::vec<float, 2> mean_cc_1 = {0.0f};
