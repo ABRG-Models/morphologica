@@ -567,6 +567,12 @@ if(USE_GLEW)
   target_link_libraries(voronoi_random GLEW::GLEW)
 endif()
 
+add_executable(voronoi_rectangular voronoi_rectangular.cpp)
+target_link_libraries(voronoi_rectangular OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(voronoi_rectangular GLEW::GLEW)
+endif()
+
 add_executable(voronoi_vectordata voronoi_vectordata.cpp)
 target_link_libraries(voronoi_vectordata OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)

@@ -310,7 +310,7 @@ namespace morph {
                         while (e) {
                             t0 = rqinv * e->pos[0];
                             t1 = rqinv * e->pos[1];
-                            this->computeTube (t0, t1, morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                            this->computeTube (t0, t1, morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
                             e = e->next;
                         }
                     }
@@ -321,7 +321,7 @@ namespace morph {
                         const jcv_site* site = &sites[i];
                         const jcv_graphedge* e = site->edges;
                         while (e) {
-                            this->computeTube (e->pos[0], e->pos[1], morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                            this->computeTube (e->pos[0], e->pos[1], morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
                             e = e->next;
                         }
                     }
