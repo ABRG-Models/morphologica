@@ -15,8 +15,8 @@
 namespace morph {
 
     template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
-    class flags {
-    public:
+    struct flags
+    {
         using I = std::underlying_type_t<E>;
 
         // constructors
