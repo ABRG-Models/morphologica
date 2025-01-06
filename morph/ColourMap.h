@@ -11,6 +11,7 @@
 #include <morph/tools.h>
 #include <morph/vec.h>
 #include <morph/mathconst.h>
+#include <morph/flags.h>
 
 namespace morph {
 
@@ -196,43 +197,33 @@ namespace morph {
     // A flags class for ColourMaps, to flag features
     enum class ColourMapFlags : uint32_t
     {
-        none                   =      0x0,
-        one_d                  =      0x1,
-        two_d                  =      0x2,
-        three_d                =      0x4,
-        sequential             =      0x8, // sequential/linear
-        cyclic                 =     0x10,
-        disc                   =     0x20,
-        perceptually_uniform   =     0x40,
-        colourblind_friendly   =     0x80,
-        divergent              =    0x100,
-        rainbow                =    0x200,
-        isoluminant            =    0x400,
-        multisequential        =    0x800,
-        whites                 =   0x1000,
-        reds                   =   0x2000,
-        blues                  =   0x4000, // Flag 15
-        greens                 =   0x8000,
-        yellows                =  0x10000,
-        pinks                  =  0x20000,
-        purples                =  0x40000,
-        greys                  =  0x80000,
+        one_d,
+        two_d,
+        three_d,
+        sequential, // sequential/linear
+        cyclic,
+        disc,
+        perceptually_uniform,
+        colourblind_friendly,
+        divergent,
+        rainbow,
+        isoluminant,
+        multisequential,
+        whites,
+        reds,
+        blues,      // Flag 15
+        greens,
+        yellows,
+        pinks,
+        purples,
+        greys
     };
-    // Bitwise operators for ColourMapFlags
-    ColourMapFlags operator| (const ColourMapFlags& lhs, const ColourMapFlags& rhs)
-    {
-        return static_cast<ColourMapFlags>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
-    }
-    bool operator&(const ColourMapFlags& lhs, const ColourMapFlags& rhs)
-    {
-        return 0x0 != (static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
-    }
 
-    // A sort of constructor
-    morph::ColourMapFlags makeColourMapFlags (const morph::ColourMapType t)
+    // Return a set of ColourMapFlags suitable for ColourMapType t
+    morph::flags<morph::ColourMapFlags> makeColourMapFlags (const morph::ColourMapType t)
     {
-        // Logic to create ColourMapFlags
-        morph::ColourMapFlags f = ColourMapFlags::none;
+        // Logic to create default flags
+        morph::flags<morph::ColourMapFlags> f(uint32_t{0});
 
         // Dimensionality
         if (t == ColourMapType::DiscFourWhite
@@ -241,14 +232,14 @@ namespace morph {
             || t == ColourMapType::DiscSixBlack
             || t == ColourMapType::HSV
             || t == ColourMapType::Duochrome) {
-            f = f | ColourMapFlags::two_d;
+            f |= ColourMapFlags::two_d;
         } else if (t == ColourMapType::Trichrome
                    || t == ColourMapType::RGB
                    || t == ColourMapType::RGBMono
                    || t == ColourMapType::RGBGrey) {
-            f = f | ColourMapFlags::three_d;
+            f |= ColourMapFlags::three_d;
         } else {
-            f = f | ColourMapFlags::one_d;
+            f |= ColourMapFlags::one_d;
         }
 
         // Linear (sequential)
@@ -315,7 +306,7 @@ namespace morph {
             || t == ColourMapType::MonovalGreen
             || t == ColourMapType::MonovalBlue ) {
 
-            f = f | ColourMapFlags::sequential;
+            f |= ColourMapFlags::sequential;
         }
 
         // Divergent
@@ -346,7 +337,7 @@ namespace morph {
             || t == ColourMapType::Roma
             || t == ColourMapType::Vanimo
             || t == ColourMapType::Managua ) {
-            f = f | ColourMapFlags::divergent;
+            f |= ColourMapFlags::divergent;
         }
 
         // Cyclic
@@ -368,14 +359,14 @@ namespace morph {
             || t == ColourMapType::CorkO
             || t == ColourMapType::VikO
             ) {
-            f = f | ColourMapFlags::cyclic;
+            f |= ColourMapFlags::cyclic;
         }
 
         // Multi-sequential
         if (t == ColourMapType::Oleron
             || t == ColourMapType::Bukavu
             || t == ColourMapType::Fes ) {
-            f = f | ColourMapFlags::multisequential;
+            f |= ColourMapFlags::multisequential;
         }
 
         // Isoluminant
@@ -384,7 +375,7 @@ namespace morph {
             || t == ColourMapType::CET_I3
             || t == ColourMapType::CET_D11
             || t == ColourMapType::CET_D12 ) {
-            f = f | ColourMapFlags::isoluminant;
+            f |= ColourMapFlags::isoluminant;
         }
 
         // Rainbow maps
@@ -404,7 +395,7 @@ namespace morph {
             || t == ColourMapType::DiscFourBlack
             || t == ColourMapType::DiscSixWhite
             || t == ColourMapType::DiscSixBlack) {
-            f = f | ColourMapFlags::rainbow;
+            f |= ColourMapFlags::rainbow;
         }
 
         // Disc maps
@@ -412,7 +403,7 @@ namespace morph {
             || t == ColourMapType::DiscFourBlack
             || t == ColourMapType::DiscSixWhite
             || t == ColourMapType::DiscSixBlack) {
-            f = f | ColourMapFlags::disc;
+            f |= ColourMapFlags::disc;
         }
 
         // PU
@@ -429,7 +420,7 @@ namespace morph {
             || t == ColourMapType::Rainbow) {
             // Not perceptually uniform
         } else {
-            f = f | ColourMapFlags::perceptually_uniform;
+            f |= ColourMapFlags::perceptually_uniform;
         }
 
         // Colourblind friendly
@@ -503,7 +494,7 @@ namespace morph {
             || t == ColourMapType::Oleron
             || t == ColourMapType::Bukavu
             || t == ColourMapType::Fes ) {
-            f = f | ColourMapFlags::colourblind_friendly;
+            f |= ColourMapFlags::colourblind_friendly;
         }
         return f;
     }
@@ -534,7 +525,7 @@ namespace morph {
     {
     public:
         //! Flags associated with the type (generated in setType)
-        ColourMapFlags flags = ColourMapFlags::none;
+        morph::flags<ColourMapFlags> flags;
     private:
         //! Type of map
         ColourMapType type = ColourMapType::Plasma;
@@ -870,24 +861,24 @@ namespace morph {
             return cmt;
         }
 
-        static std::string colourMapFlagsToStr (const ColourMapFlags _f)
+        static std::string colourMapFlagsToStr (const morph::flags<morph::ColourMapFlags>& _f)
         {
             std::string s("");
-            if (_f & ColourMapFlags::one_d) { s += (s.empty() ? "1D" : ", 1D"); }
-            if (_f & ColourMapFlags::two_d) { s += (s.empty() ? "2D" : ", 2D"); }
-            if (_f & ColourMapFlags::three_d) { s += (s.empty() ? "3D" : ", 3D"); }
+            if (_f.test (ColourMapFlags::one_d)) { s += (s.empty() ? "1D" : ", 1D"); }
+            if (_f.test (ColourMapFlags::two_d)) { s += (s.empty() ? "2D" : ", 2D"); }
+            if (_f.test (ColourMapFlags::three_d)) { s += (s.empty() ? "3D" : ", 3D"); }
 
-            if (_f & ColourMapFlags::sequential) { s += (s.empty() ? "Seq" : ", Seq"); }
-            if (_f & ColourMapFlags::multisequential) { s += (s.empty() ? "MultiSeq" : ", MultiSeq"); }
-            if (_f & ColourMapFlags::divergent) { s += (s.empty() ? "Dvg" : ", Dvg"); }
-            if (_f & ColourMapFlags::cyclic) { s += (s.empty() ? "Cyclic" : ", Cyclic"); }
-            if (_f & ColourMapFlags::disc) { s += (s.empty() ? "Disc" : ", Disc"); }
+            if (_f.test (ColourMapFlags::sequential)) { s += (s.empty() ? "Seq" : ", Seq"); }
+            if (_f.test (ColourMapFlags::multisequential)) { s += (s.empty() ? "MultiSeq" : ", MultiSeq"); }
+            if (_f.test (ColourMapFlags::divergent)) { s += (s.empty() ? "Dvg" : ", Dvg"); }
+            if (_f.test (ColourMapFlags::cyclic)) { s += (s.empty() ? "Cyclic" : ", Cyclic"); }
+            if (_f.test (ColourMapFlags::disc)) { s += (s.empty() ? "Disc" : ", Disc"); }
 
-            if (_f & ColourMapFlags::isoluminant) { s += (s.empty() ? "Iso" : ", Iso"); }
-            if (_f & ColourMapFlags::rainbow) { s += (s.empty() ? "Rain" : ", Rain"); }
+            if (_f.test (ColourMapFlags::isoluminant)) { s += (s.empty() ? "Iso" : ", Iso"); }
+            if (_f.test (ColourMapFlags::rainbow)) { s += (s.empty() ? "Rain" : ", Rain"); }
 
-            if (_f & ColourMapFlags::perceptually_uniform) { s += (s.empty() ? "PU" : ", PU"); }
-            if (_f & ColourMapFlags::colourblind_friendly) { s += (s.empty() ? "CB" : ", CB"); }
+            if (_f.test (ColourMapFlags::perceptually_uniform)) { s += (s.empty() ? "PU" : ", PU"); }
+            if (_f.test (ColourMapFlags::colourblind_friendly)) { s += (s.empty() ? "CB" : ", CB"); }
 
             return s;
         }

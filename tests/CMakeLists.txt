@@ -574,3 +574,6 @@ add_test(test_histo test_histo)
 
 add_executable(test_number_type test_number_type.cpp)
 add_test(test_number_type test_number_type)
+
+add_executable(test_flags test_flags.cpp)
+add_test(test_flags test_flags)
