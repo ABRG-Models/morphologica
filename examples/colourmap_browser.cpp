@@ -45,7 +45,7 @@ morph::VisualModel<>* addmap (myvisual& v, morph::ColourMapType display_map_type
 {
     morph::VisualModel<>* vmp = nullptr;
     morph::ColourMap<float> nextmap (display_map_type);
-    if ((nextmap.flags & morph::ColourMapFlags::cyclic) == true) {
+    if (nextmap.flags.test(morph::ColourMapFlags::cyclic) == true) {
         morph::vec<float, 3> offset = {0,0,0};
         auto cv = std::make_unique<morph::CyclicColourVisual<float>>(offset);
         v.bindmodel (cv);
@@ -104,7 +104,7 @@ int main()
         if (v.curr_map_type != display_map_type) {
             // Change to v.curr_map_type
             morph::ColourMap<float> nextmap(v.curr_map_type);
-            if ((nextmap.flags & morph::ColourMapFlags::one_d) == true) {
+            if (nextmap.flags.test (morph::ColourMapFlags::one_d) == true) {
                 // Update the map
                 v.removeVisualModel (gvp);
                 gvp = addmap (v, v.curr_map_type, grid, data);
