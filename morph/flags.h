@@ -1,11 +1,52 @@
-// C++20 Flag enum class converted to C++17. This code came from an idea in the Vulkan
-// code base via https://gist.github.com/fschoenberger/54c5342f220af510e1f78308a8994a45
-//
-// The (more readable) C++20 equivalent to the C++17 compatible template declaration:
-// template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
-// is:
-// template <typename E>
-// requires std::is_enum_v<E>
+/*!
+ * A Boolean flags class for morphologica
+ *
+ * You can use morph::flags<E> rather like std::bitset<10>. The difference is that E may
+ * be (and must be) an enum class, which does not work with a bitset without ugly static
+ * casting.
+ *
+ * Usage:
+ *
+ * First create your enum class
+ *
+ * enum class myflags : uint64_t { // up to 64 flags are possible with this underlying type
+ *     flag_one, // Name the class and flags in some way that is right for your application
+ *     flag_two
+ * };
+ *
+ * morph::flags<myflags> fl;
+ *
+ * Set a flag:
+ *
+ * fl.set (myflags::flag_one);
+ *
+ * Test a flag:
+ *
+ * bool flag_one_is_set = fl.test (myflags::flag_one);
+ *
+ * Clear/reset a flag:
+ *
+ * fl.reset (myflags::flag_one);
+ *
+ * Flip a flag:
+ *
+ * fl.flip (myflags::flag_one);
+ *
+ * The (more readable) C++20 equivalent to the C++17 compatible template declaration:
+ * template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+ * is:
+ * template <typename E>
+ * requires std::is_enum_v<E>
+ *
+ * One or two other C++20 improvements could be made if and when morphologica goes C++20
+ * by default.
+ *
+ * This code was adapted from an idea in the Vulkan code base via
+ * https://gist.github.com/fschoenberger/54c5342f220af510e1f78308a8994a45
+ *
+ * Author: Seb James
+ * Date: Jan 2025
+ */
 
 #pragma once
 
