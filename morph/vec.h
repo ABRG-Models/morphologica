@@ -979,9 +979,11 @@ namespace morph {
             return std::lexicographical_compare (this->begin(), this->end(), rhs.begin(), rhs.end());
         }
 
-        //! Like lexical_lessthan, but elements of vec must be less than by at least n_eps *
-        //! numeric_limits<_S>::epsilon() to be different. If *this is less than rhs on that basis,
-        //! return true.
+        /*!
+         * Like lexical_lessthan, but elements of vec must be less than by at least n_eps *
+         * numeric_limits<_S>::epsilon() to be different. If *this is less than rhs on that basis,
+         * return true.
+         */
         template<typename _S=S>
         bool lexical_lessthan_beyond_epsilon (const vec<_S, N>& rhs, const int n_eps = 1) const
         {
