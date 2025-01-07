@@ -7,7 +7,7 @@
 #include <iostream>
 
 // To make std::hash<morph::vec<int, 2>> work you have to define how to create the hash of
-// morph::vec<int, 2>. Could this go in vec.h?
+// morph::vec<int, 2>.
 template<>
 struct std::hash<morph::vec<int, 2>>
 {
@@ -18,6 +18,36 @@ struct std::hash<morph::vec<int, 2>>
         return h1 ^ (h2 << 1);
     }
 };
+
+#if 0 // morph::vec<float, 3> examples
+template<>
+struct std::hash<morph::vec<float, 3>>
+{
+    std::size_t operator()(const morph::vec<float, 3>& v) const noexcept
+    {
+        // Note: Tiny precision differences make a different hash.
+        std::size_t h1 = std::hash<float>{}(v[0]);
+        std::size_t h2 = std::hash<float>{}(v[1]);
+        std::size_t h3 = std::hash<float>{}(v[2]);
+        return h1 ^ (h2 << 1) ^ (h3 << 2);
+    }
+};
+
+// Writing an equal_to operator()
+template<>
+struct std::equal_to<morph::vec<float, 3>>
+{
+    constexpr bool operator()(const morph::vec<float, 3>& lhs, const morph::vec<float, 3>& rhs) const
+    {
+        constexpr auto eps = std::numeric_limits<float>::epsilon();
+        float d0 = std::abs(lhs[0] - rhs[0]);
+        float d1 = std::abs(lhs[1] - rhs[1]);
+        float d2 = std::abs(lhs[2] - rhs[2]);
+        bool same = (d0 < eps) && (d1 < eps) && (d2 < eps);
+        return same;
+    }
+};
+#endif
 
 int main()
 {

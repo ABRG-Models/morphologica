@@ -19,57 +19,11 @@
 #include <vector>
 #include <array>
 #include <chrono>
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
+#include <set>
 
 #define JC_VORONOI_IMPLEMENTATION
 #include <morph/jcvoronoi/jc_voronoi.h>
-
-// To use morph::vec as key in unordered_map (or unordered_set) you have to define how to create the hash
-template<>
-struct std::hash<morph::vec<float, 3>>
-{
-    std::size_t operator()(const morph::vec<float, 3>& v) const noexcept
-    {
-        // How to make the hash of two similar vectors v, with a precision difference come out the
-        // same??? not sure you can.
-        std::size_t h1 = std::hash<float>{}(v[0]);
-        std::size_t h2 = std::hash<float>{}(v[1]);
-        std::size_t h3 = std::hash<float>{}(v[2]);
-#ifdef DBG_HASH
-        std::cout << "hash of " << v << " is " << (h1 ^ (h2 << 1) ^ (h3 << 2)) << std::endl;
-#endif
-        return h1 ^ (h2 << 1) ^ (h3 << 2);
-    }
-};
-
-//#define DBG_EQUAL_TO 1
-// How close do two vecs need to be to be not equal?
-template<>
-struct std::equal_to<morph::vec<float, 3>>
-{
-#ifndef DBG_EQUAL_TO
-    constexpr
-#endif
-    bool operator()(const morph::vec<float, 3>& lhs, const morph::vec<float, 3>& rhs) const
-    {
-#ifdef DBG_EQUAL_TO
-        std::cout << "equal_to operator() called is " << lhs << " equal_to " << rhs << "? ";
-#endif
-        constexpr auto eps = std::numeric_limits<float>::epsilon();
-        float d0 = std::abs(lhs[0] - rhs[0]);
-        float d1 = std::abs(lhs[1] - rhs[1]);
-        float d2 = std::abs(lhs[2] - rhs[2]);
-#ifdef DBG_EQUAL_TO
-        std::cout << "dim diffs: (" << d0 << ", " << d1 << ", " << d2 << ") ";
-#endif
-        bool same = (d0 < eps) && (d1 < eps) && (d2 < eps);
-#ifdef DBG_EQUAL_TO
-        std::cout << (same ? "same\n" : "different\n");
-#endif
-        return same;
-    }
-};
 
 namespace morph {
 
@@ -171,11 +125,9 @@ namespace morph {
             // This is complicated by the fact that there may be multiple (2?) edges between pairs
             // of sites. So, need a map of edge location to z_sums
 
-            // Unordered map which doesn't need veccmp specifying
-            // std::unordered_map<morph::vec<float, 3>, std::unordered_set<morph::vec<float, 3>>> edge_pos_centres;
-            // Or a map outer which can allow vectors to be same within precision
+            // Mapping edge end-point locations to a container of adjacent cell centres
             std::map<morph::vec<float, 3>, std::vector<morph::vec<float, 3>>, decltype(_veccmp)> edge_pos_centres(_veccmp);
-
+            // Mapping same edge end-point locations to the averate z value of the adjacent cell centres
             std::map<morph::vec<float, 3>, float, decltype(_veccmp)> edge_end_zsums(_veccmp);
 
             for (int i = 0; i < diagram.numsites; ++i) {
@@ -216,6 +168,7 @@ namespace morph {
                             edge_pos_centres[edge_1->pos[0]].push_back (edge_0->edge->sites[j]->p);
                         }
                     }
+
                     // Prepare for next loop
                     edge_0 = edge_1;
                     edge_1 = edge_1->next;
