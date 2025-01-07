@@ -144,15 +144,15 @@ namespace morph {
                 jcv_graphedge* edge_1 = edge_first;
                 jcv_graphedge* edge_2 = edge_first;
                 jcv_graphedge* edge_0 = edge_first;
-                while (edge_0->next) { edge_0 = edge_0->next; } // edge_0 is prev
+                while (edge_0->next) { edge_0 = edge_0->next; }
 
-                while (edge_1) { // each edge of a site. edge_1 is current.
+                while (edge_1) {
 
                     // Set z to 0. Should be done in jcvoronoi, but haven't found out how
                     edge_1->pos[0][2] = jcv_real{0};
                     edge_1->pos[1][2] = jcv_real{0};
 
-                    edge_2 = edge_1->next ? edge_1->next : edge_first;  // edge_2 is the next edge
+                    edge_2 = edge_1->next ? edge_1->next : edge_first;
                     // edge_0 already set
 
                     // populate the edge_pos_centres map. Known issue: In some cases, outer edges
