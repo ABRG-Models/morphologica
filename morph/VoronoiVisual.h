@@ -157,9 +157,7 @@ namespace morph {
 
             // Need a vec comparison function for a set of morph::vec. See:
             // https://abrg-models.github.io/morphologica/ref/coremaths/vvec/#using-morphvvec-as-a-key-in-stdmap-or-within-an-stdset
-            auto _veccmp = [](morph::vec<float> a, morph::vec<float> b) {
-                return a.lexical_lessthan_beyond_epsilon(b);
-            };
+            auto _veccmp = [](morph::vec<float> a, morph::vec<float> b) { return a.lexical_lessthan_beyond_epsilon(b, 100); };
 
             // Now scan through the Voronoi cell 'sites' and 'edges' to re-assign z
             // values in the edges. This is not going to be particularly efficient, but
@@ -176,7 +174,7 @@ namespace morph {
             // Unordered map which doesn't need veccmp specifying
             // std::unordered_map<morph::vec<float, 3>, std::unordered_set<morph::vec<float, 3>>> edge_pos_centres;
             // Or a map outer which can allow vectors to be same within precision
-            std::map<morph::vec<float, 3>, std::unordered_set<morph::vec<float, 3>>, decltype(_veccmp)> edge_pos_centres(_veccmp);
+            std::map<morph::vec<float, 3>, std::vector<morph::vec<float, 3>>, decltype(_veccmp)> edge_pos_centres(_veccmp);
 
             std::map<morph::vec<float, 3>, float, decltype(_veccmp)> edge_end_zsums(_veccmp);
 
@@ -206,16 +204,16 @@ namespace morph {
                     // both ends of all edges with additional logic.
                     for (unsigned int j = 0; j < 2; ++j) {
                         if (edge_1->edge->sites[j]) {
-                            edge_pos_centres[edge_1->pos[1]].insert (edge_1->edge->sites[j]->p);
-                            edge_pos_centres[edge_1->pos[0]].insert (edge_1->edge->sites[j]->p);
+                            edge_pos_centres[edge_1->pos[1]].push_back (edge_1->edge->sites[j]->p);
+                            edge_pos_centres[edge_1->pos[0]].push_back (edge_1->edge->sites[j]->p);
                         }
                         // By definition, cellcentres_1 also gets edge_2 sites...
                         if (edge_2->edge->sites[j]) {
-                            edge_pos_centres[edge_1->pos[1]].insert (edge_2->edge->sites[j]->p);
+                            edge_pos_centres[edge_1->pos[1]].push_back (edge_2->edge->sites[j]->p);
                         }
                         // and cellcentres_0 gets edge_0 sites
                         if (edge_0->edge->sites[j]) {
-                            edge_pos_centres[edge_1->pos[0]].insert (edge_0->edge->sites[j]->p);
+                            edge_pos_centres[edge_1->pos[0]].push_back (edge_0->edge->sites[j]->p);
                         }
                     }
                     // Prepare for next loop
@@ -228,8 +226,14 @@ namespace morph {
             for (auto epc : edge_pos_centres) {
                 float zsum = 0.0f;
                 // cce: centres clustered-around edge
-                for (auto cce : epc.second) { zsum += cce[2]; }
-                edge_end_zsums[epc.first] = zsum / epc.second.size();
+                std::set<morph::vec<float, 3>, decltype(_veccmp)> uniques(_veccmp);
+                for (auto cce : epc.second) {
+                    uniques.insert (cce);
+                }
+                for (auto cce : uniques) {
+                    zsum += cce[2];
+                }
+                edge_end_zsums[epc.first] = zsum / uniques.size();
             }
 
             // Now go through edge_end_zsums and edges and update z values

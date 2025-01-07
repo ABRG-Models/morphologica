@@ -10,7 +10,7 @@
 #include <morph/Random.h>
 #include <iostream>
 
-static constexpr int n_side = 50;
+static constexpr int n_side = 3;
 static constexpr int n_points = n_side * n_side;
 
 int main()
