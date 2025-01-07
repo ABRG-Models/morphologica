@@ -979,6 +979,29 @@ namespace morph {
             return std::lexicographical_compare (this->begin(), this->end(), rhs.begin(), rhs.end());
         }
 
+        /*!
+         * Like lexical_lessthan, but elements of vec must be less than by at least n_eps *
+         * numeric_limits<_S>::epsilon() to be different. If *this is less than rhs on that basis,
+         * return true.
+         */
+        template<typename _S=S>
+        bool lexical_lessthan_beyond_epsilon (const vec<_S, N>& rhs, const int n_eps = 1) const
+        {
+            for (std::size_t i = 0; i < N; ++i) {
+                const _S _this = (*this)[i];
+                const _S _rhs = rhs[i];
+                const _S eps = std::numeric_limits<_S>::epsilon() * n_eps;
+                if ((_rhs - _this) > eps) {
+                    // _rhs is properly less than _this, so _this is gtr than _rhs
+                    return false;
+                } else if ((_this - _rhs) > eps) {
+                    // _rhs is properly greater than _this, so _this is less than _rhs
+                    return true;
+                } // else next element
+            }
+            return false;
+        }
+
         //! Another way to compare vectors would be by length.
         template<typename _S=S>
         bool length_lessthan (const vec<_S, N>& rhs) const { return this->length() < rhs.length(); }

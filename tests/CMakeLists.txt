@@ -296,6 +296,9 @@ add_test(testvec_casting testvec_casting)
 add_executable(testvec_asmapkey testvec_asmapkey.cpp)
 add_test(testvec_asmapkey testvec_asmapkey)
 
+add_executable(testvec_asunordmapkey testvec_asunordmapkey.cpp)
+add_test(testvec_asunordmapkey testvec_asunordmapkey)
+
 add_executable(testarray_asmapkey testarray_asmapkey.cpp)
 add_test(testarray_asmapkey testarray_asmapkey)
 

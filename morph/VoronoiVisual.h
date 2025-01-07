@@ -19,6 +19,8 @@
 #include <vector>
 #include <array>
 #include <chrono>
+#include <map>
+#include <set>
 
 #define JC_VORONOI_IMPLEMENTATION
 #include <morph/jcvoronoi/jc_voronoi.h>
@@ -30,6 +32,16 @@ namespace morph {
     template <typename F, int glver = morph::gl::version_4_1>
     class VoronoiVisual : public VisualDataModel<F, glver>
     {
+        // Need a vec comparison function for a std::set of morph::vec or a std::map with a morph::vec key. See:
+        // https://abrg-models.github.io/morphologica/ref/coremaths/vvec/#using-morphvvec-as-a-key-in-stdmap-or-within-an-stdset
+        struct veccmp
+        {
+            bool operator()(morph::vec<float> a, morph::vec<float> b) const
+            {
+                return a.lexical_lessthan_beyond_epsilon(b, 100);
+            }
+        };
+
     public:
         VoronoiVisual (const vec<float> _offset)
         {
@@ -107,10 +119,6 @@ namespace morph {
             // We obtain access the the Voronoi cell sites:
             const jcv_site* sites = jcv_diagram_get_sites (&diagram);
 
-            // Need a vec comparison function for a set of morph::vec. See:
-            // https://abrg-models.github.io/morphologica/ref/coremaths/vvec/#using-morphvvec-as-a-key-in-stdmap-or-within-an-stdset
-            auto _veccmp = [](morph::vec<float> a, morph::vec<float> b) { return a.lexical_lessthan(b); };
-
             // Now scan through the Voronoi cell 'sites' and 'edges' to re-assign z
             // values in the edges. This is not going to be particularly efficient, but
             // it will be fine for grids of the size that we generally visualize.
@@ -119,6 +127,15 @@ namespace morph {
             // edge in turn, considering the sites that cluster around each end of the
             // edge. We assign the mean z of the sites in the cluster to the edge's
             // postion at that end of the edge.
+            //
+            // This is complicated by the fact that there may be multiple (2?) edges between pairs
+            // of sites. So, need a map of edge location to z_sums
+
+            // Mapping edge end-point locations to a container of adjacent cell centres
+            std::map<morph::vec<float, 3>, std::set<morph::vec<float, 3>, veccmp>, veccmp> edge_pos_centres;
+            // Mapping same edge end-point locations to the averate z value of the adjacent cell centres
+            std::map<morph::vec<float, 3>, float, veccmp> edge_end_zsums;
+
             for (int i = 0; i < diagram.numsites; ++i) {
 
                 // We have the current edge_1, the next edge_2 and the previous edge_0
@@ -131,99 +148,30 @@ namespace morph {
 
                 while (edge_1) {
 
-                    // This is 'voronoi cell centres that are clustered around the 1st end of the edge'
-                    std::set<morph::vec<float>, decltype(_veccmp)> cellcentres_1 (_veccmp);
-                    // This is 'voronoi cell centres that are clustered around the 0th end of the edge'
-                    std::set<morph::vec<float>, decltype(_veccmp)> cellcentres_0 (_veccmp);
+                    // Set z to 0. Should be done in jcvoronoi, but haven't found out how
+                    edge_1->pos[0][2] = jcv_real{0};
+                    edge_1->pos[1][2] = jcv_real{0};
 
                     edge_2 = edge_1->next ? edge_1->next : edge_first;
                     // edge_0 already set
 
-                    bool had_all_sites = true; // used only if debug_border_edge_sites == true
-
-                    // populate cellcentres. Known issue: In some cases, outer edges
+                    // populate the edge_pos_centres map. Known issue: In some cases, outer edges
                     // have only 1 site at 1 of their ends. This makes it a problem to
                     // compute the correct z value for the end with no site. The
                     // solution would be to modify the jcvoronoi algorithm to populate
                     // both ends of all edges with additional logic.
-                    if constexpr (debug_border_edge_sites == false) {
-                        for (unsigned int j = 0; j < 2; ++j) {
-                            if (edge_1->edge->sites[j]) {
-                                cellcentres_1.insert (edge_1->edge->sites[j]->p);
-                                cellcentres_0.insert (edge_1->edge->sites[j]->p);
-                            }
-                            // By definition, cellcentres_1 also gets edge_2 sites...
-                            if (edge_2->edge->sites[j]) { cellcentres_1.insert (edge_2->edge->sites[j]->p); }
-                            // and cellcentres_0 gets edge_0 sites
-                            if (edge_0->edge->sites[j]) { cellcentres_0.insert (edge_0->edge->sites[j]->p); }
+                    for (unsigned int j = 0; j < 2; ++j) {
+                        if (edge_1->edge->sites[j]) {
+                            edge_pos_centres[edge_1->pos[1]].insert (edge_1->edge->sites[j]->p);
+                            edge_pos_centres[edge_1->pos[0]].insert (edge_1->edge->sites[j]->p);
                         }
-                    } else {
-                        for (unsigned int j = 0; j < 2; ++j) {
-                            std::cout << "j = " << j << "..." << std::endl;
-                            if (edge_1->edge->sites[j]) {
-                                std::cout << "Both cellcentres get edge_1 sites. Insert " << edge_1->edge->sites[j]->p << " to _1 and _0\n";
-                                cellcentres_1.insert (edge_1->edge->sites[j]->p);
-                                cellcentres_0.insert (edge_1->edge->sites[j]->p);
-                            } else {
-                                std::cout << "Edge_1 from " << edge_1->edge->pos[0] << " to " << edge_1->edge->pos[1] << " has no sites["<<j<<"]\n";
-                                had_all_sites = false;
-                            }
-                            // By definition, cellcentres_1 also gets edge_2 sites...
-                            if (edge_2->edge->sites[j]) {
-                                std::cout << "By definition, cellcentres_1 also gets edge_2 sites. Insert " << edge_2->edge->sites[j]->p << "\n";
-                                cellcentres_1.insert (edge_2->edge->sites[j]->p);
-                            } else {
-                                std::cout << "Edge_2 from " << edge_2->edge->pos[0] << " to " << edge_2->edge->pos[1] << " has no sites["<<j<<"]\n";
-                                had_all_sites = false;
-                            }
-                            // and cellcentres_0 gets edge_0 sites
-                            if (edge_0->edge->sites[j]) {
-                                std::cout << "By definition, cellcentres_0 also gets edge_0 sites. Insert " << edge_0->edge->sites[j]->p << "\n";
-                                cellcentres_0.insert (edge_0->edge->sites[j]->p);
-                            } else {
-                                std::cout << "Edge_0 from " << edge_0->edge->pos[0] << " to " << edge_0->edge->pos[1] << " has no sites["<<j<<"]\n";
-                                had_all_sites = false;
-                            }
+                        // By definition, cellcentres_1 also gets edge_2 sites...
+                        if (edge_2->edge->sites[j]) {
+                            edge_pos_centres[edge_1->pos[1]].insert (edge_2->edge->sites[j]->p);
                         }
-                    }
-                    // Find the mean of the cell centres associated with edge_1 and edge_2
-                    float zsum_1 = 0.0f;
-                    morph::vec<float, 2> mean_cc_1 = {0.0f};
-                    for (auto cce : cellcentres_1) {
-                        zsum_1 += cce[2];
-                        mean_cc_1 += cce.less_one_dim();
-                    }
-
-                    // Find mean associated with the other end of edge_1 - the cell centres associated with edge_1 and edge_0
-                    float zsum_0 = 0.0f;
-                    morph::vec<float, 2> mean_cc_0 = {0.0f};
-                    for (auto cce : cellcentres_0) {
-                        zsum_0 += cce[2];
-                        mean_cc_0 += cce.less_one_dim();
-                    }
-
-                    if constexpr (debug_border_edge_sites == false) {
-                        edge_1->pos[1][2] = (zsum_1 / cellcentres_1.size());
-                        edge_1->pos[0][2] = (zsum_0 / cellcentres_0.size());
-                    } else {
-                        // Can't set edge 1 z positions, if we had a no sites situation above
-                        if (had_all_sites) {
-                            std::cout << "Edge 1 pos 1 at " << edge_1->pos[1] << " height is zsum_1/cellcentres_1.size() = "
-                                      << zsum_1<<"/"<<cellcentres_1.size() << " = " << (zsum_1 / cellcentres_1.size()) << std::endl;
-                            edge_1->pos[1][2] = (zsum_1 / cellcentres_1.size());
-                            std::cout << "Edge 1 pos 0 at " << edge_1->pos[0] << "height is zsum_0/cellcentres_0.size() = "
-                                      << zsum_1<<"/"<<cellcentres_1.size()<< " = " << (zsum_0 / cellcentres_0.size()) << std::endl;
-
-                            edge_1->pos[0][2] = (zsum_0 / cellcentres_0.size());
-                        } else {
-                            // Will need to do more work to fine correct z
-                            if (edge_1->neighbor) {
-                                std::cout << "Need more work for edge_1 ("
-                                          << edge_1->pos[0] << "--" << edge_1->pos[1] << "), neighbor site: (" << edge_1->neighbor->p << ")\n";
-                            } else {
-                                std::cout << "Need more work for edge_1 ("
-                                          << edge_1->pos[0] << "--" << edge_1->pos[1] << ") which has no neighbor site\n";
-                            }
+                        // and cellcentres_0 gets edge_0 sites
+                        if (edge_0->edge->sites[j]) {
+                            edge_pos_centres[edge_1->pos[0]].insert (edge_0->edge->sites[j]->p);
                         }
                     }
 
@@ -232,6 +180,31 @@ namespace morph {
                     edge_1 = edge_1->next;
                 }
             } // finished reassignment of z values
+
+            // From edge_pos_centres, compute zsums for edge_end_zsums
+            for (auto epc : edge_pos_centres) {
+                float zsum = 0.0f;
+                // cce: centres clustered-around edge
+                for (auto cce : epc.second) {
+                    zsum += cce[2];
+                }
+                edge_end_zsums[epc.first] = zsum / epc.second.size();
+            }
+
+            // Now go through edge_end_zsums and edges and update z values
+            for (int i = 0; i < diagram.numsites; ++i) {
+                const jcv_site* site = &sites[i];
+                jcv_graphedge* edge_1 = site->edges; // The very first edge
+                while (edge_1) {
+                    // For each edge, set z from the map
+                    float zsum0 = edge_end_zsums[edge_1->pos[0]];
+                    float zsum1 = edge_end_zsums[edge_1->pos[1]];
+                    edge_1->pos[0][2] = zsum0;
+                    edge_1->pos[1][2] = zsum1;
+                    edge_1 = edge_1->next;
+                }
+            }
+
             sc::time_point t1r = sc::now();
 
             // To draw triangles iterate over the 'sites' and get the edges
@@ -266,23 +239,13 @@ namespace morph {
                     this->triangle_count_sum += site_triangles;
                 }
             } else {
-                // sc1 and site_triangles_total used if debug_border_edge_sites == true only
-                morph::scale<float> sc1;
-                unsigned int site_triangles_total = 0;
-                if constexpr (debug_border_edge_sites == true) { sc1.compute_scaling (0, 25); }
                 // No need to inverse rotate
                 for (int i = 0; i < diagram.numsites; ++i) {
                     const jcv_site* site = &sites[i];
                     const jcv_graphedge* e = site->edges;
                     unsigned int site_triangles = 0;
                     while (e) {
-                        if constexpr (debug_border_edge_sites == false) {
-                            this->computeTriangle (site->p, e->pos[0], e->pos[1], this->setColour(site->index));
-                        } else {
-                            // Colour by site index (for first 25)
-                            this->computeTriangle (site->p, e->pos[0], e->pos[1], this->cm.convert (sc1.transform_one (site_triangles_total)));
-                            ++site_triangles_total;
-                        }
+                        this->computeTriangle (site->p, e->pos[0], e->pos[1], this->setColour(site->index));
                         ++site_triangles;
                         e = e->next;
                     }
@@ -310,7 +273,7 @@ namespace morph {
                         while (e) {
                             t0 = rqinv * e->pos[0];
                             t1 = rqinv * e->pos[1];
-                            this->computeTube (t0, t1, morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                            this->computeTube (t0, t1, morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
                             e = e->next;
                         }
                     }
@@ -321,7 +284,7 @@ namespace morph {
                         const jcv_site* site = &sites[i];
                         const jcv_graphedge* e = site->edges;
                         while (e) {
-                            this->computeTube (e->pos[0], e->pos[1], morph::colour::royalblue, morph::colour::goldenrod2, 0.01f, 6);
+                            this->computeTube (e->pos[0], e->pos[1], morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
                             e = e->next;
                         }
                     }
@@ -363,7 +326,7 @@ namespace morph {
             if (this->debug_dataCoords) {
                 // Add some spheres at the original data points for debugging
                 for (unsigned int i = 0; i < ncoords; ++i) {
-                    this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.03f);
+                    this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.008f);
                 }
             }
             sc::time_point t1o = sc::now(); // time draw extra objects
@@ -467,11 +430,6 @@ namespace morph {
         bool show_voronoi2d = false;
         //! If true, show black spheres at dataCoord locations
         bool debug_dataCoords = false;
-
-        //! Set true to debug the issue with computing z for border edges on, say, a
-        //! rectangular grid where some edges have only one site after the jcvoronoi
-        //! algorithm.
-        static constexpr bool debug_border_edge_sites = false;
 
         //! What direction should be considered 'z' when converting the data into a voronoi diagram?
         //! The data values will be rotated before the Voronoi pass, then rotated back.
