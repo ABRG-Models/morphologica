@@ -19,6 +19,7 @@
 #include <vector>
 #include <array>
 #include <chrono>
+#include <map>
 
 #define JC_VORONOI_IMPLEMENTATION
 #include <morph/jcvoronoi/jc_voronoi.h>
@@ -119,6 +120,12 @@ namespace morph {
             // edge in turn, considering the sites that cluster around each end of the
             // edge. We assign the mean z of the sites in the cluster to the edge's
             // postion at that end of the edge.
+            //
+            // This is complicated by the fact that there may be multiple (2?) edges between pairs
+            // of sites. So, need a map of edge location to z_sums
+
+            std::map<morph::vec<float>, float, decltype(_veccmp)> edge_end_zsums(_veccmp);
+
             for (int i = 0; i < diagram.numsites; ++i) {
 
                 // We have the current edge_1, the next edge_2 and the previous edge_0
@@ -127,16 +134,20 @@ namespace morph {
                 jcv_graphedge* edge_1 = edge_first;
                 jcv_graphedge* edge_2 = edge_first;
                 jcv_graphedge* edge_0 = edge_first;
-                while (edge_0->next) { edge_0 = edge_0->next; }
+                while (edge_0->next) { edge_0 = edge_0->next; } // edge_0 is prev
 
-                while (edge_1) {
+                while (edge_1) { // each edge of a site. edge_1 is current.
+
+                    // Set z to 0. Should be done in jcvoronoi, but haven't found out how
+                    edge_1->pos[0][2] = jcv_real{0};
+                    edge_1->pos[1][2] = jcv_real{0};
 
                     // This is 'voronoi cell centres that are clustered around the 1st end of the edge'
                     std::set<morph::vec<float>, decltype(_veccmp)> cellcentres_1 (_veccmp);
                     // This is 'voronoi cell centres that are clustered around the 0th end of the edge'
                     std::set<morph::vec<float>, decltype(_veccmp)> cellcentres_0 (_veccmp);
 
-                    edge_2 = edge_1->next ? edge_1->next : edge_first;
+                    edge_2 = edge_1->next ? edge_1->next : edge_first;  // edge_2 is the next edge
                     // edge_0 already set
 
                     // populate cellcentres. Known issue: In some cases, outer edges
@@ -144,7 +155,6 @@ namespace morph {
                     // compute the correct z value for the end with no site. The
                     // solution would be to modify the jcvoronoi algorithm to populate
                     // both ends of all edges with additional logic.
-                    std::cout << "Edge " << edge_1->edge->pos[0] << " --> " << edge_1->edge->pos[1] << std::endl;
                     for (unsigned int j = 0; j < 2; ++j) {
                         if (edge_1->edge->sites[j]) {
                             cellcentres_1.insert (edge_1->edge->sites[j]->p);
@@ -155,8 +165,6 @@ namespace morph {
                         // and cellcentres_0 gets edge_0 sites
                         if (edge_0->edge->sites[j]) { cellcentres_0.insert (edge_0->edge->sites[j]->p); }
                     }
-
-                    std::cout << "cellcentres_1.size(): " << cellcentres_1.size() << std::endl;
 
                     // Find the mean of the cell centres associated with edge_1 and edge_2
                     float zsum_1 = 0.0f;
@@ -174,14 +182,38 @@ namespace morph {
                         mean_cc_0 += cce.less_one_dim();
                     }
 
-                    edge_1->pos[1][2] = (zsum_1 / cellcentres_1.size());
-                    edge_1->pos[0][2] = (zsum_0 / cellcentres_0.size());
+                    // Here we set these ends into edge ends. Then afterwards, need a postprocess step to update edge__->pos[]
+                    std::cout << "For site at " << site->p
+                              << ":\n add (" << zsum_0 << " / " << cellcentres_0.size() << " to edge pos " << edge_1->pos[0]
+                              << "\n add (" << zsum_1 << " / " << cellcentres_1.size() << " to edge pos " << edge_1->pos[1] << std::endl;
+                    edge_end_zsums[edge_1->pos[0]] += (zsum_0 / cellcentres_0.size());
+                    edge_end_zsums[edge_1->pos[1]] += (zsum_1 / cellcentres_1.size());
 
                     // Prepare for next loop
                     edge_0 = edge_1;
                     edge_1 = edge_1->next;
                 }
             } // finished reassignment of z values
+
+            // Debugging
+            for (auto zs : edge_end_zsums) {
+                std::cout << "Edge end locn " << zs.first << " has zsum " << zs.second << std::endl;
+            }
+
+            // Now go through edge_end_zsums and edges and update z values
+            for (int i = 0; i < diagram.numsites; ++i) {
+                const jcv_site* site = &sites[i];
+                jcv_graphedge* edge_1 = site->edges; // The very first edge
+                while (edge_1) {
+                    // For each edge, set z from the map
+                    float zsum0 = edge_end_zsums[edge_1->pos[0]];
+                    float zsum1 = edge_end_zsums[edge_1->pos[1]];
+                    edge_1->pos[0][2] = zsum0;
+                    edge_1->pos[1][2] = zsum1;
+                    edge_1 = edge_1->next;
+                }
+            }
+
             sc::time_point t1r = sc::now();
 
             // To draw triangles iterate over the 'sites' and get the edges
@@ -303,7 +335,7 @@ namespace morph {
             if (this->debug_dataCoords) {
                 // Add some spheres at the original data points for debugging
                 for (unsigned int i = 0; i < ncoords; ++i) {
-                    this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.03f);
+                    this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.008f);
                 }
             }
             sc::time_point t1o = sc::now(); // time draw extra objects
