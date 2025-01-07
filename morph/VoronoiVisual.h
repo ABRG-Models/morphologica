@@ -32,6 +32,16 @@ namespace morph {
     template <typename F, int glver = morph::gl::version_4_1>
     class VoronoiVisual : public VisualDataModel<F, glver>
     {
+        // Need a vec comparison function for a std::set of morph::vec or a std::map with a morph::vec key. See:
+        // https://abrg-models.github.io/morphologica/ref/coremaths/vvec/#using-morphvvec-as-a-key-in-stdmap-or-within-an-stdset
+        struct veccmp
+        {
+            bool operator()(morph::vec<float> a, morph::vec<float> b) const
+            {
+                return a.lexical_lessthan_beyond_epsilon(b, 100);
+            }
+        };
+
     public:
         VoronoiVisual (const vec<float> _offset)
         {
@@ -40,16 +50,6 @@ namespace morph {
             this->zScale.setParams (1, 0);
             this->colourScale.do_autoscale = true;
         }
-
-        // Need a vec comparison function for a set of morph::vec. See:
-        // https://abrg-models.github.io/morphologica/ref/coremaths/vvec/#using-morphvvec-as-a-key-in-stdmap-or-within-an-stdset
-        struct _veccmp_set
-        {
-            bool operator()(morph::vec<float> a, morph::vec<float> b) const
-            {
-                return a.lexical_lessthan_beyond_epsilon(b, 100);
-            }
-        };
 
         //! Compute 2.5D Voronoi diagram using code adapted from
         // https://github.com/JCash/voronoi. The adaptation is to add a third dimension
@@ -119,10 +119,6 @@ namespace morph {
             // We obtain access the the Voronoi cell sites:
             const jcv_site* sites = jcv_diagram_get_sites (&diagram);
 
-            // Need a vec comparison function for a set of morph::vec. See:
-            // https://abrg-models.github.io/morphologica/ref/coremaths/vvec/#using-morphvvec-as-a-key-in-stdmap-or-within-an-stdset
-            auto _veccmp = [](morph::vec<float> a, morph::vec<float> b) { return a.lexical_lessthan_beyond_epsilon(b, 100); };
-
             // Now scan through the Voronoi cell 'sites' and 'edges' to re-assign z
             // values in the edges. This is not going to be particularly efficient, but
             // it will be fine for grids of the size that we generally visualize.
@@ -136,9 +132,9 @@ namespace morph {
             // of sites. So, need a map of edge location to z_sums
 
             // Mapping edge end-point locations to a container of adjacent cell centres
-            std::map<morph::vec<float, 3>, std::set<morph::vec<float, 3>, _veccmp_set>, decltype(_veccmp)> edge_pos_centres(_veccmp);
+            std::map<morph::vec<float, 3>, std::set<morph::vec<float, 3>, veccmp>, veccmp> edge_pos_centres;
             // Mapping same edge end-point locations to the averate z value of the adjacent cell centres
-            std::map<morph::vec<float, 3>, float, decltype(_veccmp)> edge_end_zsums(_veccmp);
+            std::map<morph::vec<float, 3>, float, veccmp> edge_end_zsums;
 
             for (int i = 0; i < diagram.numsites; ++i) {
 
