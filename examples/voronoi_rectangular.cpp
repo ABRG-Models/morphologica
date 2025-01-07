@@ -10,7 +10,7 @@
 #include <morph/Random.h>
 #include <iostream>
 
-static constexpr int n_side = 2;
+static constexpr int n_side = 50;
 static constexpr int n_points = n_side * n_side;
 
 int main()
@@ -42,8 +42,8 @@ int main()
     auto vorv = std::make_unique<morph::VoronoiVisual<float>> (offset);
     v.bindmodel (vorv);
     vorv->show_voronoi2d = false; // true to show the 2D voronoi edges
-    vorv->debug_dataCoords = true; // true to show coordinate spheres
-    vorv->debug_edges = true;
+    vorv->debug_dataCoords = false; // true to show coordinate spheres
+    vorv->debug_edges = false;
     float length_scale = 0.5f / n_side;
     vorv->border_width  = length_scale;
     vorv->cm.setType (cmap_t);

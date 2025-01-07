@@ -19,10 +19,57 @@
 #include <vector>
 #include <array>
 #include <chrono>
-#include <map>
+#include <unordered_map>
+#include <unordered_set>
 
 #define JC_VORONOI_IMPLEMENTATION
 #include <morph/jcvoronoi/jc_voronoi.h>
+
+// To use morph::vec as key in unordered_map (or unordered_set) you have to define how to create the hash
+template<>
+struct std::hash<morph::vec<float, 3>>
+{
+    std::size_t operator()(const morph::vec<float, 3>& v) const noexcept
+    {
+        // How to make the hash of two similar vectors v, with a precision difference come out the
+        // same??? not sure you can.
+        std::size_t h1 = std::hash<float>{}(v[0]);
+        std::size_t h2 = std::hash<float>{}(v[1]);
+        std::size_t h3 = std::hash<float>{}(v[2]);
+#ifdef DBG_HASH
+        std::cout << "hash of " << v << " is " << (h1 ^ (h2 << 1) ^ (h3 << 2)) << std::endl;
+#endif
+        return h1 ^ (h2 << 1) ^ (h3 << 2);
+    }
+};
+
+//#define DBG_EQUAL_TO 1
+// How close do two vecs need to be to be not equal?
+template<>
+struct std::equal_to<morph::vec<float, 3>>
+{
+#ifndef DBG_EQUAL_TO
+    constexpr
+#endif
+    bool operator()(const morph::vec<float, 3>& lhs, const morph::vec<float, 3>& rhs) const
+    {
+#ifdef DBG_EQUAL_TO
+        std::cout << "equal_to operator() called is " << lhs << " equal_to " << rhs << "? ";
+#endif
+        constexpr auto eps = std::numeric_limits<float>::epsilon();
+        float d0 = std::abs(lhs[0] - rhs[0]);
+        float d1 = std::abs(lhs[1] - rhs[1]);
+        float d2 = std::abs(lhs[2] - rhs[2]);
+#ifdef DBG_EQUAL_TO
+        std::cout << "dim diffs: (" << d0 << ", " << d1 << ", " << d2 << ") ";
+#endif
+        bool same = (d0 < eps) && (d1 < eps) && (d2 < eps);
+#ifdef DBG_EQUAL_TO
+        std::cout << (same ? "same\n" : "different\n");
+#endif
+        return same;
+    }
+};
 
 namespace morph {
 
@@ -110,7 +157,9 @@ namespace morph {
 
             // Need a vec comparison function for a set of morph::vec. See:
             // https://abrg-models.github.io/morphologica/ref/coremaths/vvec/#using-morphvvec-as-a-key-in-stdmap-or-within-an-stdset
-            auto _veccmp = [](morph::vec<float> a, morph::vec<float> b) { return a.lexical_lessthan(b); };
+            auto _veccmp = [](morph::vec<float> a, morph::vec<float> b) {
+                return a.lexical_lessthan_beyond_epsilon(b);
+            };
 
             // Now scan through the Voronoi cell 'sites' and 'edges' to re-assign z
             // values in the edges. This is not going to be particularly efficient, but
@@ -124,7 +173,12 @@ namespace morph {
             // This is complicated by the fact that there may be multiple (2?) edges between pairs
             // of sites. So, need a map of edge location to z_sums
 
-            std::map<morph::vec<float>, float, decltype(_veccmp)> edge_end_zsums(_veccmp);
+            // Unordered map which doesn't need veccmp specifying
+            // std::unordered_map<morph::vec<float, 3>, std::unordered_set<morph::vec<float, 3>>> edge_pos_centres;
+            // Or a map outer which can allow vectors to be same within precision
+            std::map<morph::vec<float, 3>, std::unordered_set<morph::vec<float, 3>>, decltype(_veccmp)> edge_pos_centres(_veccmp);
+
+            std::map<morph::vec<float, 3>, float, decltype(_veccmp)> edge_end_zsums(_veccmp);
 
             for (int i = 0; i < diagram.numsites; ++i) {
 
@@ -142,62 +196,40 @@ namespace morph {
                     edge_1->pos[0][2] = jcv_real{0};
                     edge_1->pos[1][2] = jcv_real{0};
 
-                    // This is 'voronoi cell centres that are clustered around the 1st end of the edge'
-                    std::set<morph::vec<float>, decltype(_veccmp)> cellcentres_1 (_veccmp);
-                    // This is 'voronoi cell centres that are clustered around the 0th end of the edge'
-                    std::set<morph::vec<float>, decltype(_veccmp)> cellcentres_0 (_veccmp);
-
                     edge_2 = edge_1->next ? edge_1->next : edge_first;  // edge_2 is the next edge
                     // edge_0 already set
 
-                    // populate cellcentres. Known issue: In some cases, outer edges
+                    // populate the edge_pos_centres map. Known issue: In some cases, outer edges
                     // have only 1 site at 1 of their ends. This makes it a problem to
                     // compute the correct z value for the end with no site. The
                     // solution would be to modify the jcvoronoi algorithm to populate
                     // both ends of all edges with additional logic.
                     for (unsigned int j = 0; j < 2; ++j) {
                         if (edge_1->edge->sites[j]) {
-                            cellcentres_1.insert (edge_1->edge->sites[j]->p);
-                            cellcentres_0.insert (edge_1->edge->sites[j]->p);
+                            edge_pos_centres[edge_1->pos[1]].insert (edge_1->edge->sites[j]->p);
+                            edge_pos_centres[edge_1->pos[0]].insert (edge_1->edge->sites[j]->p);
                         }
                         // By definition, cellcentres_1 also gets edge_2 sites...
-                        if (edge_2->edge->sites[j]) { cellcentres_1.insert (edge_2->edge->sites[j]->p); }
+                        if (edge_2->edge->sites[j]) {
+                            edge_pos_centres[edge_1->pos[1]].insert (edge_2->edge->sites[j]->p);
+                        }
                         // and cellcentres_0 gets edge_0 sites
-                        if (edge_0->edge->sites[j]) { cellcentres_0.insert (edge_0->edge->sites[j]->p); }
+                        if (edge_0->edge->sites[j]) {
+                            edge_pos_centres[edge_1->pos[0]].insert (edge_0->edge->sites[j]->p);
+                        }
                     }
-
-                    // Find the mean of the cell centres associated with edge_1 and edge_2
-                    float zsum_1 = 0.0f;
-                    morph::vec<float, 2> mean_cc_1 = {0.0f};
-                    for (auto cce : cellcentres_1) {
-                        zsum_1 += cce[2];
-                        mean_cc_1 += cce.less_one_dim();
-                    }
-
-                    // Find mean associated with the other end of edge_1 - the cell centres associated with edge_1 and edge_0
-                    float zsum_0 = 0.0f;
-                    morph::vec<float, 2> mean_cc_0 = {0.0f};
-                    for (auto cce : cellcentres_0) {
-                        zsum_0 += cce[2];
-                        mean_cc_0 += cce.less_one_dim();
-                    }
-
-                    // Here we set these ends into edge ends. Then afterwards, need a postprocess step to update edge__->pos[]
-                    std::cout << "For site at " << site->p
-                              << ":\n add (" << zsum_0 << " / " << cellcentres_0.size() << " to edge pos " << edge_1->pos[0]
-                              << "\n add (" << zsum_1 << " / " << cellcentres_1.size() << " to edge pos " << edge_1->pos[1] << std::endl;
-                    edge_end_zsums[edge_1->pos[0]] += (zsum_0 / cellcentres_0.size());
-                    edge_end_zsums[edge_1->pos[1]] += (zsum_1 / cellcentres_1.size());
-
                     // Prepare for next loop
                     edge_0 = edge_1;
                     edge_1 = edge_1->next;
                 }
             } // finished reassignment of z values
 
-            // Debugging
-            for (auto zs : edge_end_zsums) {
-                std::cout << "Edge end locn " << zs.first << " has zsum " << zs.second << std::endl;
+            // From edge_pos_centres, compute zsums for edge_end_zsums
+            for (auto epc : edge_pos_centres) {
+                float zsum = 0.0f;
+                // cce: centres clustered-around edge
+                for (auto cce : epc.second) { zsum += cce[2]; }
+                edge_end_zsums[epc.first] = zsum / epc.second.size();
             }
 
             // Now go through edge_end_zsums and edges and update z values
