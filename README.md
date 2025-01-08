@@ -1,6 +1,6 @@
 # morphologica
 
-![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
+![A banner image morphologica VisualModels](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner2.png?raw=true)
 
 ![cmake ubuntu build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-single-platform.yml/badge.svg) ![cmake ubuntu 24 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-ubuntu-2404.yml/badge.svg) ![cmake ubuntu 22 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-ubuntu-2204.yml/badge.svg)
 ![cmake mac build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-mac.yml/badge.svg) ![cmake mac 14 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-mac-14.yml/badge.svg) ![cmake mac 13 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-mac-13.yml/badge.svg)
