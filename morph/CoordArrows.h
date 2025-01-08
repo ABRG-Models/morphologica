@@ -41,10 +41,6 @@ namespace morph {
             this->em = _em;
 
             this->initAxisLabels();
-            // Initialize the vertices that will represent the object
-            this->initializeVertices();
-
-            this->postVertexInit();
         }
 
         //! Make sure coord arrow colours are ok on the given background colour
@@ -71,6 +67,9 @@ namespace morph {
         void initAxisLabels()
         {
             if (this->em > 0.0f) {
+
+                if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
+
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
                 auto vtm1 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
@@ -94,6 +93,8 @@ namespace morph {
                                                                       this->em, 48, toffset,
                                                                       this->z_label);
                 this->texts.push_back (std::move(vtm3));
+
+                if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
             }
         }
 

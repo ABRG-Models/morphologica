@@ -1082,6 +1082,10 @@ namespace morph {
             this->bindmodel (this->coordArrows);
             // And NOW we can proceed to init:
             this->coordArrows->init (this->coordArrowsLength, this->coordArrowsThickness, this->coordArrowsEm);
+            this->coordArrows->finalize(); // VisualModel::finalize releases context (normally this is the right thing)...
+#ifndef OWNED_MODE
+            this->setContext();            // ...but we've got more work to do, so re-acquire context
+#endif
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
