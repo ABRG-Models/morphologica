@@ -43,7 +43,7 @@ namespace morph {
             this->initAxisLabels();
         }
 
-        //! Make sure coord arrow colours are ok on the given background colour
+        //! Make sure coord arrow colours are ok on the given background colour. Call this *after* finalize.
         void setColourForBackground (const std::array<float, 4>& bgcolour)
         {
             // For now, only worry about the centresphere:
@@ -52,16 +52,17 @@ namespace morph {
                                           1.0f-bgcolour[2]};
             if (cscol != this->centresphere_col) {
                 this->centresphere_col = cscol;
-                this->initializeVertices();
-                this->postVertexInit();
+                this->reinit(); // sets context, does not release it
             }
 
             // Give the text labels a suitable, visible colour
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             auto ti = this->texts.begin();
             while (ti != this->texts.end()) {
                 (*ti)->setVisibleOn (bgcolour);
                 ti++;
             }
+            if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
         }
 
         void initAxisLabels()

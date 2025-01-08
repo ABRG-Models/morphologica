@@ -570,8 +570,10 @@ namespace morph {
             if ((this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective)
                 && this->showCoordArrows == true) {
                 // Ensure coordarrows centre sphere will be visible on BG:
-                this->coordArrows->setColourForBackground (this->bgcolour);
-
+                this->coordArrows->setColourForBackground (this->bgcolour); // releases context...
+#ifndef OWNED_MODE
+                this->setContext(); // ...so re-acquire
+#endif
                 if (this->coordArrowsInScene == true) {
                     this->coordArrows->setSceneMatrix (sceneview);
                 } else {
