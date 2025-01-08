@@ -79,7 +79,7 @@ int main()
 {
     // The main function is simple. Create a morph::Visual, add a single SquareGridVisual and then 'keep it open'
     std::string titlestr = "The " + morph::ColourMap<float>::colourMapTypeToStr (disctype) + " colour map with 2D inputs";
-    morph::Visual v(1600, 1000, titlestr, {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    morph::Visual v(1600, 1000, titlestr);
     v.backgroundBlack();
     v.setSceneTrans (-5.60868263,-5.17123413,-29.2000771); // numbers obtained by pressing 'z' and seeing stdout
 
