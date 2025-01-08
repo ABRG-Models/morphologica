@@ -24,22 +24,16 @@ namespace morph {
     class CoordArrows : public VisualModel<glver>
     {
     public:
-        CoordArrows()
-        {
-            this->lengths = {1.0, 1.0, 1.0};
-            this->mv_offset = {0.2, 0.2, 0.0};
-        }
-
+        CoordArrows() : morph::VisualModel<glver>() {}
+        CoordArrows (const morph::vec<float, 3>& offset) : morph::VisualModel<glver>(offset) {}
         virtual ~CoordArrows () {}
 
         //! Must make the boilerplate bindmodel call before calling init() (for text handling)
         void init (const vec<float, 3> _lengths, const float _thickness, const float _em)
         {
-            this->mv_offset = {0.0, 0.0, 0.0};
             this->lengths = _lengths;
             this->thickness = _thickness;
             this->em = _em;
-
             this->initAxisLabels();
         }
 
@@ -132,7 +126,7 @@ namespace morph {
         }
 
         //! The lengths of the x, y and z arrows.
-        vec<float, 3> lengths;
+        vec<float, 3> lengths = { 1.0f, 1.0f, 1.0f };
         //! A thickness scaling factor, to apply to the arrows.
         float thickness = 1.0f;
         //! m size for text labels
