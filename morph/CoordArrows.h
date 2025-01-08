@@ -47,22 +47,20 @@ namespace morph {
         void setColourForBackground (const std::array<float, 4>& bgcolour)
         {
             // For now, only worry about the centresphere:
-            std::array<float, 3> cscol = {1.0f-bgcolour[0],
-                                          1.0f-bgcolour[1],
-                                          1.0f-bgcolour[2]};
+            std::array<float, 3> cscol = { 1.0f - bgcolour[0], 1.0f - bgcolour[1], 1.0f - bgcolour[2] };
             if (cscol != this->centresphere_col) {
                 this->centresphere_col = cscol;
                 this->reinit(); // sets context, does not release it
-            }
 
-            // Give the text labels a suitable, visible colour
-            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
-            auto ti = this->texts.begin();
-            while (ti != this->texts.end()) {
-                (*ti)->setVisibleOn (bgcolour);
-                ti++;
+                // Give the text labels a suitable, visible colour
+                if (this->setContext != nullptr) { this->setContext (this->parentVis); }
+                auto ti = this->texts.begin();
+                while (ti != this->texts.end()) {
+                    (*ti)->setVisibleOn (bgcolour);
+                    ti++;
+                }
+                if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
             }
-            if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
         }
 
         void initAxisLabels()
@@ -71,6 +69,7 @@ namespace morph {
 
                 if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
+                // These texts are black by default
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
                 auto vtm1 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
@@ -139,8 +138,9 @@ namespace morph {
         //! m size for text labels
         float em = 0.0f;
 
-        //! The colours of the arrows, and of the centre sphere
-        std::array<float, 3> centresphere_col = {1.0f, 1.0f, 1.0f};
+        //! The colours of the arrows, and of the centre sphere (where default of black is suitable
+        //! for a white background)
+        std::array<float, 3> centresphere_col = morph::colour::black;
         std::array<float, 3> x_axis_col = morph::colour::crimson;
         std::array<float, 3> y_axis_col = morph::colour::springgreen2;
         std::array<float, 3> z_axis_col = morph::colour::blue2;
