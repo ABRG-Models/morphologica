@@ -89,6 +89,9 @@ int main()
     std::cout << "Bit count: " << fl.count() << std::endl;
     if (fl.get() != uint32_t{0}) { --rtn; }
 
+    if (fl.none() == false) { --rtn; }
+    if (fl.any() == true) { --rtn; }
+
     morph::flags<myflags> fl2;
     fl2.set (myflags::three);
     fl2.set (myflags::one);

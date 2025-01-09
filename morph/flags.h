@@ -11,8 +11,11 @@
  *
  * enum class myflags : uint64_t { // up to 64 flags are possible with this underlying type
  *     flag_one, // Name the class and flags in some way that is right for your application
- *     flag_two
+ *     flag_two  // It is not necessary to be explicit about the values of each flag
  * };
+ *
+ * (It is up to you to ensure that your enum class does not contain more flags than there are bits
+ * in the underlying type!)
  *
  * morph::flags<myflags> fl;
  *
@@ -105,6 +108,10 @@ namespace morph {
             return *this;
         }
         // Set from a bit (std::bitset-like function name)
+        //
+        // NB: If static_cast<I>(flag) is greater than the number of bits in the type I, then no
+        // flag will be set. That is, it is up to the programmer to ensure that the enum E does not
+        // have more flags than bits in its underlying type I.
         constexpr void set (const E& flag, bool value = true) noexcept
         {
             if (value == true) {
@@ -152,6 +159,15 @@ namespace morph {
             while (n) { n &= n--, ++c; } // Kernighan's algorithm
             return c;
         }
+
+        // Return true if any flags are set
+        constexpr bool any() const noexcept { return this->count() > I{0}; }
+
+        // Return true if no flags are set
+        constexpr bool none() const noexcept { return this->count() == I{0}; }
+
+        // Note: there is no flags::all() to match std::bitset::all() because it is not currently
+        // possible in C++ to know how many enumerated values there are in the enum class E.
 
         // cast operators
         explicit constexpr operator bool() const noexcept { return !!this->bits; }
