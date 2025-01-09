@@ -67,6 +67,9 @@ int main()
     std::cout << "Bit count: " << fl.count() << std::endl;
     if (fl.get() != uint32_t{7}) { --rtn; }
 
+    if (fl.none() == true) { --rtn; }
+    if (fl.any() == false) { --rtn; }
+
     fl |= (myflags::four);
     if (fl.test(myflags::four)) {
         std::cout << "flags: four is set" << std::endl;
