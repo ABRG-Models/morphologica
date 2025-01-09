@@ -11,6 +11,18 @@ enum class myflags : uint32_t
     four
 };
 
+enum class myflags2 : uint16_t
+{
+    one,
+    two,
+    three,
+    four,
+    five,
+    six,
+    seven,
+    eight
+};
+
 int main()
 {
     int rtn = 0;
@@ -100,7 +112,7 @@ int main()
     fl2.set (myflags::one);
     std::cout << "fl2 = " << fl2.get() << std::endl;
 
-    morph::flags fl3 = (fl2 | myflags::four);
+    morph::flags fl3 = (fl2 | myflags::four); // the type myflags is deduced by the compiler
     fl3 |= myflags::two;
     if (fl3.get() != uint32_t{15}) { --rtn; }
 
@@ -117,6 +129,24 @@ int main()
     std::cout << "myflags::two : " << morph::flags<myflags>(myflags::two).get() << std::endl;
     std::cout << "myflags::three : " << morph::flags<myflags>(myflags::three).get() << std::endl;
     std::cout << "myflags::four : " << morph::flags<myflags>(myflags::four).get() << std::endl;
+
+    // Test constructor with type E (myflags2) arg
+    morph::flags<myflags2> fl5 (myflags2::four);
+    if (fl5.get() != 8) { --rtn; }
+
+    // Test copy constructor (template deduction works)
+    morph::flags fl6 (fl5);
+    if (fl6.get() != 8) { --rtn; }
+
+    fl6 = fl5;
+    if (fl6.get() != 8) { --rtn; }
+
+    // Test constructor with passed in underlying type (template deduction not possible)
+    morph::flags<myflags2> fl7 (uint16_t{4});
+    if (fl7.get() != 4) { --rtn; }
+
+    std::cout << "fl5 = " << fl5.get() << " !fl5 = " << !fl5 << std::endl;
+    std::cout << "fl5 = " << fl5.get() << " !fl5 = " << !fl5 << std::endl;
 
     std::cout << (rtn ? "Failed\n" : "Success\n");
     return rtn;
