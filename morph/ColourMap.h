@@ -524,7 +524,7 @@ namespace morph {
     class ColourMap
     {
     public:
-        //! Flags associated with the type (generated in setType)
+        //! Feature flags associated with the ColourMapType (generated in setType)
         morph::flags<ColourMapFlags> flags;
     private:
         //! Type of map
@@ -554,6 +554,11 @@ namespace morph {
 
         // Set this true to reverse the direction in which the hues are output for disc maps
         bool hue_reverse_direction = false;
+
+        //! If true, as ColourMapType type is a 1D map, then expect to operate in '2D mode' with
+        //! convert (T, T). The second dimension of the input is used to set the saturation of the
+        //! colour retrieved from the map.
+        bool act_2d = false;
 
     public:
         //! Default constructor is required, but need not do anything.
@@ -1649,7 +1654,7 @@ namespace morph {
         }
 
         //! How many colour datums does the colour map require?
-        static int numDatums (ColourMapType _t)
+        static int numDatums (ColourMapType _t, bool _act_2d = false)
         {
             int n = 0;
             switch (_t) {
@@ -1671,16 +1676,16 @@ namespace morph {
                 n = 2;
                 break;
             }
-            default: // rest are one datum
+            default: // rest are one datum (unless act_2d is set)
             {
-                n = 1;
+                n = _act_2d ? 2 : 1;
                 break;
             }
             }
 
             return n;
         }
-        int numDatums() const { return ColourMap::numDatums (this->type); }
+        int numDatums() const { return ColourMap::numDatums (this->type, this->act_2d); }
 
         //! The maximum number for the range of the datum to convert to a colour. 1 for
         //! floating point variables.
@@ -1728,7 +1733,11 @@ namespace morph {
             std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
             if (this->type == ColourMapType::Duochrome) {
                 c = this->duochrome (_datum1, _datum2);
-            } else {
+            } else if (this->type == ColourMapType::HSV
+                || this->type == ColourMapType::DiscFourWhite
+                || this->type == ColourMapType::DiscFourBlack
+                || this->type == ColourMapType::DiscSixWhite
+                || this->type == ColourMapType::DiscSixBlack) {
                 // Convert two inputs to radius and angle
                 std::array<T, 2> ra = xy_to_radius_angle (_datum1, _datum2);
                 float ra0 = static_cast<float>(ra[0]); // radius
@@ -1746,8 +1755,13 @@ namespace morph {
                 } else if (this->type == ColourMapType::DiscSixBlack) {
                     lenthe::colormap::disk::six<float> (ra0, ra1, c.data(), false, lenthe::colormap::Sym::None);
                 } else {
-                    throw std::runtime_error ("Set ColourMapType to Duochrome, HSV DiscFourWhite/Black or DiscSixWhite/Black.");
+                    throw std::runtime_error ("ColourMap::convert(T, T): Unexpected case");
                 }
+            } else if (this->act_2d == true) {
+                // Returning a 1D colourmap value using the second dim as saturation
+                c = this->convertWithSaturation (_datum1, _datum2);
+            } else {
+                    throw std::runtime_error ("Set ColourMapType to Duochrome, HSV DiscFourWhite/Black or DiscSixWhite/Black or a 1D map with act_2d=true.");
             }
             return c;
         }
@@ -1819,6 +1833,16 @@ namespace morph {
             }
             }
             return clr;
+        }
+
+        //! A 2D convert() which adjusts the saturation of the retrieved colour using the second dimension.
+        std::array<float, 3> convertWithSaturation (const T _datum, const T _saturation) const
+        {
+            std::array<float, 3> c = this->convert (_datum);
+            std::array<float, 3> hsv = ColourMap<T>::rgb2hsv (c);
+            float saturation = _saturation > T{1} ? 1.0f : static_cast<float>(_saturation);
+            hsv[1] *= saturation < 0.0f ? 0.0f : saturation;
+            return ColourMap<T>::hsv2rgb (hsv);
         }
 
         //! Convert the scalar datum into an RGB (or BGR) colour
@@ -2906,6 +2930,8 @@ namespace morph {
             }
             this->hue_reverse_direction = rev;
         }
+
+        void set_act_2d (const bool _2d) { this->act_2d = _2d; }
 
         /*!
          * @param datum gray value from 0.0 to 1.0
