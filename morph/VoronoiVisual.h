@@ -18,7 +18,6 @@
 #include <iostream>
 #include <vector>
 #include <array>
-#include <chrono>
 #include <map>
 #include <set>
 
@@ -63,11 +62,11 @@ namespace morph {
             unsigned int nvdata = this->vectorData == nullptr ? 0 : this->vectorData->size();
 
             if (ndata > 0 && ncoords != ndata) {
-                std::cout << "VoronoiVisual Error: ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return (no model)." << std::endl;
+                std::cerr << "VoronoiVisual Error: ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return (no model)." << std::endl;
                 return;
             }
             if (nvdata > 0 && ncoords != nvdata) {
-                std::cout << "VoronoiVisual Error: ncoords ("<<ncoords<<") != nvdata ("<<nvdata<<"), return (no model)." << std::endl;
+                std::cerr << "VoronoiVisual Error: ncoords ("<<ncoords<<") != nvdata ("<<nvdata<<"), return (no model)." << std::endl;
                 return;
             }
 
@@ -99,10 +98,6 @@ namespace morph {
                 ry.update ((*this->dcoords_ptr)[i][1]);
             }
 
-            using namespace std::chrono;
-            using sc = std::chrono::steady_clock;
-
-            sc::time_point t0 = sc::now();
             // Generate the 2D Voronoi diagram
             jcv_diagram diagram;
             memset (&diagram, 0, sizeof(jcv_diagram));
@@ -112,9 +107,6 @@ namespace morph {
                 jcv_point{rx.max + this->border_width, ry.max + this->border_width, 0.0f}
             };
             jcv_diagram_generate (ncoords, this->dcoords_ptr->data(), &domain, 0, &diagram);
-
-            // Time jcv_diagram_generate:
-            sc::time_point t1 = sc::now();
 
             // We obtain access the the Voronoi cell sites:
             const jcv_site* sites = jcv_diagram_get_sites (&diagram);
@@ -205,8 +197,6 @@ namespace morph {
                 }
             }
 
-            sc::time_point t1r = sc::now();
-
             // To draw triangles iterate over the 'sites' and get the edges
             this->triangle_counts.resize (ncoords, 0);
             this->site_indices.resize (ncoords, 0);
@@ -233,7 +223,6 @@ namespace morph {
                         ++site_triangles;
                         e = e->next;
                     }
-                    //std::cout << "Voronoi cell " << i << " had " << site_triangles << " triangles\n";
                     this->triangle_counts[i] = site_triangles;
                     this->site_indices[i] = site->index;
                     this->triangle_count_sum += site_triangles;
@@ -257,7 +246,6 @@ namespace morph {
             if (static_cast<unsigned int>(diagram.numsites) != ncoords) {
                 std::cout << "WARNING: numsites != ncoords ?!?!\n";
             }
-            sc::time_point t1t = sc::now(); // time draw triangles
 
             // Draw optional objects
             if (this->debug_edges) {
@@ -329,25 +317,9 @@ namespace morph {
                     this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.008f);
                 }
             }
-            sc::time_point t1o = sc::now(); // time draw extra objects
 
             // At end free the Voronoi diagram memory
             jcv_diagram_free (&diagram);
-
-            // Time the rest
-            sc::time_point t2 = sc::now();
-
-            sc::duration t_d = t1 - t0;
-            std::cout << "jcv_diagram_generate: " << duration_cast<microseconds>(t_d).count() << " us\n";
-            sc::duration t_d1 = t1r - t1;
-            std::cout << "regenerate z values: " << duration_cast<microseconds>(t_d1).count() << " us\n";
-            sc::duration t_d1t = t1t - t1r;
-            std::cout << "Draw triangles: " << duration_cast<microseconds>(t_d1t).count() << " us\n";
-            sc::duration t_d1o = t1o - t1t;
-            std::cout << "Draw extra objects: " << duration_cast<microseconds>(t_d1o).count() << " us\n";
-
-            sc::duration t_d2 = t2 - t0;
-            std::cout << "Everything: " << duration_cast<microseconds>(t_d2).count() << " us\n";
         }
 
         void reinitColoursScalar()
