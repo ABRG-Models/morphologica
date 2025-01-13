@@ -48,6 +48,8 @@ namespace morph {
             this->viewmatrix.translate (this->mv_offset);
             this->zScale.setParams (1, 0);
             this->colourScale.do_autoscale = true;
+            this->colourScale2.do_autoscale = true;
+            this->colourScale3.do_autoscale = true;
         }
 
         //! Compute 2.5D Voronoi diagram using code adapted from
@@ -350,6 +352,8 @@ namespace morph {
         void reinitColoursVector()
         {
             if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+            if (this->colourScale2.do_autoscale == true) { this->colourScale.reset(); }
+            if (this->colourScale3.do_autoscale == true) { this->colourScale.reset(); }
 
             for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
                 this->dcolour[i] = (*this->vectorData)[i][0];
