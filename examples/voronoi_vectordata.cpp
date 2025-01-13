@@ -40,7 +40,20 @@ int main()
     vorv->debug_dataCoords = false; // true to show coordinate spheres
     float length_scale = 4.0f / std::sqrt (n_points);
     vorv->border_width  = length_scale;
+#if 1
+    // With RGB, the input is passed in as RGB channels with each channel being in range [0, 1]
     vorv->cm.setType (morph::ColourMapType::RGB);
+#else
+# if 0
+    // You can alternatively specify a 2D map like DiscFourBlack...
+    vorv->cm.setType (morph::ColourMapType::DiscFourBlack);
+# else
+    // ...or a 1D map with 'act as if 2d' set true (which will desaturate the map with one dimension of the data):
+    vorv->cm.setType (morph::ColourMapType::Plasma);
+    vorv->cm.set_act_2d (true);
+# endif
+#endif
+
     vorv->setDataCoords (&points);
     vorv->setVectorData (&data);
     vorv->finalize();
