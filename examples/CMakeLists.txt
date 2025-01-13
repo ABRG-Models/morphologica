@@ -249,6 +249,12 @@ if(ARMADILLO_FOUND)
 
 endif(ARMADILLO_FOUND)
 
+add_executable(colourmaps_desaturating colourmaps_desaturating.cpp)
+target_link_libraries(colourmaps_desaturating OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(colourmaps_desaturating GLEW::GLEW)
+endif()
+
 add_executable(colourmaps_other colourmaps_other.cpp)
 target_link_libraries(colourmaps_other OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
