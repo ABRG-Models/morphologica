@@ -458,70 +458,107 @@ namespace morph {
             this->idx = 0;
             this->setupScaling();
 
+            I vpsz = static_cast<I>(this->vertexPositions.size());
+            I vcsz = static_cast<I>(this->vertexColors.size());
+            I vnsz = static_cast<I>(this->vertexNormals.size());
+            // How many additional vertices?
+            I add_v = this->grid->n() * I{3};
+
+            // Additional space in vertexPositions/Colors/Normals
+            this->vertexPositions.resize (vpsz + add_v);
+            this->vertexColors.resize (vcsz + add_v);
+            this->vertexNormals.resize (vnsz + add_v);
+
+            I vidx = 0;
             for (I ri = 0; ri < this->grid->n(); ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
-                this->vertex_push ((*this->grid)[ri][0]+centering_offset[0],
-                                   (*this->grid)[ri][1]+centering_offset[1], dcopy[ri], this->vertexPositions);
-                this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+
+                vidx = vpsz + ri * 3;
+                this->vertexPositions[vidx++] = (*this->grid)[ri][0]+centering_offset[0];
+                this->vertexPositions[vidx++] = (*this->grid)[ri][1]+centering_offset[1];
+                this->vertexPositions[vidx++] = dcopy[ri];
+
+                vidx = vcsz + ri * 3;
+                this->vertexColors[vidx++] = clr[0];
+                this->vertexColors[vidx++] = clr[1];
+                this->vertexColors[vidx++] = clr[2];
+
+                vidx = vnsz + ri * 3;
+                this->vertexNormals[vidx++] = 0.0f;
+                this->vertexNormals[vidx++] = 0.0f;
+                this->vertexNormals[vidx++] = 1.0f;
             }
 
             // Build indices row by row.
             auto dims = this->grid->get_dims();
+            // We know how many indices will be created
+            I ri_sz = static_cast<I>(dims[1]) - I{1};
+            I ci_sz = static_cast<I>(dims[0]) - I{1};
+            size_t add_i = (dims[1]-1) * (dims[0]-1) * 6u;
+            size_t sz_start = this->indices.size();
+            size_t sz_end = sz_start + add_i;
+            this->indices.resize (sz_end, 0);
+            I i0 = static_cast<I>(sz_start);
+            I ind_idx = i0;
+            I six_ci_sz = ci_sz * I{6};
             if (this->grid->get_order() == morph::GridOrder::bottomleft_to_topright) {
-                for (I ri = 0; ri < dims[1]-1; ++ri) {
-                    for (I ci = 0; ci < dims[0]-1; ++ci) {
+                for (I ri = 0; ri < ri_sz; ++ri) {
+                    ind_idx = i0 + ri * six_ci_sz;
+                    for (I ci = 0; ci < ci_sz; ++ci) {
                         // Triangle 1
                         I ii = ri * dims[0] + ci;
-                        this->indices.push_back (ii);
-                        this->indices.push_back (ii + dims[0] + 1); // NNE
-                        this->indices.push_back (ii + 1);           // NE
+                        this->indices[ind_idx++] = (ii);
+                        this->indices[ind_idx++] = (ii + dims[0] + 1);  // NNE
+                        this->indices[ind_idx++] = (ii + 1);            // NE
                         // Triangle 2
-                        this->indices.push_back (ii);
-                        this->indices.push_back (ii + dims[0]);     // NN
-                        this->indices.push_back (ii + dims[0] + 1); // NNE
+                        this->indices[ind_idx++] = (ii);
+                        this->indices[ind_idx++] = (ii + dims[0]);      // NN
+                        this->indices[ind_idx++] = (ii + dims[0] + 1);  // NNE
                     }
                 }
             } else if (this->grid->get_order() == morph::GridOrder::topleft_to_bottomright) {
-                for (I ri = 0; ri < dims[1]-1; ++ri) {
-                    for (I ci = 0; ci < dims[0]-1; ++ci) {
+                for (I ri = 0; ri < ri_sz; ++ri) {
+                    ind_idx = i0 + ri * six_ci_sz;
+                    for (I ci = 0; ci < ci_sz; ++ci) {
                         // Triangle 1
                         I ii = ri * dims[0] + ci;
-                        this->indices.push_back (ii);
-                        this->indices.push_back (ii + 1);
-                        this->indices.push_back (ii + dims[0] + 1); // NSE
+                        this->indices[ind_idx++] = (ii);
+                        this->indices[ind_idx++] = (ii + 1);
+                        this->indices[ind_idx++] = (ii + dims[0] + 1); // NSE
                         // Triangle 2
-                        this->indices.push_back (ii);
-                        this->indices.push_back (ii + dims[0] + 1); // NSE
-                        this->indices.push_back (ii + dims[0]);     // NS
+                        this->indices[ind_idx++] = (ii);
+                        this->indices[ind_idx++] = (ii + dims[0] + 1); // NSE
+                        this->indices[ind_idx++] = (ii + dims[0]);     // NS
                     }
                 }
             } else if (this->grid->get_order() == morph::GridOrder::bottomleft_to_topright_colmaj) {
-                for (I ri = 0; ri < dims[1]-1; ++ri) {
-                    for (I ci = 0; ci < dims[0]-1; ++ci) {
+                for (I ri = 0; ri < ri_sz; ++ri) {
+                    ind_idx = i0 + ri * six_ci_sz;
+                    for (I ci = 0; ci < ci_sz; ++ci) {
                         // Triangle 1
                         I ii = ci * dims[1] + ri;
-                        this->indices.push_back (ii);
-                        this->indices.push_back (ii + dims[1] + 1); // NNE
-                        this->indices.push_back (ii + dims[1]);     // NE
+                        this->indices[ind_idx++] = (ii);
+                        this->indices[ind_idx++] = (ii + dims[1] + 1); // NNE
+                        this->indices[ind_idx++] = (ii + dims[1]);     // NE
                         // Triangle 2
-                        this->indices.push_back (ii);
-                        this->indices.push_back (ii + 1);           // NN
-                        this->indices.push_back (ii + dims[1] + 1); // NNE
+                        this->indices[ind_idx++] = (ii);
+                        this->indices[ind_idx++] = (ii + 1);           // NN
+                        this->indices[ind_idx++] = (ii + dims[1] + 1); // NNE
                     }
                 }
             } else if (this->grid->get_order() == morph::GridOrder::topleft_to_bottomright_colmaj) {
-                for (I ri = 0; ri < dims[1]-1; ++ri) {
-                    for (I ci = 0; ci < dims[0]-1; ++ci) {
+                for (I ri = 0; ri < ri_sz; ++ri) {
+                    ind_idx = i0 + ri * six_ci_sz;
+                    for (I ci = 0; ci < ci_sz; ++ci) {
                         // Triangle 1
                         I ii = ci * dims[1] + ri;
-                        this->indices.push_back (ii);
-                        this->indices.push_back (ii + dims[1]);     // NE
-                        this->indices.push_back (ii + dims[1] + 1); // NSE
+                        this->indices[ind_idx++] = (ii);
+                        this->indices[ind_idx++] = (ii + dims[1]);     // NE
+                        this->indices[ind_idx++] = (ii + dims[1] + 1); // NSE
                         // Triangle 2
-                        this->indices.push_back (ii);
-                        this->indices.push_back (ii + dims[1] + 1); // NSE
-                        this->indices.push_back (ii + 1);           // NS
+                        this->indices[ind_idx++] = (ii);
+                        this->indices[ind_idx++] = (ii + dims[1] + 1); // NSE
+                        this->indices[ind_idx++] = (ii + 1);           // NS
                     }
                 }
 
