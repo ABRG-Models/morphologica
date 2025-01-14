@@ -99,6 +99,8 @@ int main()
     // This is addmap
     auto hsv_vis = std::make_unique<SquareGridVisual>(morph::vec<float>{ 0.0f, 0.0f, 0.0f }, v.curr_map_type);
     v.bindmodel (hsv_vis);
+    hsv_vis->addLabel (hsv_vis->colourMap.getTypeStr() + std::string(" (") + hsv_vis->colourMap.getFlagsStr() + std::string(")"),
+                       morph::vec<float>({0,-1,0}), morph::TextFeatures(0.24f, morph::colour::white));
     hsv_vis->finalize();
     auto gvp = v.addVisualModel (hsv_vis);
 
@@ -116,9 +118,11 @@ int main()
 
                 auto hsv_vis = std::make_unique<SquareGridVisual>(morph::vec<float>{ 0.0f, 0.0f, 0.0f }, v.curr_map_type);
                 v.bindmodel (hsv_vis);
+                hsv_vis->addLabel (hsv_vis->colourMap.getTypeStr() + std::string(" (") + hsv_vis->colourMap.getFlagsStr() + std::string(")"),
+                                   morph::vec<float>({0,-1,0}), morph::TextFeatures(0.24f, morph::colour::white));
                 hsv_vis->finalize();
                 gvp = v.addVisualModel (hsv_vis);
-    
+
                 display_map_type = v.curr_map_type;
             } else {
                 // The map wasn't 1D, so skip
