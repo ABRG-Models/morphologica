@@ -56,7 +56,6 @@ int main()
     offset = {0.8f, -0.3f, 0.0f};
     auto cbv =  std::make_unique<morph::ColourBarVisual<float>>(offset);
     v.bindmodel (cbv);
-    cbv->cm.setType (colour_map_type); // ColourBarVisual also has a ColourMapType 'cm' member
     cbv->orientation = morph::colourbar_orientation::vertical;
     cbv->tickside = morph::colourbar_tickside::right_or_below;
     // Copy colourmap and scale to colourbar visual
@@ -70,7 +69,6 @@ int main()
     offset = {-0.3f, -1.0f, 0.0f};
     cbv =  std::make_unique<morph::ColourBarVisual<float>>(offset);
     v.bindmodel (cbv);
-    cbv->cm.setType (colour_map_type);
     cbv->orientation = morph::colourbar_orientation::horizontal;
     cbv->tickside = morph::colourbar_tickside::left_or_above;
     cbv->cm = hgvp->cm;
