@@ -22,7 +22,7 @@ add_subdirectory(jcvoronoi)
 
 # Graphics headers
 install(
-  FILES VisualCommon.h Visual.h lodepng.h loadpng.h VisualModel.h VisualDataModel.h VisualTextModel.h TextGeometry.h TextFeatures.h VisualResources.h VisualFace.h CoordArrows.h HexGridVisual.h CartGridVisual.h GridVisual.h GridctVisual.h QuadsVisual.h QuadsMeshVisual.h graphstyles.h DatasetStyle.h GraphVisual.h PointRowsVisual.h PointRowsMeshVisual.h ScatterVisual.h QuiverVisual.h RodVisual.h SphereVisual.h PolygonVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h ColourBarVisual.h CurvyTellyVisual.h HSVWheelVisual.h RhomboVisual.h TriaxesVisual.h TriFrameVisual.h TxtVisual.h VectorVisual.h ConfigVisual.h RectangleVisual.h TriangleVisual.h ConeVisual.h IcosaVisual.h GeodesicVisual.h GratingVisual.h HealpixVisual.h VoronoiVisual.h
+  FILES VisualCommon.h Visual.h lodepng.h loadpng.h VisualModel.h VisualDataModel.h VisualTextModel.h TextGeometry.h TextFeatures.h VisualResources.h VisualFace.h CoordArrows.h HexGridVisual.h CartGridVisual.h GridVisual.h GridctVisual.h QuadsVisual.h QuadsMeshVisual.h graphstyles.h DatasetStyle.h GraphVisual.h PointRowsVisual.h PointRowsMeshVisual.h ScatterVisual.h QuiverVisual.h RodVisual.h SphereVisual.h PolygonVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h ColourBarVisual.h CurvyTellyVisual.h HSVWheelVisual.h RhomboVisual.h TriaxesVisual.h TriFrameVisual.h TxtVisual.h VectorVisual.h ConfigVisual.h RectangleVisual.h TriangleVisual.h ConeVisual.h IcosaVisual.h GeodesicVisual.h GratingVisual.h HealpixVisual.h VoronoiVisual.h LengthscaleVisual.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
 # The Visual-in-a-Qt-Widget code
