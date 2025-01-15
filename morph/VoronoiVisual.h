@@ -261,8 +261,8 @@ namespace morph {
                         const jcv_site* site = &sites[i];
                         const jcv_graphedge* e = site->edges;
                         while (e) {
-                            t0 = rqinv * e->pos[0];
-                            t1 = rqinv * e->pos[1];
+                            t0 = rqinv * (e->pos[0] * this->zoom);
+                            t1 = rqinv * (e->pos[1] * this->zoom);
                             this->computeTube (t0, t1, morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
                             e = e->next;
                         }
@@ -274,7 +274,7 @@ namespace morph {
                         const jcv_site* site = &sites[i];
                         const jcv_graphedge* e = site->edges;
                         while (e) {
-                            this->computeTube (e->pos[0], e->pos[1], morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
+                            this->computeTube (e->pos[0] * this->zoom, e->pos[1] * this->zoom, morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
                             e = e->next;
                         }
                     }
@@ -292,8 +292,8 @@ namespace morph {
                         const jcv_site* site = &sites[i];
                         const jcv_graphedge* e = site->edges;
                         while (e) {
-                            t0 = rqinv * morph::vec<float>{ e->pos[0].x(), e->pos[0].y(), 0.0f };
-                            t1 = rqinv * morph::vec<float>{ e->pos[1].x(), e->pos[1].y(), 0.0f };
+                            t0 = rqinv * morph::vec<float>{ e->pos[0].x() * this->zoom, e->pos[0].y() * this->zoom, 0.0f };
+                            t1 = rqinv * morph::vec<float>{ e->pos[1].x() * this->zoom, e->pos[1].y() * this->zoom, 0.0f };
                             this->computeTube (t0, t1, morph::colour::black, morph::colour::black, 0.01f, 6);
                             e = e->next;
                         }
@@ -305,7 +305,8 @@ namespace morph {
                         const jcv_site* site = &sites[i];
                         const jcv_graphedge* e = site->edges;
                         while (e) {
-                            this->computeTube ({ e->pos[0].x(), e->pos[0].y(), 0.0f }, { e->pos[1].x(), e->pos[1].y(), 0.0f },
+                            this->computeTube ({ e->pos[0].x() * this->zoom, e->pos[0].y() * this->zoom, 0.0f },
+                                               { e->pos[1].x() * this->zoom, e->pos[1].y() * this->zoom, 0.0f },
                                                morph::colour::black, morph::colour::black, 0.01f, 6);
                             e = e->next;
                         }
@@ -316,7 +317,7 @@ namespace morph {
             if (this->debug_dataCoords) {
                 // Add some spheres at the original data points for debugging
                 for (unsigned int i = 0; i < ncoords; ++i) {
-                    this->computeSphere ((*this->dataCoords)[i], morph::colour::black, 0.008f);
+                    this->computeSphere ((*this->dataCoords)[i] * this->zoom, morph::colour::black, 0.008f);
                 }
             }
 
@@ -399,6 +400,9 @@ namespace morph {
                 throw std::runtime_error ("No data to reinitColours()");
             }
         }
+
+        //! Zoom in? To zoom in (make bigger) choose a value >1
+        float zoom = 1.0f;
 
         //! If true, show 2.5D Voronoi edges
         bool debug_edges = false;
@@ -495,8 +499,11 @@ namespace morph {
         }
 
         //! Compute a triangle from 3 arbitrary corners
-        void computeTriangle (vec<float> c1, vec<float> c2, vec<float> c3, std::array<float, 3> colr)
+        void computeTriangle (vec<float> c1, vec<float> c2, vec<float> c3, const std::array<float, 3>& colr)
         {
+            c1 *= this->zoom;
+            c2 *= this->zoom;
+            c3 *= this->zoom;
             // v is the face normal
             vec<float> u1 = c1-c2;
             vec<float> u2 = c2-c3;
