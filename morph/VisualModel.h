@@ -1339,23 +1339,36 @@ namespace morph {
             vec<float> u2 = c2-c3;
             vec<float> v = u2.cross(u1);
             v.renormalize();
+
             // Push corner vertices
-            this->vertex_push (c1, this->vertexPositions);
-            this->vertex_push (c2, this->vertexPositions);
-            this->vertex_push (c3, this->vertexPositions);
-            this->vertex_push (c4, this->vertexPositions);
+            size_t vpsz = this->vertexPositions.size();
+            this->vertexPositions.resize (vpsz + 12);
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexPositions[vpsz++] = c1[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexPositions[vpsz++] = c2[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexPositions[vpsz++] = c3[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexPositions[vpsz++] = c4[i]; }
+
             // Colours/normals
+            size_t vcsz = this->vertexColors.size();
+            size_t vnsz = this->vertexNormals.size();
+            this->vertexColors.resize (vcsz + 12);
+            this->vertexNormals.resize (vnsz + 12);
             for (unsigned int i = 0; i < 4u; ++i) {
-                this->vertex_push (col, this->vertexColors);
-                this->vertex_push (v, this->vertexNormals);
+                for (unsigned int j = 0; j < 3u; ++j) {
+                    this->vertexColors[vcsz++] = col[j];
+                    this->vertexNormals[vnsz++] = v[j];
+                }
             }
-            GLuint botLeft = idx;
-            this->indices.push_back (botLeft);
-            this->indices.push_back (botLeft+1);
-            this->indices.push_back (botLeft+2);
-            this->indices.push_back (botLeft);
-            this->indices.push_back (botLeft+2);
-            this->indices.push_back (botLeft+3);
+
+            size_t i0 = this->indices.size();
+            this->indices.resize (i0 + 6, 0);
+            this->indices[i0++] = this->idx;
+            this->indices[i0++] = this->idx + 1;
+            this->indices[i0++] = this->idx + 2;
+            this->indices[i0++] = this->idx;
+            this->indices[i0++] = this->idx + 2;
+            this->indices[i0++] = this->idx + 3;
+
             this->idx += 4;
         }
 
