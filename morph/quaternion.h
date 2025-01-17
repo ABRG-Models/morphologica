@@ -275,16 +275,16 @@ namespace morph {
         //! radians. This function was previously called initFromAxisAngle
         constexpr void set_rotation (const vec<Flt>& axis, const Flt& angle)
         {
-            Flt a = angle * Flt{0.5};
-            Flt s = std::sin(a);
-            Flt c = std::cos(a);
+            Flt halfangle = angle * Flt{0.5};
+            Flt cosHalf = std::cos(halfangle);
+            Flt sinHalf = std::sin(halfangle);
             vec<Flt> ax = axis;
             ax.renormalize();
 
-            this->w = c;
-            this->x = ax.x() * s;
-            this->y = ax.y() * s;
-            this->z = ax.z() * s;
+            this->w = cosHalf;
+            this->x = ax.x() * sinHalf;
+            this->y = ax.y() * sinHalf;
+            this->z = ax.z() * sinHalf;
 
             this->renormalize();
         }
@@ -329,6 +329,22 @@ namespace morph {
             quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
             this->renormalize();
+        }
+
+        /*!
+         * Return a 4 element vec containing the axis (elements 0, 1 and 2) about which
+         * to rotate an angle (element 3) in radians to make a rotation equivalent to
+         * this quaternion
+         */
+        constexpr morph::vec<Flt, 4> axis_angle() const
+        {
+            morph::vec<Flt, 4> aa{Flt{0}};
+            aa[3] =  2 * std::acos (this->w);
+            Flt s = std::sqrt(Flt{1} - this->w * this->w);
+            aa[0] = this->x / s;
+            aa[1] = this->y / s;
+            aa[2] = this->z / s;
+            return aa;
         }
 
         /*!

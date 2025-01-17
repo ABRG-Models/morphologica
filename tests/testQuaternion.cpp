@@ -121,6 +121,24 @@ int main()
     std::cout << "unitRotationMatrix: " << vmatBB << std::endl;
 
 
+    morph::vec<float> myaxis = { 1, 2, 3 };
+    float myangle = 0.12f;
+    myaxis.renormalize();
+    morph::quaternion<float> qaa (myaxis, myangle);
+    morph::vec<float, 4> aa = qaa.axis_angle();
+
+    std::cout << "\nquaternion " << qaa << "\n"
+              << "was set from rotn " << myangle << " about axis " << myaxis << "\n"
+              << "and its axis_angle method returns " << aa << "\n"
+              << "which is a rotation of " << aa[3] << " rads about axis " << aa.less_one_dim() << std::endl << std::endl;
+
+    float eps = 0.00001; // A fair amount of precision is lost extracting axis angle if type is float
+    if (std::abs(aa[0] - myaxis[0]) > eps
+        || std::abs(aa[1] - myaxis[1]) > eps
+        || std::abs(aa[2] - myaxis[2]) > eps
+        || std::abs(aa[3] - myangle) > eps) {
+        --rtn;
+    }
 
     if (rtn == 0) {
         std::cout << "quaternion tests PASSED\n";
