@@ -201,6 +201,9 @@ namespace morph {
         virtual void compute_scaling (const T input_min, const T input_max) = 0;
         virtual void compute_scaling (const morph::range<T>& input_range) = 0;
 
+        //! Set the identity scaling (a linear scaling with 0 mapping to 0 and 1 mapping to 1)
+        virtual void identity_scaling() = 0;
+
         /*!
          * \brief Compute scaling function from data
          *
@@ -389,13 +392,23 @@ namespace morph {
             // Handle imax_len == imin_len
             if (imax_len == imin_len) {
                 // params[0] is already 0
-                this->params[1] = (this->output_range.max-this->output_range.min)/S_el{2};
+                this->params[1] = (this->output_range.max - this->output_range.min)/S_el{2};
             } else {
                 // m = rise/run
                 this->params[0] = (this->output_range.max - this->output_range.min) / static_cast<S_el>(imax_len - imin_len);
                 // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
                 this->params[1] = static_cast<S_el>(imin_len); // this->output_range.min - (this->params[0] * imin_len);
             }
+        }
+
+        virtual void identity_scaling()
+        {
+            this->do_autoscale = false;
+            // Make 1D vectors of min and max lengths
+            T minvec = {this->output_range.min};
+            T maxvec = {this->output_range.max};
+            // Compute a scaling with these vectors
+            this->compute_scaling (minvec, maxvec);
         }
 
         //! Set params for a two parameter scaling
@@ -555,6 +568,12 @@ namespace morph {
             } else {
                 throw std::runtime_error ("scale_impl<1=scalar>::compute_scaling(): Unknown scaling");
             }
+        }
+
+        virtual void identity_scaling()
+        {
+            this->do_autoscale = false;
+            this->compute_scaling (this->output_range);
         }
 
         //! Set params for a two parameter scaling
