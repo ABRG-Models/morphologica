@@ -75,8 +75,7 @@ if(ARMADILLO_FOUND)
     target_compile_definitions(${TARGETTEST1_8} PUBLIC FLT=double)
     target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
     add_test(testbezderiv3 ${TARGETTEST1_8})
-
-  endif()
+  endif(${OpenCV_FOUND})
 
   # Test two curves connected together
   set(TARGETTEST2 twocurves)
@@ -114,7 +113,7 @@ if(ARMADILLO_FOUND)
   add_executable(testhexbounddist testhexbounddist.cpp)
   target_link_libraries(testhexbounddist ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
   add_test(testhexbounddist testhexbounddist)
-endif()
+endif(ARMADILLO_FOUND)
 
 if(HDF5_FOUND)
   # Test HDF file access

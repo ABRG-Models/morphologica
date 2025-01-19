@@ -34,6 +34,10 @@ endif()
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
+#
+# Any example that uses morph::HexGrid or morph::CartGrid requires
+# libarmadillo (because these classes use morph::BezCurve).
+#
 if(ARMADILLO_FOUND)
   # Basic morph::Visual class example
   add_executable(visual visual.cpp)
@@ -41,33 +45,13 @@ if(ARMADILLO_FOUND)
   if(USE_GLEW)
     target_link_libraries(visual GLEW::GLEW)
   endif()
-endif()
 
-add_executable(helloworld helloworld.cpp)
-target_link_libraries(helloworld OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(helloworld GLEW::GLEW)
-endif()
+  add_executable(convolve_rect convolve_rect.cpp)
+  target_link_libraries(convolve_rect OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(convolve_rect GLEW::GLEW)
+  endif()
 
-add_executable(helloversion helloversion.cpp)
-target_link_libraries(helloversion OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(helloversion GLEW::GLEW)
-endif()
-
-add_executable(myvisual myvisual.cpp)
-target_link_libraries(myvisual OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(myvisual GLEW::GLEW)
-endif()
-
-add_executable(convolve_rect convolve_rect.cpp)
-target_link_libraries(convolve_rect OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(convolve_rect GLEW::GLEW)
-endif()
-
-if(ARMADILLO_FOUND)
   add_executable(convolve convolve.cpp)
   target_link_libraries(convolve OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
@@ -119,91 +103,6 @@ if(ARMADILLO_FOUND)
     target_link_libraries(cartgrid_colourbar_repeat GLEW::GLEW)
   endif()
 
-  # morph::Gridct is compile-time-configured
-  if(CXX_20_AVAILABLE)
-    add_executable(gridct_simple gridct_simple.cpp)
-    set_property(TARGET gridct_simple PROPERTY CXX_STANDARD 20)
-    target_link_libraries(gridct_simple OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(gridct_simple GLEW::GLEW)
-    endif()
-
-    add_executable(gridct_image gridct_image.cpp)
-    set_property(TARGET gridct_image PROPERTY CXX_STANDARD 20)
-    target_link_libraries(gridct_image OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(gridct_image GLEW::GLEW)
-    endif()
-  endif()
-
-  # morph::Grid is runtime-configured
-  add_executable(grid_simple grid_simple.cpp)
-  target_link_libraries(grid_simple OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(grid_simple GLEW::GLEW)
-  endif()
-
-  add_executable(grid_flat_dynamic grid_flat_dynamic.cpp)
-  target_link_libraries(grid_flat_dynamic OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(grid_flat_dynamic GLEW::GLEW)
-  endif()
-
-  add_executable(colourmap_test colourmap_test.cpp)
-  target_link_libraries(colourmap_test OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(colourmap_test GLEW::GLEW)
-  endif()
-
-  add_executable(colourmap_browser colourmap_browser.cpp)
-  target_link_libraries(colourmap_browser OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(colourmap_browser GLEW::GLEW)
-  endif()
-
-  # grid_simple, but orthographic view is the default
-  add_executable(grid_ortho grid_simple.cpp)
-  target_compile_definitions(grid_ortho PUBLIC ORTHOGRAPHIC=1)
-  target_link_libraries(grid_ortho OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(grid_ortho GLEW::GLEW)
-  endif()
-
-  # similar to grid_simple but with a random value for the pixel which highlight better the different perspective
-  # morph::Grid is runtime-configured
-  add_executable(grid_simple_rand grid_simple_rand.cpp)
-  target_link_libraries(grid_simple_rand OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(grid_simple_rand GLEW::GLEW)
-  endif()
-
-  # grid_simple_rand, but orthographic view is the default
-  add_executable(grid_ortho_rand grid_simple_rand.cpp)
-  target_compile_definitions(grid_ortho_rand PUBLIC ORTHOGRAPHIC=1)
-  target_link_libraries(grid_ortho_rand OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(grid_ortho_rand GLEW::GLEW)
-  endif()
-
-  add_executable(grid_image grid_image.cpp)
-  target_link_libraries(grid_image OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(grid_image GLEW::GLEW)
-  endif()
-
-  add_executable(grid_border grid_border.cpp)
-  target_link_libraries(grid_border OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(grid_border GLEW::GLEW)
-  endif()
-
-  add_executable(grid_border2 grid_border2.cpp)
-  target_link_libraries(grid_border2 OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(grid_border2 GLEW::GLEW)
-  endif()
-
-
   # Like HexGrid::resampleImage, this one uses an omp call that only works on Mac with
   # libomp, so avoid compiling this example on a Mac.
   if(NOT APPLE)
@@ -214,31 +113,10 @@ if(ARMADILLO_FOUND)
     endif()
   endif()
 
-  add_executable(grid_layout grid_layout.cpp)
-
-  add_executable(hsvwheel hsvwheel.cpp)
-  target_link_libraries(hsvwheel OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(hsvwheel GLEW::GLEW)
-  endif()
-
-  add_executable(cyclic_colour cyclic_colour.cpp)
-  target_link_libraries(cyclic_colour OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(cyclic_colour GLEW::GLEW)
-  endif()
-
-  # ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
   add_executable(hexgrid hexgrid.cpp)
   target_link_libraries(hexgrid OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
     target_link_libraries(hexgrid GLEW::GLEW)
-  endif()
-
-  add_executable(colourbar colourbar.cpp)
-  target_link_libraries(colourbar OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(colourbar GLEW::GLEW)
   endif()
 
   add_executable(unicode_coordaxes unicode_coordaxes.cpp)
@@ -247,7 +125,186 @@ if(ARMADILLO_FOUND)
     target_link_libraries(unicode_coordaxes GLEW::GLEW)
   endif()
 
+  add_executable(colourbar colourbar.cpp)
+  target_link_libraries(colourbar OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(colourbar GLEW::GLEW)
+  endif()
+
+  add_executable(scatter_hex_mercator scatter_hex_mercator.cpp)
+  target_link_libraries(scatter_hex_mercator OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(scatter_hex_mercator GLEW::GLEW)
+  endif()
+
+  add_executable(rosenbrock rosenbrock.cpp)
+  target_compile_definitions(rosenbrock PUBLIC FLT=float)
+  target_link_libraries(rosenbrock OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(rosenbrock GLEW::GLEW)
+  endif()
+
+  if(HDF5_FOUND)
+    add_executable(rosenbrock_asa rosenbrock_asa.cpp)
+    target_compile_definitions(rosenbrock_asa PUBLIC FLT=float VISUALISE)
+    target_link_libraries(rosenbrock_asa OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(rosenbrock_asa GLEW::GLEW)
+    endif()
+  endif(HDF5_FOUND)
+
+  # Utility prog to test your .svg boundary files
+  add_executable(show_svg_boundary show_svg_boundary.cpp)
+  target_link_libraries(show_svg_boundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(show_svg_boundary GLEW::GLEW)
+  endif()
+
+  # HexGrid::resampleImage uses an omp call that only works on Mac with
+  # libomp, so avoid compiling this example on a Mac.
+  if(NOT APPLE)
+    add_executable(hexgrid_image hexgrid_image.cpp)
+    target_link_libraries(hexgrid_image OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(hexgrid_image GLEW::GLEW)
+    endif()
+
+    add_executable(hexgrid_image_rect hexgrid_image_rect.cpp)
+    target_link_libraries(hexgrid_image_rect OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(hexgrid_image_rect GLEW::GLEW)
+    endif()
+
+    add_executable(hexgrid_image_onsphere hexgrid_image_onsphere.cpp)
+    target_link_libraries(hexgrid_image_onsphere OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(hexgrid_image_onsphere GLEW::GLEW)
+    endif()
+  endif(NOT APPLE)
+
+  add_executable(showcase showcase.cpp)
+  target_link_libraries(showcase OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(showcase GLEW::GLEW)
+  endif()
+
 endif(ARMADILLO_FOUND)
+
+add_executable(helloworld helloworld.cpp)
+target_link_libraries(helloworld OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(helloworld GLEW::GLEW)
+endif()
+
+add_executable(helloversion helloversion.cpp)
+target_link_libraries(helloversion OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(helloversion GLEW::GLEW)
+endif()
+
+add_executable(myvisual myvisual.cpp)
+target_link_libraries(myvisual OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(myvisual GLEW::GLEW)
+endif()
+
+# morph::Gridct is compile-time-configured
+if(CXX_20_AVAILABLE)
+  add_executable(gridct_simple gridct_simple.cpp)
+  set_property(TARGET gridct_simple PROPERTY CXX_STANDARD 20)
+  target_link_libraries(gridct_simple OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(gridct_simple GLEW::GLEW)
+  endif()
+
+  add_executable(gridct_image gridct_image.cpp)
+  set_property(TARGET gridct_image PROPERTY CXX_STANDARD 20)
+  target_link_libraries(gridct_image OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(gridct_image GLEW::GLEW)
+  endif()
+endif()
+
+# morph::Grid is runtime-configured
+add_executable(grid_simple grid_simple.cpp)
+target_link_libraries(grid_simple OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grid_simple GLEW::GLEW)
+endif()
+
+add_executable(grid_flat_dynamic grid_flat_dynamic.cpp)
+target_link_libraries(grid_flat_dynamic OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grid_flat_dynamic GLEW::GLEW)
+endif()
+
+add_executable(colourmap_test colourmap_test.cpp)
+target_link_libraries(colourmap_test OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(colourmap_test GLEW::GLEW)
+endif()
+
+add_executable(colourmap_browser colourmap_browser.cpp)
+target_link_libraries(colourmap_browser OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(colourmap_browser GLEW::GLEW)
+endif()
+
+# grid_simple, but orthographic view is the default
+add_executable(grid_ortho grid_simple.cpp)
+target_compile_definitions(grid_ortho PUBLIC ORTHOGRAPHIC=1)
+target_link_libraries(grid_ortho OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grid_ortho GLEW::GLEW)
+endif()
+
+# similar to grid_simple but with a random value for the pixel which highlight better the different perspective
+# morph::Grid is runtime-configured
+add_executable(grid_simple_rand grid_simple_rand.cpp)
+target_link_libraries(grid_simple_rand OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grid_simple_rand GLEW::GLEW)
+endif()
+
+# grid_simple_rand, but orthographic view is the default
+add_executable(grid_ortho_rand grid_simple_rand.cpp)
+target_compile_definitions(grid_ortho_rand PUBLIC ORTHOGRAPHIC=1)
+target_link_libraries(grid_ortho_rand OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grid_ortho_rand GLEW::GLEW)
+endif()
+
+add_executable(grid_image grid_image.cpp)
+target_link_libraries(grid_image OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grid_image GLEW::GLEW)
+endif()
+
+add_executable(grid_border grid_border.cpp)
+target_link_libraries(grid_border OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grid_border GLEW::GLEW)
+endif()
+
+add_executable(grid_border2 grid_border2.cpp)
+target_link_libraries(grid_border2 OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(grid_border2 GLEW::GLEW)
+endif()
+
+add_executable(grid_layout grid_layout.cpp)
+
+add_executable(hsvwheel hsvwheel.cpp)
+target_link_libraries(hsvwheel OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(hsvwheel GLEW::GLEW)
+endif()
+
+add_executable(cyclic_colour cyclic_colour.cpp)
+target_link_libraries(cyclic_colour OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(cyclic_colour GLEW::GLEW)
+endif()
 
 add_executable(colourmaps_desaturating colourmaps_desaturating.cpp)
 target_link_libraries(colourmaps_desaturating OpenGL::GL glfw Freetype::Freetype)
@@ -344,12 +401,6 @@ if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   if(USE_GLEW)
     target_link_libraries(scatter_geodesic GLEW::GLEW)
   endif()
-endif()
-
-add_executable(scatter_hex_mercator scatter_hex_mercator.cpp)
-target_link_libraries(scatter_hex_mercator OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(scatter_hex_mercator GLEW::GLEW)
 endif()
 
 add_executable(scatter_dynamic scatter_dynamic.cpp)
@@ -659,31 +710,13 @@ if(USE_GLEW)
   target_link_libraries(pointrows_mesh GLEW::GLEW)
 endif()
 
-if(ARMADILLO_FOUND)
-  add_executable(rosenbrock rosenbrock.cpp)
-  target_compile_definitions(rosenbrock PUBLIC FLT=float)
-  target_link_libraries(rosenbrock OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(rosenbrock GLEW::GLEW)
-  endif()
-
-  if(HDF5_FOUND)
-    add_executable(rosenbrock_asa rosenbrock_asa.cpp)
-    target_compile_definitions(rosenbrock_asa PUBLIC FLT=float VISUALISE)
-    target_link_libraries(rosenbrock_asa OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(rosenbrock_asa GLEW::GLEW)
-    endif()
-  endif(HDF5_FOUND)
-endif(ARMADILLO_FOUND)
-
 add_executable(jsonconfig jsonconfig.cpp)
 target_link_libraries(jsonconfig)
 
 if(HDF5_FOUND)
   add_executable(hdfdata hdfdata.cpp)
   target_link_libraries(hdfdata ${HDF5_C_LIBRARIES})
-endif()
+endif(HDF5_FOUND)
 
 add_executable(randvec randvec.cpp)
 target_link_libraries(randvec OpenGL::GL glfw Freetype::Freetype)
@@ -700,37 +733,6 @@ endif()
 
 add_executable(rng rng.cpp)
 target_link_libraries(rng)
-
-if(ARMADILLO_FOUND)
-  # Utility prog to test your .svg boundary files
-  add_executable(show_svg_boundary show_svg_boundary.cpp)
-  target_link_libraries(show_svg_boundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(show_svg_boundary GLEW::GLEW)
-  endif()
-endif(ARMADILLO_FOUND)
-
-# HexGrid::resampleImage uses an omp call that only works on Mac with
-# libomp, so avoid compiling this example on a Mac.
-if(NOT APPLE)
-add_executable(hexgrid_image hexgrid_image.cpp)
-target_link_libraries(hexgrid_image OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(hexgrid_image GLEW::GLEW)
-endif()
-
-add_executable(hexgrid_image_rect hexgrid_image_rect.cpp)
-target_link_libraries(hexgrid_image_rect OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(hexgrid_image_rect GLEW::GLEW)
-endif()
-
-add_executable(hexgrid_image_onsphere hexgrid_image_onsphere.cpp)
-target_link_libraries(hexgrid_image_onsphere OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(hexgrid_image_onsphere GLEW::GLEW)
-endif()
-endif()
 
 add_executable(scale scale.cpp)
 
@@ -765,12 +767,6 @@ add_executable(quit_callback quit_callback.cpp)
 target_link_libraries(quit_callback OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(quit_callback GLEW::GLEW)
-endif()
-
-add_executable(showcase showcase.cpp)
-target_link_libraries(showcase OpenGL::GL glfw Freetype::Freetype)
-if(USE_GLEW)
-  target_link_libraries(showcase GLEW::GLEW)
 endif()
 
 add_executable(izhikevich izhikevich.cpp)
