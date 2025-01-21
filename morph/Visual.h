@@ -698,27 +698,6 @@ namespace morph {
             this->coordArrows->setViewRotation (this->rotation);
         }
 
-        //! Set up a perspective projection based on window width and height
-        void setPerspective()
-        {
-            // Calculate aspect ratio
-            float aspect = static_cast<float>(this->window_w) / static_cast<float>(this->window_h ? this->window_h : 1);
-            // Reset projection
-            this->projection.setToIdentity();
-            // Set perspective projection
-            this->projection.perspective (this->fov, aspect, this->zNear, this->zFar);
-            // Compute the inverse projection matrix
-            this->invproj = this->projection.invert();
-        }
-
-        //! Set an orthographic projection
-        void setOrthographic()
-        {
-            this->projection.setToIdentity();
-            this->projection.orthographic (this->ortho_lb, this->ortho_rt, this->zNear, this->zFar);
-            this->invproj = this->projection.invert();
-        }
-
         //! Set to true when the program should end
         bool readyToFinish = false;
 
@@ -969,6 +948,36 @@ namespace morph {
         void set_winsize (int _w, int _h) { this->window_w = _w; this->window_h = _h; }
 
     protected:
+
+        //! Set up a perspective projection based on window width and height. Not public.
+        void setPerspective()
+        {
+            // Calculate aspect ratio
+            float aspect = static_cast<float>(this->window_w) / static_cast<float>(this->window_h ? this->window_h : 1);
+            // Reset projection
+            this->projection.setToIdentity();
+            // Set perspective projection
+            this->projection.perspective (this->fov, aspect, this->zNear, this->zFar);
+            // Compute the inverse projection matrix
+            this->invproj = this->projection.invert();
+        }
+
+        /*!
+         * Set an orthographic projection. This is not a public function. To choose orthographic
+         * projection for your Visual, write something like:
+         *
+         * \code
+         *   morph::Visual<> v(width, height, title);
+         *   v.ptype = morph::perspective_type::orthographic;
+         * \endcode
+         */
+        void setOrthographic()
+        {
+            this->projection.setToIdentity();
+            this->projection.orthographic (this->ortho_lb, this->ortho_rt, this->zNear, this->zFar);
+            this->invproj = this->projection.invert();
+        }
+
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
         std::vector<std::unique_ptr<morph::VisualModel<glver>>> vm;
