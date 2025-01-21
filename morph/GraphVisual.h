@@ -550,9 +550,8 @@ namespace morph {
         {
             morph::range<Flt> data_range = morph::MathAlgo::maxmin (_data);
             morph::range<Flt> absc_range = morph::MathAlgo::maxmin (_abscissae);
-            if (axisside == morph::axisside::left) {
-                this->setsize (this->width, this->height);
-            }
+
+            this->setsize (this->width, this->height);
 
             // x axis - the abscissa
             switch (this->scalingpolicy_x) {
@@ -630,41 +629,59 @@ namespace morph {
         void setdataaxisdist (float proportion)
         {
             if (this->ord1_scale.ready()) {
-                throw std::runtime_error ("setdataaxisdist: Have already scaled the data, can't set the dataaxisdist now.\n"
+                throw std::runtime_error ("setdataaxisdist: Have already scaled the left ordinate (ord1) data, can't set the dataaxisdist now.\n"
                                           "Hint: call GraphVisual::setdataaxisdist() BEFORE GraphVisual::setdata() or ::setlimits()");
             }
             this->dataaxisdist = proportion;
         }
 
-        //! Set the graph size, in model units, without a check on the scales
+        //! Set the graph size, in model units, changing scale output ranges as necessary
         void resetsize (float _width, float _height)
         {
             this->width = _width;
             this->height = _height;
 
             float _extra = this->dataaxisdist * this->height;
-            this->ord1_scale.output_range.min = _extra;
-            this->ord1_scale.output_range.max = this->height - _extra;
+
+            if (!this->ord1_scale.ready()) {
+                this->ord1_scale.output_range.min = _extra;
+                this->ord1_scale.output_range.max = this->height - _extra;
+            } else {
+                // check output_range
+                if (this->ord1_scale.output_range.min != _extra
+                    || this->ord1_scale.output_range.max != this->height - _extra) {
+                    throw std::runtime_error ("ord1_scale already set for a different height");
+                } // else ord1_scale output range matches this height already
+            }
             // Same for ord2_scale:
-            this->ord2_scale.output_range.min = _extra;
-            this->ord2_scale.output_range.max = this->height - _extra;
+            if (!this->ord2_scale.ready()) {
+                this->ord2_scale.output_range.min = _extra;
+                this->ord2_scale.output_range.max = this->height - _extra;
+            } else {
+                // check output_range
+                if (this->ord2_scale.output_range.min != _extra
+                    || this->ord2_scale.output_range.max != this->height - _extra) {
+                    throw std::runtime_error ("ord2_scale already set for a different height");
+                } // else ord2_scale output range matches this height already
+            }
 
             _extra = this->dataaxisdist * this->width;
-            this->abscissa_scale.output_range.min = _extra;
-            this->abscissa_scale.output_range.max = this->width - _extra;
+            if (!this->abscissa_scale.ready()) {
+                this->abscissa_scale.output_range.min = _extra;
+                this->abscissa_scale.output_range.max = this->width - _extra;
+            } else {
+                // check output_range
+                if (this->abscissa_scale.output_range.min != _extra
+                    || this->abscissa_scale.output_range.max != this->width - _extra) {
+                    throw std::runtime_error ("abscissa_scale already set for a different height");
+                } // else abscissa_scale output range matches this width already
+            }
 
             this->thickness = this->relative_thickness * this->width;
         }
 
         //! Set the graph size, in model units.
-        void setsize (float _width, float _height)
-        {
-            if (this->ord1_scale.ready() || this->ord2_scale.ready() || this->abscissa_scale.ready()) {
-                throw std::runtime_error ("setsize: Have already scaled the data, can't set the scale now.\n"
-                                          "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
-            }
-            this->resetsize (_width, _height);
-        }
+        void setsize (float _width, float _height) { this->resetsize (_width, _height); }
 
         // Make all the bits of the graph - fonts, line thicknesses, etc, bigger by factor. Call before finalize().
         void zoomgraph (Flt factor)
@@ -699,7 +716,7 @@ namespace morph {
             this->scalingpolicy_x = morph::scalingpolicy::manual;
             this->datarange_x = range_x;
             if (this->abscissa_scale.ready()) {
-                throw std::runtime_error ("Have already scaled the abscissa data.\n");
+                throw std::runtime_error ("setlimits_x: Have already scaled the abscissa data.\n");
             }
             this->resetsize (this->width, this->height);
             this->abscissa_scale.compute_scaling (this->datarange_x);
@@ -718,7 +735,7 @@ namespace morph {
             this->scalingpolicy_y = morph::scalingpolicy::manual;
             this->datarange_y = range_y;
             if (this->ord1_scale.ready()) {
-                throw std::runtime_error ("Have already scaled the ord1 data.\n");
+                throw std::runtime_error ("setlimits_y: Have already scaled the left ordinate (ord1) data.\n");
             }
             this->resetsize (this->width, this->height);
             this->ord1_scale.compute_scaling (this->datarange_y);
@@ -737,7 +754,7 @@ namespace morph {
             this->scalingpolicy_y = morph::scalingpolicy::manual; // scalingpolicy_y common to both left and right axes?
             this->datarange_y2 = range_y2;
             if (this->ord2_scale.ready()) {
-                throw std::runtime_error ("Have already scaled the ord2 data.\n");
+                throw std::runtime_error ("setlimits_y2: Have already scaled the right ordinate (ord2) data.\n");
             }
             this->resetsize (this->width, this->height);
             this->ord2_scale.compute_scaling (this->datarange_y2);
