@@ -93,6 +93,14 @@ int main()
     if (vvshrt.argmax() != 3) { --rtn; }
     if (vvshrt.arglongest() != 3) { --rtn; }
 
+    auto vrng = vvshrt.range();
+    std::cout << "\nvvshrt range: " << vrng << std::endl;
+    if (vrng.min == vvshrt[1] && vrng.max == vvshrt[3]) {
+        // Good
+    } else {
+        --rtn;
+    }
+
     std::cout << "rtn: " << rtn << std::endl;
     return rtn;
 }
