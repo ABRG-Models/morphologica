@@ -809,7 +809,7 @@ namespace morph {
         //! \return the range of values in the vvec (the min and max values). If you pass 'true' as
         //! the template arg, then you can test for nans, and return the min/max of the rest of the
         //! numbers
-        template<bool test_for_nans = false>
+        template<bool test_for_nans = false, typename _S = S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         morph::range<S> range() const
         {
             morph::range<S> r;
@@ -831,6 +831,19 @@ namespace morph {
                 r.min = mme.first == this->end() ? S{0} : *mme.first;
                 r.max = mme.second == this->end() ? S{0} : *mme.second;
             }
+            return r;
+        }
+
+        /*!
+         * vvec of vecs (or rather non-scalar) version of range(). Define this as the shortest
+         * vector to the longest vector.
+         */
+        template<typename _S = S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        morph::range<S> range() const
+        {
+            morph::range<S> r;
+            r.min = this->min(); // the shortest vec
+            r.max = this->max(); // the longest vec
             return r;
         }
 
