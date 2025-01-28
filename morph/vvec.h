@@ -847,6 +847,44 @@ namespace morph {
             return r;
         }
 
+        // The extent if S is scalar is just the same as range; a morph::range<S> is returned.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        morph::range<S> extent() const { return this->range(); }
+
+        /*!
+         * For a vvec of vecs/arrays extent (that is, S is a morph::vec or std::array),
+         * we return a range with min containing the minimum value for each dimension
+         * and max containing the max value for each dimension. This gives the
+         * N-dimensional volume that contains all the coordinates in the vvec.
+         *
+         * This function is enabled for S types that are containers
+         * (morph::is_copyable_container) and further, those which have a constexpr
+         * size() method (which practically, means std::array and morph::vec)
+         */
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_container<_S>::value, int> = 0 >
+        morph::range<S> extent() const
+        {
+            constexpr S s = {};                  // A dummy variable whose size is stored as sz
+            constexpr std::size_t sz = s.size(); // Should work for S=std::array or morph::vec
+            // Obtain the element type of S:
+            using S_el = std::remove_reference_t<decltype(*std::begin(std::declval<S&>()))>;
+            // min and max vectors for the extents
+            S min = {};
+            S max = {};
+            for (std::size_t i = 0; i < sz; ++i) {
+                min[i] = std::numeric_limits<S_el>::max();
+                max[i] = std::numeric_limits<S_el>::lowest();
+            }
+            // Now go through the vvec, element by element, to find the extents
+            for (std::size_t j = 0; j < this->size(); ++j) {
+                for (std::size_t i = 0; i < sz; ++i) {
+                    min[i] = (*this)[j][i] < min[i] ? (*this)[j][i] : min[i];
+                    max[i] = (*this)[j][i] > max[i] ? (*this)[j][i] : max[i];
+                }
+            }
+            return morph::range<S>{min, max};
+        }
+
         /*!
          * \brief Finds the 'zero-crossings' of a function
          *
