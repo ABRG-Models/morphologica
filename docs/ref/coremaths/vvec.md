@@ -353,6 +353,15 @@ morph::vvec<float> v = { 1, 2, 3 };
 morph::range<float> r = v.range();
 std::cout << "vvec max: " << r.max << " and min: " << r.min << std::endl;
 ```
+If the contained type is itself a vector, then `vvec::range()` returns the shortest vector as min and the longest as max.
+
+```c++
+morph::vvec<morph::vec<int, 2>> v = { {-1, -3},   {-2, 4},  {3, 5} };
+morph::range<morph::vec<int, 2>> r = v.range();
+std::cout << "r.min: " << r.min; // {-1, -3}
+std::cout << "r.max: " << r.max; // {3, 5}
+```
+
 To re-scale or renormalize the values in the `vvec`:
 ```c++
 void renormalize();  // make vector length 1
@@ -378,6 +387,18 @@ Check whether your renormalized vector is a unit vector:
 
 ```c++
 bool checkunit() const; // return true if length is 1 (to within vvec::unitThresh = 0.001)
+```
+### Extent
+
+The 'extent' of a vvec of scalar values is the same as its range (and `vvec<S>::extent()` simply sub-calls `vvec<S>::range()` for scalar `S`).
+However, for a vvec of vector values, the extent returns a range of two vectors which define a volume that will enclose all the vectors contained in the vvec.
+The vectors values must be given in some fixed size type, such as `std::array<>` or `morph::vec<>` (otherwise the function will not compile).
+
+```c++
+morph::vvec<morph::vec<int, 2>> v = { {-1, -3},   {-2, 4},  {3, 5} };
+morph::range<morph::vec<int, 2>> r = v.extent();
+std::cout << "r.min: " << r.min; // {-2, -3}
+std::cout << "r.max: " << r.max; // {3, 5}
 ```
 
 ### Finding elements
