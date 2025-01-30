@@ -125,28 +125,21 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
+    // Is T a copyable container AND has a constexpr size() method? If so, it's probably std::array or morph::vec
     template<typename T>
     class is_copyable_fixedsize
     {
-        template<typename C>
-        static constexpr bool get_sz()
+        // This will only compile if T has constexpr size()
+        template<typename C> static constexpr bool size_is_constexpr()
         {
             constexpr C c = {};
-            constexpr typename C::size_type sz = c.size(); // not working yet
-            return sz > 0 ? true : false;
+            constexpr typename C::size_type sz = c.size();
+            return sz >= 0 ? true : false;
         }
+        static constexpr bool constexpr_size = size_is_constexpr<T>();
 
-        static constexpr bool constexpr_size = get_sz<T>();
-
-        // Test C's const_iterator for traits copy constructible, copy assignable, destructible, swappable and equality comparable
-	template<typename C> static auto test(int) -> decltype(std::is_copy_constructible<typename C::const_iterator>::value == true
-                                                               && std::is_copy_assignable<typename C::const_iterator>::value == true
-                                                               && std::is_destructible<typename C::const_iterator>::value == true
-                                                               && std::is_swappable<typename C::const_iterator>::value == true
-                                                               && std::declval<typename C::const_iterator> == std::declval<typename C::const_iterator>
-                                                               && constexpr_size == true
-                                                               , std::true_type());
-
+	template<typename C> static auto test(int) -> decltype(morph::is_copyable_container<C>::value == true
+                                                               && constexpr_size == true, std::true_type());
         template<typename C> static int test(...);
 
     public:

@@ -36,6 +36,14 @@ set_from (const _S& v)
 }
 
 template <typename _S=float>
+std::enable_if_t < morph::is_copyable_fixedsize<_S>::value, bool >
+set_from_fixed (const _S& v)
+{
+    std::cout << "Type _S=" << typeid(_S).name() << " size " << sizeof (v) << " is a fixed size, simple, copyable container" << std::endl;
+    return true;
+}
+
+template <typename _S=float>
 std::enable_if_t < !morph::is_complex<_S>::value, bool >
 complex_from (const _S& v)
 {
@@ -82,6 +90,16 @@ int main()
         std::cout << "Test failed\n";
         return -1;
     }
+
+    bool c_is_fixed = set_from_fixed (c);
+    if (!c_is_fixed) { return -1; }
+
+
+#if 0 // This won't compile as c2 does not have constexpr size(). Haven't figured out
+      // how to make it compile, but return false when c2 is a non-array/vec type
+    bool c2_is_fixed = set_from_fixed (c2);
+    if (c2_is_fixed) { return -1; }
+#endif
 
     std::cout << "Test passed\n";
     return 0;
