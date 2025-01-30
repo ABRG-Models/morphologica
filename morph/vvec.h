@@ -24,6 +24,8 @@
 #include <morph/range.h>
 #include <morph/trait_tests.h>
 
+#include <morph/vec.h> // Would prefer NOT to have to include vec.h
+
 namespace morph {
 
     /*!
@@ -1869,6 +1871,31 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator* (const _S& s) const
         {
+            vvec<S> rtn(this->size());
+            auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
+            return rtn;
+        }
+
+        /*!
+         * Vector multiply operator if S is a vector. Ideally if S is a fixed size vector.
+         */
+
+        // Would prefer this line to enable the operator*:
+        //template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<_S>::value, int> = 0 >
+
+        // But need this:
+        template <typename> struct get_array_size;
+        template <typename T, std::size_t Sz>
+        struct get_array_size<morph::vec<T, Sz>> { constexpr static size_t size = Sz; };
+        //
+        template <typename _S=S,
+                  typename _S_el=std::remove_reference_t<decltype(*std::begin(std::declval<_S&>()))>,
+                  std::size_t _N=get_array_size<_S>::size,
+                  std::enable_if_t<std::is_same <_S, morph::vec<_S_el, _N>>::value == true, int> = 0 >
+        vvec<S> operator* (const _S& s) const
+        {
+            // Identical code as for scalar works here
             vvec<S> rtn(this->size());
             auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);

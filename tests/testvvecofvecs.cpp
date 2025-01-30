@@ -137,6 +137,15 @@ int main()
     auto vvvvfr = vvvvf.extent();
 #endif
 
+    morph::vvec<morph::vec<int, 2>> vvfm = { {2, 3}, {4, 5} };
+    morph::vec<int, 2> factor = {10, 100};
+    morph::vvec<morph::vec<int, 2>> vvfm_result = (vvfm * factor);
+    std::cout << vvfm << " * " << factor << " = " << vvfm_result << std::endl;
+    if ((vvfm_result[0] == morph::vec<int, 2>{20, 300}
+         && vvfm_result[1] == morph::vec<int, 2>{40, 500}) == false) {
+        --rtn;
+    }
+
     std::cout << "rtn: " << rtn << std::endl;
     return rtn;
 }
