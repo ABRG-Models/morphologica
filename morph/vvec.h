@@ -1860,8 +1860,8 @@ namespace morph {
             }
         }
 
-        //! Scalar divide by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        //! Scalar/fixed size vec divide by s
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator/ (const _S& s) const
         {
             vvec<S> rtn(this->size());
@@ -1891,8 +1891,8 @@ namespace morph {
             return rtn;
         }
 
-        //! Scalar divide by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        //! Scalar divide/fixed size vec by s
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s)
         {
             auto div_by_s = [s](S elmnt) -> S { return elmnt / s; };
