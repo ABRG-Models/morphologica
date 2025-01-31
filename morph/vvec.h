@@ -1471,7 +1471,6 @@ namespace morph {
                     last = (*this)[i];
                     rtn[i] = difn;
                 }
-                std::cout << "rtn["<<(n-1) << "] = " << (*this)[n-1] << " - " << last << std::endl;
                 rtn[n-1] = (*this)[n-1] - last;
             } else {
                 S last = (*this)[n-1];
@@ -1496,7 +1495,6 @@ namespace morph {
                     last = (*this)[i];
                     (*this)[i] = difn;
                 }
-                std::cout << "(*this)["<<(n-1) << "] = " << (*this)[n-1] << " - " << last << std::endl;
                 (*this)[n-1] = (*this)[n-1] - last; // last step follows the loop
             } else { // DO wrap
                 S first = (*this)[0];
