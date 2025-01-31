@@ -75,8 +75,8 @@ namespace morph {
          * Helper structs to detect a fixed size array (std::array or morph::vec)
          */
         template <typename T> struct is_an_array : std::false_type {};
-        template <typename T, std::size_t N> struct is_an_array< std::array<T, N> > : std::true_type {};
-        template <typename T, std::size_t N> struct is_an_array< morph::vec<T, N> > : std::true_type {};
+        template <typename T, std::size_t N> struct is_an_array<std::array<T, N>> : std::true_type {};
+        template <typename T, std::size_t N> struct is_an_array<morph::vec<T, N>> : std::true_type {};
 
         //! \return the first component of the vector
         S x() const { return (*this)[0]; }
@@ -1979,9 +1979,18 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
-        //! Scalar subtraction
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        //! Scalar subtraction with a thing that is of a different type to S (but must be scalar or fixed size vec/array)
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator- (const _S& s) const
+        {
+            vvec<S> rtn(this->size());
+            auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
+            return rtn;
+        }
+
+        //! Subtraction which should work for any strictly member type (i.e. S) that implements the - operator
+        vvec<S> operator- (const S& s) const
         {
             vvec<S> rtn(this->size());
             auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
@@ -1993,6 +2002,9 @@ namespace morph {
         template<typename _S=S>
         vvec<S> operator- (const vvec<_S>& v) const
         {
+            if (v.size() != this->size()) {
+                throw std::runtime_error ("vvec::operator-: subtracting vvecs of different dimensionality is suppressed");
+            }
             vvec<S> vrtn(this->size());
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
@@ -2000,17 +2012,8 @@ namespace morph {
             return vrtn;
         }
 
-        //! Subtraction which should work for any member type that implements the - operator
-        vvec<S> operator- (const S& s) const
-        {
-            vvec<S> rtn(this->size());
-            auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
-            return rtn;
-        }
-
         //! Scalar subtraction
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s)
         {
             auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
@@ -2021,9 +2024,13 @@ namespace morph {
         template<typename _S=S>
         void operator-= (const vvec<_S>& v)
         {
-            auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
-            std::transform (this->begin(), this->end(), this->begin(), subtract_v);
+            if (v.size() == this->size()) {
+                auto vi = v.begin();
+                auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
+                std::transform (this->begin(), this->end(), this->begin(), subtract_v);
+            } else {
+                throw std::runtime_error ("vvec::operator-=: subtracting vvecs of different dimensionality is suppressed");
+            }
         }
 
         //! Subtraction -= operator for any time same as the enclosed type that implements - op
