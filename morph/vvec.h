@@ -1917,9 +1917,18 @@ namespace morph {
             }
         }
 
-        //! Scalar addition
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        //! Scalar addition with a thing that is of a different type to S (but must be scalar or fixed size vec/array)
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator+ (const _S& s) const
+        {
+            vvec<S> rtn(this->size());
+            auto add_s = [s](S elmnt) -> S { return elmnt + s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
+            return rtn;
+        }
+
+        //! Addition strictly of something of type S which should work for any type S that implements the + operator
+        vvec<S> operator+ (const S& s) const
         {
             vvec<S> rtn(this->size());
             auto add_s = [s](S elmnt) -> S { return elmnt + s; };
@@ -1931,6 +1940,9 @@ namespace morph {
         template<typename _S=S>
         vvec<S> operator+ (const vvec<_S>& v) const
         {
+            if (v.size() != this->size()) {
+                throw std::runtime_error ("vvec::operator+: adding vvecs of different dimensionality is suppressed");
+            }
             vvec<S> vrtn(this->size());
             auto vi = v.begin();
             // Static cast is encouraged by Visual Studio, but it prevents addition of vvec of vecs and vvec of scalars
@@ -1939,17 +1951,8 @@ namespace morph {
             return vrtn;
         }
 
-        //! Addition which should work for any member type that implements the + operator
-        vvec<S> operator+ (const S& s) const
-        {
-            vvec<S> rtn(this->size());
-            auto add_s = [s](S elmnt) -> S { return elmnt + s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
-            return rtn;
-        }
-
         //! Scalar addition
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s)
         {
             auto add_s = [s](S elmnt) -> S { return elmnt + s; };
@@ -1960,9 +1963,13 @@ namespace morph {
         template<typename _S=S>
         void operator+= (const vvec<_S>& v)
         {
-            auto vi = v.begin();
-            auto add_v = [vi](S a) mutable -> S { return a + /* static_cast<S> */(*vi++); };
-            std::transform (this->begin(), this->end(), this->begin(), add_v);
+            if (v.size() == this->size()) {
+                auto vi = v.begin();
+                auto add_v = [vi](S a) mutable -> S { return a + /* static_cast<S> */(*vi++); };
+                std::transform (this->begin(), this->end(), this->begin(), add_v);
+            } else {
+                throw std::runtime_error ("vvec::operator+=: adding vvecs of different dimensionality is suppressed");
+            }
         }
 
         //! Addition += operator for any type same as the enclosed type that implements + op
