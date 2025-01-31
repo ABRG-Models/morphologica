@@ -125,6 +125,27 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
+    // Is T a copyable container AND has a constexpr size() method? If so, it's probably std::array or morph::vec
+    template<typename T>
+    class is_copyable_fixedsize
+    {
+        // This will only compile if T has constexpr size()
+        template<typename C> static constexpr bool size_is_constexpr()
+        {
+            constexpr C c = {};
+            constexpr typename C::size_type sz = c.size();
+            return sz >= 0 ? true : false;
+        }
+        static constexpr bool constexpr_size = size_is_constexpr<T>();
+
+	template<typename C> static auto test(int) -> decltype(morph::is_copyable_container<C>::value == true
+                                                               && constexpr_size == true, std::true_type());
+        template<typename C> static int test(...);
+
+    public:
+	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
+    };
+
     // Test for std::complex by looking for real() and imag() methods
     template<typename T>
     class is_complex

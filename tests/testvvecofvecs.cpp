@@ -132,10 +132,31 @@ int main()
     if (themin != vvair.min || themax != vvair.max) { --rtn; }
 
 #if 0
-    // Does not compile because vvec<float> is not fixed size
+    // Correctly does not compile because vvec<float> is not fixed size
     morph::vvec<morph::vvec<float>> vvvvf = {{-1,1},{-2,5,3}};
     auto vvvvfr = vvvvf.extent();
 #endif
+
+    // DOES compile - the vvec times vvec overload gets called and then called again, but then size
+    // issues cause a runtime error which will alert the sleepy programmer that they were doing
+    // something odd
+    try {
+        morph::vvec<morph::vvec<float>> vvvvf2 = {{-1,1},{-2,5,3}};
+        morph::vvec<float>  vfac  = { 1, 2, 3 };
+        auto result = vvvvf2 * vfac;
+        --rtn;
+    } catch (const std::exception& e) {
+        std::cout << "Expected exception: " << e.what() << std::endl;
+    }
+
+    morph::vvec<morph::vec<int, 2>> vvfm = { {2, 3}, {4, 5} };
+    morph::vec<int, 2> factor = {10, 100};
+    morph::vvec<morph::vec<int, 2>> vvfm_result = (vvfm * factor);
+    std::cout << vvfm << " * " << factor << " = " << vvfm_result << std::endl;
+    if ((vvfm_result[0] == morph::vec<int, 2>{20, 300}
+         && vvfm_result[1] == morph::vec<int, 2>{40, 500}) == false) {
+        --rtn;
+    }
 
     std::cout << "rtn: " << rtn << std::endl;
     return rtn;
