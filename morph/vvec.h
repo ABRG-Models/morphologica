@@ -1883,7 +1883,17 @@ namespace morph {
 
         // Would prefer this line to enable the operator*:
         //template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<_S>::value, int> = 0 >
+#if 0
+        template <typename T>
+        struct is_an_array : std::false_type {};
+        template <typename T, std::size_t Sz>
+        struct is_an_array< std::array<T, Sz> > : std::true_type {};
+        template <typename T, std::size_t Sz>
+        struct is_an_array< morph::vec<T, Sz> > : std::true_type {};
 
+        template <typename _S=S,
+                  std::enable_if_t<is_an_array<_S>::value == true, int> = 0 >
+#else
         template <typename> struct get_morph_vec_array_size;
         template <typename T, std::size_t Sz>
         struct get_morph_vec_array_size<morph::vec<T, Sz>> { constexpr static size_t size = Sz; };
@@ -1892,6 +1902,7 @@ namespace morph {
                   typename _S_el=std::remove_reference_t<decltype(*std::begin(std::declval<_S&>()))>,
                   std::size_t _N=get_morph_vec_array_size<_S>::size,
                   std::enable_if_t<std::is_same <_S, morph::vec<_S_el, _N>>::value == true, int> = 0 >
+#endif
         vvec<S> operator* (const _S& s) const
         {
             // Identical code as for scalar works here

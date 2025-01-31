@@ -137,6 +137,13 @@ int main()
     auto vvvvfr = vvvvf.extent();
 #endif
 
+#if 0
+    // DOES compile, as the wrong overload gets invoked.
+    morph::vvec<morph::vvec<float>> vvvvf = {{-1,1},{-2,5,3}};
+    morph::vvec<float> vfac  = { 1, 2, 3 };
+    auto result = vvvvf * vfac;
+#endif
+
     morph::vvec<morph::vec<int, 2>> vvfm = { {2, 3}, {4, 5} };
     morph::vec<int, 2> factor = {10, 100};
     morph::vvec<morph::vec<int, 2>> vvfm_result = (vvfm * factor);
