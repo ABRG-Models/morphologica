@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cmath>
+#include <array>
 #include <vector>
 #include <iostream>
 #include <string>
@@ -1786,6 +1787,53 @@ namespace morph {
         }
 
         /*!
+         * Scalar multiply * operator
+         *
+         * This function will only be defined if typename _S is a
+         * scalar type. Multiplies this vvec<S> by s, element-wise.
+         */
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        vvec<S> operator* (const _S& s) const
+        {
+            vvec<S> rtn(this->size());
+            auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
+            return rtn;
+        }
+
+        /*!
+         * Vector multiply operator if S is a vector. Ideally if S is a fixed size vector.
+         */
+
+#if 1
+        template <typename T>
+        struct is_an_array : std::false_type {};
+        template <typename T, std::size_t Sz>
+        struct is_an_array< std::array<T, Sz> > : std::true_type {};
+        template <typename T, std::size_t Sz>
+        struct is_an_array< morph::vec<T, Sz> > : std::true_type {};
+
+        template <typename _S=S, std::enable_if_t<is_an_array<_S>::value == true, int> = 0 >
+#else
+        template <typename> struct get_morph_vec_array_size;
+        template <typename T, std::size_t Sz>
+        struct get_morph_vec_array_size<morph::vec<T, Sz>> { constexpr static size_t size = Sz; };
+        //
+        template <typename _S=S,
+                  typename _S_el=std::remove_reference_t<decltype(*std::begin(std::declval<_S&>()))>,
+                  std::size_t _N=get_morph_vec_array_size<_S>::size,
+                  std::enable_if_t<std::is_same <S, morph::vec<_S_el, _N>>::value == true, int> = 0 >
+#endif
+        vvec<S> operator* (const _S& s) const
+        {
+            // Identical code as for scalar works here, but we have the guarantee that the size matches
+            vvec<S> rtn(this->size());
+            auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
+            return rtn;
+        }
+
+        /*!
          * operator* gives the Hadamard product.
          *
          * Hadamard product - elementwise multiplication. If the vectors are of
@@ -1808,6 +1856,19 @@ namespace morph {
         }
 
         /*!
+         * Scalar multiply *= operator
+         *
+         * This function will only be defined if typename _S is a
+         * scalar type. Multiplies this vvec<S> by s, element-wise.
+         */
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        void operator*= (const _S& s)
+        {
+            auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
+            std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
+        }
+
+        /*!
          * vvec multiply *= operator.
          *
          * Hadamard product. Multiply *this vector with \a v, elementwise. If \a v has a
@@ -1824,6 +1885,15 @@ namespace morph {
             }
         }
 
+        //! Scalar divide by s
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        vvec<S> operator/ (const _S& s) const
+        {
+            vvec<S> rtn(this->size());
+            auto div_by_s = [s](S elmnt) -> S { return elmnt / s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
+            return rtn;
+        }
         /*!
          * operator/ gives element by element division
          *
@@ -1836,13 +1906,21 @@ namespace morph {
         vvec<S, Al> operator/ (const vvec<_S>& v) const
         {
             if (v.size() != this->size()) {
-                throw std::runtime_error ("vvec::operator*: Hadamard division is defined here for vectors of same dimensionality only");
+                throw std::runtime_error ("vvec::operator/: Hadamard division is defined here for vectors of same dimensionality only");
             }
             vvec<S, Al> rtn(this->size(), S{0});
             auto vi = v.begin();
             auto div_by_s = [vi](S lhs) mutable -> S { return lhs / (*vi++); };
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
+        }
+
+        //! Scalar divide by s
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        void operator/= (const _S& s)
+        {
+            auto div_by_s = [s](S elmnt) -> S { return elmnt / s; };
+            std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
         /*!
@@ -1858,89 +1936,18 @@ namespace morph {
                 auto div_by_s = [vi](S lhs) mutable -> S { return lhs / (*vi++); };
                 std::transform (this->begin(), this->end(), this->begin(), div_by_s);
             } else {
-                throw std::runtime_error ("vvec::operator*=: Hadamard division is defined here for vectors of same dimensionality only");
+                throw std::runtime_error ("vvec::operator/=: Hadamard division is defined here for vectors of same dimensionality only");
             }
         }
 
-        /*!
-         * Scalar multiply * operator
-         *
-         * This function will only be defined if typename _S is a
-         * scalar type. Multiplies this vvec<S> by s, element-wise.
-         */
+        //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vvec<S> operator* (const _S& s) const
+        vvec<S> operator+ (const _S& s) const
         {
             vvec<S> rtn(this->size());
-            auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
+            auto add_s = [s](S elmnt) -> S { return elmnt + s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
-        }
-
-        /*!
-         * Vector multiply operator if S is a vector. Ideally if S is a fixed size vector.
-         */
-
-        // Would prefer this line to enable the operator*:
-        //template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<_S>::value, int> = 0 >
-#if 0
-        template <typename T>
-        struct is_an_array : std::false_type {};
-        template <typename T, std::size_t Sz>
-        struct is_an_array< std::array<T, Sz> > : std::true_type {};
-        template <typename T, std::size_t Sz>
-        struct is_an_array< morph::vec<T, Sz> > : std::true_type {};
-
-        template <typename _S=S,
-                  std::enable_if_t<is_an_array<_S>::value == true, int> = 0 >
-#else
-        template <typename> struct get_morph_vec_array_size;
-        template <typename T, std::size_t Sz>
-        struct get_morph_vec_array_size<morph::vec<T, Sz>> { constexpr static size_t size = Sz; };
-        //
-        template <typename _S=S,
-                  typename _S_el=std::remove_reference_t<decltype(*std::begin(std::declval<_S&>()))>,
-                  std::size_t _N=get_morph_vec_array_size<_S>::size,
-                  std::enable_if_t<std::is_same <_S, morph::vec<_S_el, _N>>::value == true, int> = 0 >
-#endif
-        vvec<S> operator* (const _S& s) const
-        {
-            // Identical code as for scalar works here
-            vvec<S> rtn(this->size());
-            auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
-            return rtn;
-        }
-
-        /*!
-         * Scalar multiply *= operator
-         *
-         * This function will only be defined if typename _S is a
-         * scalar type. Multiplies this vvec<S> by s, element-wise.
-         */
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator*= (const _S& s)
-        {
-            auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
-            std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
-        }
-
-        //! Scalar divide by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vvec<S> operator/ (const _S& s) const
-        {
-            vvec<S> rtn(this->size());
-            auto div_by_s = [s](S elmnt) -> S { return elmnt / s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
-            return rtn;
-        }
-
-        //! Scalar divide by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        void operator/= (const _S& s)
-        {
-            auto div_by_s = [s](S elmnt) -> S { return elmnt / s; };
-            std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
         //! vvec addition operator
@@ -1955,38 +1962,8 @@ namespace morph {
             return vrtn;
         }
 
-        //! vvec addition operator
-        template<typename _S=S>
-        void operator+= (const vvec<_S>& v)
-        {
-            auto vi = v.begin();
-            auto add_v = [vi](S a) mutable -> S { return a + /* static_cast<S> */(*vi++); };
-            std::transform (this->begin(), this->end(), this->begin(), add_v);
-        }
-
-        //! A vvec subtraction operator
-        template<typename _S=S>
-        vvec<S> operator- (const vvec<_S>& v) const
-        {
-            vvec<S> vrtn(this->size());
-            auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
-            std::transform (this->begin(), this->end(), vrtn.begin(), subtract_v);
-            return vrtn;
-        }
-
-        //! A vvec subtraction operator
-        template<typename _S=S>
-        void operator-= (const vvec<_S>& v)
-        {
-            auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
-            std::transform (this->begin(), this->end(), this->begin(), subtract_v);
-        }
-
-        //! Scalar addition
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vvec<S> operator+ (const _S& s) const
+        //! Addition which should work for any member type that implements the + operator
+        vvec<S> operator+ (const S& s) const
         {
             vvec<S> rtn(this->size());
             auto add_s = [s](S elmnt) -> S { return elmnt + s; };
@@ -2002,9 +1979,45 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
+        //! vvec addition operator
+        template<typename _S=S>
+        void operator+= (const vvec<_S>& v)
+        {
+            auto vi = v.begin();
+            auto add_v = [vi](S a) mutable -> S { return a + /* static_cast<S> */(*vi++); };
+            std::transform (this->begin(), this->end(), this->begin(), add_v);
+        }
+
+        //! Addition += operator for any type same as the enclosed type that implements + op
+        void operator+= (const S& s) const
+        {
+            auto add_s = [s](S elmnt) -> S { return elmnt + s; };
+            std::transform (this->begin(), this->end(), this->begin(), add_s);
+        }
+
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator- (const _S& s) const
+        {
+            vvec<S> rtn(this->size());
+            auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
+            return rtn;
+        }
+
+        //! A vvec subtraction operator
+        template<typename _S=S>
+        vvec<S> operator- (const vvec<_S>& v) const
+        {
+            vvec<S> vrtn(this->size());
+            auto vi = v.begin();
+            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
+            std::transform (this->begin(), this->end(), vrtn.begin(), subtract_v);
+            return vrtn;
+        }
+
+        //! Subtraction which should work for any member type that implements the - operator
+        vvec<S> operator- (const S& s) const
         {
             vvec<S> rtn(this->size());
             auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
@@ -2020,29 +2033,13 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
-        //! Addition which should work for any member type that implements the + operator
-        vvec<S> operator+ (const S& s) const
+        //! A vvec subtraction operator
+        template<typename _S=S>
+        void operator-= (const vvec<_S>& v)
         {
-            vvec<S> rtn(this->size());
-            auto add_s = [s](S elmnt) -> S { return elmnt + s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
-            return rtn;
-        }
-
-        //! Addition += operator for any time same as the enclosed type that implements + op
-        void operator+= (const S& s) const
-        {
-            auto add_s = [s](S elmnt) -> S { return elmnt + s; };
-            std::transform (this->begin(), this->end(), this->begin(), add_s);
-        }
-
-        //! Subtraction which should work for any member type that implements the - operator
-        vvec<S> operator- (const S& s) const
-        {
-            vvec<S> rtn(this->size());
-            auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
-            return rtn;
+            auto vi = v.begin();
+            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
+            std::transform (this->begin(), this->end(), this->begin(), subtract_v);
         }
 
         //! Subtraction -= operator for any time same as the enclosed type that implements - op
