@@ -1179,6 +1179,21 @@ namespace morph {
         }
 
         /*!
+         * Scalar multiply * operator
+         *
+         * This function will only be defined if typename _S is a
+         * scalar type. Multiplies this vec<S, N> by s, element-wise.
+         */
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        constexpr vec<S, N> operator* (const _S& s) const
+        {
+            vec<S, N> rtn{};
+            auto mult_by_s = [s](S elmnt) { return elmnt * s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
+            return rtn;
+        }
+
+        /*!
          * operator* gives the Hadamard product.
          *
          * Hadamard product - elementwise multiplication. If the vectors are of
@@ -1197,6 +1212,19 @@ namespace morph {
         }
 
         /*!
+         * Scalar multiply *= operator
+         *
+         * This function will only be defined if typename _S is a
+         * scalar type. Multiplies this vec<S, N> by s, element-wise.
+         */
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        constexpr void operator*= (const _S& s)
+        {
+            auto mult_by_s = [s](S elmnt) { return elmnt * s; };
+            std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
+        }
+
+        /*!
          * vec multiply *= operator.
          *
          * Hadamard product. Multiply *this vector with \a v, elementwise.
@@ -1209,32 +1237,15 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
-        /*!
-         * Scalar multiply * operator
-         *
-         * This function will only be defined if typename _S is a
-         * scalar type. Multiplies this vec<S, N> by s, element-wise.
-         */
+        //! Scalar divide by s
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr vec<S, N> operator* (const _S& s) const
+        constexpr vec<S, N> operator/ (const _S& s) const
         {
-            vec<S, N> rtn{};
-            auto mult_by_s = [s](S elmnt) { return elmnt * s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
+            vec<S, N> rtn;
+            for (std::size_t i = 0; i < N; ++i) { rtn[i] = S{0}; } // init rtn
+            auto div_by_s = [s](S elmnt) { return elmnt / s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
-        }
-
-        /*!
-         * Scalar multiply *= operator
-         *
-         * This function will only be defined if typename _S is a
-         * scalar type. Multiplies this vec<S, N> by s, element-wise.
-         */
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr void operator*= (const _S& s)
-        {
-            auto mult_by_s = [s](S elmnt) { return elmnt * s; };
-            std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
         /*!
@@ -1252,6 +1263,14 @@ namespace morph {
             return rtn;
         }
 
+        //! Scalar divide by s
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        constexpr void operator/= (const _S& s)
+        {
+            auto div_by_s = [s](S elmnt) { return elmnt / s; };
+            std::transform (this->begin(), this->end(), this->begin(), div_by_s);
+        }
+
         /*!
          * vec division /= operator.
          *
@@ -1263,23 +1282,23 @@ namespace morph {
             std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
         }
 
-        //! Scalar divide by s
+        //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr vec<S, N> operator/ (const _S& s) const
+        constexpr vec<S, N> operator+ (const _S& s) const
         {
-            vec<S, N> rtn;
-            for (std::size_t i = 0; i < N; ++i) { rtn[i] = S{0}; } // init rtn
-            auto div_by_s = [s](S elmnt) { return elmnt / s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
+            vec<S, N> rtn{};
+            auto add_s = [s](S elmnt) { return elmnt + s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
 
-        //! Scalar divide by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr void operator/= (const _S& s)
+        //! Addition which should work for any member type that implements the + operator
+        constexpr vec<S, N> operator+ (const S& s) const
         {
-            auto div_by_s = [s](S elmnt) { return elmnt / s; };
-            std::transform (this->begin(), this->end(), this->begin(), div_by_s);
+            vec<S, N> rtn{};
+            auto add_s = [s](S elmnt) { return elmnt + s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
+            return rtn;
         }
 
         //! vec addition operator
@@ -1293,6 +1312,21 @@ namespace morph {
             return vrtn;
         }
 
+        //! Scalar addition
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        constexpr void operator+= (const _S& s)
+        {
+            auto add_s = [s](S elmnt) { return elmnt + s; };
+            std::transform (this->begin(), this->end(), this->begin(), add_s);
+        }
+
+        //! Addition += operator for any type same as the enclosed type that implements + op
+        constexpr void operator+= (const S& s) const
+        {
+            auto add_s = [s](S elmnt) { return elmnt + s; };
+            std::transform (this->begin(), this->end(), this->begin(), add_s);
+        }
+
         //! vec addition operator
         template<typename _S=S>
         constexpr void operator+= (const vec<_S, N>& v)
@@ -1300,6 +1334,25 @@ namespace morph {
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), add_v);
+        }
+
+        //! Scalar subtraction
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        constexpr vec<S, N> operator- (const _S& s) const
+        {
+            vec<S, N> rtn{};
+            auto subtract_s = [s](S elmnt) { return elmnt - s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
+            return rtn;
+        }
+
+        //! Subtraction which should work for any member type that implements the - operator
+        constexpr vec<S, N> operator- (const S& s) const
+        {
+            vec<S, N> rtn{};
+            auto subtract_s = [s](S elmnt) { return elmnt - s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
+            return rtn;
         }
 
         //! vec subtraction operator
@@ -1313,43 +1366,6 @@ namespace morph {
             return vrtn;
         }
 
-        //! vec subtraction operator
-        template<typename _S=S>
-        constexpr void operator-= (const vec<_S, N>& v)
-        {
-            auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
-            std::transform (this->begin(), this->end(), this->begin(), subtract_v);
-        }
-
-        //! Scalar addition
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr vec<S, N> operator+ (const _S& s) const
-        {
-            vec<S, N> rtn{};
-            auto add_s = [s](S elmnt) { return elmnt + s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
-            return rtn;
-        }
-
-        //! Scalar addition
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr void operator+= (const _S& s)
-        {
-            auto add_s = [s](S elmnt) { return elmnt + s; };
-            std::transform (this->begin(), this->end(), this->begin(), add_s);
-        }
-
-        //! Scalar subtraction
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr vec<S, N> operator- (const _S& s) const
-        {
-            vec<S, N> rtn{};
-            auto subtract_s = [s](S elmnt) { return elmnt - s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
-            return rtn;
-        }
-
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         constexpr void operator-= (const _S& s)
@@ -1358,36 +1374,20 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
-        //! Addition which should work for any member type that implements the + operator
-        constexpr vec<S, N> operator+ (const S& s) const
-        {
-            vec<S, N> rtn{};
-            auto add_s = [s](S elmnt) { return elmnt + s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
-            return rtn;
-        }
-
-        //! Addition += operator for any type same as the enclosed type that implements + op
-        constexpr void operator+= (const S& s) const
-        {
-            auto add_s = [s](S elmnt) { return elmnt + s; };
-            std::transform (this->begin(), this->end(), this->begin(), add_s);
-        }
-
-        //! Subtraction which should work for any member type that implements the - operator
-        constexpr vec<S, N> operator- (const S& s) const
-        {
-            vec<S, N> rtn{};
-            auto subtract_s = [s](S elmnt) { return elmnt - s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
-            return rtn;
-        }
-
         //! Subtraction -= operator for any time same as the enclosed type that implements - op
         constexpr void operator-= (const S& s) const
         {
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
+        }
+
+        //! vec subtraction operator
+        template<typename _S=S>
+        constexpr void operator-= (const vec<_S, N>& v)
+        {
+            auto vi = v.begin();
+            auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
+            std::transform (this->begin(), this->end(), this->begin(), subtract_v);
         }
 
         //! Overload the stream output operator
