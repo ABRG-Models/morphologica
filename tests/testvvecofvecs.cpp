@@ -132,15 +132,15 @@ int main()
     if (themin != vvair.min || themax != vvair.max) { --rtn; }
 
 #if 0
-    // Does not compile because vvec<float> is not fixed size
+    // Correctly does not compile because vvec<float> is not fixed size
     morph::vvec<morph::vvec<float>> vvvvf = {{-1,1},{-2,5,3}};
     auto vvvvfr = vvvvf.extent();
 #endif
 
 #if 0
-    // DOES compile, as the wrong overload gets invoked.
+    // DOES compile (though it shouldn't), as the wrong overload gets invoked.
     morph::vvec<morph::vvec<float>> vvvvf = {{-1,1},{-2,5,3}};
-    morph::vvec<float> vfac  = { 1, 2, 3 };
+                morph::vvec<float>  vfac  = { 1, 2, 3 };
     auto result = vvvvf * vfac;
 #endif
 
