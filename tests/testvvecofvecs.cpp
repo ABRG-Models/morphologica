@@ -137,12 +137,17 @@ int main()
     auto vvvvfr = vvvvf.extent();
 #endif
 
-#if 0
-    // DOES compile (though it shouldn't), as the wrong overload gets invoked.
-    morph::vvec<morph::vvec<float>> vvvvf = {{-1,1},{-2,5,3}};
-                morph::vvec<float>  vfac  = { 1, 2, 3 };
-    auto result = vvvvf * vfac;
-#endif
+    // DOES compile - the vvec times vvec overload gets called and then called again, but then size
+    // issues cause a runtime error which will alert the sleepy programmer that they were doing
+    // something odd
+    try {
+        morph::vvec<morph::vvec<float>> vvvvf2 = {{-1,1},{-2,5,3}};
+        morph::vvec<float>  vfac  = { 1, 2, 3 };
+        auto result = vvvvf2 * vfac;
+        --rtn;
+    } catch (const std::exception& e) {
+        std::cout << "Expected exception: " << e.what() << std::endl;
+    }
 
     morph::vvec<morph::vec<int, 2>> vvfm = { {2, 3}, {4, 5} };
     morph::vec<int, 2> factor = {10, 100};
