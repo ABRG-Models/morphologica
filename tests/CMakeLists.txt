@@ -312,6 +312,9 @@ add_test(testvvec testvvec)
 add_executable(testvvecofvecs testvvecofvecs.cpp)
 add_test(testvvecofvecs testvvecofvecs)
 
+add_executable(testvvec_operatormult testvvec_operatormult.cpp)
+add_test(testvvec_operatormult testvvec_operatormult)
+
 add_executable(testvvec_convolutions testvvec_convolutions.cpp)
 add_test(testvvec_convolutions testvvec_convolutions)
 

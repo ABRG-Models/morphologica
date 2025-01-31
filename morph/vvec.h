@@ -24,8 +24,7 @@
 #include <morph/Random.h>
 #include <morph/range.h>
 #include <morph/trait_tests.h>
-
-#include <morph/vec.h> // Would prefer NOT to have to include vec.h
+#include <morph/vec.h>
 
 namespace morph {
 
@@ -71,6 +70,13 @@ namespace morph {
 
         //! Used in functions for which wrapping is important
         enum class wrapdata { none, wrap };
+
+        /*!
+         * Helper structs to detect a fixed size array (std::array or morph::vec)
+         */
+        template <typename T> struct is_an_array : std::false_type {};
+        template <typename T, std::size_t N> struct is_an_array< std::array<T, N> > : std::true_type {};
+        template <typename T, std::size_t N> struct is_an_array< morph::vec<T, N> > : std::true_type {};
 
         //! \return the first component of the vector
         S x() const { return (*this)[0]; }
@@ -1787,46 +1793,14 @@ namespace morph {
         }
 
         /*!
-         * Scalar multiply * operator
+         * Scalar/fixed-size vec multiply * operator
          *
          * This function will only be defined if typename _S is a
-         * scalar type. Multiplies this vvec<S> by s, element-wise.
+         * scalar type or a fixed size vector. Multiplies this vvec<S> by s, element-wise.
          */
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator* (const _S& s) const
         {
-            vvec<S> rtn(this->size());
-            auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
-            return rtn;
-        }
-
-        /*!
-         * Vector multiply operator if S is a vector. Ideally if S is a fixed size vector.
-         */
-
-#if 1
-        template <typename T>
-        struct is_an_array : std::false_type {};
-        template <typename T, std::size_t Sz>
-        struct is_an_array< std::array<T, Sz> > : std::true_type {};
-        template <typename T, std::size_t Sz>
-        struct is_an_array< morph::vec<T, Sz> > : std::true_type {};
-
-        template <typename _S=S, std::enable_if_t<is_an_array<_S>::value == true, int> = 0 >
-#else
-        template <typename> struct get_morph_vec_array_size;
-        template <typename T, std::size_t Sz>
-        struct get_morph_vec_array_size<morph::vec<T, Sz>> { constexpr static size_t size = Sz; };
-        //
-        template <typename _S=S,
-                  typename _S_el=std::remove_reference_t<decltype(*std::begin(std::declval<_S&>()))>,
-                  std::size_t _N=get_morph_vec_array_size<_S>::size,
-                  std::enable_if_t<std::is_same <S, morph::vec<_S_el, _N>>::value == true, int> = 0 >
-#endif
-        vvec<S> operator* (const _S& s) const
-        {
-            // Identical code as for scalar works here, but we have the guarantee that the size matches
             vvec<S> rtn(this->size());
             auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
@@ -1856,12 +1830,12 @@ namespace morph {
         }
 
         /*!
-         * Scalar multiply *= operator
+         * Scalar/fixed-size vec multiply *= operator
          *
          * This function will only be defined if typename _S is a
-         * scalar type. Multiplies this vvec<S> by s, element-wise.
+         * scalar type or a fixed size vec. Multiplies this vvec<S> by s, element-wise.
          */
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s)
         {
             auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
@@ -1875,7 +1849,8 @@ namespace morph {
          * different number of elements to *this, then an exception is thrown.
          */
         template <typename _S=S>
-        void operator*= (const vvec<_S>& v) {
+        void operator*= (const vvec<_S>& v)
+        {
             if (v.size() == this->size()) {
                 auto vi = v.begin();
                 auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * (*vi++); };
@@ -1931,7 +1906,8 @@ namespace morph {
          * different number of elements to *this, then an exception is thrown.
          */
         template <typename _S=S>
-        void operator/= (const vvec<_S>& v) {
+        void operator/= (const vvec<_S>& v)
+        {
             if (v.size() == this->size()) {
                 auto vi = v.begin();
                 auto div_by_s = [vi](S lhs) mutable -> S { return lhs / (*vi++); };
