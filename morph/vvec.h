@@ -1894,6 +1894,7 @@ namespace morph {
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
         }
+
         /*!
          * operator/ gives element by element division
          *
