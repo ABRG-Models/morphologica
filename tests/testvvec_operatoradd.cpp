@@ -1,5 +1,5 @@
 /*
- * Test the different possibilities for adding scalar/vec/vvec etc to a vvec of scalars/vecs 
+ * Test the different possibilities for adding scalar/vec/vvec etc to a vvec of scalars/vecs
  */
 
 #include <morph/vvec.h>
@@ -26,8 +26,8 @@ int main()
     float s = 10;
     // Vecs for adding
     [[maybe_unused]] morph::vec<float, 2> vec2 = { 10, 100 };
-    [[maybe_unused]] morph::vec<int, 2> vec2i = { 10, 100 };    
-    [[maybe_unused]] morph::vec<double, 2> vec2d = { 10, 100 };    
+    [[maybe_unused]] morph::vec<int, 2> vec2i = { 10, 100 };
+    [[maybe_unused]] morph::vec<double, 2> vec2d = { 10, 100 };
     [[maybe_unused]] morph::vec<float, 3> vec3 = { 10, 100, 1000 };
     morph::vvec<float> vvec_f2 = { 10, 100 };
     morph::vvec<float> vvec_f3 = { 10, 100, 1000 };
@@ -35,7 +35,7 @@ int main()
     /**
      * vvec<scalars> plus stuff
      */
-    
+
     auto result1 = v_scal + s;
     std::cout << "01: " << result1 << std::endl;
     if (result1 != morph::vvec<float>{1010, 2010, 3010}) { std::cout << "01bad\n"; --rtn; }
@@ -46,7 +46,7 @@ int main()
     auto result3 = v_scal + vec3;
     std::cout << "03: " << result3 << std::endl;
 #endif
-    
+
     auto result4 = v_scal + vvec_f3;
     std::cout << "04: " << result4 << std::endl;
     if (result4 != morph::vvec<float>{1010, 2100, 4000}) { std::cout << "04bad\n"; --rtn; }
@@ -59,11 +59,11 @@ int main()
         // Expected exception
         std::cout << "05: " << "Expected exception: " << e.what() << std::endl;
     }
-    
+
     /**
      * vvec<vecs> plus stuff
      */
-    
+
     auto result6 = v_vec2 + s;
     std::cout << "06: " << result6 << std::endl;
     if (result6 != morph::vvec<morph::vec<float, 2>>{{1010,1010}, {2010,2010}, {3010,3010}}) { std::cout << "06bad\n"; --rtn; }
@@ -75,15 +75,15 @@ int main()
     std::cout << "08: " << v_vec2 << " + " << vec2 << " = ?\n";
     auto result8 = v_vec2 + vec2;
     std::cout << "08: " << result8 << std::endl;
-    if (result8 != morph::vvec<morph::vec<float, 2>>{{1010,1100}, {2010,2100}, {3010,3100}}) { std::cout << "08bad\n"; --rtn; }    
+    if (result8 != morph::vvec<morph::vec<float, 2>>{{1010,1100}, {2010,2100}, {3010,3100}}) { std::cout << "08bad\n"; --rtn; }
     // Buuuuut if the type was different, we couldn't compile, so for these two, need the '|| vvec::is_an_array<std::decay_t<_S>>::value' clause
     auto result8i = v_vec2 + vec2i;
     std::cout << "08i: " << result8i << std::endl;
-    if (result8i != morph::vvec<morph::vec<float, 2>>{{1010,1100}, {2010,2100}, {3010,3100}}) { std::cout << "08ibad\n"; --rtn; }    
+    if (result8i != morph::vvec<morph::vec<float, 2>>{{1010,1100}, {2010,2100}, {3010,3100}}) { std::cout << "08ibad\n"; --rtn; }
     auto result8d = v_vec2 + vec2d;
     std::cout << "08d: " << result8d << std::endl;
-    if (result8d != morph::vvec<morph::vec<float, 2>>{{1010,1100}, {2010,2100}, {3010,3100}}) { std::cout << "08dbad\n"; --rtn; }    
-    
+    if (result8d != morph::vvec<morph::vec<float, 2>>{{1010,1100}, {2010,2100}, {3010,3100}}) { std::cout << "08dbad\n"; --rtn; }
+
 #ifdef SHOULD_NOT_COMPILE
     auto result9 = v_vec2 + vec3;
     std::cout << "09: " << result9 << std::endl;
@@ -96,26 +96,26 @@ int main()
     auto result11 = v_vec3 + vec3;
     std::cout << "11: " << result11 << std::endl;
 
-    try { 
+    try {
         auto result12 = v_vec2 + vvec_f2;
         std::cout << "12bad: " << result12 << std::endl;
         --rtn;
     } catch (const std::exception& e) {
         std::cout << "12: " << "Expected exception: " << e.what() << std::endl;
     }
-    
+
     auto result13 = v_vec2 + vvec_f3;
     std::cout << "13: " << result13 << std::endl;
     if (result13 != morph::vvec<morph::vec<float, 2>>{{1010,1010}, {2100,2100}, {4000,4000}}) { std::cout << "13bad\n"; --rtn; }
-    
-    try { 
+
+    try {
         auto result14 = v_vec3 + vvec_f2;
         std::cout << "14bad: " << result14 << std::endl;
         --rtn;
     } catch (const std::exception& e) {
         std::cout << "14: " << "Expected exception: " << e.what() << std::endl;
     }
-    
+
     auto result15 = v_vec3 + vvec_f3;
     std::cout << "15: " << result15 << std::endl;
     if (result15 != morph::vvec<morph::vec<float, 3>>{{1010,1010,1010}, {2100,2100,2100}, {4000,4000,4000}}) { std::cout << "15bad\n"; --rtn; }
@@ -125,7 +125,7 @@ int main()
     /**
      * vvec<vvecs> plus stuff
      */
-    
+
     auto result16 = v_vvec2 + s;
     std::cout << "16: " << v_vvec2 << " + " << s << " = " << result16 << std::endl;
     if (result16 != morph::vvec<morph::vvec<float>>{{1010,1010}, {2010,2010}, {3010,3010}}) { std::cout << "16bad\n"; --rtn; }
@@ -138,7 +138,7 @@ int main()
 #ifdef SHOULD_NOT_COMPILE
     auto result18 = v_vvec2 + vec2;
     std::cout << "18: " << result18 << std::endl;
-    
+
     auto result19 = v_vvec2 + vec3;
     std::cout << "19: " << result19 << std::endl;
 
@@ -161,8 +161,8 @@ int main()
         std::cout << "23: " << "Expected exception: " << e.what() << std::endl;
     }
 
-    
-    try { 
+
+    try {
         auto result24 = v_vvec3 + vvec_f2;
         std::cout << "24bad: " << result24 << std::endl;
         --rtn;
@@ -174,7 +174,7 @@ int main()
     auto result25 = v_vvec3 + vvec_f3;
     std::cout << "25: " << result25 << std::endl;
     if (result25 != morph::vvec<morph::vvec<float>>{{1010,1100,2000}, {2010,2100,3000}, {3010,3100,4000}}) { std::cout << "25bad\n"; --rtn; }
-    
+
     std::cout << "rtn: " << rtn << (rtn ? " [BAD]" : " [GOOD]") << std::endl;
     return rtn;
 }

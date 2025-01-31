@@ -33,7 +33,7 @@ int main()
     /**
      * vvec<scalars> div by stuff
      */
-    
+
     auto result1 = v_scal / s;
     std::cout << "01: " << result1 << std::endl;
     if (result1 != morph::vvec<float>{100, 200, 300}) { std::cout << "01bad\n"; --rtn; }
@@ -44,7 +44,7 @@ int main()
     auto result3 = v_scal / vec3;
     std::cout << "03: " << result3 << std::endl;
 #endif
-    
+
     auto result4 = v_scal / vvec_f3;
     std::cout << "04: " << result4 << std::endl;
     if (result4 != morph::vvec<float>{100, 20, 3}) { std::cout << "04bad\n"; --rtn; }
@@ -57,11 +57,11 @@ int main()
         // Expected exception
         std::cout << "05: " << "Expected exception: " << e.what() << std::endl;
     }
-    
+
     /**
      * vvec<vecs> div by stuff
      */
-    
+
     auto result6 = v_vec2 / s;
     std::cout << "06: " << result6 << std::endl;
     if (result6 != morph::vvec<morph::vec<float, 2>>{{100,100}, {200,200}, {300,300}}) { std::cout << "06bad\n"; --rtn; }
@@ -83,26 +83,26 @@ int main()
     auto result11 = v_vec3 / vec3;
     std::cout << "11: " << result11 << std::endl;
 
-    try { 
+    try {
         auto result12 = v_vec2 / vvec_f2;
         std::cout << "12bad: " << result12 << std::endl;
         --rtn;
     } catch (const std::exception& e) {
         std::cout << "12: " << "Expected exception: " << e.what() << std::endl;
     }
-    
+
     auto result13 = v_vec2 / vvec_f3;
     std::cout << "13: " << result13 << std::endl;
     if (result13 != morph::vvec<morph::vec<float, 2>>{{100,100}, {20,20}, {3,3}}) { std::cout << "13bad\n"; --rtn; }
-    
-    try { 
+
+    try {
         auto result14 = v_vec3 / vvec_f2;
         std::cout << "14bad: " << result14 << std::endl;
         --rtn;
     } catch (const std::exception& e) {
         std::cout << "14: " << "Expected exception: " << e.what() << std::endl;
     }
-    
+
     auto result15 = v_vec3 / vvec_f3;
     std::cout << "15: " << result15 << std::endl;
     if (result15 != morph::vvec<morph::vec<float, 3>>{{100,100,100}, {20,20,20}, {3,3,3}}) { std::cout << "15bad\n"; --rtn; }
@@ -112,7 +112,7 @@ int main()
     /**
      * vvec<vvecs> div by stuff
      */
-    
+
     auto result16 = v_vvec2 / s;
     std::cout << "16: " << v_vvec2 << " / " << s << " = " << result16 << std::endl;
     if (result16 != morph::vvec<morph::vvec<float>>{{100,100}, {200,200}, {300,300}}) { std::cout << "16bad\n"; --rtn; }
@@ -125,7 +125,7 @@ int main()
 #ifdef SHOULD_NOT_COMPILE
     auto result18 = v_vvec2 / vec2;
     std::cout << "18: " << result18 << std::endl;
-    
+
     auto result19 = v_vvec2 / vec3;
     std::cout << "19: " << result19 << std::endl;
 
@@ -136,7 +136,7 @@ int main()
     std::cout << "21: " << result21 << std::endl;
 #endif
 
-    try { 
+    try {
         auto result22 = v_vvec2 / vvec_f2;
         std::cout << "22bad: " << result22 << std::endl;
         --rtn;
@@ -147,19 +147,19 @@ int main()
     auto result23 = v_vvec2 / vvec_f3;
     std::cout << "23: " << result23 << std::endl;
     if (result23 != morph::vvec<morph::vvec<float>>{{100,100}, {20,20}, {3,3}}) { std::cout << "23bad\n"; --rtn; }
-    
-    try { 
+
+    try {
         auto result24 = v_vvec3 / vvec_f2;
         std::cout << "24bad: " << result24 << std::endl;
         --rtn;
     } catch (const std::exception& e) {
         std::cout << "24: " << "Expected exception: " << e.what() << std::endl;
     }
-    
+
     auto result25 = v_vvec3 / vvec_f3;
     std::cout << "25: " << result25 << std::endl;
     if (result25 != morph::vvec<morph::vvec<float>>{{100,100,100}, {20,20,20}, {3,3,3}}) { std::cout << "25bad\n"; --rtn; }
-    
+
     std::cout << "rtn: " << rtn << (rtn ? " [BAD]" : " [GOOD]") << std::endl;
     return rtn;
 }
