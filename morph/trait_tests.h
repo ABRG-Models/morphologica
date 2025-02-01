@@ -119,7 +119,7 @@ namespace morph {
                                                                && std::declval<typename C::const_iterator> == std::declval<typename C::const_iterator>
                                                                , std::true_type());
 
-        template<typename C> static int test(...);
+        template<typename C> static std::false_type test(...);
 
     public:
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
