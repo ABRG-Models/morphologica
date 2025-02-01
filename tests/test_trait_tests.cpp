@@ -1,6 +1,13 @@
 #include <morph/trait_tests.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <set>
+#include <array>
+#include <vector>
+#include <list>
+//#include <deque>
+
 
 #if 0
 template<typename F=float>
@@ -101,6 +108,27 @@ int main()
     if (c2_is_fixed) { return -1; }
 #endif
 
+    std::cout << "array is fixed size? " << (morph::is_copyable_fixedsize<std::array<float, 2>>::value ? "true" : "false") << std::endl;
+    std::cout << "morph::vec is fixed size? " << (morph::is_copyable_fixedsize<morph::vec<double, 56>>::value ? "true" : "false") << std::endl;
+    std::cout << "vector is fixed size? " << (morph::is_copyable_fixedsize<std::vector<double>>::value ? "true" : "false") << std::endl;
+    std::cout << "morph::vvec is fixed size? " << (morph::is_copyable_fixedsize<morph::vvec<unsigned char>>::value ? "true" : "false") << std::endl;
+    // You can only apply is_copyable_fixedsize to types that can be constructed inside a constexpr function (list, for example, won't compile) with
+    // error: the type 'const std::__cxx11::list<double>' of 'constexpr' variable 't' is not literal
+    std::cout << "list is fixed size? " << (morph::is_copyable_fixedsize<std::list<double>>::value ? "true" : "false") << std::endl;
+    // error is similar for deque:
+    //std::cout << "deque is fixed size? " << (morph::is_copyable_fixedsize<std::deque<double>>::value ? "true" : "false") << std::endl;
+
+#if 0
+    template <typename T, std::enable_if_t<morph::is_constexpr_constructible<T>(0), int> = 0>
+    constexpr bool test_constexpr_constructible() { return true; } // is constexpr
+    template <typename T, std::enable_if_t<not morph::is_constexpr_constructible<T>(0), int> = 0>
+    constexpr bool test_constexpr_constructible() { return false; } // not constexpr
+
+
+    std::cout << "test array constexpr construct: " << morph::test_constexpr_constructible<std::array<int, 2>>() << std::endl;
+    std::cout << "test vector constexpr construct: " << morph::test_constexpr_constructible<std::vector<int>>() << std::endl;
+    std::cout << "test list constexpr construct: " << morph::test_constexpr_constructible<std::list<int>>() << std::endl;
+#endif
     std::cout << "Test passed\n";
     return 0;
 }

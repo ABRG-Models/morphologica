@@ -125,25 +125,50 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
-    // Is T a copyable container AND has a constexpr size() method? If so, it's probably std::array or morph::vec
+    // Test for constexpr constructible class adapted from
+    // https://stackoverflow.com/questions/71954780/how-to-check-a-type-has-constexpr-constructor
+    template <typename T, int = (T{}, 0)> constexpr bool is_constexpr_constructible (int) { return true; }
+    template <typename>                   constexpr bool is_constexpr_constructible (long) { return false; }
+
+    /*
+     * The intention of this compile-time test is: Distinguish between
+     * std::array/morph::vec and other std containers, so it can be determined at
+     * compile time if a container is able to hold an N-dimensional vector with a
+     * guarantee that N is fixed.
+     *
+     * We ask: Is T constexpr constructible AND a copyable container AND has a size()
+     * method that returns non-zero at compile time?
+     *
+     * If so, it's probably std::array or morph::vec.
+     *
+     * Two caveats: It IS possible to declare std::array<T, 0> and so
+     * is_copyable_fixedsize<std::array<T, 0>> will have value false. However, if your
+     * fixed size arrays or morph::vecs always have size > 0, then this will work.
+     *
+     * Second caveat: a class that could be used to store fixed dimension vectors
+     * *could* be created which had a compile-time chosen size. This test would not
+     * identify that class. However, this test is all about identifying *standard
+     * library-like* containers that are fixed size.
+     */
+    // Parent struct is_copyable_fixedsize with test for constexpr constructibility
+    template <typename T, bool = is_constexpr_constructible<std::decay_t<T>>(0)> // need std::decay_t?
+    struct is_copyable_fixedsize;
+    // specialization for is_constexpr_constructible<T>(0) == true. Set value true and get size from T
     template<typename T>
-    class is_copyable_fixedsize
+    struct is_copyable_fixedsize<T, true>
     {
-        // This will only compile if T has constexpr size()
-        template<typename C> static constexpr bool size_is_constexpr()
-        {
-            constexpr C c = {};
-            constexpr typename C::size_type sz = c.size();
-            return sz >= 0 ? true : false;
-        }
-        static constexpr bool constexpr_size = size_is_constexpr<T>();
-
-	template<typename C> static auto test(int) -> decltype(morph::is_copyable_container<C>::value == true
-                                                               && constexpr_size == true, std::true_type());
-        template<typename C> static int test(...);
-
+    private:
+        static constexpr std::size_t get_size() { constexpr T t = {}; return t.size(); }
     public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
+        static constexpr std::size_t size = get_size();
+        static constexpr bool value = (morph::is_copyable_container<T>::value == true && size > 0);
+    };
+    // specialization for is_constexpr_constructible<T>(0) == false. Set value false and size to 0
+    template<typename T>
+    struct is_copyable_fixedsize<T, false>
+    {
+        static constexpr std::size_t size = 0;
+        static constexpr bool value = false;
     };
 
     // Test for std::complex by looking for real() and imag() methods
