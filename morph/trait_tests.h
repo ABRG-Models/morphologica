@@ -151,7 +151,7 @@ namespace morph {
      * library-like* containers that are fixed size.
      */
     // Parent struct is_copyable_fixedsize with test for constexpr constructibility
-    template <typename T, bool = is_constexpr_constructible<std::decay_t<T>>(0)> // need std::decay_t?
+    template <typename T, bool = is_constexpr_constructible<std::remove_reference_t<T>>(0)>
     struct is_copyable_fixedsize;
     // specialization for is_constexpr_constructible<T>(0) == true. Set value true and get size from T
     template<typename T>
