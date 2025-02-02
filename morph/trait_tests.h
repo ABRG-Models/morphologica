@@ -94,17 +94,6 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
     };
 
-#if 0 // haven't figured out how to make this work.
-    template<typename T>
-    class has_find_method
-    {
-	template<typename U> static auto test(int) -> decltype(std::declval<U>().find(std::declval<U>().end()), std::true_type());
-	template<typename> static std::false_type test(...);
-    public:
-	static constexpr bool value = std::is_same< decltype(test<T>(0)), std::true_type >::value;
-    };
-#endif
-
     // Does T have a const_iterator which satisfies the requirements of LegacyInputIterator?
     // Note this is NOT yet complete - I don't test std::iterator_traits.
     // The tests here more or less tell me if I have a copyable container
@@ -119,31 +108,78 @@ namespace morph {
                                                                && std::declval<typename C::const_iterator> == std::declval<typename C::const_iterator>
                                                                , std::true_type());
 
-        template<typename C> static int test(...);
+        template<typename C> static std::false_type test(...);
 
     public:
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
-    // Is T a copyable container AND has a constexpr size() method? If so, it's probably std::array or morph::vec
+    // Test for constexpr constructible class adapted from
+    // https://stackoverflow.com/questions/71954780/how-to-check-a-type-has-constexpr-constructor
+    template <typename T, int = (T{}, 0)> constexpr bool is_constexpr_constructible (int) { return true; }
+    template <typename>                   constexpr bool is_constexpr_constructible (long) { return false; }
+
+#if __cplusplus >= 202002L
+    // C++20 is required to incorporate the lambda into test() for has_size_method. This
+    // feeds through into is_copyable_fixedsize, so that's C++20 for now, too. Also,
+    // this approach fails if we try has_size_method<int> or similar built-in type.
     template<typename T>
-    class is_copyable_fixedsize
+    class has_size_method
     {
-        // This will only compile if T has constexpr size()
-        template<typename C> static constexpr bool size_is_constexpr()
-        {
-            constexpr C c = {};
-            constexpr typename C::size_type sz = c.size();
-            return sz >= 0 ? true : false;
-        }
-        static constexpr bool constexpr_size = size_is_constexpr<T>();
-
-	template<typename C> static auto test(int) -> decltype(morph::is_copyable_container<C>::value == true
-                                                               && constexpr_size == true, std::true_type());
-        template<typename C> static int test(...);
-
+	template<typename U> static auto test(int _sz) -> decltype([](){ [[maybe_unused]] auto sz = U{}.size(); }, std::true_type());
+	template<typename> static std::false_type test(...);
     public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
+	static constexpr bool value = std::is_same< decltype(test<T>(1)), std::true_type >::value;
+    };
+#endif
+
+    //! morph::has_size_const_method<T> tests whether a type T has a const size() method that returns size_t
+    template <typename T> int call_size_const (std::size_t (T::*)() const); // Function signature must exactly match what you're looking for
+    template <typename C> std::true_type has_size_const_method_ (decltype(call_size_const<C>(&C::size)));
+    template <typename C> std::false_type has_size_const_method_ (...);
+    template <typename T> using has_size_const_method = decltype(has_size_const_method_<T>(0));
+
+    /*
+     * The intention of this compile-time test is: Distinguish between
+     * std::array/morph::vec and other std containers, so it can be determined at
+     * compile time if a container is able to hold an N-dimensional vector with a
+     * guarantee that N is fixed.
+     *
+     * We ask: Is T constexpr constructible AND a copyable container AND has a const
+     * size() method that returns non-zero at compile time?
+     *
+     * If so, it's probably std::array or morph::vec.
+     *
+     * Two caveats: It IS possible to declare std::array<T, 0> and so
+     * is_copyable_fixedsize<std::array<T, 0>> will have value false. However, if your
+     * fixed size arrays or morph::vecs always have size > 0, then this will work.
+     *
+     * Second caveat: a class that could be used to store fixed dimension vectors
+     * *could* be created which had a compile-time chosen size. This test would not
+     * identify that class. However, this test is all about identifying *standard
+     * library-like* containers that are fixed size.
+     */
+    // Parent struct is_copyable_fixedsize with test for constexpr constructibility
+    template <typename T, bool = (is_constexpr_constructible<std::remove_reference_t<T>>(0)
+                                  && has_size_const_method<std::remove_reference_t<T>>::value)>
+    struct is_copyable_fixedsize;
+    // specialization for is_constexpr_constructible<T>(0) == true. Set value true and get size from T.
+    // Note: ALSO need to test for existence of size method
+    template<typename T>
+    struct is_copyable_fixedsize<T, true>
+    {
+    private:
+        template<typename U> static constexpr std::size_t get_size() { constexpr U u = {}; return u.size(); }
+    public:
+        static constexpr std::size_t size = get_size<std::remove_reference_t<T>>();
+        static constexpr bool value = (morph::is_copyable_container<T>::value == true && size > 0);
+    };
+    // specialization for is_constexpr_constructible<T>(0) == false. Set value false and size to 0
+    template<typename T>
+    struct is_copyable_fixedsize<T, false>
+    {
+        static constexpr std::size_t size = 0;
+        static constexpr bool value = false;
     };
 
     // Test for std::complex by looking for real() and imag() methods
