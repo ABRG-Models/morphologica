@@ -94,17 +94,6 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
     };
 
-#if 0 // haven't figured out how to make this work.
-    template<typename T>
-    class has_find_method
-    {
-	template<typename U> static auto test(int) -> decltype(std::declval<U>().find(std::declval<U>().end()), std::true_type());
-	template<typename> static std::false_type test(...);
-    public:
-	static constexpr bool value = std::is_same< decltype(test<T>(0)), std::true_type >::value;
-    };
-#endif
-
     // Does T have a const_iterator which satisfies the requirements of LegacyInputIterator?
     // Note this is NOT yet complete - I don't test std::iterator_traits.
     // The tests here more or less tell me if I have a copyable container
