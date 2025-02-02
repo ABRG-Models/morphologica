@@ -16,7 +16,6 @@ set_from (const _S& v)
     return false;
 }
 
-#if __cplusplus >= 202002L // C++20 is required for is_copyable_fixedsize
 template <typename _S=float>
 std::enable_if_t < morph::is_copyable_fixedsize<_S>::value, bool >
 set_from_fixed (const _S& v)
@@ -31,7 +30,6 @@ set_from_fixed (const _S& v)
     std::cout << "Type _S=" << typeid(_S).name() << " size " << sizeof (v) << " is NOT a fixed size, simple, copyable container" << std::endl;
     return false;
 }
-#endif
 
 template <typename _S=float>
 std::enable_if_t < !morph::is_complex<_S>::value, bool >
@@ -90,8 +88,6 @@ int main()
         --rtn;
     }
 
-#if __cplusplus >= 202002L // C++20 is required for is_copyable_fixedsize
-
     bool c_is_fixed = set_from_fixed (c);
     if (!c_is_fixed) { --rtn; }
 
@@ -103,6 +99,10 @@ int main()
     if (morph::is_copyable_fixedsize<std::array<float, 2>>::value == false) { --rtn; }
     if constexpr (morph::is_copyable_fixedsize<std::array<float, 2>>::value == false) { --rtn; }
     // if constexpr (morph::is_copyable_fixedsize<std::array<float, 2>&>::value == false) { --rtn; } // fails to compile
+
+    std::cout << "ZERO sized array is fixed size? " << (morph::is_copyable_fixedsize<std::array<int, 0>>::value ? "true" : "false") << std::endl;
+    // Although an array<T, 0> DOES have a fixed size of 0, is_copyable_fixedsize<array<T, 0>> returns false and we accept this.
+    if (morph::is_copyable_fixedsize<std::array<int, 0>>::value == true) { --rtn; }
 
     std::cout << "morph::vec is fixed size? " << (morph::is_copyable_fixedsize<morph::vec<double, 56>>::value ? "true" : "false") << std::endl;
     if (morph::is_copyable_fixedsize<morph::vec<double, 56>>::value == false) { --rtn; }
@@ -131,10 +131,11 @@ int main()
     if constexpr (morph::is_copyable_fixedsize<std::deque<double>>::value == true) { --rtn; }
     if constexpr (morph::is_copyable_fixedsize<std::deque<double>&>::value == true) { --rtn; }
 
-    // Once I test for size() method. Humph. Still ain't working.
-    // if constexpr (morph::is_copyable_fixedsize<double>::value == true) { --rtn; }
+    std::cout << "double is fixed size container with const size method? " << (morph::is_copyable_fixedsize<double>::value ? "true" : "false") << std::endl;
+    if constexpr (morph::is_copyable_fixedsize<double>::value == true) { --rtn; }
 
-#endif
+    std::cout << "int is fixed size container with const size method? " << (morph::is_copyable_fixedsize<int>::value ? "true" : "false") << std::endl;
+    if constexpr (morph::is_copyable_fixedsize<int>::value == true) { --rtn; }
 
     std::cout << "Test " << (rtn == 0 ? " PASSED" : " FAILED") << std::endl;
     return rtn;

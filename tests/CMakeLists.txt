@@ -348,14 +348,8 @@ add_test(testvvec_set_from testvvec_set_from)
 add_executable(testvvec_at_signed testvvec_at_signed.cpp)
 add_test(testvvec_at_signed testvvec_at_signed)
 
-# Only do C++17 compatible trait_tests tests
 add_executable(test_trait_tests test_trait_tests.cpp)
 add_test(test_trait_tests test_trait_tests)
-
-# Compile test_trait_tests.cpp with C++20 enabled
-add_executable(test_trait_tests2 test_trait_tests.cpp)
-set_property(TARGET test_trait_tests2 PROPERTY CXX_STANDARD 20)
-add_test(test_trait_tests2 test_trait_tests)
 
 add_executable(testarange testarange.cpp)
 add_test(testarange testarange)

@@ -120,18 +120,24 @@ namespace morph {
     template <typename>                   constexpr bool is_constexpr_constructible (long) { return false; }
 
 #if __cplusplus >= 202002L
-
     // C++20 is required to incorporate the lambda into test() for has_size_method. This
-    // feeds through into is_copyable_fixedsize, so that's C++20 for now, too.
+    // feeds through into is_copyable_fixedsize, so that's C++20 for now, too. Also,
+    // this approach fails if we try has_size_method<int> or similar built-in type.
     template<typename T>
     class has_size_method
     {
-	// template<typename U> static auto test(int _insz) -> decltype([](){U u = U{}; [[maybe_unused]]auto sz = u.size();}, std::true_type());
 	template<typename U> static auto test(int _sz) -> decltype([](){ [[maybe_unused]] auto sz = U{}.size(); }, std::true_type());
 	template<typename> static std::false_type test(...);
     public:
 	static constexpr bool value = std::is_same< decltype(test<T>(1)), std::true_type >::value;
     };
+#endif
+
+    //! morph::has_size_const_method<T> tests whether a type T has a const size() method that returns size_t
+    template <typename T> int call_size_const (std::size_t (T::*)() const); // Function signature must exactly match what you're looking for
+    template <typename C> std::true_type has_size_const_method_ (decltype(call_size_const<C>(&C::size)));
+    template <typename C> std::false_type has_size_const_method_ (...);
+    template <typename T> using has_size_const_method = decltype(has_size_const_method_<T>(0));
 
     /*
      * The intention of this compile-time test is: Distinguish between
@@ -139,8 +145,8 @@ namespace morph {
      * compile time if a container is able to hold an N-dimensional vector with a
      * guarantee that N is fixed.
      *
-     * We ask: Is T constexpr constructible AND a copyable container AND has a size()
-     * method that returns non-zero at compile time?
+     * We ask: Is T constexpr constructible AND a copyable container AND has a const
+     * size() method that returns non-zero at compile time?
      *
      * If so, it's probably std::array or morph::vec.
      *
@@ -155,7 +161,7 @@ namespace morph {
      */
     // Parent struct is_copyable_fixedsize with test for constexpr constructibility
     template <typename T, bool = (is_constexpr_constructible<std::remove_reference_t<T>>(0)
-                                  && has_size_method<std::remove_reference_t<T>>::value)>
+                                  && has_size_const_method<std::remove_reference_t<T>>::value)>
     struct is_copyable_fixedsize;
     // specialization for is_constexpr_constructible<T>(0) == true. Set value true and get size from T.
     // Note: ALSO need to test for existence of size method
@@ -175,8 +181,6 @@ namespace morph {
         static constexpr std::size_t size = 0;
         static constexpr bool value = false;
     };
-
-#endif
 
     // Test for std::complex by looking for real() and imag() methods
     template<typename T>
