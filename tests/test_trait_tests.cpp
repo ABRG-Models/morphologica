@@ -16,6 +16,7 @@ set_from (const _S& v)
     return false;
 }
 
+#if __cplusplus >= 202002L // C++20 is required for is_copyable_fixedsize
 template <typename _S=float>
 std::enable_if_t < morph::is_copyable_fixedsize<_S>::value, bool >
 set_from_fixed (const _S& v)
@@ -30,6 +31,7 @@ set_from_fixed (const _S& v)
     std::cout << "Type _S=" << typeid(_S).name() << " size " << sizeof (v) << " is NOT a fixed size, simple, copyable container" << std::endl;
     return false;
 }
+#endif
 
 template <typename _S=float>
 std::enable_if_t < !morph::is_complex<_S>::value, bool >
@@ -88,6 +90,8 @@ int main()
         --rtn;
     }
 
+#if __cplusplus >= 202002L // C++20 is required for is_copyable_fixedsize
+
     bool c_is_fixed = set_from_fixed (c);
     if (!c_is_fixed) { --rtn; }
 
@@ -126,6 +130,11 @@ int main()
     if (morph::is_copyable_fixedsize<std::deque<double>>::value == true) { --rtn; }
     if constexpr (morph::is_copyable_fixedsize<std::deque<double>>::value == true) { --rtn; }
     if constexpr (morph::is_copyable_fixedsize<std::deque<double>&>::value == true) { --rtn; }
+
+    // Once I test for size() method. Humph. Still ain't working.
+    // if constexpr (morph::is_copyable_fixedsize<double>::value == true) { --rtn; }
+
+#endif
 
     std::cout << "Test " << (rtn == 0 ? " PASSED" : " FAILED") << std::endl;
     return rtn;
