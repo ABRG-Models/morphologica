@@ -158,9 +158,9 @@ namespace morph {
     struct is_copyable_fixedsize<T, true>
     {
     private:
-        static constexpr std::size_t get_size() { constexpr T t = {}; return t.size(); }
+        template<typename U> static constexpr std::size_t get_size() { constexpr U u = {}; return u.size(); }
     public:
-        static constexpr std::size_t size = get_size();
+        static constexpr std::size_t size = get_size<std::remove_reference_t<T>>();
         static constexpr bool value = (morph::is_copyable_container<T>::value == true && size > 0);
     };
     // specialization for is_constexpr_constructible<T>(0) == false. Set value false and size to 0
