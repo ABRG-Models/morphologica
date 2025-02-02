@@ -24,7 +24,6 @@
 #include <morph/Random.h>
 #include <morph/range.h>
 #include <morph/trait_tests.h>
-#include <morph/vec.h>
 
 namespace morph {
 
@@ -70,13 +69,6 @@ namespace morph {
 
         //! Used in functions for which wrapping is important
         enum class wrapdata { none, wrap };
-
-        /*!
-         * Helper structs to detect a fixed size array (std::array or morph::vec)
-         */
-        template <typename T> struct is_an_array : std::false_type {};
-        template <typename T, std::size_t N> struct is_an_array<std::array<T, N>> : std::true_type {};
-        template <typename T, std::size_t N> struct is_an_array<morph::vec<T, N>> : std::true_type {};
 
         //! \return the first component of the vector
         S x() const { return (*this)[0]; }
@@ -676,7 +668,7 @@ namespace morph {
         }
 
         // For a vvec of vecs, longest() should return the same as max()
-        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         S longest() const { return this->max(); }
 
         //! \return the index of the longest component of the vector.
@@ -697,7 +689,7 @@ namespace morph {
         }
 
         // For a vvec of vecs, arglongest() should return then same as argmax()
-        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         std::size_t arglongest() const { return this->argmax(); }
 
         //! \return the value of the shortest component of the vector.
@@ -711,7 +703,7 @@ namespace morph {
         }
 
         //! A version of shortest for vvec of vecs
-        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         S shortest() const
         {
             auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_gtrthan(b);});
@@ -740,7 +732,7 @@ namespace morph {
         }
 
         //! vvec of vecs version of argshortest
-        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         std::size_t argshortest() const
         {
             auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_gtrthan(b);});
@@ -759,7 +751,7 @@ namespace morph {
         //! \return the max lengthed element of the vvec. Intended for use with a vvec of vecs
         //! (morph::vvec<morph::vec<T, N>>). Note that the enclosed non-scalar thing must have
         //! function length_lessthan (as morph::vec does).
-        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         S max() const
         {
             auto themax = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_lessthan(b);});
@@ -776,7 +768,7 @@ namespace morph {
         }
 
         //! vvec of vecs version of argmax returns the index of the maximum length morph::vec
-        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         std::size_t argmax() const
         {
             auto themax = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_lessthan(b);});
@@ -793,7 +785,7 @@ namespace morph {
         }
 
         //! For a vvec of vecs, min() is shortest()
-        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         S min() const { return this->shortest(); }
 
         //! \return the index of the minimum (smallest or most negative) component of the vector.
@@ -806,7 +798,7 @@ namespace morph {
         }
 
         //! For a vvec of vecs, argmin() is argshortest()
-        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         std::size_t argmin() const { return this->argshortest(); }
 
         //! \return the min and max values of the vvec, ignoring any not-a-number elements. If you
@@ -844,10 +836,10 @@ namespace morph {
         }
 
         /*!
-         * vvec of vecs (or rather non-scalar) version of range(). Define this as the shortest
-         * vector to the longest vector.
+         * vvec of vecs version of range(). Define this as the shortest vector to the
+         * longest vector.
          */
-        template<typename _S = S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        template<typename _S = S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         morph::range<S> range() const
         {
             morph::range<S> r;
@@ -866,11 +858,10 @@ namespace morph {
          * and max containing the max value for each dimension. This gives the
          * N-dimensional volume that contains all the coordinates in the vvec.
          *
-         * This function is enabled for S types that are containers
-         * (morph::is_copyable_container) and further, those which have a constexpr
-         * size() method (which practically, means std::array and morph::vec)
+         * This function is enabled for S types that are fixed size containers
+         * (morph::is_copyable_fixedsize).
          */
-        template <typename _S=S, std::enable_if_t<morph::is_copyable_container<_S>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         morph::range<S> extent() const
         {
             constexpr S s = {};                  // A dummy variable whose size is stored as sz
@@ -1796,7 +1787,7 @@ namespace morph {
          * This function will only be defined if typename _S is a
          * scalar type or a fixed size vector. Multiplies this vvec<S> by s, element-wise.
          */
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator* (const _S& s) const
         {
             vvec<S> rtn(this->size());
@@ -1833,7 +1824,7 @@ namespace morph {
          * This function will only be defined if typename _S is a
          * scalar type or a fixed size vec. Multiplies this vvec<S> by s, element-wise.
          */
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s)
         {
             auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
@@ -1859,7 +1850,7 @@ namespace morph {
         }
 
         //! Scalar/fixed size vec divide by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator/ (const _S& s) const
         {
             vvec<S> rtn(this->size());
@@ -1890,7 +1881,7 @@ namespace morph {
         }
 
         //! Scalar divide/fixed size vec by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s)
         {
             auto div_by_s = [s](S elmnt) -> S { return elmnt / s; };
@@ -1916,7 +1907,7 @@ namespace morph {
         }
 
         //! Scalar addition with a thing that is of a different type to S (but must be scalar or fixed size vec/array)
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator+ (const _S& s) const
         {
             vvec<S> rtn(this->size());
@@ -1950,7 +1941,7 @@ namespace morph {
         }
 
         //! Scalar addition
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s)
         {
             auto add_s = [s](S elmnt) -> S { return elmnt + s; };
@@ -1978,7 +1969,7 @@ namespace morph {
         }
 
         //! Scalar subtraction with a thing that is of a different type to S (but must be scalar or fixed size vec/array)
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         vvec<S> operator- (const _S& s) const
         {
             vvec<S> rtn(this->size());
@@ -2011,7 +2002,7 @@ namespace morph {
         }
 
         //! Scalar subtraction
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || vvec::is_an_array<std::decay_t<_S>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s)
         {
             auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
