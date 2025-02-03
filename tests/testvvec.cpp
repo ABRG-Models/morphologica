@@ -125,6 +125,29 @@ int main() {
     cout << "d1 should be 5,6,7: " << d1 << endl;
     array<double, 4> a2 = { 5,6,8,8 };
     d1.set_from_onelonger(a2);
+    std::cout << "d1.set_from_onelonger(a2) gives d1: " << d1 << std::endl;
+    if (!(d1[0] == 5 && d1[1] == 6 && d1[2] == 8)) {
+        std::cout << "fail this one\n"; --rtn;
+    }
+
+    vvec<double> d1cpy = d1;
+    std::vector<float> a2longer = { 7, 8, 9, 9 };
+    d1cpy.set_from_onelonger (a2longer);
+    std::cout << "d1cpy.set_from_onelonger(a2longer) gives d1cpy: " << d1cpy << std::endl;
+    if (d1cpy[2] != 9) { std::cout << "and fail this one\n"; --rtn; }
+
+    vvec<int> v2longer = { 10, 100, 1000, 1000 };
+    d1cpy.set_from_onelonger (v2longer);
+    std::cout << "d1cpy.set_from_onelonger(v2longer) gives d1cpy: " << d1cpy << std::endl;
+    if (d1cpy[2] != 1000) { std::cout << "and fail this one\n"; --rtn; }
+
+    std::array<int, 4> aa2longer = { 100, 1000, 10000, 10000 };
+    d1cpy.set_from_onelonger (aa2longer);
+    std::cout << "d1cpy.set_from_onelonger(aa2longer) gives d1cpy: " << d1cpy << std::endl;
+    if (d1cpy[2] != 10000) { std::cout << "and fail this one\n"; --rtn; }
+
+
+
     cout << "d1 should be 5,6,8: " << d1 << endl;
     d1.set_from (88.3);
     cout << "d1 should be 88.3 in all elements: " << d1 << endl;

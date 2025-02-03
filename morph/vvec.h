@@ -8,7 +8,6 @@
 #pragma once
 
 #include <cmath>
-#include <array>
 #include <vector>
 #include <iostream>
 #include <string>
@@ -121,9 +120,9 @@ namespace morph {
          * This uses a traits solution inspired by
          * https://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
          */
-        template <typename Container>
-        std::enable_if_t<morph::is_copyable_container<Container>::value && !std::is_same<std::decay_t<Container>, S>::value, void>
-        set_from (const Container& c)
+        template <typename C>
+        std::enable_if_t<morph::is_copyable_container<C>::value && !std::is_same<std::decay_t<C>, S>::value, void>
+        set_from (const C& c)
         {
             this->resize (c.size());
             std::copy (c.begin(), c.end(), this->begin());
@@ -131,9 +130,9 @@ namespace morph {
 
         //! What if we want to set all elements to something of type S, but S is itself a copyable
         //! container. In that case, enable this function.
-        template <typename Container>
-        std::enable_if_t<morph::is_copyable_container<Container>::value && std::is_same<std::decay_t<Container>, S>::value, void>
-        set_from (const Container& v) { std::fill (this->begin(), this->end(), v); }
+        template <typename C>
+        std::enable_if_t<morph::is_copyable_container<C>::value && std::is_same<std::decay_t<C>, S>::value, void>
+        set_from (const C& v) { std::fill (this->begin(), this->end(), v); }
 
         //! Set all elements from the value type v.
         template <typename _S=S>
@@ -141,33 +140,22 @@ namespace morph {
         set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!
-         * Set the data members of this vvec from the passed in, larger vector, \a v,
-         * ignoring the last element of \a v. Used when working with 4D vectors in
+         * Set the data members of this vvec from the passed in, larger dynamically resizable
+         * vector, \a v, ignoring the last element of \a v. Used when working with 4D vectors in
          * graphics applications involving 4x4 transform matrices.
+         *
+         * \tparam C stands for Container and might be std::vector<T> or vvec<T> or std::array<T, N>
+         * or morph::vec<T, N>
          */
-        template <typename _S=S>
-        void set_from_onelonger (const std::vector<_S>& v)
+        template <typename C>
+        std::enable_if_t<morph::is_copyable_container<C>::value, void>
+        set_from_onelonger (const C& v)
         {
-            if (v.size() == (this->size()+1)) {
+            if (v.size() == (this->size() + 1)) {
                 for (std::size_t i = 0; i < this->size(); ++i) {
                     (*this)[i] = v[i];
                 }
-            } // else do nothing?
-        }
-
-        /*!
-         * Set the data members of this vvec from the passed in, larger, fixed-size
-         * array, \a v, ignoring the last element of \a v. Used when working with 4D
-         * vectors in graphics applications involving 4x4 transform matrices.
-         */
-        template <typename _S=S, std::size_t N>
-        void set_from_onelonger (const std::array<_S, N>& v)
-        {
-            if ((this->size()+1) == N) {
-                for (std::size_t i = 0; i < this->size(); ++i) {
-                    (*this)[i] = v[i];
-                }
-            } // else do nothing?
+            } // else do nothing
         }
 
         //! \return a vector with one less dimension - losing the last one.
@@ -219,20 +207,6 @@ namespace morph {
 
         //! \return this vvec in single precision, unsigned int format
         vvec<unsigned int> as_uint() const { return this->as<unsigned int>(); }
-
-        /*!
-         * Set an N-D vvec from an N+1 D vvec. Intended to convert 4D vectors (that
-         * have been operated on by 4x4 matrices) into 3D vectors.
-         */
-        template <typename _S=S>
-        void set_from_onelonger (const vvec<_S>& v)
-        {
-            if (v.size() == (this->size()+1)) {
-                for (std::size_t i = 0; i < this->size(); ++i) {
-                    (*this)[i] = v[i];
-                }
-            } // else do nothing?
-        }
 
         /*!
          * Set a linear sequence into the vector from value start to value stop. If
