@@ -60,6 +60,31 @@ int main()
 {
     int rtn = 0;
 
+    /*
+     * has_subtraction
+     */
+    std::cout << "float has subtraction? " << (morph::has_subtraction<float>::value ? "true" : "false") << std::endl;
+    if (!morph::has_subtraction<float>::value
+        || !morph::has_subtraction<double>::value
+        || !morph::has_subtraction<int>::value
+        || !morph::has_subtraction<unsigned int>::value) { --rtn; }
+    std::cout << "vector has subtraction? " << (morph::has_subtraction<std::vector<float>>::value ? "true" : "false") << std::endl;
+    if (morph::has_subtraction<std::vector<float>>::value) { --rtn; }
+    std::cout << "vvec has subtraction? " << (morph::has_subtraction<morph::vvec<float>>::value ? "true" : "false") << std::endl;
+    std::cout << "vec has subtraction? " << (morph::has_subtraction<morph::vec<float, 4>>::value ? "true" : "false") << std::endl;
+    if (!morph::has_subtraction<morph::vvec<float>>::value) { --rtn; }
+    if (!morph::has_subtraction<morph::vec<float, 17>>::value) { --rtn; }
+
+    /*
+     * has_resize
+     */
+    std::cout << "vvec has resize: " << (morph::has_resize_method<morph::vvec<float>>::value ? "true" : "false") << std::endl;
+    if (morph::has_resize_method<morph::vvec<float>>::value == false) { --rtn; }
+    std::cout << "float has resize: " << (morph::has_resize_method<float>::value ? "true" : "false") << std::endl;
+    if (morph::has_resize_method<float>::value == true) { --rtn; }
+    std::cout << "array has resize: " << (morph::has_resize_method<std::array<float, 3>>::value ? "true" : "false") << std::endl;
+    if (morph::has_resize_method<morph::vec<float, 5>>::value == true) { --rtn; }
+
     float f = 0.0f;
     bool float_can = set_from (f);
     std::array<double, 10> c;
