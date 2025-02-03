@@ -684,6 +684,14 @@ namespace morph {
             return theshortest == this->end() ? S{0} : *theshortest;
         }
 
+        //! Find the shortest non-zero length type S vector in this vvec
+        template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
+        S shortest_nonzero() const
+        {
+            auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return (a.length_gtrthan(b) && b.length() > 0);});
+            return theshortest == this->end() ? S{0} : *theshortest;
+        }
+
         /*!
          * \return the index of the shortest component of the vector. If this is a vector
          * of vectors, then return the index of the shortest vector.
