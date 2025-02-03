@@ -684,11 +684,23 @@ namespace morph {
             return theshortest == this->end() ? S{0} : *theshortest;
         }
 
+        //! \return the value of the shortest non-zero component of the vector.
+        // Currently fails if first element is 0
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        S shortest_nonzero() const
+        {
+            auto abs_compare_nonz = [](S a, S b) { return (std::abs(a) > std::abs(b) && b != S{0}); };
+            auto theshortest = std::max_element (this->begin(), this->end(), abs_compare_nonz);
+            S rtn = *theshortest;
+            return rtn;
+        }
+
         //! Find the shortest non-zero length type S vector in this vvec
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         S shortest_nonzero() const
         {
-            auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return (a.length_gtrthan(b) && b.length() > 0);});
+            auto shortest_nonz = [](S a, S b){return a.length_gtrthan(b) && b.length() > typename S::value_type{0};};
+            auto theshortest = std::max_element (this->begin(), this->end(), shortest_nonz);
             return theshortest == this->end() ? S{0} : *theshortest;
         }
 

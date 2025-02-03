@@ -301,6 +301,16 @@ int main() {
          << "), shortest component: " << maxlongest.shortest() << " (at index "
          << maxlongest.argshortest() << ")\n";
 
+    vvec<double> forshortest = { 2.9, 0, -1.1, 3.9 };
+    cout << "For vector " << forshortest << std::endl;
+    cout << "  Shortest: " << forshortest.shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
+    if (forshortest.shortest_nonzero() != -1.1) {
+        --rtn;
+    }
+
+    //vvec<morph::vec<float, 2>> forshortestvec = { {0, 0},
+
     vvec<float> cc = { 1.0f, 2.0f };
     float D = 2.0f;
     std::cout << "(-cc/D).exp()=" << (-cc/D).exp() << std::endl;
