@@ -350,6 +350,22 @@ namespace morph {
         }
 
         /*!
+         * Test the pointer vmp. Return vmp if it is owned by a unique_ptr in
+         * Visual::vm. If it is not present, return nullptr.
+         */
+        const morph::VisualModel<glver>* validVisualModel (const morph::VisualModel<glver>* vmp) const
+        {
+            const morph::VisualModel<glver>* rtn = nullptr;
+            for (unsigned int modelId = 0; modelId < this->vm.size(); ++modelId) {
+                if (this->vm[modelId].get() == vmp) {
+                    rtn = vmp;
+                    break;
+                }
+            }
+            return rtn;
+        }
+
+        /*!
          * VisualModel Getter
          *
          * For the given \a modelId, return a (non-owning) pointer to the visual model.
@@ -361,13 +377,13 @@ namespace morph {
         //! Remove the VisualModel with ID \a modelId from the scene.
         void removeVisualModel (unsigned int modelId) { this->vm.erase (this->vm.begin() + modelId); }
 
-        //! Remove the VisualModel whose pointer matches the VisualModel* modelPtr
-        void removeVisualModel (morph::VisualModel<glver>* modelPtr)
+        //! Remove the VisualModel whose pointer matches the VisualModel* vmp
+        void removeVisualModel (morph::VisualModel<glver>* vmp)
         {
             unsigned int modelId = 0;
             bool found_model = false;
             for (modelId = 0; modelId < this->vm.size(); ++modelId) {
-                if (this->vm[modelId].get() == modelPtr) {
+                if (this->vm[modelId].get() == vmp) {
                     found_model = true;
                     break;
                 }

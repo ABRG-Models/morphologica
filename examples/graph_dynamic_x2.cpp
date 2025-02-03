@@ -85,8 +85,8 @@ int main()
         v.render();
         while (v.readyToFinish == false) {
             v.waitevents (0.018);
-            // Don't update this fast. That's crazy!
-            if ((rcount++)%20 == 0) {
+            // Demonstrates how to test that the pointer gv is valid:
+            if ((rcount++)%20 == 0 && v.validVisualModel (gv) != nullptr) {
                 gv->update (absc, _absc.pow(2)*addn, 1);
                 addn += 0.2f;
             }

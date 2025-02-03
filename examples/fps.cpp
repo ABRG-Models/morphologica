@@ -67,7 +67,9 @@ int main()
             data[hi] = std::sin(k*r[hi])/k*r[hi];
         }
 
-        hgvp->updateData (&data);
+        if (v.validVisualModel (hgvp) != nullptr) { // Test hgvp is still valid
+            hgvp->updateData (&data);
+        }
         k += 0.02f;
 
         auto tduration = steady_clock::now() - tstart;
