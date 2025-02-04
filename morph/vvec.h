@@ -684,7 +684,12 @@ namespace morph {
             return theshortest == this->end() ? S{0} : *theshortest;
         }
 
-        //! \return the value of the shortest non-zero component of the vector.
+        /*!
+         * Find the shortest non-zero type S element in this vvec.
+         *
+         * \return The shortest non-zero element, or if there are NO non-zero elements in this vvec,
+         * return S{0}
+         */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S shortest_nonzero() const
         {
@@ -703,20 +708,26 @@ namespace morph {
             return rtn;
         }
 
-        //! Find the shortest non-zero length type S vector in this vvec
+        /*!
+         * Find the shortest non-zero length type S vector in this vvec.
+         *
+         * \return The shortest non-zero length vector, or if there are NO non-zero length vectors
+         * in this vvec, return S{0}
+         */
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
         S shortest_nonzero() const
         {
-            auto shortest_nonz = [](S a, S b) {
-                bool rtn = a.length_gtrthan(b) && b.length() > typename S::value_type{0};
-                return rtn;
-            };
-            /*
+            // Move to first non-zero length vector in *this
             auto nonzero_start = this->begin();
-            if (nonzero_start == this->end()) { return; }
-            while (nonzero_start->length() > typename S::value_type{0}
-            */
-            auto theshortest = std::max_element (this->begin(), this->end(), shortest_nonz);
+            while (nonzero_start != this->end() && nonzero_start->length() == typename S::value_type{0}) {
+                std::cout << "Skip " << *nonzero_start << std::endl;
+                ++nonzero_start;
+            }
+            // If NO non-zero length vectors in *this, return a zero length vector
+            if (nonzero_start == this->end()) { return S{0}; }
+
+            auto shortest_nonz = [](S a, S b) { return a.length_gtrthan(b) && b.length() > typename S::value_type{0}; };
+            auto theshortest = std::max_element (nonzero_start, this->end(), shortest_nonz);
             return theshortest == this->end() ? S{0} : *theshortest;
         }
 

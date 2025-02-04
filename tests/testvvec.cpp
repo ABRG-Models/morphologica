@@ -305,29 +305,33 @@ int main() {
     cout << "For vector " << forshortest << std::endl;
     cout << "  Shortest: " << forshortest.shortest() << std::endl;
     cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
-    if (forshortest.shortest_nonzero() != -1.1) {
-        --rtn;
-    }
+    if (forshortest.shortest_nonzero() != -1.1) { --rtn; }
 
     // Ensure it works if 0 comes first
     forshortest = { 0, 2.9, -1.1, 3.9 };
     cout << "For vector " << forshortest << std::endl;
     cout << "  Shortest: " << forshortest.shortest() << std::endl;
     cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
-    if (forshortest.shortest_nonzero() != -1.1) {
-        --rtn;
-    }
+    if (forshortest.shortest_nonzero() != -1.1) { --rtn; }
 
     // Ensure it works if 0 comes last
     forshortest = { 2.9, -1.1, 3.9, 0 };
     cout << "For vector " << forshortest << std::endl;
     cout << "  Shortest: " << forshortest.shortest() << std::endl;
     cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
-    if (forshortest.shortest_nonzero() != -1.1) {
-        --rtn;
-    }
+    if (forshortest.shortest_nonzero() != -1.1) { --rtn; }
 
-    //vvec<morph::vec<float, 2>> forshortestvec = { {0, 0},
+    vvec<morph::vec<float, 2>> forshortestvec = { {0, 0}, {0, 0}, {1, 1}, {1, 2} };
+    cout << "For vector " << forshortestvec  << std::endl;
+    cout << "  Shortest: " << forshortestvec .shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortestvec .shortest_nonzero() << std::endl;
+    if (forshortestvec .shortest_nonzero() != morph::vec<float, 2>{1, 1}) { --rtn; }
+
+    forshortestvec = { {1, 1}, {0, 0}, {0, 0}, {1, 1}, {1, 2} };
+    cout << "For vector " << forshortestvec  << std::endl;
+    cout << "  Shortest: " << forshortestvec .shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortestvec .shortest_nonzero() << std::endl;
+    if (forshortestvec .shortest_nonzero() != morph::vec<float, 2>{1, 1}) { --rtn; }
 
     vvec<float> cc = { 1.0f, 2.0f };
     float D = 2.0f;
