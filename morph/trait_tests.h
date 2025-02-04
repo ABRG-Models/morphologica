@@ -186,17 +186,16 @@ namespace morph {
     template<typename T>
     class is_complex
     {
-        // See the right arrow?                 v--- there it is. It's a different function declaration syntax
 	template<typename U> static auto test(int) -> decltype(std::declval<U>().real() == 1
-                                                            && std::declval<U>().imag() == 1, std::true_type());
+                                                               && std::declval<U>().imag() == 1, std::true_type());
 	template<typename> static std::false_type test(...); // This uses the more typical syntax for fn declaration
     public:
 	static constexpr bool value = std::is_same<decltype(test<T>(1)), std::true_type>::value;
     };
 
     // morph::value_type to allow us to write code that will accept float::value_type and std::vector<float>::value_type
-    template <class T, class = void> struct value_type { using type = T; };
-    template <class T> struct value_type<T, std::void_t<typename T::value_type>> { using type = typename T::value_type; };
+    template <typename T, typename = void> struct value_type { using type = T; };
+    template <typename T>                  struct value_type<T, std::void_t<typename T::value_type>> { using type = typename T::value_type; };
 
     // This gets the value_type of a class that has value_type or the type of itself for a class
     // that doesn't have value_type. For example morph::value_type_t<float> is float and
