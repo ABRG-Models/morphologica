@@ -309,6 +309,24 @@ int main() {
         --rtn;
     }
 
+    // Ensure it works if 0 comes first
+    forshortest = { 0, 2.9, -1.1, 3.9 };
+    cout << "For vector " << forshortest << std::endl;
+    cout << "  Shortest: " << forshortest.shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
+    if (forshortest.shortest_nonzero() != -1.1) {
+        --rtn;
+    }
+
+    // Ensure it works if 0 comes last
+    forshortest = { 2.9, -1.1, 3.9, 0 };
+    cout << "For vector " << forshortest << std::endl;
+    cout << "  Shortest: " << forshortest.shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
+    if (forshortest.shortest_nonzero() != -1.1) {
+        --rtn;
+    }
+
     //vvec<morph::vec<float, 2>> forshortestvec = { {0, 0},
 
     vvec<float> cc = { 1.0f, 2.0f };
