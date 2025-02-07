@@ -643,9 +643,8 @@ namespace morph {
         //! Setter for the dataaxisdist attribute
         void setdataaxisdist (float proportion)
         {
-            if (this->ord1_scale.ready()) {
-                throw std::runtime_error ("setdataaxisdist: Have already scaled the left ordinate (ord1) data, can't set the dataaxisdist now.\n"
-                                          "Hint: call GraphVisual::setdataaxisdist() BEFORE GraphVisual::setdata() or ::setlimits()");
+            if (!this->graphDataCoords.empty()) {
+                throw std::runtime_error ("Call GraphVisual::setdataaxisdist() *before* using setdata to set the data");
             }
             this->dataaxisdist = proportion;
         }
