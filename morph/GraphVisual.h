@@ -816,7 +816,6 @@ namespace morph {
             this->abscissa_scale.compute_scaling (this->datarange_x);
             this->ord1_scale.compute_scaling (this->datarange_y);
             this->ord2_scale.compute_scaling (this->datarange_y2);
-
         }
 
         //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
