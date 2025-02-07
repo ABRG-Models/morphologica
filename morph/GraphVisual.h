@@ -312,10 +312,6 @@ namespace morph {
         {
             std::vector<Flt> emptyabsc;
             std::vector<Flt> emptyord;
-            // compute scaling based on current limits and model size.
-            this->abscissa_scale.compute_scaling (this->datarange_x);
-            this->ord1_scale.compute_scaling (this->datarange_y);
-            this->ord2_scale.compute_scaling (this->datarange_y2);
             this->setdata (emptyabsc, emptyord, name, axisside);
         }
 
@@ -324,10 +320,6 @@ namespace morph {
         {
             std::vector<Flt> emptyabsc;
             std::vector<Flt> emptyord;
-            // compute scaling based on current limits and model size.
-            this->abscissa_scale.compute_scaling (this->datarange_x);
-            this->ord1_scale.compute_scaling (this->datarange_y);
-            this->ord2_scale.compute_scaling (this->datarange_y2);
             this->setdata (emptyabsc, emptyord, ds);
         }
 
