@@ -133,10 +133,12 @@ namespace morph {
                 this->datastyles.clear();
 
                 this->pendingAppended = true; // as the graph will be re-drawn
-
-                this->abscissa_scale.reset();
-                this->ord1_scale.reset();
-                this->ord2_scale.reset();
+                if (didx == 0) { this->abscissa_scale.reset(); }
+                if (this->datastyles[didx].axisside == morph::axisside::left) {
+                    this->ord1_scale.reset();
+                } else {
+                    this->ord2_scale.reset();
+                }
                 this->setlimits (xrange, yrange, y2range);
 
                 if (!this->ord1.empty()) {
@@ -305,6 +307,10 @@ namespace morph {
         {
             std::vector<Flt> emptyabsc;
             std::vector<Flt> emptyord;
+            // compute scaling based on current limits and model size.
+            this->abscissa_scale.compute_scaling (this->datarange_x);
+            this->ord1_scale.compute_scaling (this->datarange_y);
+            this->ord2_scale.compute_scaling (this->datarange_y2);
             this->setdata (emptyabsc, emptyord, name, axisside);
         }
 
@@ -313,6 +319,10 @@ namespace morph {
         {
             std::vector<Flt> emptyabsc;
             std::vector<Flt> emptyord;
+            // compute scaling based on current limits and model size.
+            this->abscissa_scale.compute_scaling (this->datarange_x);
+            this->ord1_scale.compute_scaling (this->datarange_y);
+            this->ord2_scale.compute_scaling (this->datarange_y2);
             this->setdata (emptyabsc, emptyord, ds);
         }
 
@@ -474,8 +484,8 @@ namespace morph {
 
             if (dsize > 0) {
                 // Transform the data into temporary containers sd and ad
-                std::vector<Flt> ad (dsize, Flt{0});
-                std::vector<Flt> sd (dsize, Flt{0});
+                morph::vvec<Flt> ad (dsize, Flt{0});
+                morph::vvec<Flt> sd (dsize, Flt{0});
                 if (ds.axisside == morph::axisside::left) {
                     this->ord1_scale.transform (_data, sd);
                 } else {
