@@ -205,6 +205,7 @@ namespace morph {
                 datarange = this->datarange_x;
                 for (auto x_val : _abscissae) { datarange.update (x_val); }
                 this->setlimits_x (datarange, true);
+                this->abscissa_scale.compute_scaling (this->datarange_x);
             }
 
             // Transform the data into temporary containers sd and ad. Note call of
@@ -221,6 +222,7 @@ namespace morph {
                     datarange.search_init();
                     for (auto y_val : _data) { datarange.update (y_val); }
                     this->setlimits_y (datarange, true);
+                    this->ord1_scale.compute_scaling (this->datarange_y);
 
                 } else if (this->auto_rescale_y) {
                     this->ord1_scale.reset();
@@ -228,6 +230,7 @@ namespace morph {
                     datarange = this->datarange_y;
                     for (auto y_val : _data) { datarange.update (y_val); }
                     this->setlimits_y (datarange, true);
+                    this->ord1_scale.compute_scaling (this->datarange_y);
                 }
                 // scale data with the axis
                 this->ord1_scale.transform (_data, sd);
@@ -238,12 +241,14 @@ namespace morph {
                     datarange.search_init();
                     for (auto y_val : _data) { datarange.update (y_val); }
                     this->setlimits_y2 (datarange, true);
+                    this->ord2_scale.compute_scaling (this->datarange_y2);
 
                 } else if (this->auto_rescale_y) {
                     this->ord2_scale.reset();
                     datarange = this->datarange_y2;
                     for (auto y_val : _data) { datarange.update (y_val); }
                     this->setlimits_y2 (datarange, true);
+                    this->ord2_scale.compute_scaling (this->datarange_y2);
                 }
                 // scale data with the axis
                 this->ord2_scale.transform (_data, sd);
