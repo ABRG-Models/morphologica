@@ -119,7 +119,9 @@ The `Visual::addLabel` function is similar to `VisualModel::addLabel`. Other way
 
 Other than labels, the main constituents of your scenes will be `morph::VisualModel` objects. Each `VisualModel` contains a set of OpenGL vertex buffer objects that define an 'OpenGL model' comprised mostly of triangles and also of a few textures (for text). `VisualModel` is designed as a base class; you won't actually add VisualModels to the `morph::Visual`. Instead, you'll add objects of derived classes such as `morph::GraphVisual`, `morph::ScatterVisual` or `morph::GridVisual`.
 
-`morph::Visual` takes ownership of the memory associated with each `VisualModel`. It keeps an `std::vector` of `std::unique_ptr` objects to VisualModels in the member attribute `Visual::vm`; here's an excerpt from Visual.h:
+## Memory management of `VisualModels`
+
+`morph::Visual` takes ownership of the memory associated with each `VisualModel`. It keeps an `std::vector` of `std::unique_ptr` objects to VisualModels in the member attribute `Visual::vm`. Here's the relevant excerpt from Visual.h:
 
 ```c++
  protected:
@@ -128,7 +130,11 @@ Other than labels, the main constituents of your scenes will be `morph::VisualMo
     std::vector<std::unique_ptr<morph::VisualModel<glver>>> vm;
 ```
 
-When `Visual` needs to `render()`, it will iterate through this vector, calling `VisualModel::render()` for each model.
+This means that you don't need to worry about deallocating your VisualModels. You simply create them (with `std::make_unique<>`) and add them to the `Visual` scene. Once your `Visual` owns each `unique_ptr`, it is responsible for deallocing the memory.
+
+When `Visual` needs to `render()`, it will iterate through the vector `vm`, calling `VisualModel::render()` for each model.
+
+## Adding a `VisualModel`
 
 To guarantee the ownership of the model will reside in the `morph::Visual` instance, you have to 'pass in' each VisualModel. The workflow is (using `GraphVisual` as the example and assuming the `Visual` object is called `v`):
 
@@ -157,7 +163,75 @@ Once it has been finalized, you call `addVisualModel()`, passing in the `GraphVi
 auto gv_pointer = v.addVisualModel (gv);
 ```
 
-**Don't try to use `gv` after you have added it!** Your local `unique_ptr gv` *no longer owns the memory*. However, you *can* re-use `gv` if you want to, setting it with another call to `std::make_unique` for a new model.
+> [!WARNING]
+> **Don't try to use the `unique_ptr` object `gv` after you have added it!** Your local `unique_ptr gv` *no longer owns the memory*.
+
+> [!TIP]
+> However, you **can** *re-use* `gv` if you want to, setting it with another call to `std::make_unique` for a new model.
+
+## Using the `VisualModel*` pointer
+
+The returned pointer allows you to make changes to the VisualModel during your program's runtime. An example can be found in [graph_dynamic_sine.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph_dynamic_sine.cpp#L28). In this snippet, `x` is a `vvec` of double precision floats, and the pointer, `gvp` is used to call the `update` method of a `GraphVisual` to change the sinusoid that is being displayed.
+
+```c++
+// ...code leading up to adding a GraphVisual gv to the Visual v:
+auto gv_pointer = v.addVisualModel (gv);
+
+while (v.readyToFinish == false) {
+    dx += 0.01;
+    v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
+    gv_pointer->update (x, (x+dx).sin(), 0); // <-- Update via the non-owning pointer
+    v.render();
+}
+```
+
+## Removing a `VisualModel` from the scene
+
+If you need to remove a model from the scene so that it no longer exists in the program, you can do so with `Visual::removeVisualModel`. You pass in the pointer as an identifier for the model.
+
+```c++
+// ...
+auto gv_pointer = v.addVisualModel (gv);
+
+int counter = 0;
+// Render the VisualModel gv until counter exceeds 1000000:
+while (v.readyToFinish == false) {
+    v.render();
+    v.waitevents (0.017);
+    if (++counter > 1000000) {
+        v.removeVisualModel (gv_pointer); // Model will vanish on next v.render()
+        gv_pointer = nullptr; // you could reassign a value later with addVisualModel
+    }
+}
+```
+
+> [!NOTE]
+>
+> The `VisualModel` that was pointed to by `gv_pointer` is *deconstructed* as a result of `removeVisualModel` and will no longer exist in your program. Its `unique_ptr` is removed from the vector `Visual::vm`, goes out of scope and arranges the deallocation of the VisualModel.
+
+## Pointer safety
+
+The non-owning pointer (`gv_pointer` in the examples) returned by `addVisualModel()` will be valid until:
+
+* either the owning `morph::Visual` is deconstructed
+* or you remove the associated VisualModel with `Visual::removeVisualModel()`
+
+> [!WARNING]
+> Do not de-allocate the memory pointed to by `gv_pointer` yourself!
+
+As well as heeding the warning not to free or deallocate the pointer, you should take care that the pointer is valid for use when you dereference it to make a function call. If you are keeping track of a lot of pointers to Visual-owned VisualModels, you might need to test a pointer before dereferencing it. To do this you can use `validVisualModel(gv_pointer)`, which returns a copy of gv_pointer if it is associated with an existing model in your `morph::Visual` or `nullptr` otherwise. Here is an update to the previous example, with a pointer check:
+
+```c++
+while (v.readyToFinish == false) {
+    dx += 0.01;
+    v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
+    if (v.validVisualModel(gvp) != nullptr) {
+        gv_pointer->update (x, (x+dx).sin(), 0); // safe dereference of gv_pointer
+    } else { /* Don't use gv_pointer */ }
+    v.render();
+}
+```
+
 
 # Setting `Visual` features
 
