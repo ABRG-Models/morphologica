@@ -163,11 +163,9 @@ Once it has been finalized, you call `addVisualModel()`, passing in the `GraphVi
 auto gv_pointer = v.addVisualModel (gv);
 ```
 
-> [!WARNING]
-> **Don't try to use the `unique_ptr` object `gv` after you have added it!** Your local `unique_ptr gv` *no longer owns the memory*.
+**Don't try to use the `unique_ptr` object `gv` after you have added it to the scene!** Your local `unique_ptr gv` *no longer owns the memory*.
 
-> [!TIP]
-> However, you **can** *re-use* `gv` if you want to, setting it with another call to `std::make_unique` for a new model.
+However, you **can** *re-use* `gv` if you want to, setting it with another call to `std::make_unique` for a new model.
 
 ## Using the `VisualModel*` pointer
 
@@ -205,9 +203,7 @@ while (v.readyToFinish == false) {
 }
 ```
 
-> [!NOTE]
->
-> The `VisualModel` that was pointed to by `gv_pointer` is *deconstructed* as a result of `removeVisualModel` and will no longer exist in your program. Its `unique_ptr` is removed from the vector `Visual::vm`, goes out of scope and arranges the deallocation of the VisualModel.
+The `VisualModel` that was pointed to by `gv_pointer` is *deconstructed* as a result of `removeVisualModel` and will no longer exist in your program. Its `unique_ptr` is removed from the vector `Visual::vm`, goes out of scope and arranges the deallocation of the VisualModel.
 
 ## Pointer safety
 
@@ -216,16 +212,21 @@ The non-owning pointer (`gv_pointer` in the examples) returned by `addVisualMode
 * either the owning `morph::Visual` is deconstructed
 * or you remove the associated VisualModel with `Visual::removeVisualModel()`
 
-> [!WARNING]
-> Do not de-allocate the memory pointed to by `gv_pointer` yourself!
+### Don't mess with the memory
 
-As well as heeding the warning not to free or deallocate the pointer, you should take care that the pointer is valid for use when you dereference it to make a function call. If you are keeping track of a lot of pointers to Visual-owned VisualModels, you might need to test a pointer before dereferencing it. To do this you can use `validVisualModel(gv_pointer)`, which returns a copy of gv_pointer if it is associated with an existing model in your `morph::Visual` or `nullptr` otherwise. Here is an update to the previous example, with a pointer check:
+Do not de-allocate the memory pointed to by `gv_pointer` yourself! Remember that `unique_ptr` objects should manage the memory of each VisualModel in your program. You use the non-owning pointer only to access functions from your `VisualModel` or as an identifier when you want to remove your `VisualModel` from the scene.
+
+### Testing that a `VisualModel` for your pointer exists
+
+As well as heeding the warning not to free or deallocate the pointer, you should take care that the pointer is valid for use when you dereference it to make a function call. If you are keeping track of a lot of pointers to Visual-owned VisualModels, you might need to test a pointer before dereferencing it. To do this you can use `validVisualModel(gv_pointer)`, which returns a copy of `gv_pointer` if it is associated with an existing model in your `morph::Visual`. If there is no existing `VisualModel` the function returns `nullptr`.
+
+Here is an update to the previous example, with a pointer check:
 
 ```c++
 while (v.readyToFinish == false) {
     dx += 0.01;
     v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
-    if (v.validVisualModel(gvp) != nullptr) {
+    if (v.validVisualModel(gv_pointer) != nullptr) {
         gv_pointer->update (x, (x+dx).sin(), 0); // safe dereference of gv_pointer
     } else { /* Don't use gv_pointer */ }
     v.render();
@@ -381,11 +382,11 @@ A good example program is [graph4.cpp](https://github.com/ABRG-Models/morphologi
 In this program, we set up a `Visual` then add a `GraphVisual`:
 
 ```c++
-    auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
-    v.bindmodel (gv);
-    gv->setsize (1.33, 1); // etc; other setup calls are hidden in this example
-    gv->finalize();
-    auto gvp = v.addVisualModel (gv);
+auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
+v.bindmodel (gv);
+gv->setsize (1.33, 1); // etc; other setup calls are hidden in this example
+gv->finalize();
+auto gv_pointer = v.addVisualModel (gv);
 ```
 
 When we call `addVisualModel`, ownership of the `GraphVisual` object
@@ -394,23 +395,23 @@ now-defunct `std::unique_ptr<>` `gv`. We therefore hold the return
 value of `addVisualModel` which is a non-owning pointer to the
 `GraphVisual` we just added - it has type `GraphVisual<float>*`.
 
-In the example, we can then see the use of `gvp` in a while loop:
+In the example, we can then see the use of `gv_pointer` in a while loop:
 
 ```c++
-    while (v.readyToFinish == false) {
-        v.waitevents (0.018);
-        // Slowly update the content of the graph
-        if (rcount++ % 20 == 0 && idx < absc.size()) {
-            // Append to dataset 0
-            gvp->append (absc[idx], data[idx], 0);
-            // Append to dataset 1
-            gvp->append (absc[idx], data2[idx], 1);
-            ++idx;
-        }
-        v.render();
+while (v.readyToFinish == false) {
+    v.waitevents (0.018);
+    // Slowly update the content of the graph
+    if (rcount++ % 20 == 0 && idx < absc.size()) {
+        // Append to dataset 0
+        gv_pointer->append (absc[idx], data[idx], 0);
+        // Append to dataset 1
+        gv_pointer->append (absc[idx], data2[idx], 1);
+        ++idx;
     }
+    v.render();
+}
 ```
-`Visual` has a flag called `readyToFinish`, which gets set to true when the user presses **Ctrl-q**. As long as this is false, the loop first calls `Visual::waitevents()` which waits for up to 0.018 seconds for a keyboard or mouse event. When this returns, there's a test to see if the graph should be updated with `GraphVisual::append`, accessed via the pointer `gvp`. Whether or not the graph was updated, `Visual::render()` is called to render the scene.
+`Visual` has a flag called `readyToFinish`, which gets set to true when the user presses **Ctrl-q**. As long as this is false, the loop first calls `Visual::waitevents()` which waits for up to 0.018 seconds for a keyboard or mouse event. When this returns, there's a test to see if the graph should be updated with `GraphVisual::append`, accessed via the pointer `gv_pointer`. Whether or not the graph was updated, `Visual::render()` is called to render the scene.
 
 Use of `waitevents` prevents the frame rate becoming too high. If you need the maximum possible framerate, then you can instead call `Visual::poll()` in place of `waitevents`.
 
