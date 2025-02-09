@@ -4,6 +4,9 @@ name: Mac OS 13
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README**'
   pull_request:
     branches: [ "main" ]
 
