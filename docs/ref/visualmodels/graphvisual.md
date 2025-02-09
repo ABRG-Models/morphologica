@@ -6,10 +6,214 @@ permalink: /ref/visualmodels/graphvisual
 layout: page
 nav_order: 10
 ---
+# GraphVisual: 2D graphs
+{: .no_toc}
+
 ```c++
 #include <morph/GraphVisual.h>
 ```
 
-# Two dimensional graphs
+**Table of contents**
+
+- TOC
+{:toc}
+
+# Overview
 
 `morph::GraphVisual` is a class that draws 2D graphs.
+
+A short example of a program that draws a graph with `GraphVisual` is (omitting the `#include` lines for `<morph/Visual.h>`, `<morph/GraphVisual.h>` and `<morph/vvec.h>`):
+```c++
+int main() {
+    morph::vvec<double> x = { -7,-6,-5,-4,-3,-2,-1,-0.5, 0, 0.5, 1, 2, 3, 4, 5, 6, 7  }; // data
+    morph::Visual v(1024, 768, "Made with morph::GraphVisual"); // Visual scene/window
+
+    // 5 lines of C++ code to create a 2D Graph
+    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+    v.bindmodel (gv);
+    gv->setdata (x, x.pow(3));
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    v.keepOpen();
+}
+```
+As usual, we create the `VisualModel` with a call to `std::make_unique<>`, and then call the boilerplate `bindmodel` function to wire up some callbacks.
+
+In this example, there's just one line setting up the `GraphVisual`: `gv->setdata (x, x.pow(3));`.
+This passes data into the GraphVisual instance.
+The first argument to setdata copies the values in `x` to the abscissa (x axis) of the graph and `x.pow(3)` is copied to the ordinate (y axis).
+
+The GraphVisual is then finalized (creating OpenGL vertices and
+indices) and added to the `Visual` scene giving this result:
+
+![Screenshot of a default GraphVisual graph of y = x^3](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_basic1.png?raw=true)
+
+The screenshot shows a graph of the function, which has the default dimensions of 1x1 units in model space.
+GraphVisual has auto-scaled the data into model units so that it fits inside the axes of the graph and it has automatically determined suitable tick values to show.
+It has used the default font ([VisualFont](/morphologica/ref/visualint/visualface#available-font-faces)::DVSans) and font size (0.05) for the axis labels and tick labels.
+The data markers have the default colour of `morph::colour::royalblue` and lines of a default thickness (0.03) are drawn between the markers in black.
+
+The rest of this page describes how you can choose different defaults do draw a variety of differently styled graphs.
+
+## Setting data
+
+The first example showed only a single dataset in the graph.
+The call to `setdata` omitted to specify a *dataset index*, and because this was the first dataset, its index was set automatically to 0.
+You can add multiple datasets to a GraphVisual.
+Each call to setdata will increment the dataset index.
+We could add a second dataset to the previous example:
+```c++
+    // ...
+    gv->setdata (x, x.pow(3), "x cubed");                  // dataset index 0
+    gv->setdata (x, 5.0 * x.pow(2), "5 times x squared");  // dataset index 1
+
+    gv->finalize();
+    // etc...
+```
+The result is shown in the left of these two graphs:
+
+![Screenshot of two GraphVisual graphs, each showing two datasets](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_basic2.png?raw=true)
+
+Notice that we gave a third argument to `setdata` which defines the dataset's *datalabel*.
+This is automatically displayed in a legend above the graph axes.
+With the two setdata calls, the GraphVisual now displays two sets of data points, giving the second dataset a new marker shape ('uptriangle') and colour.
+The scaling from the first set of data points is applied to second and subsequent datasets.
+To illustrate, look at the right hand graph.
+This also has two datasets, with the second dataset now showing 10x<sup>2</sup>.
+Some of the elements of this dataset extend beyond the boundary of the axes and are not drawn.
+If you are allowing GraphVisual to autoscale the data, remember that it is the first dataset for which the scaling is computed.
+To work around this, you can manually define the limits of your axes.
+
+### Setting data with a `DatasetStyle`
+
+Each dataset in a GraphVisual has an associated `morph::DatasetStyle`.
+This defines how the dataset should be drawn on the graph.
+It allows you to choose whether data is represented by markers, lines or both.
+It lets you set the line width and colour and the marker shape, size and colour.
+
+When you make a call to `setdata(x, y)` or `setdata(x, y, "datalabel")`, a default DatasetStyle is created and then the `setdata (x, y, DatasetStyle)` overload is called.
+For manual control over the style of your data, simply create a DatasetStyle before you call `setdata` as in this example:
+
+```c++
+    morph::DatasetStyle ds;
+    ds.datalabel = "x cubed";
+    ds.markercolour = morph::colour::springgreen3;
+    ds.markersize = ds.markersize * 1.5;
+    ds.markerstyle = morph::markerstyle::pentagon;
+    gv->setdata (x, x.pow(3), ds);
+```
+Create a `DatasetStyle` instance, `ds`, then change some of its members. Here, we set the datalabel, changed the colour for the markers and increased the marker size. Here's the resulting graph:
+
+![Screenshot of two GraphVisual graphs, each showing two datasets](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_datasetstyle.png?raw=true)
+
+You can modify the `DatasetStyle` object and use it for later `setdata` calls. It need not stay in scope after `setdata` returns.
+
+You can find DatasetStyle in the header [morph/DatasetStyle.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/DatasetStyle.h).
+
+The public member attributes of `morph::DatasetStyle` that you can modify are:
+
+* `morph::stylepolicy stylepolicy` Should we plot markers, lines or both? Options are `markers`, `lines`, `both` (coloured markers, black lines) `allcolour` (coloured markers and lines) or `bar` (bar graph). The default is `both`; if you want an alternative, pass it to the DatasetStyle constructor.
+* `float linewidth` Thickness of lines in model units. Default is 0.007.
+* `float markersize` Diameter of the corners of the marker shape. Default is 0.03.
+* `float markergap` A space between the markers and the lines. Default is 0.03.
+* `morph::markerstyle markerstyle` The shape of the data markers. `square`, `triangle`, `hexagon`, etc. Options in [graphstyles.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/graphstyles.h).
+
+### Line graph examples
+To make a line graph, create a DatasetStyle with `stylepolicy::lines` passed to the constructor. Set the `linewidth` and `linecolour` to your liking:
+```c++
+    // Left hand graph
+    morph::DatasetStyle ds(morph::stylepolicy::lines); // initialize for line graphs
+    ds.datalabel = "x cubed";
+    ds.linewidth = 0.014f;
+    gv->setdata (x, x.pow(3), ds); // line will be the default colour of black
+
+    // Right hand graph. Note we re-use ds, simply changing some of its parameters
+    ds.datalabel = "5 times x squared";
+    ds.linewidth = 0.0035f;
+    ds.linecolour = morph::colour::crimson;
+    gv2->setdata (x, 5.0 * x.pow(2), ds);
+
+```
+The lines are drawn made up from straight line segments between the data points (any curve fitting is left for the client code to carry out).
+![Screenshot of two GraphVisual graphs, with different line style options](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_lines.png?raw=true)
+
+### Marker-only graph examples
+
+```c++
+    // Left hand graph
+    morph::DatasetStyle ds(morph::stylepolicy::markers); // initialize for markers only
+    ds.datalabel = "x cubed";
+    ds.linewidth = 0.01f;
+    ds.linecolour = morph::colour::magenta;
+    ds.markersize = 0.06f;
+    ds.markerstyle = morph::markerstyle::diamond;
+    ds.markercolour = morph::colour::purple2;
+    ds.markergap = 0.06;
+    gv->setdata (x, x.pow(3), ds); // line will be the default colour of black
+
+    // Right hand graph (re-using ds)
+    ds.datalabel = "5 times x squared";
+    ds.linewidth = 0.012f;
+    ds.linecolour = morph::colour::navy;
+    ds.markersize = 0.014f;
+    ds.markerstyle = morph::markerstyle::uphexagon;
+    ds.markercolour = morph::colour::crimson;
+    ds.markergap = 0.06;
+    gv2->setdata (x, 5.0 * x.pow(2), ds);
+
+```
+![Screenshot of two GraphVisual graphs, with different marker style options](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_markers.png?raw=true)
+
+### Marker plus line graph examples
+```c++
+    // Left hand graph
+    morph::DatasetStyle ds(morph::stylepolicy::both); // equivalent to: morph::DatasetStyle ds;
+    ds.datalabel = "x cubed";
+    ds.linewidth = 0.0035f;
+    ds.linecolour = morph::colour::purple2;
+    ds.markersize = 0.06f;
+    ds.markerstyle = morph::markerstyle::diamond;
+    ds.markercolour = morph::colour::magenta;
+    ds.markergap = 0.04;
+    gv->setdata (x, x.pow(3), ds);
+
+    // Right hand graph (re-using ds)
+    ds.datalabel = "5 times x squared";
+    ds.linewidth = 0.012f;
+    ds.linecolour = morph::colour::navy;
+    ds.markersize = 0.014f;
+    ds.markerstyle = morph::markerstyle::uphexagon;
+    ds.markercolour = morph::colour::dodgerblue;
+    ds.markergap = 0.02;
+    gv2->setdata (x, 5.0 * x.pow(2), ds);
+```
+![Screenshot of two GraphVisual graphs, with different line and marker style options](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_both.png?raw=true)
+
+## Appending or updating data
+
+If you need to change all the data points in a graph, you'll want to use the `update` function.
+
+### Prepping a dataset
+
+Your program may need to start with a graph that has an empty dataset and add to it with the `append` method. In this case, you must first prepare the graphs with as many datasets as you will use.
+
+## The axes
+
+### Controlling the size of the axes
+
+### Controlling the data limits
+
+### The fonts
+
+### The axis ticks
+
+### Axis labels
+
+## Special graph types
+
+### Bar graph
+
+### Histogram
+
+### Quiver plots
