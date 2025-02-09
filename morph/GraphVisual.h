@@ -6,28 +6,29 @@
  */
 #pragma once
 
-#include <morph/VisualModel.h>
-#include <morph/gl/version.h>
+#include <iostream>
+#include <array>
+#include <vector>
+#include <deque>
+#include <cmath>
+#include <sstream>
+#include <memory>
+#include <morph/mathconst.h>
 #include <morph/tools.h>
 #include <morph/scale.h>
 #include <morph/range.h>
 #include <morph/vec.h>
-#include <morph/VisualTextModel.h>
+#include <morph/vvec.h>
 #include <morph/quaternion.h>
-#include <morph/ColourMap.h>
-#include <morph/colour.h>
 #include <morph/histo.h>
-#include <morph/mathconst.h>
+#include <morph/colour.h>
+#include <morph/gl/version.h>
+#include <morph/VisualModel.h>
+#include <morph/VisualTextModel.h>
+#include <morph/graphstyles.h>
+#include <morph/ColourMap.h>
 #include <morph/Grid.h>
 #include <morph/DatasetStyle.h>
-#include <morph/graphstyles.h>
-#include <iostream>
-#include <vector>
-#include <deque>
-#include <array>
-#include <cmath>
-#include <sstream>
-#include <memory>
 
 namespace morph {
 
