@@ -115,9 +115,8 @@ namespace morph {
             }
         }
 
-        // If the range other 'fits inside' this range, then this range includes (or encompasses, or
-        // contains) the range other.
-        constexpr bool includes (const morph::range<T>& other) const
+        // If the range other 'fits inside' this range, then this range contains (or encompasses) the range other.
+        constexpr bool contains (const morph::range<T>& other) const
         {
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
                 // Does other define a rectangle in the complex plane that fits inside the one made by this->min and max?
