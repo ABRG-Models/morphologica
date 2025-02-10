@@ -26,6 +26,10 @@ int main()
     // positions, width, etc). This is float by default (which should be fine in most
     // cases), but is left explicit in this example.
     morph::histo<int, float> h(inumbers, 30);
+#if 0
+    // Setting a manual datarange can be useful if you are comparing histograms with different data:
+    morph::histo<int, float> h(inumbers, 30, morph::range<int>{-2000, 2000});
+#endif
 
     // Set up a morph::Visual for a graph
     morph::Visual v(1024, 768, "Histogram");
