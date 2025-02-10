@@ -25,8 +25,11 @@ namespace morph {
         /*!
          * Histogram constructor
          *
-         * The constructor does all of the computation of the histogram. The workflow is Construct
-         * -> access results in histo::bins histo::binwidth histo::proportions and histo::counts
+         * This constructor does all of the computation of the histogram (via a call to init). The
+         * workflow is Construct -> access results in histo::bins histo::binwidth histo::proportions
+         * and histo::counts.
+         *
+         * The histogram is computed based on the range of data values in data.
          *
          * \param data The histogram data
          *
@@ -38,9 +41,61 @@ namespace morph {
          * \tparam Allocator The memory allocator for the container. You don't usually need to
          * specify this.
          */
-        template < template <typename, typename> typename Container,
-                   typename Allocator=std::allocator<H> >
+        template < template <typename, typename> typename Container, typename Allocator=std::allocator<H> >
         histo (const Container<H, Allocator>& data, std::size_t n)
+        {
+            morph::range<H> r { std::numeric_limits<H>::max(), std::numeric_limits<H>::max() };
+            this->init (data, n, r);
+        }
+
+        /*!
+         * Histogram constructor for a manual data range
+         *
+         * This constructor does almost all of the computation of the histogram (via a call to
+         * init). The workflow is Construct -> access results in histo::bins histo::binwidth
+         * histo::proportions and histo::counts.
+         *
+         * The histogram is computed based on the range of data values provided by the user in
+         * manual_datarange. manual_datarange should encompass the actual range of the data.
+         *
+         * \param data The histogram data
+         *
+         * \param n The number of bins to sort the data values into
+         *
+         * \param manual_datarange The user-provided data range.
+         *
+         * \tparam Container A container (std::vector, std::array, morph::vvec, etc) of data values
+         * of type H
+         *
+         * \tparam Allocator The memory allocator for the container. You don't usually need to
+         * specify this.
+         */
+        template < template <typename, typename> typename Container, typename Allocator=std::allocator<H> >
+        histo (const Container<H, Allocator>& data, std::size_t n, const morph::range<H>& manual_datarange)
+        {
+            this->init (data, n, manual_datarange);
+        }
+
+        /*!
+         * Histogram computation common to both constructors
+         *
+         * This function computes the histogram.
+         *
+         * \param data The histogram data
+         *
+         * \param n The number of bins to sort the data values into
+         *
+         * \param manual_datarange The user-provided data range or a dummy datarange containing the
+         * value std::numeric_limits<H>::max() for both min and max.
+         *
+         * \tparam Container A container (std::vector, std::array, morph::vvec, etc) of data values
+         * of type H
+         *
+         * \tparam Allocator The memory allocator for the container. You don't usually need to
+         * specify this.
+         */
+        template < template <typename, typename> typename Container, typename Allocator=std::allocator<H> >
+        void init (const Container<H, Allocator>& data, std::size_t n, const morph::range<H>& manual_datarange)
         {
             this->bins.resize (n, T{0});
             this->binedges.resize (n + 1U, T{0});
@@ -48,7 +103,17 @@ namespace morph {
             this->proportions.resize (n, T{0});
             this->datacount = static_cast<T>(data.size());
             // Compute bin widths from range of data and n.
-            this->datarange = morph::MathAlgo::maxmin (data);
+            if (manual_datarange.min == std::numeric_limits<H>::max()
+                && manual_datarange.max == std::numeric_limits<H>::max()) {
+                this->datarange = morph::MathAlgo::maxmin (data);
+            } else {
+                // Check manual_datarange
+                morph::range<H> actual_datarange = morph::MathAlgo::maxmin (data);
+                if (!manual_datarange.contains (actual_datarange)) {
+                    throw std::runtime_error ("morph::histo: Make sure the manual_datarange is *larger* than the data's own datarange");
+                }
+                this->datarange = manual_datarange;
+            }
             if (this->datarange.span() == H{0}) {
                 throw std::runtime_error ("morph::histo: range span is 0, can't make a histogram");
             }

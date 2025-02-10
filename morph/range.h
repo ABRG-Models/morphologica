@@ -69,9 +69,9 @@ namespace morph {
                 this->max = std::numeric_limits<T>::lowest();
             } else {
 #if __cplusplus >= 202002L
-                []<bool flag = false>() { static_assert(flag, "morph::range does not support this type"); }();
+                []<bool flag = false>() { static_assert(flag, "morph::range::search_init does not support this type"); }();
 #else
-                throw std::runtime_error ("morph::range does not support this type");
+                throw std::runtime_error ("morph::range::search_init does not support this type");
 #endif
             }
         }
@@ -89,16 +89,16 @@ namespace morph {
                 this->max = d > this->max ? changed = true, d : this->max;
             } else {
 #if __cplusplus >= 202002L
-                []<bool flag = false>() { static_assert(flag, "morph::range does not support this type"); }();
+                []<bool flag = false>() { static_assert(flag, "morph::range::update does not support this type"); }();
 #else
-                throw std::runtime_error ("morph::range does not support this type");
+                throw std::runtime_error ("morph::range::update does not support this type");
 #endif
             }
             return changed;
         }
 
-        // Does the range include v?
-        constexpr bool includes (const T& v)
+        // Does the range include the value v?
+        constexpr bool includes (const T& v) const
         {
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
                 // Is v inside the rectangle in the complex plane made by min and max?
@@ -108,9 +108,30 @@ namespace morph {
                 return (v <= this->max && v >= this->min);
             } else {
 #if __cplusplus >= 202002L
-                []<bool flag = false>() { static_assert(flag, "morph::range does not support this type"); }();
+                []<bool flag = false>() { static_assert(flag, "morph::range::includes does not support this type"); }();
 #else
-                throw std::runtime_error ("morph::range does not support this type");
+                throw std::runtime_error ("morph::range::includes does not support this type");
+#endif
+            }
+        }
+
+        // If the range other 'fits inside' this range, then this range contains (or encompasses) the range other.
+        constexpr bool contains (const morph::range<T>& other) const
+        {
+            if constexpr (morph::number_type<T>::value == 2) { // range is complex
+                // Does other define a rectangle in the complex plane that fits inside the one made by this->min and max?
+                bool othermin_inside = std::real(this->min) <= std::real(other.min) && std::imag(this->min) <= std::imag(other.min)
+                && std::real(this->max) >= std::real(other.min) && std::imag(this->max) >= std::imag(other.min);
+                bool othermax_inside = std::real(this->min) <= std::real(other.max) && std::imag(this->min) <= std::imag(other.max)
+                && std::real(this->max) >= std::real(other.max) && std::imag(this->max) >= std::imag(other.max);
+                return othermin_inside && othermax_inside;
+            } else if constexpr (morph::number_type<T>::value == 1) { // range is scalar
+                return (this->min <= other.min && this->max >= other.max);
+            } else {
+#if __cplusplus >= 202002L
+                []<bool flag = false>() { static_assert(flag, "morph::range::contains does not support this type"); }();
+#else
+                throw std::runtime_error ("morph::range::contains does not support this type");
 #endif
             }
         }
