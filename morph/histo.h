@@ -109,7 +109,7 @@ namespace morph {
             } else {
                 // Check manual_datarange
                 morph::range<H> actual_datarange = morph::MathAlgo::maxmin (data);
-                if (!manual_datarange.contains (actual_datarange)) {
+                if (!manual_datarange.includes (actual_datarange)) {
                     throw std::runtime_error ("morph::histo: Make sure the manual_datarange is *larger* than the data's own datarange");
                 }
                 this->datarange = manual_datarange;
