@@ -222,8 +222,8 @@ namespace morph {
         }
 
         //! Take a screenshot of the window. Return vec containing width * height or {-1, -1} on
-        //! failure.
-        morph::vec<int, 2> saveImage (const std::string& img_filename)
+        //! failure. Set transparent_bg to get a transparent background.
+        morph::vec<int, 2> saveImage (const std::string& img_filename, const bool transparent_bg = false)
         {
 #ifndef OWNED_MODE
             this->setContext();
@@ -244,8 +244,14 @@ namespace morph {
             for (int i = 0; i < dims[1]; ++i) {
                 int rev_line = (dims[1] - i - 1) * 4 * dims[0];
                 int for_line = i * 4 * dims[0];
-                for (int j = 0; j < 4 * dims[0]; ++j) {
-                    rbits[rev_line+j] = bits[for_line+j];
+                if (transparent_bg) {
+                    for (int j = 0; j < 4 * dims[0]; ++j) {
+                        rbits[rev_line + j] = bits[for_line + j];
+                    }
+                } else {
+                    for (int j = 0; j < 4 * dims[0]; ++j) {
+                        rbits[rev_line + j] = (j % 4 == 3) ? 255 : bits[for_line + j];
+                    }
                 }
             }
             unsigned int error = lodepng::encode (img_filename, rbits.get(), dims[0], dims[1]);
