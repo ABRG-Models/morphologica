@@ -516,36 +516,55 @@ namespace morph {
         template<typename H>
         void setdata (const morph::histo<H, Flt>& h, const std::string name = "")
         {
-            DatasetStyle ds(this->policy);
+            DatasetStyle ds(morph::stylepolicy::bar);
             if (!name.empty()) { ds.datalabel = name; }
-
             // Because this overload of setdata sets bargraph data, I want it to force the graph to be stylepolicy::bar
             ds.policy = morph::stylepolicy::bar;
-            ds.markerstyle = morph::markerstyle::bar;
-            // How to choose? User sets afterwards?
-            ds.showlines = true;
-            ds.markersize = (this->width - this->width*2*this->dataaxisdist) * (h.binwidth / static_cast<Flt>(h.datarange.span()));
-            ds.linewidth = ds.markersize/10.0;
+            ds.markersize = (this->width - this->width * 2 * this->dataaxisdist) * (h.binwidth / static_cast<Flt>(h.datarange.span()));
 
+            // User may wish to change these by calling the setdata (const histo&, DatasetStyle&) overload
+            ds.showlines = true;
+            ds.linewidth = ds.markersize / 10.0f;
             unsigned int data_index = this->graphDataCoords.size();
             ds.markercolour = DatasetStyle::datacolour(data_index);
-            ds.linecolour = morph::colour::black; // For now.
+            ds.linecolour = morph::colour::black;
 
-            // Because this is bar graph data, make sure to compute the ord1_scale now from
-            // 0 -> max and NOT from min -> max.
-            this->scalingpolicy_y = morph::scalingpolicy::manual_min;
-            this->datarange_y.min = Flt{0};
-            this->setdata (h.bins, h.proportions, ds);
+            this->setdata (h, ds);
         }
 
-        //! Set graph from histogram with pre-configured datasetstyle
-        template<typename H>
-        void setdata (const morph::histo<H, Flt>& h, const DatasetStyle& ds)
+        /*!
+         * Set graph from histogram with pre-configured datasetstyle (though it must have policy
+         * stylepolicy::bar)
+         *
+         * \tparam bar_width_auto: if true, always automatically change the dataset style's
+         * markersize based on the GraphVisual width and the histogram.
+         *
+         * If you want to manually change the histogram bar widths, then call
+         *
+         * morph::histo<H, Flt> h(data);
+         * morph::DatasetStyle ds(morph::stylepolicy::bar);
+         * // ds setup goes here including ds.markersize for bar width
+         * gv->setdata<H, false> (h, ds);
+         */
+        template<typename H, bool bar_width_auto = true>
+        void setdata (const morph::histo<H, Flt>& h, morph::DatasetStyle& ds)
         {
-            // Because this is bar graph data, make sure to compute the ord1_scale now from
-            // 0 -> max and NOT from min -> max.
-            this->scalingpolicy_y = morph::scalingpolicy::manual_min;
+            if (ds.policy != morph::stylepolicy::bar) {
+                throw std::runtime_error ("setdata(histo, DatasetStyle): Your DatasetStyle policy must be morph::stylepolicy::bar");
+            }
+            if constexpr (bar_width_auto == true) {
+                ds.markersize = (this->width - this->width * 2 * this->dataaxisdist) * (h.binwidth / static_cast<Flt>(h.datarange.span()));
+            }
+            if (this->scalingpolicy_y == morph::scalingpolicy::autoscale) {
+                // Because this is bar graph data, make sure to compute the ord1_scale now from 0 ->
+                // max and NOT from min -> max; change scaling_policy to manual_min
+                this->scalingpolicy_y = morph::scalingpolicy::manual_min; // to autoscale max only
+            } else if (this->scalingpolicy_y == morph::scalingpolicy::manual_max) {
+                this->scalingpolicy_y = morph::scalingpolicy::manual;
+            }
+            // datarange_y min is always 0
             this->datarange_y.min = Flt{0};
+
             this->setdata (h.bins, h.proportions, ds);
         }
 
