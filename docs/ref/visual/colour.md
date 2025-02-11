@@ -31,3 +31,15 @@ this->computeSphere (sphere_location, morph::colour::mint);
 I use the webpage to find a colour I want to use, and the names can be used directly as above. The entry corresponding to `morph::colour::mint` is:
 
 ![Image of the entry for the colour mint on the cloford.com colour web page](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/mint.png?raw=true)
+
+Here's a selection of colours in a constexpr array defining a sequence for use in 6 graphs:
+```c++
+constexpr std::array<std::array<float, 3>, 6> clrs = {
+    morph::colour::crimson,
+    morph::colour::hotpink1,
+    morph::colour::maroon2,
+    morph::colour::orchid3,
+    morph::colour::darkorchid3,
+    morph::colour::purple2
+};
+```
