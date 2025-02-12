@@ -216,8 +216,11 @@ add_subdirectory(morph)
 add_subdirectory(include)
 
 # Unit testing using the ctest framework
-enable_testing()
-add_subdirectory(tests)
+option(BUILD_TESTS "Build tests" OFF)
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif(BUILD_TESTS)
 
 # incbin for Visual Studio
 add_subdirectory(buildtools)
@@ -227,7 +230,10 @@ add_subdirectory(buildtools)
 add_subdirectory(fonts)
 
 # Example code (you can also see tests/ for examples)
-add_subdirectory(examples)
+option(BUILD_EXAMPLES "Build examples" ON)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif(BUILD_EXAMPLES)
 
 # first we can indicate the documentation build as an option and set it to ON by default
 option(BUILD_DOC "Build documentation" OFF)
