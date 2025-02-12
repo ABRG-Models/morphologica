@@ -87,10 +87,10 @@ int main()
 
     float f = 0.0f;
     bool float_can = set_from (f);
-    std::array<double, 10> c;
+    std::array<double, 10> c = {0.0};
     bool array_can = set_from (c);
 
-    std::vector<double> c2;
+    std::vector<double> c2 = {0.0};
     bool vector_can = set_from (c2);
 
     // I want false returned for std::map as this can't be set_from. So it's not JUST that map has
@@ -99,13 +99,13 @@ int main()
     //std::map<int, double> c3;
     //bool map_can = set_from (c3);
 
-    std::set<double> c4;
+    std::set<double> c4 = {};
     bool set_can = set_from (c4);
 
-    std::complex<float> c5;
+    std::complex<float> c5 = {};
     bool complex_can = complex_from (c5);
 
-    float c6;
+    float c6 = 0.0f;
     bool float_is_complex = complex_from (c6);
 
     if (float_can || !array_can || !vector_can || !set_can || !complex_can || float_is_complex) {
