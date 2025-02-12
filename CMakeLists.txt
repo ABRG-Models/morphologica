@@ -1,5 +1,4 @@
-# AUTOMOC requires 2.8.6. The CMAKE_CXX_STANDARD variable requires 3.1.
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(morphologica)
 # Note that the project version is encoded in morph/version.h and not in this CMakeLists.txt
 
@@ -170,6 +169,9 @@ include_directories(${GLFW3_INCLUDE_DIR})
 # New, text rendering dependencies
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
+
+# Use packaged nlohmann json
+find_package(nlohmann_json REQUIRED)
 
 # If Qt5 is present, then some optional Qt examples will be compiled
 find_package(Qt5 QUIET COMPONENTS Gui Core Widgets)

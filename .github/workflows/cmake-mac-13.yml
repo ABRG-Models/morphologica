@@ -35,7 +35,7 @@ jobs:
         #brew unlink python@3.12 && brew link --overwrite python@3.12 # Hack to prevent brew-installed python from interfering with preinstalled python
         # maybe: brew unlink python && brew link --overwrite python # alt hack
         find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete # Alt hack
-        brew install libomp glfw armadillo hdf5
+        brew install libomp glfw armadillo hdf5 nlohmann-json
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
