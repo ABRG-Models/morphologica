@@ -92,6 +92,7 @@ find_package(Armadillo REQUIRED)   # Only required if you use the Bezier curve c
 find_package(OpenGL REQUIRED)      # This, glfw3 and Freetype are required for morph::Visual
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(nlohmann-json REQUIRED)
 
 # Define collections of includes for the dependencies
 set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})

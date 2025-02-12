@@ -35,11 +35,10 @@ ports (Option 1, below). This does lead to the installation of a great deal of
 additional software, some of which can conflict with Mac system
 software (that's libiconv, in particular). However, a clean install of
 Mac ports will successfully install the dependencies for
-morphologica.
+morphologica. Another managed option to to use the brew system (Option 3, below).
 
-I'd advise you to use Option 1: Mac Ports only if you
-*already* use Mac Ports, other wise, prefer Option 2: Manual
-dependency builds.
+I'd advise you to use Option 1: Mac Ports only if you *already* use Mac Ports, and Option 3 if you already use brew.
+Otherwise, prefer Option 2: Manual dependency builds.
 
 ### Option 1: Mac Ports
 
@@ -73,6 +72,15 @@ add these lines to ~/.zprofile so that I can type cmake at the terminal:
 ```sh
 # Add cmake bin directory to path so you can type 'cmake'
 export PATH="/Applications/CMake.app/Contents/bin:${PATH}"
+```
+
+### Option 3: brew
+
+The morphologica github actions for mac runners use brew to install
+dependencies. The command for the basic dependencies is
+
+```sh
+brew install libomp glfw armadillo hdf5
 ```
 
 #### Armadillo
@@ -165,6 +173,20 @@ cmake ..
 make
 sudo make install
 ```
+
+#### nlohmann json
+
+You'll need a package of nlohmann json.
+
+```sh
+sudo brew install nlohmann-json
+```
+```sh
+sudo port install nlohmann-json
+```
+
+Or install manually from https://github.com/nlohmann/json
+
 
 ## Build morphologica on Mac
 
