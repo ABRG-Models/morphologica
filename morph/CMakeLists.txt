@@ -2,11 +2,128 @@
 # This file controls the installation of the header files.
 #
 
-# Header installation
+# Header installation (list from ls *.h* -1)
 install(
-  FILES quaternion.h tools.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h mathconst.h MathAlgo.h MathImpl.h geometry.h number_type.h Hex.h HexGrid.h hexyhisto.h CartGrid.h histo.h keys.h Grid.h HdfData.h Process.h RD_Base.h DirichVtx.h DirichDom.h ShapeAnalysis.h NM_Simplex.h Rect.h Anneal.h Config.h vec.h vvec.h mat22.h mat33.h mat44.h colour.h ColourMap.h ColourMap_Lists.h lenthe_colormap.hpp colourmaps_cet.h colourmaps_crameri.h scale.h Random.h rngd.h rng.h rngs.h RecurrentNetworkTools.h RecurrentNetwork.h range.h Winder.h trait_tests.h base64.h unicode.h Mnist.h bootstrap.h rapidxml.hpp rapidxml_iterators.hpp rapidxml_print.hpp rapidxml_utils.hpp flags.h version.h
+  FILES
+  AllocAndRead.h
+  Anneal.h
+  base64.h
+  BezCoord.h
+  BezCurve.h
+  BezCurvePath.h
+  bootstrap.h
+  CartGrid.h
+  CartGridVisual.h
+  ColourBarVisual.h
+  colour.h
+  ColourMap.h
+  ColourMap_Lists.h
+  colourmaps_cet.h
+  colourmaps_crameri.h
+  ConeVisual.h
+  Config.h
+  ConfigVisual.h
+  CoordArrows.h
+  CurvyTellyVisual.h
+  CyclicColourVisual.h
+  DatasetStyle.h
+  debug.h
+  DirichDom.h
+  DirichVtx.h
+  flags.h
+  GeodesicVisualCE.h
+  GeodesicVisual.h
+  geometry.h
+  graphstyles.h
+  GraphVisual.h
+  GratingVisual.h
+  Gridct.h
+  GridctVisual.h
+  GridFeatures.h
+  Grid.h
+  GridVisual.h
+  HdfData.h
+  HealpixVisual.h
+  HexGrid.h
+  HexGridVisual.h
+  Hex.h
+  hexyhisto.h
+  histo.h
+  HSVWheelVisual.h
+  IcosaVisual.h
+  keys.h
+  LengthscaleVisual.h
+  lenthe_colormap.hpp
+  loadpng.h
+  lodepng.h
+  mat22.h
+  mat33.h
+  mat44.h
+  MathAlgo.h
+  mathconst.h
+  math.h
+  MathImpl.h
+  Mnist.h
+  MorphDbg.h
+  NM_Simplex.h
+  PointRowsMeshVisual.h
+  PointRowsVisual.h
+  PolygonVisual.h
+  Process.h
+  QuadsMeshVisual.h
+  QuadsVisual.h
+  quaternion.h
+  QuiverVisual.h
+  Random.h
+  range.h
+  rapidxml.hpp
+  rapidxml_iterators.hpp
+  rapidxml_print.hpp
+  rapidxml_utils.hpp
+  RD_Base.h
+  ReadCurves.h
+  RectangleVisual.h
+  Rect.h
+  RecurrentNetwork.h
+  RecurrentNetworkModel.h
+  RecurrentNetworkTools.h
+  RhomboVisual.h
+  RingVisual.h
+  rngd.h
+  rng.h
+  rngs.h
+  RodVisual.h
+  scale.h
+  ScatterVisual.h
+  ShapeAnalysis.h
+  SphereVisual.h
+  TextFeatures.h
+  TextGeometry.h
+  tools.h
+  trait_tests.h
+  TriangleVisual.h
+  TriaxesVisual.h
+  TriFrameVisual.h
+  TxtVisual.h
+  unicode.h
+  vec.h
+  VectorVisual.h
+  version.h
+  VisualCommon.h
+  VisualCompoundRay.h
+  VisualDataModel.h
+  VisualDefaultShaders.h
+  VisualFace.h
+  Visual.h
+  VisualModel.h
+  VisualResources.h
+  VisualTextModel.h
+  VoronoiVisual.h
+  vvec.h
+  Winder.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
-  )
+)
+
 # There are also headers in sub directories
 add_subdirectory(nn) # 'nn' for neural network code
 add_subdirectory(bn) # 'bn' for boolean net code
@@ -20,11 +137,6 @@ add_subdirectory(nlohmann)
 # And the jcvoronoi code
 add_subdirectory(jcvoronoi)
 
-# Graphics headers
-install(
-  FILES VisualCommon.h Visual.h lodepng.h loadpng.h VisualModel.h VisualDataModel.h VisualTextModel.h TextGeometry.h TextFeatures.h VisualResources.h VisualFace.h CoordArrows.h HexGridVisual.h CartGridVisual.h GridVisual.h GridctVisual.h QuadsVisual.h QuadsMeshVisual.h graphstyles.h DatasetStyle.h GraphVisual.h PointRowsVisual.h PointRowsMeshVisual.h ScatterVisual.h QuiverVisual.h RodVisual.h SphereVisual.h PolygonVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h ColourBarVisual.h CurvyTellyVisual.h HSVWheelVisual.h RhomboVisual.h TriaxesVisual.h TriFrameVisual.h TxtVisual.h VectorVisual.h ConfigVisual.h RectangleVisual.h TriangleVisual.h ConeVisual.h IcosaVisual.h GeodesicVisual.h GratingVisual.h HealpixVisual.h VoronoiVisual.h LengthscaleVisual.h
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
-  )
 # The Visual-in-a-Qt-Widget code
 add_subdirectory(qt)
 # WxWidgets code
