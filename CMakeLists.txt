@@ -133,7 +133,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Lib finding
-if(APPLE)
+if(APPLE OR WIN32)
   find_package(OpenGL REQUIRED)
 else()
   find_package(OpenGL REQUIRED EGL) # GL ES 3.1 used in one gl compute example
