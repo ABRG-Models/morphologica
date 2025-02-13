@@ -61,7 +61,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Find the libraries which will be needed
-find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -70,7 +69,7 @@ find_package(Freetype REQUIRED)
 
 # Define collections of includes that have to be made for morphologica
 set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
-set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
+set(MORPH_INC_GL ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
 # Assuming that you installed morphologica in-tree (i.e. 'next to' XXX.cpp).
@@ -90,7 +89,7 @@ target_compile_definitions(recurrentnet PUBLIC FLT=float COMPILE_PLOTTING)
 
 # Morphologica code requires a number of libraries, collected into 'CORE' and 'GL'.
 set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES})
-set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
+set(MORPH_LIBS_GL OpenGL::GL Freetype::Freetype glfw)
 
 target_link_libraries(recurrentnet ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
