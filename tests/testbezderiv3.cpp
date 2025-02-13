@@ -1,138 +1,111 @@
 /*
  * Another test program. This one is for use as a paper figure.
  */
-#include "morph/HexGrid.h"
-#include "morph/BezCurve.h"
-#include "morph/BezCurvePath.h"
 #include <utility>
 #include <iostream>
 #include <fstream>
 #include <math.h>
 #include <limits>
+#include <array>
 #include <vector>
 #include <list>
+#include "morph/BezCurve.h"
+#include "morph/BezCurvePath.h"
+#include "morph/Visual.h"
+#include "morph/GraphVisual.h"
+#include "morph/vec.h"
 
-// For drawing the curves
-#include <opencv2/opencv.hpp>
-
-#include <chrono>
-using namespace std::chrono;
-
-using namespace std;
-using morph::BezCoord;
-using morph::BezCurve;
-using morph::BezCurvePath;
-using morph::HexGrid;
-
-using namespace cv;
-
-// Colours are BGR(A) format
-#define M_BLUE Scalar(255,0,0,10)
-#define M_PURPLE Scalar(255,0,200,10)
-#define M_GREEN Scalar(0,255,0,10)
-#define M_RED Scalar(0,0,255,10)
-#define M_YELLOW Scalar(0,255,255,10)
-#define M_BLACK Scalar(0,0,0)
-#define M_WHITE Scalar(255,255,255)
-#define M_C1 Scalar(238,121,159) // mediumpurple2
-#define M_C2 Scalar(238,58,178) // darkorchid2
-#define M_GREY Scalar(220,220,220)
-
-
-// Colours for two separate Bezier curves
-#define M_CURVE1 M_BLUE
-#define M_CURVE2 M_RED
-// User control points colour
-#define M_CTRL M_BLACK
-// Fit colour
-#define M_FIT M_C2
-
-void draw (Mat& pImg, BezCurvePath<FLT>& bcp,
+// Draw a bezcurve on the graph gv
+void draw (morph::GraphVisual<float>* gv,
+           morph::BezCurvePath<FLT>& bcp,
            morph::vvec<morph::vec<FLT, 2>>& v,
-           Scalar linecolfit, int sz, bool drawuserctrl = true)
+           std::array<float, 3> linecolfit,
+           float sz, bool drawuserctrl = true)
 {
+    namespace m = morph;
+
     unsigned int nFit = 200;
-    vector<Point> fitted (nFit);
-    vector<Point2d> tangents (nFit);
-    vector<Point2d> normals (nFit);
+    m::vvec<m::vec<float, 2>> fitted (nFit);
+    m::vvec<m::vec<float, 2>> tangents (nFit);
+    m::vvec<m::vec<float, 2>> normals (nFit);
     // Compute the curve for plotting
     bcp.computePoints ((unsigned int)nFit);
-    vector<BezCoord<FLT>> coords = bcp.getPoints();
-    vector<BezCoord<FLT>> tans = bcp.getTangents();
-    vector<BezCoord<FLT>> norms = bcp.getNormals();
+    std::vector<m::BezCoord<FLT>> coords = bcp.getPoints();
+    std::vector<m::BezCoord<FLT>> tans = bcp.getTangents();
+    std::vector<m::BezCoord<FLT>> norms = bcp.getNormals();
     for (unsigned int i = 0; i < nFit; ++i) {
-        fitted[i] = Point(coords[i].x(),coords[i].y());
-        tangents[i] = Point2d(tans[i].x(),tans[i].y());
-        normals[i] = Point2d(norms[i].x(),norms[i].y());
+        fitted[i] = m::vec<double, 2>{coords[i].x(), coords[i].y()}.as_float();
+        tangents[i] = m::vec<double, 2>{tans[i].x(), tans[i].y()}.as_float();
+        normals[i] = m::vec<double, 2>{norms[i].x(), norms[i].y()}.as_float();
     }
 
-    int lw = sz/4;
+    m::DatasetStyle dsl(m::stylepolicy::lines);
+    dsl.linecolour = linecolfit;
+    dsl.linewidth = sz/4.0f;
+    gv->setdata (fitted, dsl);
 
-    // This is the fit line.
-    for (size_t i=1; i<fitted.size(); i++) {
-        line (pImg, fitted[i-1], fitted[i], linecolfit, lw);
-    }
+    m::DatasetStyle dsm(m::stylepolicy::markers);
+    dsm.markercolour = linecolfit;
+    dsm.markersize = sz;
+    dsm.markerstyle = m::markerstyle::circle;
+
+    m::DatasetStyle dsb(m::stylepolicy::lines);
+    dsb.markercolour = linecolfit;
+    dsb.linecolour = linecolfit;
+    dsb.linewidth = sz/6.0f;
+    dsb.markersize = sz;
 
     // Add the control points in similar colours
-    list<BezCurve<FLT>> theCurves = bcp.curves;
-    size_t j = 1;
+    std::list<m::BezCurve<FLT>> theCurves = bcp.curves;
     for (auto curv : theCurves) {
-        Scalar linecol = linecolfit; //j%2 ? linecolfit1 : linecolfit2;
-        morph::vvec<morph::vec<FLT, 2>> ctrls = curv.getControls();
+        m::vvec<m::vec<FLT, 2>> ctrlsd = curv.getControls();
+        m::vvec<m::vec<float, 2>> ctrls (ctrlsd.size());
+        for (size_t i = 0; i < ctrlsd.size(); ++i) { ctrls[i] = ctrlsd[i].as_float(); }
         // Draw the control points
-        for (size_t cc = 0; cc<ctrls.size(); ++cc) {
-            Point p1(ctrls[cc][0], ctrls[cc][1]);
-            circle (pImg, p1, sz, linecol, 2);
-#if 0
-            if (cc==0 || cc==ctrls.size()-1) {
-                circle (pImg, p1, sz-1, M_YELLOW, -1);
-            } else {
-                circle (pImg, p1, sz-1, M_GREEN, -1);
-            }
-#endif
-        }
+        gv->setdata (ctrls, dsm);
+
         // Draw in the lines to the control points
-        Point ps(ctrls[0][0], ctrls[0][1]);
-        Point pe(ctrls[1][0], ctrls[1][1]);
-        line (pImg, ps, pe, linecol, lw/2);
-        Point ps2(ctrls[ctrls.size()-2][0], ctrls[ctrls.size()-2][1]);
-        Point pe2(ctrls[ctrls.size()-1][0], ctrls[ctrls.size()-1][1]);
-        line (pImg, ps2, pe2, linecol, lw/2);
-        j++;
+        m::vvec<m::vec<float, 2>> pspe = { ctrls[0], ctrls[1] };
+        gv->setdata (pspe, dsb);
+
+        m::vvec<m::vec<float, 2>> pspe2 = { ctrls[ctrls.size()-2], ctrls[ctrls.size()-1] };
+        gv->setdata (pspe2, dsb);
     }
+
     if (drawuserctrl) {
         // The user control points
-        for (unsigned int i = 0; i < v.size(); ++i) {
-            Point p1(v[i][0], v[i][1]);
-            circle (pImg, p1, sz/2, linecolfit, -1);
-        }
+        m::vvec<m::vec<float, 2>> vf (v.size());
+        for (size_t i = 0; i < v.size(); ++i) { vf[i] = v[i].as_float(); }
+        gv->setdata (vf, dsm);
     }
 }
 
 int main (int argc, char** argv)
 {
+    namespace m = morph;
+
     bool holdVis = false;
     if (argc > 1) {
-        string a1(argv[1]);
-        cout << "a1 is " << a1 << endl;
+        std::string a1(argv[1]);
+        std::cout << "a1 is " << a1 << std::endl;
         if (a1.size() > 0) {
             holdVis = true;
         }
     }
-    cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
+    std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     int rtn = 0;
     FLT fac = 3.4;
     FLT xoff = -400.0;
 
-    morph::vvec<morph::vec<FLT, 2>> v = {
+    m::vvec<m::vec<FLT, 2>> v = {
         {xoff+fac*200,fac*500 },
         {xoff+fac*300,fac*450 },
         {xoff+fac*400,fac*400 },
         {xoff+fac*450,fac*300 }
     };
 
-    morph::vvec<morph::vec<FLT, 2>> w = {
+    m::vvec<m::vec<FLT, 2>> w = {
         v.back(),
         {xoff+fac*440,fac*180 },
         {xoff+fac*580,fac*30 },
@@ -140,29 +113,33 @@ int main (int argc, char** argv)
     };
 
     // First the analytical fit
-    BezCurve<FLT> cv1;
+    m::BezCurve<FLT> cv1;
     cv1.fit (v);
-    BezCurve<FLT> cv2;
+    m::BezCurve<FLT> cv2;
     cv2.fit (w);
 
-    BezCurvePath<FLT> bcp;
+    m::BezCurvePath<FLT> bcp;
     bcp.addCurve (cv1);
     bcp.addCurve (cv2);
 
-    BezCurvePath<FLT> bcp1;
+    m::BezCurvePath<FLT> bcp1;
     bcp1.addCurve (cv1);
-    BezCurvePath<FLT> bcp2;
+    m::BezCurvePath<FLT> bcp2;
     bcp2.addCurve (cv2);
 
     // Create a frame as the background for our drawing.
-    Mat frame = Mat (1800, 1800, CV_8UC3, M_WHITE);
+    m::Visual<> scene(1600, 1000, "Beziers");
+    m::vec<float> offset = {-1, -1, 0};
+    auto gv = std::make_unique<m::GraphVisual<float>>(offset);
+    scene.bindmodel (gv);
+    gv->setsize (2,2);
+    gv->setlimits (m::range<float>{200,1700}, m::range<float>{0,1700});
 
-    // Draw
-    cout << "Draw the two analytical best-fit curves..." << endl;
-    draw (frame, bcp1, v, M_CURVE1, 24);
-    draw (frame, bcp2, w, M_CURVE2, 24);
+    std::cout << "Draw the two analytical best-fit curves..." << std::endl;
+    draw (gv.get(), bcp1, v, m::colour::blue, 0.024);
+    draw (gv.get(), bcp2, w, m::colour::crimson, 0.024);
 
-    cout << "Do the control point-equalizing 0th order optimization..."<< endl;
+    std::cout << "Do the control point-equalizing 0th order optimization..."<< std::endl;
     bool withopt = false;
     cv2.fit (w, cv1, withopt);
 
@@ -171,35 +148,15 @@ int main (int argc, char** argv)
     bcp.addCurve (cv1);
     bcp.addCurve (cv2);
 
-    morph::vvec<morph::vec<FLT, 2>> vw (v);
+    m::vvec<m::vec<FLT, 2>> vw (v);
     vw.insert (vw.end(), w.begin(), w.end());
-    draw (frame, bcp, vw, M_FIT, 16, false);
 
-#if 0
-    // Reset and fit with optimzation
-    withopt = true;
-    // Reset the best fits:
-    cv1.fit(v);
-    cv2.fit(w);
-    // Now do the fully optimized fit
-    cv2.fit (w, cv1, withopt);
+    draw (gv.get(), bcp, vw, m::colour::darkorchid2, 0.024, false);
 
-    bcp.removeCurve();
-    bcp.removeCurve();
-    bcp.addCurve (cv1);
-    bcp.addCurve (cv2);
+    gv->finalize();
+    scene.addVisualModel (gv);
 
-    //draw (frame, bcp, v, w, M_FIT);
-    //cout << "Semi-optimised is BLUE; Fully optimized is GREEN" << endl;
-#endif
-
-    namedWindow( "Curves", WINDOW_AUTOSIZE );// Create a window for display.
-    imshow ("Curves", frame);
-
-    if (holdVis == true) {
-        // Wait for a key, then exit
-        waitKey();
-    }
+    if (holdVis == true) { scene.keepOpen(); }
 
     return rtn;
 }
