@@ -1,6 +1,3 @@
-#if 0
-# include <opencv2/opencv.hpp>
-#endif
 #include <iostream>
 #include <vector>
 #include <list>
@@ -17,29 +14,13 @@ using std::array;
  * Winder code should be able to compute the winding number of a coordinate with
  * respect to a container of coordinates which trace out a path. The coordinate used
  * for the Winder class could be std::array<float, 2> or std::vector<double>. It could
- * be pair<float, float>, BezCoord<float> or cv::Point. Let's test a few
+ * be pair<float, float> or BezCoord<float>. Let's test a few
  * possibilities. There's some function specialization in morph::Winder which makes
  * all this possible.
  */
 int main() {
 
     int rtn = 0;
-
-#if 0
-    // Test with cv::Point which has x and y attributes
-    std::vector<cv::Point> vpoints;
-    vpoints.push_back (cv::Point(0,0));
-    vpoints.push_back (cv::Point(1000,0));
-    vpoints.push_back (cv::Point(1000,1000));
-    vpoints.push_back (cv::Point(0,1000));
-    vpoints.push_back (cv::Point(0,0));
-    morph::Winder w1(vpoints);
-    int wn1 = w1.wind (cv::Point(500,500));
-    cout << "Winding number = " << wn1 << endl;
-    if (wn1 != 1) {
-        --rtn;
-    }
-#endif
 
     // Test with morph::BezCoord, which has x() and y() methods
     std::vector<morph::BezCoord<float>> vbezc;
