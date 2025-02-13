@@ -133,7 +133,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Lib finding
-find_package(OpenCV QUIET) # No longer required for morph::Visual, used by some tests
 if(APPLE OR WIN32)
   find_package(OpenGL REQUIRED)
 else()
@@ -153,9 +152,6 @@ if(HDF5_FOUND)
 endif()
 find_package(Armadillo)
 
-if(${OpenCV_FOUND})
-  include_directories(${OpenCV_INCLUDE_DIRS})
-endif()
 include_directories(${OPENGL_INCLUDE_DIR})
 if(HDF5_FOUND)
   include_directories(${HDF5_INCLUDE_DIR})

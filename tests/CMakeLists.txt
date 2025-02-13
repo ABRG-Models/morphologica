@@ -51,31 +51,15 @@ if(ARMADILLO_FOUND)
   target_link_libraries(${TARGETTEST1_5} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
   add_test(testbezsplit ${TARGETTEST1_5})
 
-  if(${OpenCV_FOUND})
-    # Testing Bezier derivatives (though really testing curve joining)
-    set(TARGETTEST1_6 testbezderiv)
-    set(SOURCETEST1_6 testbezderiv.cpp)
-    add_executable(${TARGETTEST1_6} ${SOURCETEST1_6})
-    target_compile_definitions(${TARGETTEST1_6} PUBLIC FLT=double)
-    target_link_libraries(${TARGETTEST1_6} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
-    add_test(testbezderiv ${TARGETTEST1_6})
-
-    # Testing Bezier derivatives
-    set(TARGETTEST1_7 testbezderiv2)
-    set(SOURCETEST1_7 testbezderiv2.cpp)
-    add_executable(${TARGETTEST1_7} ${SOURCETEST1_7})
-    target_compile_definitions(${TARGETTEST1_7} PUBLIC FLT=double)
-    target_link_libraries(${TARGETTEST1_7} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
-    add_test(testbezderiv2 ${TARGETTEST1_7})
-
-    # Testing Bezier derivatives
+  # Testing Bezier derivatives
+  if(${glfw3_FOUND})
     set(TARGETTEST1_8 testbezderiv3)
     set(SOURCETEST1_8 testbezderiv3.cpp)
     add_executable(${TARGETTEST1_8} ${SOURCETEST1_8})
     target_compile_definitions(${TARGETTEST1_8} PUBLIC FLT=double)
-    target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
+    target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
     add_test(testbezderiv3 ${TARGETTEST1_8})
-  endif(${OpenCV_FOUND})
+  endif()
 
   # Test two curves connected together
   set(TARGETTEST2 twocurves)
@@ -142,12 +126,6 @@ if(HDF5_FOUND)
   target_link_libraries(testhdfdata4f ${HDF5_C_LIBRARIES})
   add_test(testhdfdata4f testhdfdata4f)
 
-  if(${OpenCV_FOUND})
-    add_executable(testhdfdata5f testhdfdata5.cpp)
-    target_compile_definitions(testhdfdata5f PUBLIC FLT=float )
-    target_link_libraries(testhdfdata5f ${HDF5_C_LIBRARIES} ${OpenCV_LIBS})
-    add_test(testhdfdata5f testhdfdata5f)
-  endif(${OpenCV_FOUND})
 endif(HDF5_FOUND)
 
 if(${glfw3_FOUND})

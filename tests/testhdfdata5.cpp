@@ -1,6 +1,6 @@
 /*
- * A test program that compiles with OpenCV and uses OpenCV-friendly features from
- * HdfData.h with the relevant definition.
+ * An example test program that compiles with OpenCV and uses OpenCV-friendly features from
+ * HdfData.h with the relevant definition. Not compiled as a test any more.
  */
 
 // To use HdfData with OpenCV datatypes, you have to define this:
