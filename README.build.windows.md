@@ -13,7 +13,7 @@ Installing the dependencies is left as an exercise for the Windows-savvy reader.
 I managed to do this on my test system, but I don't have a good sense of what best practice should be.
 In common with Mac and Linux, you will need OpenGL (this was present on my machine already), Freetype (I git cloned this at commit 38b349c) and glfw3 (git cloned at 56a4cb0a).
 Optional libraries are HDF5 (I used the hdf5-1.10.7-Std-win10_64-vs16 installer), Armadillo (I used version 10.7.1; Armadillo is only required to compile the Bezier curve test programs, you don't need it for the visualization code) and OpenCV (git cloned at b5a9a679).
-In 2021 it was necessary to compile jsoncpp (git cloned at 94a6220f) but now morphologica contains a header-only json library.
+In 2021 it was necessary to compile jsoncpp (git cloned at 94a6220f) but now morphologica uses the header-only [nlohmann-json](https://github.com/nlohmann/json) library (which you will need in your include path).
 For my Windows build, I also found it necessary to install the GL extension wrangler library, glew (I used version 2.2.0).
 
 I used a cmake build process like this:
