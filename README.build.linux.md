@@ -44,9 +44,9 @@ sudo pacman -S hdf5
 
 Then, optionally, install [Armadillo](https://aur.archlinux.org/packages/armadillo/) from AUR.
 
-## *Optional*: Build morphologica
+## *Optional*: Build morphologica examples or tests
 
-To build the morphologica tests, it's the usual CMake process:
+To build the morphologica example programs, it's the usual CMake process:
 
 ```sh
 cd ~/src
@@ -54,13 +54,19 @@ git clone https://github.com/ABRG-Models/morphologica.git
 cd morphologica
 mkdir build
 cd build
-# If you have doxygen, you can build the docs with -DBUILD_DOC=1.
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+cmake ..
 make -j$(nproc)
 # I usually place the morphologica directory inside the code repository I'm working
 # on, I call this 'in-tree morphologica', but you can also have the headers in
-# /usr/local/include if you install:
-sudo make install
+# /usr/local/include (control location with the usual CMAKE_INSTALL_PREFIX) if you install:
+# sudo make install
+```
+### Building test programs (or NOT building the examples)
+
+By default, the example programs are built with the call to `make`, but unit test programs are not. To build test programs, and control whether example programs are compiled, use the cmake flags `BUILD_TESTS` and `BUILD_EXAMPLES`, changing your cmake line to:
+```sh
+cmake .. -DBUILD_TESTS=ON -DBUILD_EXAMPLES=OFF # Build tests but not examples
+# ...etc
 ```
 
 If you need to build the test programs with a specific compiler, such
@@ -68,30 +74,13 @@ as g++-7 or clang, then you just change the cmake call in the recipe
 above. It becomes:
 
 ```sh
-CC=gcc-7 CXX=g++-7 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+CC=gcc-7 CXX=g++-7 cmake .. -DBUILD_TESTS=ON
 ```
+To run the test suite, use the `ctest` command in the build directory or `make test`.
 
 ### Build the client code
 
-See the top level README for a quick description of how to include morphologica in your client code.
-
-### Tests
-
-To run the test suite, use the `ctest` command in the build directory.
-
-Note that certain test cases will fail if no display server is available (e.g. in Docker images). See also [issue #6](https://github.com/ABRG-Models/morphologica/issues/6).
-
-
-## Hints for older systems
-
-On **Ubuntu 18.04**, I always installed HDF5, jsoncpp and glfw3 from source, rather than using packaged versions.
-
-On **Ubuntu 16.04**, the packaged cmake is too old, so please manually download and install a recent cmake from https://cmake.org/
-
-morphologica requires a fairly up to date compiler. The one on Ubuntu 16.04 is not supported. Obtain a recent stable gcc (version 7.x, 8.x or 9.x).
-
-If you're on Ubuntu 16.04 (or otherwise find you need GLEW), make sure you have libglew (sudo apt install libglew-dev).
-You'll then need to add the switch -DUSE_GLEW=ON when calling cmake.
+See the top level README for a quick description of how to include morphologica in your client code and [README.cmake.md] for more information.
 
 ### Building some of the dependencies manually
 
@@ -115,29 +104,6 @@ make -j$(nproc)
 sudo make install
 ```
 
-#### JSON library build
-
-For the saving and reading of configuration information, you'll need
-the jsoncpp library compiled and installed in /usr/local. I cloned it
-from github:
-
-```sh
-cd ~/src
-git clone https://github.com/open-source-parsers/jsoncpp.git
-cd jsoncpp
-mkdir build
-cd build
-cmake ..
-make
-sudo make install
-```
-
-This installs jsoncpp as a static library in
-/usr/local/lib/libjsoncpp.a which is then linked directly to
-libmorphologica by means of the src/CMakeLists.txt file. I'm using the
-HEAD of the master branch of the jsoncpp repository, which installs a
-library with version about 1.8.4.
-
 #### glfw3 library build
 
 The modern OpenGL code in Visual/HexGridVisual requires the library GLFW3.
@@ -160,7 +126,7 @@ sudo make install
 
 ## Docker
 
-A minimal Docker image based on [Alpine Linux](https://alpinelinux.org/) can be created as follows:
+(Not currently maintained) A minimal Docker image based on [Alpine Linux](https://alpinelinux.org/) can be created as follows:
 
 ```
 cd morphologica/docker/
