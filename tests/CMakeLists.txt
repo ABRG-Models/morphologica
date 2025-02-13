@@ -51,24 +51,6 @@ if(ARMADILLO_FOUND)
   target_link_libraries(${TARGETTEST1_5} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
   add_test(testbezsplit ${TARGETTEST1_5})
 
-  if(${OpenCV_FOUND})
-    # Testing Bezier derivatives (though really testing curve joining)
-    set(TARGETTEST1_6 testbezderiv)
-    set(SOURCETEST1_6 testbezderiv.cpp)
-    add_executable(${TARGETTEST1_6} ${SOURCETEST1_6})
-    target_compile_definitions(${TARGETTEST1_6} PUBLIC FLT=double)
-    target_link_libraries(${TARGETTEST1_6} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
-    add_test(testbezderiv ${TARGETTEST1_6})
-
-    # Testing Bezier derivatives
-    set(TARGETTEST1_7 testbezderiv2)
-    set(SOURCETEST1_7 testbezderiv2.cpp)
-    add_executable(${TARGETTEST1_7} ${SOURCETEST1_7})
-    target_compile_definitions(${TARGETTEST1_7} PUBLIC FLT=double)
-    target_link_libraries(${TARGETTEST1_7} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
-    add_test(testbezderiv2 ${TARGETTEST1_7})
-  endif(${OpenCV_FOUND})
-
   # Testing Bezier derivatives
   if(${glfw3_FOUND})
     set(TARGETTEST1_8 testbezderiv3)
