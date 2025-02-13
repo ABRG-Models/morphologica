@@ -49,7 +49,7 @@ command line tools, then install the Mac ports installation package.
 Finally, use Mac ports to install the rest of the dependencies:
 
 ```sh
-sudo port install cmake armadillo
+sudo port install cmake armadillo nlohmann-json
 ```
 
 *Be aware that if you have conflicting versions of any of the
@@ -80,7 +80,7 @@ The morphologica github actions for mac runners use brew to install
 dependencies. The command for the basic dependencies is
 
 ```sh
-brew install libomp glfw armadillo hdf5
+brew install libomp glfw armadillo hdf5 nlohmann-json
 ```
 
 #### Armadillo
@@ -206,4 +206,10 @@ sudo make install
 ```
 
 ## Tests
+
+To run the tests you have to build them by changing your cmake command in the recipe above to:
+```sh
+cmake .. -DBUILD_TESTS=ON
+```
+
 To run the test suite, use the `ctest` command in the build directory.
