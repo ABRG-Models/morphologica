@@ -133,7 +133,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Lib finding
-find_package(OpenCV QUIET) # No longer required for morph::Visual, used by some tests
 if(APPLE)
   find_package(OpenGL REQUIRED)
 else()
