@@ -94,7 +94,7 @@ int main (int argc, char** argv)
     }
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
-    int rtn = 0;
+    int rtn = 0; // Never decremented, so this is only really a compile/run without crashing test
     FLT fac = 3.4;
     FLT xoff = -400.0;
 
@@ -127,36 +127,38 @@ int main (int argc, char** argv)
     m::BezCurvePath<FLT> bcp2;
     bcp2.addCurve (cv2);
 
-    // Create a frame as the background for our drawing.
-    m::Visual<> scene(1600, 1000, "Beziers");
-    m::vec<float> offset = {-1, -1, 0};
-    auto gv = std::make_unique<m::GraphVisual<float>>(offset);
-    scene.bindmodel (gv);
-    gv->setsize (2,2);
-    gv->setlimits (m::range<float>{200,1700}, m::range<float>{0,1700});
+    if (holdVis == true) {
+        // Create a frame as the background for our drawing.
+        m::Visual<> scene(1600, 1000, "Beziers");
+        m::vec<float> offset = {-1, -1, 0};
+        auto gv = std::make_unique<m::GraphVisual<float>>(offset);
+        scene.bindmodel (gv);
+        gv->setsize (2,2);
+        gv->setlimits (m::range<float>{200,1700}, m::range<float>{0,1700});
 
-    std::cout << "Draw the two analytical best-fit curves..." << std::endl;
-    draw (gv.get(), bcp1, v, m::colour::blue, 0.024);
-    draw (gv.get(), bcp2, w, m::colour::crimson, 0.024);
+        std::cout << "Draw the two analytical best-fit curves..." << std::endl;
+        draw (gv.get(), bcp1, v, m::colour::blue, 0.024);
+        draw (gv.get(), bcp2, w, m::colour::crimson, 0.024);
 
-    std::cout << "Do the control point-equalizing 0th order optimization..."<< std::endl;
-    bool withopt = false;
-    cv2.fit (w, cv1, withopt);
+        std::cout << "Do the control point-equalizing 0th order optimization..."<< std::endl;
+        bool withopt = false;
+        cv2.fit (w, cv1, withopt);
 
-    bcp.removeCurve();
-    bcp.removeCurve();
-    bcp.addCurve (cv1);
-    bcp.addCurve (cv2);
+        bcp.removeCurve();
+        bcp.removeCurve();
+        bcp.addCurve (cv1);
+        bcp.addCurve (cv2);
 
-    m::vvec<m::vec<FLT, 2>> vw (v);
-    vw.insert (vw.end(), w.begin(), w.end());
+        m::vvec<m::vec<FLT, 2>> vw (v);
+        vw.insert (vw.end(), w.begin(), w.end());
 
-    draw (gv.get(), bcp, vw, m::colour::darkorchid2, 0.024, false);
+        draw (gv.get(), bcp, vw, m::colour::darkorchid2, 0.024, false);
 
-    gv->finalize();
-    scene.addVisualModel (gv);
+        gv->finalize();
+        scene.addVisualModel (gv);
 
-    if (holdVis == true) { scene.keepOpen(); }
+        scene.keepOpen();
+    }
 
     return rtn;
 }
