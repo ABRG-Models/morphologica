@@ -35,7 +35,7 @@ Armadillo is only required if you use the ```morph::BezCurve``` class. The HDF5 
 On Arch Linux, all required dependencies except Armadillo are available in the official repository. They can be installed as follows:
 
 ```shell
-sudo pacman -S vtk lapack blas freeglut glfw-wayland
+sudo pacman -S vtk lapack blas freeglut glfw-wayland nlohmann-json
 # Optional:
 sudo pacman -S hdf5
 ```
