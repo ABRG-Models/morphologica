@@ -7,17 +7,16 @@
 
 **Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
 
-Morphologica can run standalone (using GLFW for window handling) and it is also Qt and wxWidgets compatible!
+Morphologica creates a window (using GLFW) in which you can draw 3D data visualization objects called `VisualModels`.  
+It can also be integrated with other GUI frameworks including Qt (see [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)) and [wxWidgets](https://www.wxwidgets.org/) (see [**examples/wx/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/wx)). 
 
-**NEW:** Morphologica can now be used with [wxWidgets](https://www.wxwidgets.org/)! For example code, see [**examples/wx/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/wx)
+Morphologica is compatible with **Linux** (including **Raspberry Pi**) and **Mac OS** and it has also previously been compiled and run on **Windows** (though we do not currently have Windows CI testing of the code). 
 
-**NEW:** Morphologica now has **OpenGL Compute Shader managers**! See [**examples/gl_compute**](https://github.com/ABRG-Models/morphologica/tree/main/examples/gl_compute) for details.
-
-**NEW:** Now morphologica is compatible with the **Raspberry Pi**! See [**examples/pi/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/pi). These examples show how to set the OpenGL version to 3.1 ES, which is Pi compatible.
+Morphologica has **OpenGL Compute Shader managers** . See [**examples/gl_compute**](https://github.com/ABRG-Models/morphologica/tree/main/examples/gl_compute) for details.
 
 You'll find all of the **library code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory and you can find [**example code and screenshots** here](https://github.com/ABRG-Models/morphologica/tree/main/examples).
 
-morphologica has an (in-progress) **documentation and reference** website at https://abrg-models.github.io/morphologica/.
+morphologica has a **documentation and reference** website at https://abrg-models.github.io/morphologica/.
 
 ## Quick Start
 
@@ -25,9 +24,9 @@ This quick start shows dependency installation for Linux, because on this platfo
 
 ```bash
 # Install dependencies for building graph1.cpp and (almost) all the other examples (assuming Debian-like OS)
-sudo apt install build-essential cmake git wget  \
+sudo apt install build-essential cmake git wget \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
-                 libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev
+                 libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev nlohmann-json3-dev
 
 git clone git@github.com:ABRG-Models/morphologica   # Get your copy of the morphologica code
 cd morphologica
@@ -73,7 +72,7 @@ The program generates a clean looking graph...
 
 ![Screenshot of graph1.cpp output showing a cubic function](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/graph1.png?raw=true)
 
-...and the code compares favourably (in terms of amount of boilerplate code) with the equivalent Python, graph1.py:
+...and the code is only a few lines longer than an equivalent Python program, graph1.py:
 ```Python
 # Visualize the graph from graph1.cpp in Python
 import matplotlib.pyplot as plt
@@ -111,24 +110,24 @@ It helps with:
 * **Saving data from your simulation**. morphologica provides a set of
   easy-to-use convenience wrappers (**[morph::HdfData](https://github.com/ABRG-Models/morphologica/blob/main/morph/HdfData.h)**) around the HDF5 C
   API. By saving data in a standard format, it is easy to access
-  simulation data in python, MATLAB or Octave for analysis and graphing. ([HdfData Example](https://github.com/ABRG-Models/morphologica/blob/main/examples/hdfdata.cpp))
+  simulation data in Python, MATLAB or Octave for analysis and graphing. ([HdfData Example](https://github.com/ABRG-Models/morphologica/blob/main/examples/hdfdata.cpp))
 
 It keeps *out of the way* of what kind of simulation you write. Our
 programs typically start with some kind of preamble, in which we use
-morph::Config to load up a JSON parameter file defining the values of
+`morph::Config` to load up a JSON parameter file defining the values of
 the parameters for the simulation run. We might also use
-morph::HdfData to retrieve some data (e.g. the state) from an earlier
-simulation and then set up a morph::Visual object for the
+`morph::HdfData` to retrieve some data (e.g. the state) from an earlier
+simulation and then set up a `morph::Visual` object for the
 visualization. We then might call a function, or create a class object
 which defines the simulation. *This may or may not access features
 from the morphologica headers*.
 
-As the simulation progresses, we update the data in the morph::Visual
+As the simulation progresses, we update the data in the `morph::Visual`
 scene; save images from the scene for movie making and record data as
-often as we want it using morph::HdfData. At the end of the program,
-as well as saving any final data, we use morph::Config to save out a
+often as we want it using `morph::HdfData`. At the end of the program,
+as well as saving any final data, we use `morph::Config` to save out a
 'version of record' of the parameters that were used, along with git
-information which morph::Config can extract so that we could find the
+information which `morph::Config` can extract so that we could find the
 exact version of the simulation for future reproduction of the result.
 
 ![Shows a variety of visualisations created with morphologica](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/examples.png?raw=true)
@@ -136,10 +135,10 @@ exact version of the simulation for future reproduction of the result.
 *A selection of visualisations made with morphologica. **A** 2D graphs. **B** A self-organising map simulation (orientation preference maps). **C** Three dimensional quiver plot. **D** gene driven reaction diffusion model. **E** Debugging a large model.*
 
 Although it need not be incorporated into your actual simulation,
-morphologica does also provide classes that you might find
+morphologica does also provide maths classes that you might find
 useful. Examples include:
 
-* **[morph::HexGrid](https://github.com/ABRG-Models/morphologica/blob/main/morph/HexGrid.h)** and **[morph::CartGrid](https://github.com/ABRG-Models/morphologica/blob/main/morph/CartGrid.h)**: classes for running simulations on hexagonal or Cartesian
+* **[morph::HexGrid](https://github.com/ABRG-Models/morphologica/blob/main/morph/HexGrid.h)** and **[morph::Grid](https://github.com/ABRG-Models/morphologica/blob/main/morph/Grid.h)**: classes for running simulations on hexagonal or Cartesian
 grids (managing all the neighbour relationships between elements and
 allowing you to specific various boundary shapes for your domain). See also **[morph::ColourBarVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/ColourBarVisual.h)** to draw colour bars for your **[morph::ColourMap](https://github.com/ABRG-Models/morphologica/blob/main/morph/ColourMap.h)** of choice.
 
@@ -152,7 +151,7 @@ allowing you to specific various boundary shapes for your domain). See also **[m
 
 * **[morph::Winder](https://github.com/ABRG-Models/morphologica/blob/main/morph/Winder.h)** A class to compute the winding number of a path.
 
-* **[morph::Scale](https://github.com/ABRG-Models/morphologica/blob/main/morph/Scale.h)** A class for simple scaling/transformation of numbers.
+* **[morph::scale](https://github.com/ABRG-Models/morphologica/blob/main/morph/scale.h)** A class for simple scaling/transformation of numbers.
 
 * **[morph::NM_Simplex](https://github.com/ABRG-Models/morphologica/blob/main/morph/NM_Simplex.h)** and **[morph::Anneal](https://github.com/ABRG-Models/morphologica/blob/main/morph/Anneal.h)** Optimization algorithms. Example [simulated annealing usage](https://github.com/ABRG-Models/morphologica/blob/main/examples/anneal_asa.cpp#L162) and the [Nelder-Mead simplex method](https://github.com/ABRG-Models/morphologica/blob/main/examples/rosenbrock.cpp#L97)
 
@@ -162,9 +161,8 @@ allowing you to specific various boundary shapes for your domain). See also **[m
 * **[morph::ReadCurves](https://github.com/ABRG-Models/morphologica/blob/main/morph/ReadCurves.h)** Code to read SVG drawings to turn Bezier-curve
     based lines into paths containing evenly spaced coordinates.
 
-morphologica is a way of storing our 'group knowledge' for posterity.
-
 Some existing projects which use morphologica are:
+* **Stalefish** A tool for analysing gene expression in 2D brain slices: https://github.com/ABRG-Models/Stalefish
 * **BarrelEmerge** A reaction-diffusion style model: https://github.com/ABRG-Models/BarrelEmerge
 * **RetinoTectal** Reaction-diffusion and agent-based modelling: https://github.com/sebjameswml/RetinoTectal
 * **ArtificialGeneNets** Neural networks: https://github.com/stuartwilson/ArtificialGeneNets
@@ -193,7 +191,7 @@ For more info on how to set up CMake files to build a program using morphologica
 Authorship of morphologica code is given in each file. Copyright in
 the software is owned by the authors.
 
-morphologica is made possible by a number of third party projects whose source code is included in this repository. These include [nlohmann::json](https://github.com/nlohmann/json), [lodepng](https://github.com/lvandeve/lodepng), [rapidxml](http://rapidxml.sourceforge.net/), [incbin](https://github.com/graphitemaster/incbin), [UniformBicone](https://github.com/wlenthe/UniformBicone) and [jcvoronoi](https://github.com/JCash/voronoi). Thanks to the authors of these projects!
+morphologica is made possible by a number of third party projects whose source code is included in this repository. These include [lodepng](https://github.com/lvandeve/lodepng), [rapidxml](http://rapidxml.sourceforge.net/), [incbin](https://github.com/graphitemaster/incbin), [UniformBicone](https://github.com/wlenthe/UniformBicone), [jcvoronoi](https://github.com/JCash/voronoi) and the [HEALPix implementation from Astrometry.net](https://astrometry.net/). Thanks to the authors of these projects!
 
 morphologica is distributed under the terms of the Apache License, version 2 (see
 [LICENSE.txt](https://github.com/ABRG-Models/morphologica/blob/main/LICENSE.txt)).
