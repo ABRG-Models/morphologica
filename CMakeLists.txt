@@ -224,8 +224,11 @@ if(BUILD_TESTS)
   add_subdirectory(tests)
 endif(BUILD_TESTS)
 
-# incbin for Visual Studio
-add_subdirectory(buildtools)
+# incbin for Visual Studio; code-generation for colour tables
+option(BUILD_UTILS "Build developer utils" OFF)
+if(BUILD_UTILS)
+  add_subdirectory(buildtools)
+endif(BUILD_UTILS)
 
 # Install the font files, for the examples, which seek to work with an
 # *installed* morphologica, as opposed to an in-tree morphologica.
