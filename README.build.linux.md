@@ -26,9 +26,13 @@ sudo apt install build-essential cmake git \
 ```
 For the optional dependencies it's:
 ```sh
-sudo apt install libgbm-dev libarmadillo-dev libhdf5-dev libopencv-dev qtcreator libwxgtk3.2-dev
+sudo apt install libarmadillo-dev libhdf5-dev qtcreator libwxgtk3.2-dev libgbm-dev libegl-dev
 ```
-Armadillo is only required if you use the ```morph::BezCurve``` class. The HDF5 library is required if you use the wrapper class ```morph::HdfData``` or any of the classes that make use of HdfData (```HexGrid```,```CartGrid```,```Anneal```,```DirichDom```,```RecurrentNetworkModel```,```RD_Base``` and ```DirichVtx```). Their tests and examples should all compile if the libraries are detected and be omitted if not. OpenCV is only used to compile some test/example programs, and these should be omitted from the build process if OpenCV is not detected. Installing qtcreator will bring in the Qt5 libraries that are used to compile Qt-morphologica example programs. It is probably easy to install just the Qt5 Core, Gui and Widgets libraries that are used, but that's how I did it! libgbm is a requirement only for window-less OpenGL compute compilations. Currently that's one example program only. libwxgtk3.2-dev (you'll need Ubuntu 23.04+) will enable the comilation of wxWidgets example programs.
+* Armadillo. Only required if you use the ```morph::BezCurve``` class.
+* HDF5 library. Required if you use the wrapper class ```morph::HdfData``` or any of the classes that make use of HdfData (```HexGrid```,```CartGrid```,```Anneal```,```DirichDom```,```RecurrentNetworkModel```,```RD_Base``` and ```DirichVtx```). Their tests and examples should all compile if the libraries are detected and be omitted if not.
+* Qt library. Installing qtcreator will bring in the Qt5 libraries that are used to compile some Qt-morphologica example programs. It almost certainly possible to install *only* the Qt5 Core, Gui and Widgets libraries, but that hasn't been verified.
+* WxWindows. libwxgtk3.2-dev (you'll need Ubuntu 23.04+) will enable the compilation of morphologica-wxWidgets example programs.
+* GBM and EGL. Required only for window-less OpenGL compute compilations. Currently that's one example program only.
 
 ### Package-managed dependencies for Arch Linux
 
