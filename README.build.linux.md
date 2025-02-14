@@ -20,8 +20,9 @@ To install the visualization dependencies on Ubuntu or Debian Linux:
 
 ```sh
 sudo apt install build-essential cmake git \
+                 nlohmann-json3-dev librapidxml-dev \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
-                 libglfw3-dev libfreetype-dev nlohmann-json3-dev
+                 libglfw3-dev libfreetype-dev
 
 ```
 For the optional dependencies it's:

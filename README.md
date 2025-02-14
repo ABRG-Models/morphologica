@@ -7,10 +7,10 @@
 
 **Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
 
-Morphologica creates a window (using GLFW) in which you can draw 3D data visualization objects called `VisualModels`.  
-It can also be integrated with other GUI frameworks including Qt (see [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)) and [wxWidgets](https://www.wxwidgets.org/) (see [**examples/wx/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/wx)). 
+Morphologica creates a window (using GLFW) in which you can draw 3D data visualization objects called `VisualModels`.
+It can also be integrated with other GUI frameworks including Qt (see [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)) and [wxWidgets](https://www.wxwidgets.org/) (see [**examples/wx/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/wx)).
 
-Morphologica is compatible with **Linux** (including **Raspberry Pi**) and **Mac OS** and it has also previously been compiled and run on **Windows** (though we do not currently have Windows CI testing of the code). 
+Morphologica is compatible with **Linux** (including **Raspberry Pi**) and **Mac OS** and it has also previously been compiled and run on **Windows** (though we do not currently have Windows CI testing of the code).
 
 Morphologica has **OpenGL Compute Shader managers** . See [**examples/gl_compute**](https://github.com/ABRG-Models/morphologica/tree/main/examples/gl_compute) for details.
 
@@ -25,8 +25,9 @@ This quick start shows dependency installation for Linux, because on this platfo
 ```bash
 # Install dependencies for building graph1.cpp and (almost) all the other examples (assuming Debian-like OS)
 sudo apt install build-essential cmake git wget \
+                 nlohmann-json3-dev librapidxml-dev \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
-                 libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev nlohmann-json3-dev
+                 libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev
 
 git clone git@github.com:ABRG-Models/morphologica   # Get your copy of the morphologica code
 cd morphologica

@@ -13,11 +13,7 @@
 #include <list>
 #include <vector>
 #include <map>
-#ifdef __WIN__
-# include <rapidxml-1.13/rapidxml.hpp>
-#else
-# include <morph/rapidxml.hpp>
-#endif
+#include <rapidxml/rapidxml.hpp>
 #include <morph/BezCurvePath.h>
 #include <morph/AllocAndRead.h>
 #include <morph/tools.h>
