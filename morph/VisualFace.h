@@ -104,14 +104,14 @@ asm("\t.global ___start_dvsansbi_ttf\n\t.global ___stop_dvsansbi_ttf\n___start_d
 
 #elif defined __WIN__
 
-# include "verafonts.h" // Inclues vera fonts AND DejaVu fonts.
+# include <morph/fonts/verafonts.h> // Includes vera fonts AND DejaVu fonts.
 # include <cstdlib>
 
 #elif defined __WIN__INCBIN // Only for parsing this file with the incbin executable to create verafonts.h
 
 // Visual Studio doesn't allow __asm{} calls in C__ code anymore, so try Dale Weiler's incbin.h
 #define INCBIN_PREFIX vf_
-#include <incbin.h>
+#include "incbin.h"
 INCBIN(vera, "./fonts/ttf-bitstream-vera/Vera.ttf");
 INCBIN(verait, "./fonts/ttf-bitstream-vera/VeraIt.ttf");
 INCBIN(verabd, "./fonts/ttf-bitstream-vera/VeraBd.ttf");
