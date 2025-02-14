@@ -76,10 +76,6 @@ install(
   QuiverVisual.h
   Random.h
   range.h
-  rapidxml.hpp
-  rapidxml_iterators.hpp
-  rapidxml_print.hpp
-  rapidxml_utils.hpp
   RD_Base.h
   ReadCurves.h
   RectangleVisual.h
