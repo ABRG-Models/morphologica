@@ -86,13 +86,8 @@
 #endif
 
 // Use Lode Vandevenne's PNG encoder
-#if 0
-#define LODEPNG_NO_COMPILE_DECODER 1
-#define LODEPNG_NO_COMPILE_ANCILLARY_CHUNKS 1
-#include <morph/lodepng.h>
-#else
 #include <lodepng.h>
-#endif
+
 namespace morph {
 
     //! Whether to render with perspective or orthographic (or even a cylindrical projection)
