@@ -205,9 +205,6 @@ if (NOT HAVE_RAPIDXML)
   include_directories("${PROJECT_SOURCE_DIR}/include")
 endif() # else we have it in a directory included by default in the path
 
-# OpenGL code needs the local include directory, too
-include_directories("${PROJECT_SOURCE_DIR}/include")
-
 # Library code is compiled up as a shared library in lib/ (could also
 # be compiled static if needed)
 add_subdirectory(morph)
