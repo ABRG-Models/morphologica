@@ -199,15 +199,17 @@ else()
   message(STATUS "NOT compiling wx examples (no wxWidgets library found)")
 endif()
 
-# rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
-#include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
+# rapidxml is bundled in the source, but prefer packaged header
+check_include_file_cxx ("rapidxml/rapidxml.hpp" HAVE_RAPIDXML)
+if (NOT HAVE_RAPIDXML)
+  include_directories("${PROJECT_SOURCE_DIR}/include")
+endif() # else we have it in a directory included by default in the path
 
 # Library code is compiled up as a shared library in lib/ (could also
 # be compiled static if needed)
 add_subdirectory(morph)
 
-# We have to make a morph/rapidxml-1.13 installation for client code
-# that uses the ReadCurves class.
+# Contains backup/extra bundled third-party code (including rapidxml)
 add_subdirectory(include)
 
 # Unit testing using the ctest framework
