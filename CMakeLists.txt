@@ -205,6 +205,12 @@ if (NOT HAVE_RAPIDXML)
   include_directories("${PROJECT_SOURCE_DIR}/include")
 endif() # else we have it in a directory included by default in the path
 
+# Do we have a package provided lodepng.h header?
+check_include_file_cxx ("lodepng.h" HAVE_LODEPNG)
+if (NOT HAVE_LODEPNG)
+  include_directories("${PROJECT_SOURCE_DIR}/include/lodepng")
+endif() # else we have header and will need to link the so file
+
 # All the morphologica headers are here
 add_subdirectory(morph)
 

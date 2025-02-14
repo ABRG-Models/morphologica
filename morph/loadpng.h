@@ -5,8 +5,12 @@
  *
  * Note: You have to #include this before morph/Visual.h
  */
+#if 0
 #define LODEPNG_NO_COMPILE_ANCILLARY_CHUNKS 1
 #include <morph/lodepng.h>
+#else
+#include <lodepng.h> // new, just include it. Build system will need to link
+#endif
 
 #include <type_traits>
 #include <vector>

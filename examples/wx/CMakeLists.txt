@@ -12,22 +12,27 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${wxWidgets_CXX_FLAGS}")
 # ...and include directories
 include_directories(${wxWidgets_INCLUDE_DIRS})
 
+set(MORPH_LIBS_WX OpenGL::GL Freetype::Freetype)
+if (HAVE_LODEPNG)
+  set(MORPH_LIBS_WX ${MORPH_LIBS_WX} lodepng)
+endif()
+
 # morph::Visual graph1 example with morph/wx/viswx.h
 add_executable (wx-graph1 wx-graph1.cpp)
 target_compile_definitions(wx-graph1 PRIVATE
 "${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
-target_link_libraries(wx-graph1 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
+target_link_libraries(wx-graph1 ${wxWidgets_LIBRARIES} ${MORPH_LIBS_WX} GLEW::GLEW)
 
 # morph::Visual graph6 example with morph/wx/viswx.h
 add_executable (wx-graph6 wx-graph6.cpp)
 target_compile_definitions(wx-graph6 PRIVATE
 "${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
-target_link_libraries(wx-graph6 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
+target_link_libraries(wx-graph6 ${wxWidgets_LIBRARIES} ${MORPH_LIBS_WX} GLEW::GLEW)
 
 # Triaxes
 add_executable (wx-triaxes wx-triaxes.cpp)
 target_compile_definitions(wx-triaxes PRIVATE
 "${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
-target_link_libraries(wx-triaxes ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
+target_link_libraries(wx-triaxes ${wxWidgets_LIBRARIES} ${MORPH_LIBS_WX} GLEW::GLEW)
 
 endif()

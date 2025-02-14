@@ -9,6 +9,10 @@ if (OpenGL_EGL_FOUND)
   add_executable(shader_ssbo shader_ssbo.cpp)
   set_target_properties(shader_ssbo PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
   target_link_libraries(shader_ssbo OpenGL::EGL glfw)
+  # This program calls morph::loadpng so may need a link to lodepng
+  if(HAVE_LODEPNG)
+    target_link_libraries(shader_ssbo lodepng)
+  endif()
 
   add_executable(shader_naive_scan shader_naive_scan.cpp)
   set_target_properties(shader_naive_scan PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
