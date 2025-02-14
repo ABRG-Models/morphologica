@@ -120,6 +120,11 @@ install(
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
 )
 
+if(WIN32)
+  # On windows we need morph/fonts/verafonts.h
+  add_subdirectory(fonts)
+endif()
+
 # There are also headers in sub directories
 add_subdirectory(nn) # 'nn' for neural network code
 add_subdirectory(bn) # 'bn' for boolean net code

@@ -205,12 +205,8 @@ if (NOT HAVE_RAPIDXML)
   include_directories("${PROJECT_SOURCE_DIR}/include")
 endif() # else we have it in a directory included by default in the path
 
-# Library code is compiled up as a shared library in lib/ (could also
-# be compiled static if needed)
+# All the morphologica headers are here
 add_subdirectory(morph)
-
-# Contains backup/extra bundled third-party code (including rapidxml)
-add_subdirectory(include)
 
 # Unit testing using the ctest framework
 option(BUILD_TESTS "Build tests" OFF)
@@ -225,7 +221,7 @@ if(BUILD_UTILS)
   add_subdirectory(buildtools)
 endif(BUILD_UTILS)
 
-# Install the font files, for the examples, which seek to work with an
+# Install the font files for program that need to to work with an
 # *installed* morphologica, as opposed to an in-tree morphologica.
 add_subdirectory(fonts)
 
