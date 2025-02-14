@@ -208,9 +208,6 @@ endif() # else we have it in a directory included by default in the path
 # All the morphologica headers are here
 add_subdirectory(morph)
 
-# Contains backup/extra bundled third-party code (including rapidxml)
-add_subdirectory(include)
-
 # Unit testing using the ctest framework
 option(BUILD_TESTS "Build tests" OFF)
 if(BUILD_TESTS)
