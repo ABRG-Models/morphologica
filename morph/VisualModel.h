@@ -47,6 +47,7 @@
 #include <memory>
 #include <functional>
 #include <cstddef>
+#include <cmath>
 
 // Switches on some changes where I carefully unbind gl buffers after calling
 // glBufferData() and rebind when changing the vertex model. Makes no difference on my
@@ -877,7 +878,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
                 float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
+                vec<float> c = _ux * std::sin(t) * r + _uy * std::cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -886,7 +887,7 @@ namespace morph {
             // Intermediate, near start cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
                 float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
+                vec<float> c = _ux * std::sin(t) * r + _uy * std::cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -896,7 +897,7 @@ namespace morph {
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
                 float t = rotation + (float)j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
+                vec<float> c = _ux * std::sin(t) * r + _uy * std::cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -906,7 +907,7 @@ namespace morph {
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
                 float t = rotation + (float)j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
+                vec<float> c = _ux * std::sin(t) * r + _uy * std::cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -1084,8 +1085,8 @@ namespace morph {
             inplane.renormalize();
 
             // Now use parameterization of circle inplane = p1-x1 and
-            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
-            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
+            // c1(t) = ( (p1-x1).normalized std::sin(t) + v.normalized cross (p1-x1).normalized * std::cos(t) )
+            // c1(t) = ( inplane std::sin(t) + v * inplane * std::cos(t)
             morph::vec<float> v_x_inplane = v.cross(inplane);
 
             // Push the central point of the start cap - this is at location vstart
@@ -1260,8 +1261,8 @@ namespace morph {
 
             // Start ring of vertices. Normals point in direction c
             // Now use parameterization of circle inplane = p1-x1 and
-            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
-            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
+            // c1(t) = ( (p1-x1).normalized std::sin(t) + v.normalized cross (p1-x1).normalized * std::cos(t) )
+            // c1(t) = ( inplane std::sin(t) + v * inplane * std::cos(t)
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::mathconst<float>::two_pi/(float)segments;
                 morph::vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r_mod;
@@ -1408,7 +1409,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
                 float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
+                vec<float> c = _ux * std::sin(t) * r + _uy * std::cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
@@ -1451,16 +1452,16 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
                 // x and y of inner point
-                float xin = (r-(t*0.5f)) * cos(segment);
-                float yin = (r-(t*0.5f)) * sin(segment);
-                float xout = (r+(t*0.5f)) * cos(segment);
-                float yout = (r+(t*0.5f)) * sin(segment);
+                float xin = (r-(t*0.5f)) * std::cos(segment);
+                float yin = (r-(t*0.5f)) * std::sin(segment);
+                float xout = (r+(t*0.5f)) * std::cos(segment);
+                float yout = (r+(t*0.5f)) * std::sin(segment);
                 int segjnext = (j+1) % segments;
                 float segnext = morph::mathconst<float>::two_pi * static_cast<float>(segjnext) / segments;
-                float xin_n = (r-(t*0.5f)) * cos(segnext);
-                float yin_n = (r-(t*0.5f)) * sin(segnext);
-                float xout_n = (r+(t*0.5f)) * cos(segnext);
-                float yout_n = (r+(t*0.5f)) * sin(segnext);
+                float xin_n = (r-(t*0.5f)) * std::cos(segnext);
+                float yin_n = (r-(t*0.5f)) * std::sin(segnext);
+                float xout_n = (r+(t*0.5f)) * std::cos(segnext);
+                float yout_n = (r+(t*0.5f)) * std::sin(segnext);
 
                 // Now draw a quad
                 vec<float> c4 = { xin, yin, 0.0f };
@@ -1649,13 +1650,13 @@ namespace morph {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
             float rings0 = -morph::mathconst<float>::pi_over_2;
-            float _z0  = sin(rings0);
+            float _z0  = std::sin(rings0);
             float z0  = r * _z0;
-            float r0 =  cos(rings0);
+            float r0 =  std::cos(rings0);
             float rings1 = morph::mathconst<float>::pi * (-0.5f + 1.0f / rings);
-            float _z1 = sin(rings1);
+            float _z1 = std::sin(rings1);
             float z1 = r * _z1;
-            float r1 = cos(rings1);
+            float r1 = std::cos(rings1);
             // Push the central point
             this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
             this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
@@ -1668,8 +1669,8 @@ namespace morph {
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
                 float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
-                float x = cos(segment);
-                float y = sin(segment);
+                float x = std::cos(segment);
+                float y = std::sin(segment);
 
                 float _x1 = x*r1;
                 float x1 = _x1*r;
@@ -1697,16 +1698,16 @@ namespace morph {
             for (int i = 2; i < rings; i++) {
 
                 rings0 = morph::mathconst<float>::pi * (-0.5f + static_cast<float>(i) / rings);
-                _z0  = sin(rings0);
+                _z0  = std::sin(rings0);
                 z0  = r * _z0;
-                r0 =  cos(rings0);
+                r0 =  std::cos(rings0);
 
                 for (int j = 0; j < segments; j++) {
 
                     // "current" segment
                     float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
-                    float x = cos(segment);
-                    float y = sin(segment);
+                    float x = std::cos(segment);
+                    float y = std::sin(segment);
 
                     // One vertex per segment
                     float _x0 = x*r0;
@@ -1743,9 +1744,9 @@ namespace morph {
 
             // bottom cap
             rings0 = morph::mathconst<float>::pi_over_2;
-            _z0  = sin(rings0);
+            _z0  = std::sin(rings0);
             z0  = r * _z0;
-            r0 =  cos(rings0);
+            r0 =  std::cos(rings0);
             // Push the central point of the bottom cap
             this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
             this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -1787,13 +1788,13 @@ namespace morph {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
             float rings0 = -morph::mathconst<float>::pi_over_2;
-            float _z0  = sin(rings0);
+            float _z0  = std::sin(rings0);
             float z0  = r * _z0;
-            float r0 =  cos(rings0);
+            float r0 =  std::cos(rings0);
             float rings1 = morph::mathconst<float>::pi * (-0.5f + 1.0f / rings);
-            float _z1 = sin(rings1);
+            float _z1 = std::sin(rings1);
             float z1 = r * _z1;
-            float r1 = cos(rings1);
+            float r1 = std::cos(rings1);
             // Push the central point
             this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
             this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
@@ -1806,8 +1807,8 @@ namespace morph {
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
                 float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
-                float x = cos(segment);
-                float y = sin(segment);
+                float x = std::cos(segment);
+                float y = std::sin(segment);
 
                 float _x1 = x*r1;
                 float x1 = _x1*r;
@@ -1835,16 +1836,16 @@ namespace morph {
             for (int i = 2; i < rings; i++) {
 
                 rings0 = morph::mathconst<float>::pi * (-0.5f + static_cast<float>(i) / rings);
-                _z0  = sin(rings0);
+                _z0  = std::sin(rings0);
                 z0  = r * _z0;
-                r0 =  cos(rings0);
+                r0 =  std::cos(rings0);
 
                 for (int j = 0; j < segments; j++) {
 
                     // "current" segment
                     float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
-                    float x = cos(segment);
-                    float y = sin(segment);
+                    float x = std::cos(segment);
+                    float y = std::sin(segment);
 
                     // One vertex per segment
                     float _x0 = x*r0;
@@ -1884,9 +1885,9 @@ namespace morph {
 
             // bottom cap
             rings0 = morph::mathconst<float>::pi_over_2;
-            _z0  = sin(rings0);
+            _z0  = std::sin(rings0);
             z0  = r * _z0;
-            r0 =  cos(rings0);
+            r0 =  std::cos(rings0);
             // Push the central point of the bottom cap
             this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
             this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -1982,7 +1983,7 @@ namespace morph {
             // Base ring with normals in direction -v
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
-                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r;
                 // Subtract the vector which makes this circle
                 c = c + (v * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
@@ -1993,7 +1994,7 @@ namespace morph {
             // Intermediate ring of vertices around/aligned with the base ring with normals in direction c
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
-                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r;
                 c = c + (v * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
                 c.renormalize();
@@ -2004,7 +2005,7 @@ namespace morph {
             // Intermediate ring of vertices around the tip with normals direction c
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
-                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * std::sin(t) * r + v_x_inplane * std::cos(t) * r;
                 c = c + (v * ringoffset);
                 this->vertex_push (vtip, this->vertexPositions);
                 c.renormalize();
@@ -2150,7 +2151,7 @@ namespace morph {
 
             // Start cap vertices (a triangle fan)
             for (int j = 0; j < segments; j++) {
-                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * std::sin(angles[j]) * r + vv * std::cos(angles[j]) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -2158,7 +2159,7 @@ namespace morph {
 
             // Intermediate, near start cap. Normals point outwards. Need Additional vertices
             for (int j = 0; j < segments; j++) {
-                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * std::sin(angles[j]) * r + vv * std::cos(angles[j]) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (norms[j], this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -2166,7 +2167,7 @@ namespace morph {
 
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * std::sin(angles[j]) * r + vv * std::cos(angles[j]) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (norms[j], this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -2174,7 +2175,7 @@ namespace morph {
 
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
-                vec<float> c = _uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = _uz * std::sin(angles[j]) * r + vv * std::cos(angles[j]) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -2350,7 +2351,7 @@ namespace morph {
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
-                    morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
+                    morph::vec<float> c = { std::sin(t) * r, std::cos(t) * r, 0.0f };
                     this->vertex_push (vstart+c, this->vertexPositions);
                     this->vertex_push (_uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
@@ -2384,7 +2385,7 @@ namespace morph {
                 // End cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
-                    morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
+                    morph::vec<float> c = { std::sin(t) * r, std::cos(t) * r, 0.0f };
                     this->vertex_push (vend+c, this->vertexPositions);
                     this->vertex_push (_uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
@@ -2738,11 +2739,11 @@ namespace morph {
             // Outer ring at radius radius+linewidth/2 with normals also in direction norm
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
-                vec<float> c_in = inplane * sin(t) * r_in + norm_x_inplane * cos(t) * r_in;
+                vec<float> c_in = inplane * std::sin(t) * r_in + norm_x_inplane * std::cos(t) * r_in;
                 this->vertex_push (centre+c_in, this->vertexPositions);
                 this->vertex_push (norm, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
-                vec<float> c_out = inplane * sin(t) * r_out + norm_x_inplane * cos(t) * r_out;
+                vec<float> c_out = inplane * std::sin(t) * r_out + norm_x_inplane * std::cos(t) * r_out;
                 this->vertex_push (centre+c_out, this->vertexPositions);
                 this->vertex_push (norm, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
