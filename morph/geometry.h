@@ -451,9 +451,12 @@ namespace morph {
         {
             icosahedral_geodesic_info (const int iterations)
             {
-                const int T = std::pow (4, iterations);
-                this->n_vertices = 10 * T + 2;
-                this->n_faces = 20 * T;
+                double d = std::round (std::pow (4, iterations));
+                if (d <= static_cast<double>(std::numeric_limits<int>::max()) && d >= 0.0) {
+                    const int T = static_cast<int>(d);
+                    this->n_vertices = 10 * T + 2;
+                    this->n_faces = 20 * T;
+                }
             }
             int n_vertices = 0;
             int n_faces = 0;
