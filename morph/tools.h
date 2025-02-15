@@ -394,6 +394,9 @@ namespace morph
             }
         }
 
+#ifdef __WIN__
+# pragma warning( disable : 4996 ) // asctime
+#endif
         /*!
          * Return the current time in neat string format.
          */
