@@ -11,6 +11,155 @@
 #include <vector>
 #include <morph/tools.h>
 
+#include <cstring>
+extern "C" {
+# include <dirent.h>
+# include <sys/stat.h>
+}
+
+namespace morph {
+    namespace tools {
+
+        /*!
+         * This reads the contents of a directory tree, making up a list of the contents
+         * in the vector vec. If the directory tree has subdirectories, these are
+         * reflected in the vector entries. So, a directory structure might lead to the
+         * following entries in vec:
+         *
+         * file2
+         * file1
+         * dir2/file2
+         * dir2/file1
+         * dir1/file1
+         *
+         * Note that the order of the files is REVERSED from what you might expect. This
+         * is the way that readdir() seems to work. If it's important to iterate through
+         * the vector<string>& vec, then use a reverse_iterator.
+         *
+         * The base directory path baseDirPath should have NO TRAILING '/'. The
+         * subDirPath should have NO INITIAL '/' character.
+         *
+         * The subDirPath argument is present because this is a recursive function.
+         *
+         * If olderThanSeconds is passed in with a non-zero value, then only files older
+         * than olderThanSeconds will be returned.
+         */
+        void readDirectoryTree (std::vector<std::string>& vec,
+                                const std::string& baseDirPath,
+                                const std::string& subDirPath,
+                                const unsigned int olderThanSeconds = 0)
+        {
+            DIR* d;
+            struct dirent *ep;
+            std::string::size_type entry_len = 0u;
+
+            std::string dirPath (baseDirPath);
+            std::string sd (subDirPath);
+            if (!sd.empty()) {
+                dirPath += "/" + sd;
+            }
+
+            if (!(d = opendir (dirPath.c_str()))) {
+                std::string msg = "Failed to open directory " + dirPath;
+                throw std::runtime_error (msg);
+            }
+
+            struct stat buf;
+            while ((ep = readdir (d))) {
+
+                unsigned char fileType;
+                std::string fileName = dirPath + "/" + (std::string)ep->d_name;
+
+                if (ep->d_type == DT_LNK) {
+                    // Is it a link to a directory or a file?
+                    struct stat * buf = NULL;
+                    buf = static_cast<struct stat*>(malloc (sizeof (struct stat)));
+                    if (!buf) { // Malloc error.
+                        throw std::runtime_error ("Failed to malloc buf; could not stat link " + fileName);
+                    }
+                    memset (buf, 0, sizeof(struct stat));
+                    if (stat (fileName.c_str(), buf)) {
+                        throw std::runtime_error ("Failed to stat link " + fileName);
+                    } else {
+                        if (S_ISREG(buf->st_mode)) {
+                            fileType = DT_REG;
+                        } else if (S_ISDIR(buf->st_mode)) {
+                            fileType = DT_DIR;
+                        } else {
+                            fileType = DT_UNKNOWN;
+                        }
+                    }
+                    if (buf) { free (buf); }
+                } else {
+                    fileType = ep->d_type;
+                }
+
+                if (fileType == DT_DIR) {
+
+                    // Skip "." and ".." directories
+                    if ( ((entry_len = std::strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
+                         (ep->d_name[1] == '\0' || ep->d_name[1] == '.') ) {
+                        continue;
+                    }
+
+                    // For all other directories, recurse.
+                    std::string newPath;
+                    if (sd.size() == 0) {
+                        newPath = ep->d_name;
+                    } else {
+                        newPath = sd + "/" + ep->d_name;
+                    }
+                    tools::readDirectoryTree (vec, baseDirPath, newPath.c_str(), olderThanSeconds);
+                } else {
+                    // Non-directories are simply added to the vector
+                    std::string newEntry;
+                    if (sd.size() == 0) {
+                        newEntry = ep->d_name;
+                    } else {
+                        newEntry = sd + "/" + ep->d_name;
+                    }
+
+                    // If we have to check the file age, do so here before the vec.push_back()
+                    if (olderThanSeconds > 0) {
+                        // Stat the file
+                        memset (&buf, 0, sizeof (struct stat));
+
+                        if (stat (fileName.c_str(), &buf)) {
+                            // no file to stat
+                            continue;
+                        }
+
+                        if (static_cast<unsigned int>(time(NULL)) - buf.st_mtime
+                            <= olderThanSeconds) {
+                            // The age of the last modification is less than
+                            // olderThanSeconds, so skip (we're only returning the OLDER
+                            // files)
+                            continue;
+                        } //else DBG ("File " << fileName << " is older than " << olderThanSeconds << " s");
+                    }
+                    vec.push_back (newEntry);
+                }
+            }
+
+            (void) closedir (d);
+        }
+
+        /*!
+         * A simple wrapper around the more complex version, for the user to call.
+         *
+         * If olderThanSeconds is passed in with a non-zero value, then only files older
+         * than olderThanSeconds will be returned.
+         */
+        void readDirectoryTree (std::vector<std::string>& vec,
+                                const std::string& dirPath,
+                                const unsigned int olderThanSeconds = 0)
+        {
+            tools::readDirectoryTree (vec, dirPath, "", olderThanSeconds);
+        }
+
+    } // tools
+} // morph
+
 enum class ctabletype {
     Crameri,
     CET,
