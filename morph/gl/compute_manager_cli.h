@@ -28,6 +28,7 @@
 #include <gbm.h>
 
 #include <chrono>
+#include <fcntl.h>
 
 namespace morph {
     namespace gl {
