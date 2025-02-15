@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <limits>
 #include <morph/mathconst.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
