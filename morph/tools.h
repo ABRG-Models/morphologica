@@ -2,7 +2,6 @@
  * Utility functions
  *
  * \author Seb James
- * \author Stuart Wilson
  */
 #pragma once
 
