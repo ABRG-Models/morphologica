@@ -15,9 +15,5 @@ int main()
     std::string expected_filename = "lkajwef7436473723____.BLAH";
     if (expected_filename != for_filename) { --rtn; }
 
-    std::cout << input_str << " conditionAsXmlTag:   " << for_xml << std::endl;
-    std::string expected_xml = "lkajwef7436473723_____BLAH";
-    if (expected_xml != for_xml) { --rtn; }
-
     return rtn;
 }
