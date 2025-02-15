@@ -10,36 +10,31 @@
 #include <algorithm>
 #include <string>
 #include <string_view>
-#include <cstring> // ?
+#include <cstring>
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include <math.h> // ?
-#include <stdlib.h> // ?
 #include <stdexcept>
-#include <stdio.h> // ?
-#include <unistd.h> // ?
-
-extern "C" {
-//#include <errno.h>
-#include <sys/types.h> // ?
-#include <sys/stat.h> // ?
-//#include <string.h>
-#include <time.h>
-}
-#ifndef __WIN__ // I'll need some windowey equivalent for these
-//#include <sys/statvfs.h>
-//#include <sys/file.h>
-//#include <sys/ioctl.h>
-#include <dirent.h>
-#endif
 #include <filesystem>
 
+// For timeNow
+extern "C" {
+#include <time.h>
+}
+
+// For readDirectoryTree
+#ifndef __WIN__
+extern "C" {
+# include <dirent.h>
+# include <sys/stat.h>
+}
+#endif
+
 /*!
- * Character sets useful when calling util::sanitize().
+ * Character sets
  *
  * These are ordered so that the most common chars appear earliest. Until C++20 (and constexpr
- * std::string) I didn't fine a better way to express these (as string_view can't be
+ * std::string) I didn't find a better way to express these (as string_view can't be
  * concatenated). They're used to define std::string_views below.
  */
 #define CHARS_NUMERIC            "0123456789"
