@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <filesystem>
 #include <ctime>
+#include <limits>
 
 /*!
  * Character sets
@@ -112,7 +113,8 @@ namespace morph
                 pos--;
             }
             input.erase (pos);
-            return (len - pos);
+            std::string::size_type num = len - pos;
+            return num <= std::numeric_limits<int>::max() ? static_cast<int>(num) : 0;
         }
 
         /*!
@@ -152,7 +154,7 @@ namespace morph
                 pos++;
             }
             input.erase (0, pos);
-            return pos;
+            return pos <= std::numeric_limits<int>::max() ? static_cast<int>(pos) : 0;
         }
 
         /*!
