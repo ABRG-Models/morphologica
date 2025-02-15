@@ -78,7 +78,7 @@ namespace morph {
          */
         std::unique_ptr<GLchar[]> ReadDefaultShader (const std::string& shadercontent)
         {
-            int len = shadercontent.size();
+            int len = static_cast<int>(shadercontent.size());
             std::unique_ptr<GLchar[]> source = std::make_unique<GLchar[]>(len+1);
             memcpy (static_cast<void*>(source.get()), static_cast<const void*>(shadercontent.c_str()), len);
             source[len] = 0;
