@@ -317,7 +317,7 @@ namespace morph
         bool regfileExists (const std::string& path) { return std::filesystem::is_regular_file (path); }
         void createDir (const std::string& path) { std::filesystem::create_directories (path); }
         void removeDir (const std::string& path) { std::filesystem::remove (path); }
-        std::string getPwd() { return std::filesystem::current_path(); }
+        std::string getPwd() { return std::filesystem::current_path().string(); }
         void unlinkFile (const std::string& fpath) { std::filesystem::remove (fpath); }
 
         /*!
