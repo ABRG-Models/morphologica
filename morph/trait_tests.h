@@ -145,41 +145,17 @@ namespace morph {
      * compile time if a container is able to hold an N-dimensional vector with a
      * guarantee that N is fixed.
      *
-     * We ask: Is T constexpr constructible AND a copyable container AND has a const
-     * size() method that returns non-zero at compile time?
+     * We ask: Is T a copyable container AND has a const size() method. We then
+     * stipulate that it must NOT have a resize method.
      *
-     * If so, it's probably std::array or morph::vec.
-     *
-     * Two caveats: It IS possible to declare std::array<T, 0> and so
-     * is_copyable_fixedsize<std::array<T, 0>> will have value false. However, if your
-     * fixed size arrays or morph::vecs always have size > 0, then this will work.
-     *
-     * Second caveat: a class that could be used to store fixed dimension vectors
-     * *could* be created which had a compile-time chosen size. This test would not
-     * identify that class. However, this test is all about identifying *standard
-     * library-like* containers that are fixed size.
+     * If that passes, it's probably std::array or morph::vec.
      */
-    // Parent struct is_copyable_fixedsize with test for constexpr constructibility
-    template <typename T, bool = (is_constexpr_constructible<std::remove_reference_t<T>>(0)
-                                  && has_size_const_method<std::remove_reference_t<T>>::value)>
-    struct is_copyable_fixedsize;
-    // specialization for is_constexpr_constructible<T>(0) == true. Set value true and get size from T.
-    // Note: ALSO need to test for existence of size method
-    template<typename T>
-    struct is_copyable_fixedsize<T, true>
+    template <typename T>
+    struct is_copyable_fixedsize
     {
-    private:
-        template<typename U> static constexpr std::size_t get_size() { constexpr U u = {}; return u.size(); }
-    public:
-        static constexpr std::size_t size = get_size<std::remove_reference_t<T>>();
-        static constexpr bool value = (morph::is_copyable_container<T>::value == true && size > 0);
-    };
-    // specialization for is_constexpr_constructible<T>(0) == false. Set value false and size to 0
-    template<typename T>
-    struct is_copyable_fixedsize<T, false>
-    {
-        static constexpr std::size_t size = 0;
-        static constexpr bool value = false;
+        static constexpr bool value = is_copyable_container<std::remove_reference_t<T>>::value
+                                      && has_size_const_method<std::remove_reference_t<T>>::value
+                                      && has_resize_method<std::remove_reference_t<T>>::value == false;
     };
 
     // Test for std::complex by looking for real() and imag() methods

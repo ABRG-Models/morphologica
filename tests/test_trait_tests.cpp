@@ -114,23 +114,23 @@ int main()
     }
 
     bool c_is_fixed = set_from_fixed (c);
-    if (!c_is_fixed) { --rtn; }
+    if (!c_is_fixed) { std::cout << "Fail on array<double>\n"; --rtn; }
 
     bool c2_is_fixed = set_from_fixed (c2);
-    if (c2_is_fixed) { --rtn; }
+    if (c2_is_fixed) { std::cout << "Fail on vector<double>\n"; --rtn; }
 
 
     std::cout << "array is fixed size? " << (morph::is_copyable_fixedsize<std::array<float, 2>>::value ? "true" : "false") << std::endl;
-    if (morph::is_copyable_fixedsize<std::array<float, 2>>::value == false) { --rtn; }
-    if constexpr (morph::is_copyable_fixedsize<std::array<float, 2>>::value == false) { --rtn; }
+    if (morph::is_copyable_fixedsize<std::array<float, 2>>::value == false) { std::cout << "Fail on array<float>\n"; --rtn; }
+    if constexpr (morph::is_copyable_fixedsize<std::array<float, 2>>::value == false) { std::cout << "Fail on constexpr array<float>\n"; --rtn; }
     // if constexpr (morph::is_copyable_fixedsize<std::array<float, 2>&>::value == false) { --rtn; } // fails to compile
 
     std::cout << "ZERO sized array is fixed size? " << (morph::is_copyable_fixedsize<std::array<int, 0>>::value ? "true" : "false") << std::endl;
-    // Although an array<T, 0> DOES have a fixed size of 0, is_copyable_fixedsize<array<T, 0>> returns false and we accept this.
-    if (morph::is_copyable_fixedsize<std::array<int, 0>>::value == true) { --rtn; }
+
+      if (morph::is_copyable_fixedsize<std::array<int, 0>>::value == false) { std::cout << "Fail on array<int, 0>\n"; --rtn; }
 
     std::cout << "morph::vec is fixed size? " << (morph::is_copyable_fixedsize<morph::vec<double, 56>>::value ? "true" : "false") << std::endl;
-    if (morph::is_copyable_fixedsize<morph::vec<double, 56>>::value == false) { --rtn; }
+    if (morph::is_copyable_fixedsize<morph::vec<double, 56>>::value == false) { std::cout << "Fail on morph::vec<double>\n"; --rtn; }
     // if (morph::is_copyable_fixedsize<morph::vec<double, 56>>::value == false) { --rtn; } // fails to compile
     if constexpr (morph::is_copyable_fixedsize<morph::vec<double, 56>>::value == false) { --rtn; }
 
