@@ -13,6 +13,7 @@
 #include <cmath>
 #include <sstream>
 #include <memory>
+#include <cstdint>
 #include <morph/mathconst.h>
 #include <morph/tools.h>
 #include <morph/scale.h>
@@ -335,7 +336,7 @@ namespace morph {
             DatasetStyle ds(this->policy);
             ds.axisside = axisside;
             if (!name.empty()) { ds.datalabel = name; }
-            unsigned int data_index = this->graphDataCoords.size();
+            unsigned int data_index = static_cast<unsigned int>(this->graphDataCoords.size());
             this->setstyle (ds, DatasetStyle::datacolour(data_index), DatasetStyle::datamarkerstyle (data_index));
             this->setdata (_abscissae, _data, ds);
         }
@@ -464,8 +465,8 @@ namespace morph {
                 this->ds_ord2 = ds;
             }
 
-            unsigned int dsize = _data.size();
-            unsigned int didx = this->graphDataCoords.size();
+            uint64_t dsize = _data.size();
+            unsigned int didx = static_cast<unsigned int>(this->graphDataCoords.size());
 
             // Allocate memory for the new data coords, add the data style info and the
             // starting index for dataCoords
@@ -493,7 +494,7 @@ namespace morph {
 
                 // Now sd and ad can be used to construct dataCoords x/y. They are used to
                 // set the position of each datum into dataCoords
-                for (unsigned int i = 0; i < dsize; ++i) {
+                for (uint64_t i = 0; i < dsize; ++i) {
                     this->graphDataCoords[didx].get()->at(i) = morph::vec<float>{ static_cast<float>(ad[i]), static_cast<float>(sd[i]), float{0} };
                 }
             }
@@ -970,7 +971,7 @@ namespace morph {
                 } else if (this->datastyles[dsi].markerstyle == markerstyle::quiver) { // Markers are quivers
 
                     // Check quivers exist and then proceed with code adapted from morph::QuiverVisual
-                    unsigned int nquiv = this->quivers.size();
+                    uint64_t nquiv = this->quivers.size();
                     if ((*this->graphDataCoords[dsi]).size() == nquiv) {
 
                         // Prepare scaling functions
@@ -985,7 +986,7 @@ namespace morph {
                         morph::vvec<Flt> renorm_linear_qlengths (nquiv, Flt{0}); // renormalized user-scaled quiver lengths with linear scaling
 
                         // Compute the length of each quiver
-                        for (unsigned int i = 0; i < nquiv; ++i) {
+                        for (uint64_t i = 0; i < nquiv; ++i) {
                             //raw_qlengths[i] = this->quivers[i].length();
                             userscaled_qlengths[i] = (this->quivers[i] * this->datastyles[dsi].quiver_gain * (Flt{0.5} * this->quiver_grid_spacing)).length();
                         }
@@ -1000,7 +1001,7 @@ namespace morph {
                         // 'final' quivers, with scaling applied. From these computed final_qlengths which will give colours
                         morph::vvec<Flt> final_qlengths (nquiv, Flt{0});
                         morph::vvec<morph::vec<Flt, 3>> final_quivers (this->quivers);
-                        for (unsigned int i = 0; i < nquiv; ++i) {
+                        for (uint64_t i = 0; i < nquiv; ++i) {
                             final_quivers[i] *= this->datastyles[dsi].quiver_gain * (Flt{0.5} * this->quiver_grid_spacing) * lfactor[i];
                             final_qlengths[i] = final_quivers[i].length();
                         }
@@ -1012,7 +1013,7 @@ namespace morph {
                         this->quiver_colour_scale.transform (final_qlengths, colour_qlengths);
 
                         // Finally loop thru coords, drawing a quiver for each
-                        if (coords_end > nquiv) { throw std::runtime_error ("coords_end is off the end of quivers"); }
+                        if (static_cast<uint64_t>(coords_end) > nquiv) { throw std::runtime_error ("coords_end is off the end of quivers"); }
                         for (unsigned int i = coords_start; i < coords_end; ++i) {
                             this->quiver ((*this->graphDataCoords[dsi])[i], final_quivers[i], colour_qlengths[i], this->datastyles[dsi]);
                         }
@@ -1111,7 +1112,7 @@ namespace morph {
             for (unsigned int dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
                 // Start is old end:
                 unsigned int coords_start = this->coords_lengths[dsi];
-                unsigned int coords_end = this->graphDataCoords[dsi]->size();
+                unsigned int coords_end = static_cast<unsigned int>(this->graphDataCoords[dsi]->size());
                 this->coords_lengths[dsi] = coords_end;
                 this->drawDataCommon (dsi, coords_start, coords_end, appending_data);
             }
@@ -1122,7 +1123,7 @@ namespace morph {
         {
             unsigned int coords_start = 0;
             this->coords_lengths.resize (this->graphDataCoords.size());
-            for (unsigned int dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
+            for (unsigned int dsi = 0; dsi < static_cast<unsigned int>(this->graphDataCoords.size()); ++dsi) {
                 unsigned int coords_end = this->graphDataCoords[dsi]->size();
                 // Record coords length for future appending:
                 this->coords_lengths[dsi] = coords_end;
@@ -1133,7 +1134,7 @@ namespace morph {
         //! Draw the graph legend, above the graph, rather than inside it (so much simpler!)
         void drawLegend()
         {
-            unsigned int num_legends_max = this->graphDataCoords.size();
+            unsigned int num_legends_max = static_cast<unsigned int>(this->graphDataCoords.size());
 
             // Text offset from marker to text
             morph::vec<float> toffset = {this->fontsize, 0.0f, 0.0f};
@@ -1893,7 +1894,7 @@ namespace morph {
         //! should be increased.
         int fontres = 24;
         //! The font size is the width of an m in the chosen font, in model units
-        float fontsize = 0.05;
+        float fontsize = 0.05f;
         //! A separate fontsize for the axis labels, incase these should be different from the tick labels
         float axislabelfontsize = fontsize;
         // might need tickfontsize and axisfontsize
@@ -1901,10 +1902,10 @@ namespace morph {
         bool draw_beyond_axes = false;
         //! EITHER Gap from the y axis to the right hand of the y axis tick label text
         //! quads OR from the x axis to the top of the x axis tick label text quads
-        float ticklabelgap = 0.05;
+        float ticklabelgap = 0.05f;
         //! The gap from the left side of the y tick labels to the right side of the
         //! axis label (or similar for the x axis label)
-        float axislabelgap = 0.05;
+        float axislabelgap = 0.05f;
         //! The x axis label
         std::string xlabel = "x";
         //! The y axis label
