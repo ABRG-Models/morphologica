@@ -202,7 +202,7 @@ endif()
 # rapidxml is bundled in the source, but prefer packaged header
 check_include_file_cxx ("rapidxml/rapidxml.hpp" HAVE_RAPIDXML)
 if (NOT HAVE_RAPIDXML)
-  include_directories("${PROJECT_SOURCE_DIR}/include")
+  include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 endif() # else we have it in a directory included by default in the path
 
 # All the morphologica headers are here
