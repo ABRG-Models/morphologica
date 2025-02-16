@@ -111,7 +111,7 @@ asm("\t.global ___start_dvsansbi_ttf\n\t.global ___stop_dvsansbi_ttf\n___start_d
 
 // Visual Studio doesn't allow __asm{} calls in C__ code anymore, so try Dale Weiler's incbin.h
 #define INCBIN_PREFIX vf_
-#include "incbin.h"
+#include <morph/fonts/incbin.h>
 INCBIN(vera, "./fonts/ttf-bitstream-vera/Vera.ttf");
 INCBIN(verait, "./fonts/ttf-bitstream-vera/VeraIt.ttf");
 INCBIN(verabd, "./fonts/ttf-bitstream-vera/VeraBd.ttf");

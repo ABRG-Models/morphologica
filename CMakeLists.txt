@@ -225,9 +225,6 @@ endif(BUILD_UTILS)
 # *installed* morphologica, as opposed to an in-tree morphologica.
 add_subdirectory(fonts)
 
-# incbin.h header needs to be installed on WIN32
-add_subdirectory(include)
-
 # Example code (you can also see tests/ for examples)
 option(BUILD_EXAMPLES "Build examples" ON)
 if(BUILD_EXAMPLES)
