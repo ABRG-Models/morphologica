@@ -11,10 +11,10 @@
 #include <vector>
 #include <format>
 #include <cstdlib>
+#include <cstring>
 #include <morph/tools.h>
 
 // For readDirectoryTree
-#include <cstring>
 extern "C" {
 # include <dirent.h>
 # include <sys/stat.h>
@@ -262,7 +262,7 @@ namespace morph {
                     if (!buf) { // Malloc error.
                         throw std::runtime_error ("Failed to malloc buf; could not stat link " + fileName);
                     }
-                    memset (buf, 0, sizeof(struct stat));
+                    std::memset (buf, 0, sizeof(struct stat));
                     if (stat (fileName.c_str(), buf)) {
                         throw std::runtime_error ("Failed to stat link " + fileName);
                     } else {
@@ -307,7 +307,7 @@ namespace morph {
                     // If we have to check the file age, do so here before the vec.push_back()
                     if (olderThanSeconds > 0) {
                         // Stat the file
-                        memset (&buf, 0, sizeof (struct stat));
+                        std::memset (&buf, 0, sizeof (struct stat));
 
                         if (stat (fileName.c_str(), &buf)) {
                             // no file to stat

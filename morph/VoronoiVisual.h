@@ -16,6 +16,7 @@
 #include <morph/scale.h>
 #include <morph/vec.h>
 #include <iostream>
+#include <cstring>
 #include <vector>
 #include <array>
 #include <map>
@@ -102,7 +103,7 @@ namespace morph {
 
             // Generate the 2D Voronoi diagram
             jcv_diagram diagram;
-            memset (&diagram, 0, sizeof(jcv_diagram));
+            std::memset (&diagram, 0, sizeof(jcv_diagram));
 
             jcv_rect domain = {
                 jcv_point{rx.min - this->border_width, ry.min - this->border_width, 0.0f},
