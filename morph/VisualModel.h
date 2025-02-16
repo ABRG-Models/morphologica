@@ -16,6 +16,8 @@
 # ifndef USE_GLEW
 #  ifdef __OSX__
 #   include <OpenGL/gl3.h>
+
+
 #  else
 #   include <GLES3/gl3.h>
 #   include <GL/glext.h>
@@ -135,7 +137,7 @@ namespace morph {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            int sz = this->indices.size() * sizeof(GLuint);
+            std::size_t sz = this->indices.size() * sizeof(GLuint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
@@ -171,7 +173,7 @@ namespace morph {
             glBindVertexArray (this->vao);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
 #endif
-            int sz = this->indices.size() * sizeof(GLuint);
+            std::size_t sz = this->indices.size() * sizeof(GLuint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
             this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
             this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
@@ -307,7 +309,7 @@ namespace morph {
                 }
 
                 // Draw the triangles
-                glDrawElements (GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+                glDrawElements (GL_TRIANGLES, static_cast<unsigned int>(this->indices.size()), GL_UNSIGNED_INT, 0);
 
                 // Unbind the VAO
                 glBindVertexArray(0);
@@ -552,7 +554,7 @@ namespace morph {
         {
             morph::vec<morph::range<float>, 3> axis_extents;
             for (unsigned int i = 0; i < 3; ++i) { axis_extents[i].search_init(); }
-            for (unsigned int j = 0; j < this->vertexPositions.size() - 2; j += 3) {
+            for (unsigned int j = 0; j < static_cast<unsigned int>(this->vertexPositions.size() - 2); j += 3) {
                 for (unsigned int i = 0; i < 3; ++i) { axis_extents[i].update (this->vertexPositions[j+i]); }
             }
             return axis_extents;
@@ -804,7 +806,7 @@ namespace morph {
         //! Set up a vertex buffer object - bind, buffer and set vertex array object attribute
         void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition)
         {
-            int sz = dat.size() * sizeof(float);
+            std::size_t sz = dat.size() * sizeof(float);
             glBindBuffer (GL_ARRAY_BUFFER, buf);
             morph::gl::Util::checkError (__FILE__, __LINE__);
             glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);

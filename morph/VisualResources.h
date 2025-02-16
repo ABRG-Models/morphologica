@@ -136,7 +136,7 @@ namespace morph {
             FT_Library freetype = nullptr;
             try {
                 freetype = this->freetypes.at (_vis);
-            } catch (const std::out_of_range& e) {
+            } catch (const std::out_of_range&) {
                 // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
                 glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
                 morph::gl::Util::checkError (__FILE__, __LINE__);
@@ -183,7 +183,7 @@ namespace morph {
             auto key = std::make_tuple(font, fontpixels, _vis);
             try {
                 rtn = this->faces.at(key).get();
-            } catch (const std::out_of_range& e) {
+            } catch (const std::out_of_range&) {
                 this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis));
                 rtn = this->faces.at(key).get();
             }
