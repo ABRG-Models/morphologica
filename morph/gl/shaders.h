@@ -15,6 +15,7 @@
 #include <cstring>
 #include <string>
 #include <memory>
+#include <filesystem>
 
 namespace morph {
 
@@ -50,24 +51,19 @@ namespace morph {
         //! Read a shader from a file.
         std::unique_ptr<GLchar[]> ReadShader (const std::string& filename)
         {
-            FILE* infile = fopen (filename.c_str(), "rb");
-
-            if (!infile) {
-                std::cerr << "Unable to open file '" << filename << "'\n";
-                return NULL;
+            if (!std::filesystem::is_regular_file (filename)) { // restrict to regular files
+                std::cerr << "'" << filename << "' is not a regular file\n";
+                return nullptr;
             }
-
-            fseek (infile, 0, SEEK_END);
-            int len = ftell (infile);
-            fseek (infile, 0, SEEK_SET);
-
-            std::unique_ptr<GLchar[]> source = std::make_unique<GLchar[]>(len+1);
-
-            int itemsread = static_cast<int>(fread (source.get(), 1, len, infile));
-            if (itemsread != len) { std::cerr << "Wrong number of items read!\n"; }
-            fclose (infile);
+            size_t len = std::filesystem::file_size (filename);
+            std::unique_ptr<GLchar[]> source = std::make_unique<GLchar[]>(len + 1);
+            std::ifstream fin (filename.c_str(), std::ios::in);
+            if (!fin.is_open()) {
+                std::cerr << "Unable to open file '" << filename << "'\n";
+                return nullptr;
+            }
+            if (!fin.eof()) { fin.read (source.get(), len); }
             source[len] = 0;
-
             return source;
         }
 
@@ -78,9 +74,9 @@ namespace morph {
          */
         std::unique_ptr<GLchar[]> ReadDefaultShader (const std::string& shadercontent)
         {
-            int len = static_cast<int>(shadercontent.size());
-            std::unique_ptr<GLchar[]> source = std::make_unique<GLchar[]>(len+1);
-            memcpy (static_cast<void*>(source.get()), static_cast<const void*>(shadercontent.c_str()), len);
+            std::size_t len = shadercontent.size();
+            std::unique_ptr<GLchar[]> source = std::make_unique<GLchar[]>(len + 1);
+            std::memcpy (static_cast<void*>(source.get()), static_cast<const void*>(shadercontent.c_str()), len);
             source[len] = 0;
             return source;
         }
