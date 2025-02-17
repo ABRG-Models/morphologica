@@ -12,7 +12,7 @@
 
 #include <cstdint>
 #include <vector>
-#include <iostream>
+#include <functional>
 #include <morph/MathAlgo.h>
 #include <morph/vvec.h>
 
@@ -185,6 +185,45 @@ namespace morph {
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
 
+        /*!
+         * The objective function.
+         *
+         * Set this objective function in your client code with something like:
+         *
+         * auto myobj = [](const morph::vvec<T>& point) { return T{your_implementation_result}; };
+         * simp.objective = myobj;
+         */
+        std::function<T(const morph::vvec<T>& point)> objective = {};
+
+        /*!
+         * Run the optimization. If it returns false, you didn't set the objective function
+         */
+        bool run()
+        {
+            if (!this->objective) { return false; } // user did not set an objective function
+
+            while (this->state != NM_Simplex_State::ReadyToStop) {
+                if (this->state == NM_Simplex_State::NeedToComputeThenOrder) {
+                    for (unsigned int i = 0; i <= this->n; ++i) {
+                        this->values[i] = this->objective (this->vertices[i]);
+                    }
+                    this->order();
+                } else if (this->state == NM_Simplex_State::NeedToOrder) {
+                    this->order();
+                } else if (this->state == NM_Simplex_State::NeedToComputeReflection) {
+                    T val = this->objective (this->xr);
+                    this->apply_reflection (val);
+                } else if (this->state == NM_Simplex_State::NeedToComputeExpansion) {
+                    T val = this->objective (this->xe);
+                    this->apply_expansion (val);
+                } else if (this->state == NM_Simplex_State::NeedToComputeContraction) {
+                    T val = this->objective (this->xc);
+                    this->apply_contraction (val);
+                }
+            }
+            return true;
+        }
+
         //! Return the location of the best approximation, given the values of the vertices.
         morph::vvec<T> best_vertex() { return this->vertices[this->vertex_order[0]]; }
         //! Return the value of the best approximation, given the values of the vertices.
@@ -210,11 +249,8 @@ namespace morph {
                 return;
             } else if (this->too_many_operations > 0ULL
                        && this->operation_count > this->too_many_operations) {
-                // If this is emitted, check your termination_threshold
-                std::cerr << "Warning (NM_Simplex): Reached too_many_operations. "
-                          << "Setting state 'ReadyToStop'. Check termination_threshold, which was: "
-                          << this->termination_threshold << ". SD of simplex vertices was "
-                          << sd <<" (i.e. >=termination_threshold)." << std::endl;
+                // Reached too_many_operations. Setting state 'ReadyToStop'. Check
+                // termination_threshold and the standard deviation of the final vertices.
                 this->state = NM_Simplex_State::ReadyToStop;
                 this->stopreason = NM_Simplex_Stop_Reason::TooManyOperations;
                 return;
