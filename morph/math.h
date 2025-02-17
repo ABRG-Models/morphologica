@@ -22,11 +22,15 @@ namespace morph {
          * std::pow from C++26 and up.
          */
         template<typename I=int, std::enable_if_t<std::is_integral<std::decay_t<I>>::value, int> = 0 >
-        constexpr I pow (I base, const I exp)
+        constexpr I pow (I base, const I exp) noexcept
         {
             for (I i = I{1}; i < exp; ++i) { base *= base; }
             return exp ? base : I{1};
         }
+
+        //! constexpr capable abs for use until C++23
+        template<class T, std::enable_if_t<std::is_arithmetic_v<T>>...>
+        constexpr auto abs (const T& x) noexcept { return x < T{0} ? -x : x; }
 
         // Return n!
         template <typename T, typename I>

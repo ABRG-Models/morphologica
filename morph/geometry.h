@@ -173,9 +173,9 @@ namespace morph {
                     // Is va/vb/vc new?
                     int a = -1;
                     for (int v = 0; v < _n_verts; ++v) {
-                        if (std::abs(geo.poly.vertices[v][0] - va[0]) < thresh * std::numeric_limits<F>::epsilon()
-                            && std::abs(geo.poly.vertices[v][1] - va[1]) < thresh * std::numeric_limits<F>::epsilon()
-                            && std::abs(geo.poly.vertices[v][2] - va[2]) < thresh * std::numeric_limits<F>::epsilon()) {
+                        if (morph::math::abs(geo.poly.vertices[v][0] - va[0]) < thresh * std::numeric_limits<F>::epsilon()
+                            && morph::math::abs(geo.poly.vertices[v][1] - va[1]) < thresh * std::numeric_limits<F>::epsilon()
+                            && morph::math::abs(geo.poly.vertices[v][2] - va[2]) < thresh * std::numeric_limits<F>::epsilon()) {
                             a = v; // va is not a new vertex, set a to be the correct index
                         }
                     }
@@ -187,9 +187,9 @@ namespace morph {
 
                     int b = -1;
                     for (int v = 0; v < _n_verts; ++v) {
-                        if (std::abs(geo.poly.vertices[v][0] - vb[0]) < thresh * std::numeric_limits<F>::epsilon()
-                            && std::abs(geo.poly.vertices[v][1] - vb[1]) < thresh * std::numeric_limits<F>::epsilon()
-                            && std::abs(geo.poly.vertices[v][2] - vb[2]) < thresh * std::numeric_limits<F>::epsilon()) {
+                        if (morph::math::abs(geo.poly.vertices[v][0] - vb[0]) < thresh * std::numeric_limits<F>::epsilon()
+                            && morph::math::abs(geo.poly.vertices[v][1] - vb[1]) < thresh * std::numeric_limits<F>::epsilon()
+                            && morph::math::abs(geo.poly.vertices[v][2] - vb[2]) < thresh * std::numeric_limits<F>::epsilon()) {
                             b = v; // vb is not a new vertex, set b to be the correct index
                         }
                     }
@@ -201,9 +201,9 @@ namespace morph {
 
                     int c = -1;
                     for (int v = 0; v < _n_verts; ++v) {
-                        if (std::abs(geo.poly.vertices[v][0] - vc[0]) < thresh * std::numeric_limits<F>::epsilon()
-                            && std::abs(geo.poly.vertices[v][1] - vc[1]) < thresh * std::numeric_limits<F>::epsilon()
-                            && std::abs(geo.poly.vertices[v][2] - vc[2]) < thresh * std::numeric_limits<F>::epsilon()) {
+                        if (morph::math::abs(geo.poly.vertices[v][0] - vc[0]) < thresh * std::numeric_limits<F>::epsilon()
+                            && morph::math::abs(geo.poly.vertices[v][1] - vc[1]) < thresh * std::numeric_limits<F>::epsilon()
+                            && morph::math::abs(geo.poly.vertices[v][2] - vc[2]) < thresh * std::numeric_limits<F>::epsilon()) {
                             c = v; // vc is not a new vertex, set c to be the correct index
                         }
                     }
