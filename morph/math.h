@@ -22,10 +22,10 @@ namespace morph {
          * std::pow from C++26 and up.
          */
         template<typename I=int, std::enable_if_t<std::is_integral<std::decay_t<I>>::value, int> = 0 >
-        constexpr I pow (I base, const I exp)
+        constexpr I pow (I base, const I expt)
         {
-            for (I i = I{1}; i < exp; ++i) { base *= base; }
-            return exp ? base : I{1};
+            for (I i = I{1}; i < expt; ++i) { base *= base; }
+            return (expt ? base : I{1});
         }
 
         // Return n!
