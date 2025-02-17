@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iostream>
 #include <limits>
+#include <cmath>
 #include <morph/mathconst.h>
 #include <morph/math.h>
 #include <morph/vec.h>
