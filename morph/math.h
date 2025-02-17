@@ -29,6 +29,11 @@ namespace morph {
             return (expt ? base : I{1});
         }
 #endif
+
+        //! constexpr capable abs for use until C++23
+        template<class T, std::enable_if_t<std::is_arithmetic_v<T>>...>
+        constexpr auto abs (const T& x) noexcept { return x < T{0} ? -x : x; }
+
         // Return n!
         template <typename T, typename I>
         constexpr T factorial (const I n)
