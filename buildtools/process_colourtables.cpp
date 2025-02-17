@@ -40,8 +40,7 @@ int main()
     std::vector<std::string> dirs;
     std::vector<std::string> table_files;
     std::string basedir = "./";
-    // std::string subdir = "";
-    morph::tools::readDirectoryTree (dirs, basedir/*, subdir*/);
+    morph::tools::readDirectoryTree (dirs, basedir);
     if (tt == ctabletype::Crameri) {
         for (auto dir : dirs) {
             std::cerr << "Got file " << dir << std::endl;
@@ -127,8 +126,6 @@ int main()
         ifile.seekg(0);
 
         std::string name_upperfirst = name;
-        // Upper-case first character (actually, no)
-        // std::transform (name_upperfirst.begin(), name_upperfirst.begin()+1, name_upperfirst.begin(), morph::to_upper());
         // Replace non-allowed chars with _
         std::string::size_type ptr = std::string::npos;
         while ((ptr = name_upperfirst.find_last_not_of (CHARS_NUMERIC_ALPHA"_", ptr)) != std::string::npos) {
