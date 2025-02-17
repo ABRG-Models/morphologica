@@ -7,7 +7,6 @@ endif()
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 if(NOT WIN32)
   # Colourmap processing is not Windows compatible
-  add_executable(process_colourmap process_colourmap.cpp)
   # Using std::format in process_colourtables
   check_include_file_cxx(format HAVE_STD_FORMAT)
   if(HAVE_STD_FORMAT)
