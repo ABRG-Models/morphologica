@@ -13,6 +13,7 @@
 #include <iostream>
 #include <limits>
 #include <morph/mathconst.h>
+#include <morph/math.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/quaternion.h>
@@ -37,7 +38,7 @@ namespace morph {
         template<typename F, int iterations>
         struct icosahedral_geodesic
         {
-            static constexpr int T = std::pow(4, iterations);
+            static constexpr int T = morph::math::pow (4, iterations);
             static constexpr int n_verts = 10 * T + 2;
             static constexpr int n_faces = 20 * T;
             geometry_ce::polyhedron <F, n_verts, n_faces> poly;

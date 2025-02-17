@@ -16,6 +16,18 @@ namespace morph {
 
     namespace math {
 
+        /*
+         * A constexpr pow() for positive integral exponents.  Note that there's no
+         * check to ensure we don't overflow the I type. This should be replaced with
+         * std::pow from C++26 and up.
+         */
+        template<typename I=int, std::enable_if_t<std::is_integral<std::decay_t<I>>::value, int> = 0 >
+        constexpr I pow (I base, const I exp)
+        {
+            for (I i = I{1}; i < exp; ++i) { base *= base; }
+            return exp ? base : I{1};
+        }
+
         // Return n!
         template <typename T, typename I>
         constexpr T factorial (const I n)
