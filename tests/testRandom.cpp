@@ -7,13 +7,13 @@ int main()
 {
     int rtn = 0;
 
-#ifdef __WIN__
+#ifdef __GNUC__
+    // GCC not fussy and will accept this even though it defies the standard
+    typedef unsigned char SMALL_T;
+#else
     // VS enforces the strict minimum size for the std::random code in Random.h, so
     // smallest you can get away with is unsigned short.
     typedef unsigned short SMALL_T;
-#else
-    // Other compilers are less fussy and will accept this
-    typedef unsigned char SMALL_T;
 #endif
     // A random uniform generator returning integer types
     morph::RandUniform<SMALL_T, std::mt19937> rui;

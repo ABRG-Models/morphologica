@@ -165,6 +165,9 @@ namespace morph {
     template<typename T, typename E>
     class RandUniform<T, E, true>
     {
+#ifndef __GNUC__
+        static_assert (sizeof(T) > 1); // disallow single byte integers unless in gcc
+#endif
     private:
         //! Random device to provide a seed for the generator
         std::random_device rd{};

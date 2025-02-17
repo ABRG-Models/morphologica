@@ -48,8 +48,17 @@ int main()
 
 
     // Multi precision with uint8_t input
+#ifndef __GNUC__
+    // Strictly, we can't vvec::randomize with a 1 byte type
+    // (std::uniform_int_distribution is undefined for 1 byte IntTypes)...
+    morph::vvec<uint16_t> input_u16 (data_sz, 0);
+    input_u16.randomize(0, 255);
+    morph::vvec<uint8_t> input_u8 = input_u16.as<uint8_t>();
+#else
+    // ...but gcc generously allows it
     morph::vvec<uint8_t> input_u8 (data_sz, 0);
     input_u8.randomize();
+#endif
     unsigned int uisum = input_u8.sum<unsigned int>();
     unsigned int uisum2 = input_u8.sum(); // auto template param deduction? No.
     std::cout << "input_u8: " << uisum << " or " << uisum2  << std::endl;
