@@ -312,6 +312,23 @@ namespace morph
             return false;
         }
 
+        // A simpler readDirectoryTree than the old one (find that in process_colourtables.cpp)
+        void readDirectoryTree (std::vector<std::string>& vec, const std::string& dirPath)
+        {
+            for (const std::filesystem::directory_entry& dir_entry :
+                 std::filesystem::recursive_directory_iterator (dirPath)) {
+                if (std::filesystem::is_symlink (dir_entry.path())) {
+                    std::error_code ec{};
+                    std::filesystem::path spath = std::filesystem::read_symlink (dir_entry.path(), ec);
+                    if (!ec && std::filesystem::is_regular_file (spath)) {
+                        vec.push_back (dir_entry.path().string());
+                    }
+                } else if (std::filesystem::is_regular_file (dir_entry.path())) {
+                    vec.push_back (dir_entry.path().string());
+                }
+            }
+        }
+
         // Redundant, but still used functions wrapping std::filesystem functions
         bool dirExists (const std::string& path) { return std::filesystem::is_directory (path); }
         bool regfileExists (const std::string& path) { return std::filesystem::is_regular_file (path); }
