@@ -92,6 +92,9 @@ int main()
 
     morph::RandUniform<float> rng(-3, 3);
 
+    // This is the same as the NM_Simplex::run function, but it is reproduced here to *visualize*
+    // the Simplex as it descends the surface. For a more compact way to write your NM_Simplex, see
+    // tests/testNMSimplex.cpp
     while (!v.readyToFinish) {
 
         simp.reset (i_vertices);
