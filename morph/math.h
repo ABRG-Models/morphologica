@@ -21,13 +21,14 @@ namespace morph {
          * check to ensure we don't overflow the I type. This should be replaced with
          * std::pow from C++26 and up.
          */
+#if 0
         template<typename I=int, std::enable_if_t<std::is_integral<std::decay_t<I>>::value, int> = 0 >
         constexpr I pow (I base, const I expt) noexcept
         {
             for (I i = I{1}; i < expt; ++i) { base *= base; }
             return (expt ? base : I{1});
         }
-
+#endif
         // Return n!
         template <typename T, typename I>
         constexpr T factorial (const I n)
