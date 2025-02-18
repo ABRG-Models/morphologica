@@ -458,7 +458,7 @@ namespace morph
             if consteval { //  This is now possible with C++23
                 return internal::sqrt_check (static_cast<return_t<T>>(x));
             } else {
-                return std::sqrt (static_cast<return_t<T>>(x));
+                return std::sqrt (x);
             }
         }
 
