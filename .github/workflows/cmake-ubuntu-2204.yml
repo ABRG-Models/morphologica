@@ -28,7 +28,12 @@ jobs:
       run: sudo apt update
 
     - name: Install dependencies
-      run: sudo apt-get install libgbm-dev freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev nlohmann-json3-dev librapidxml-dev
+      run: |
+        sudo apt-get install libgbm-dev freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev nlohmann-json3-dev librapidxml-dev
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt install g++-13 gcc-13 -y
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
