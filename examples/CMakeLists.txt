@@ -209,7 +209,7 @@ if(USE_GLEW)
 endif()
 
 # morph::Gridct is compile-time-configured
-#if(CXX_20_AVAILABLE)
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   add_executable(gridct_simple gridct_simple.cpp)
 #  set_property(TARGET gridct_simple PROPERTY CXX_STANDARD 20)
   target_link_libraries(gridct_simple OpenGL::GL glfw Freetype::Freetype)
@@ -223,7 +223,7 @@ endif()
   if(USE_GLEW)
     target_link_libraries(gridct_image GLEW::GLEW)
   endif()
-#endif()
+endif()
 
 # morph::Grid is runtime-configured
 add_executable(grid_simple grid_simple.cpp)
