@@ -566,3 +566,6 @@ add_test(test_number_type test_number_type)
 
 add_executable(test_flags test_flags.cpp)
 add_test(test_flags test_flags)
+
+add_executable(testcmath testcmath.cpp)
+add_test(testcmath testcmath)

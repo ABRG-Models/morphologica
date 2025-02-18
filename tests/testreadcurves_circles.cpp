@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 #include <fstream>
-#include <math.h>
 #include "morph/BezCoord.h"
 #include "morph/BezCurvePath.h"
 
