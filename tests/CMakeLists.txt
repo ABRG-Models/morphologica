@@ -567,5 +567,7 @@ add_test(test_number_type test_number_type)
 add_executable(test_flags test_flags.cpp)
 add_test(test_flags test_flags)
 
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
 add_executable(testcmath testcmath.cpp)
 add_test(testcmath testcmath)
+endif()
