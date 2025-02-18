@@ -14,6 +14,14 @@ namespace morph {
         static constexpr T zero = T{0};
         static constexpr T one = T{1};
 
+        // e - the base of the natural logarithm
+        static constexpr T e = T{2.7182818284590452353602874713526624977572};
+
+        // ln_10: Natural log of 10; ln_2: Natural log of 2 and so on
+        static constexpr T ln_10 = T{2.3025850929940456840179914546843642076011};
+        static constexpr T ln_2 = T{0.6931471805599453094172321214581765680755};
+        static constexpr T ln_pi = T{1.1447298858494001741434273513530587116473};
+
         static constexpr T root_2 = T{1.414213562373095048801688724209698078569671875376948};
         static constexpr T sqrt_of_2 = root_2;
         static constexpr T one_over_root_2 = T{1}/root_2;
