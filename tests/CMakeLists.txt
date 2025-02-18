@@ -514,7 +514,7 @@ add_executable(testboxfilter testboxfilter.cpp)
 add_test(testboxfilter testboxfilter)
 
 # morph::Gridct requires C++-20
-#if(CXX_20_AVAILABLE)
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   add_executable(testGridct testGridct.cpp)
 #  set_property(TARGET testGridct PROPERTY CXX_STANDARD 20)
   add_test(testGridct testGridct)
@@ -529,7 +529,7 @@ add_test(testboxfilter testboxfilter)
   add_executable(testGridctNeighbours testGridctNeighbours.cpp)
 #  set_property(TARGET testGridctNeighbours PROPERTY CXX_STANDARD 20)
   add_test(testGridctNeighbours testGridctNeighbours)
-#endif()
+endif()
 
 add_executable(testGrid testGrid.cpp)
 add_test(testGrid testGrid)
