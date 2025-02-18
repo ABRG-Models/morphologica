@@ -301,7 +301,7 @@ namespace morph {
         constexpr void renormalize()
         {
             auto add_squared = [](_S a, _S b) { return a + b * b; };
-            const _S denom = std::sqrt (std::accumulate (this->begin(), this->end(), _S{0}, add_squared));
+            const _S denom = morph::math::sqrt (std::accumulate (this->begin(), this->end(), _S{0}, add_squared));
             if (denom != _S{0}) {
                 _S oneovermag = _S{1} / denom;
                 auto x_oneovermag = [oneovermag](_S f) { return f * oneovermag; };
@@ -479,9 +479,9 @@ namespace morph {
             auto add_squared = [](_S a, S b) { return a + b * b; };
             // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of std::sqrt()
             if constexpr (std::is_integral<std::decay_t<_S>>::value == true) {
-                return static_cast<_S>(std::round(std::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared))));
+                return static_cast<_S>(std::round(morph::math::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared))));
             } else {
-                return std::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared));
+                return morph::math::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared));
             }
         }
 
@@ -675,8 +675,7 @@ namespace morph {
         //! Return true if any element is NaN
         constexpr bool has_nan() const
         {
-            if constexpr (std::numeric_limits<S>::has_quiet_NaN
-                          || std::numeric_limits<S>::has_signaling_NaN) {
+            if constexpr (std::numeric_limits<S>::has_quiet_NaN || std::numeric_limits<S>::has_signaling_NaN) {
                 return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isnan(i);});
             } else {
                 return false;
@@ -747,7 +746,7 @@ namespace morph {
         constexpr _S std() const
         {
             if (this->empty()) { return _S{0}; }
-            return std::sqrt (this->variance<_S>());
+            return morph::math::sqrt (this->variance<_S>());
         }
 
         //! Return the sum of the elements
@@ -811,7 +810,7 @@ namespace morph {
         constexpr vec<S, N> floor() const
         {
             vec<S, N> rtn{};
-            auto _floor = [](S elmnt) -> S { return (morph::math::floor (elmnt)); };
+            auto _floor = [](S elmnt) -> S { return (std::floor (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _floor);
             return rtn;
         }
@@ -890,12 +889,12 @@ namespace morph {
         constexpr vec<S, N> log10() const
         {
             vec<S, N> rtn{};
-            auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log10 (elmnt)); };
+            auto log_element = [](S elmnt) -> S { return static_cast<S>(morph::math::log10 (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
         //! Replace each element with its own log to base 10
-        constexpr void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10 (i)); } }
+        constexpr void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(morph::math::log10 (i)); } }
 
         /*!
          * Compute the element-wise natural exponential of the vector
@@ -1128,7 +1127,7 @@ namespace morph {
             S rho = this->length();
             spherical[0] = rho;                                  // rho
             spherical[1] = morph::math::atan2 ((*this)[1], (*this)[0]);  // theta
-            spherical[2] = std::acos ((*this)[2] / rho);         // phi
+            spherical[2] = morph::math::acos ((*this)[2] / rho);         // phi
             return spherical;
         }
 
@@ -1139,7 +1138,7 @@ namespace morph {
         constexpr S angle (const vec<S, N>& other) const
         {
             S cos_theta = this->dot(other) / (this->length() * other.length());
-            return std::acos (cos_theta);
+            return morph::math::acos (cos_theta);
         }
 
         /*!

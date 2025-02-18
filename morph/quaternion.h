@@ -277,8 +277,8 @@ namespace morph {
         constexpr void set_rotation (const vec<Flt>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
-            Flt cosHalf = std::cos(halfangle);
-            Flt sinHalf = std::sin(halfangle);
+            Flt cosHalf = morph::math::cos(halfangle);
+            Flt sinHalf = morph::math::sin(halfangle);
             vec<Flt> ax = axis;
             ax.renormalize();
 
@@ -297,8 +297,8 @@ namespace morph {
         constexpr void rotate (const Flt& axis_x, const Flt& axis_y, const Flt& axis_z, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
-            Flt cosHalf = std::cos (halfangle);
-            Flt sinHalf = std::sin (halfangle);
+            Flt cosHalf = morph::math::cos (halfangle);
+            Flt sinHalf = morph::math::sin (halfangle);
             quaternion<Flt> local(cosHalf, axis_x * sinHalf, axis_y * sinHalf, axis_z * sinHalf);
             this->premultiply (local);
             this->renormalize();
@@ -311,8 +311,8 @@ namespace morph {
         constexpr void rotate (const std::array<Flt, 3>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
-            Flt cosHalf = std::cos (halfangle);
-            Flt sinHalf = std::sin (halfangle);
+            Flt cosHalf = morph::math::cos (halfangle);
+            Flt sinHalf = morph::math::sin (halfangle);
             quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
             this->renormalize();
@@ -325,8 +325,8 @@ namespace morph {
         constexpr void rotate (const vec<Flt, 3>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
-            Flt cosHalf = std::cos (halfangle);
-            Flt sinHalf = std::sin (halfangle);
+            Flt cosHalf = morph::math::cos (halfangle);
+            Flt sinHalf = morph::math::sin (halfangle);
             quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
             this->renormalize();
@@ -340,8 +340,8 @@ namespace morph {
         constexpr morph::vec<Flt, 4> axis_angle() const
         {
             morph::vec<Flt, 4> aa{Flt{0}};
-            aa[3] =  2 * std::acos (this->w);
-            Flt s = morph::math::sqrt(Flt{1} - this->w * this->w);
+            aa[3] =  2 * morph::math::acos (this->w);
+            Flt s = morph::math::sqrt (Flt{1} - this->w * this->w);
             aa[0] = this->x / s;
             aa[1] = this->y / s;
             aa[2] = this->z / s;
