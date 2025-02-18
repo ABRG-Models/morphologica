@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <functional>
 #include <cstddef>
+#include <morph/constexpr_math.h>
 #include <morph/Random.h>
 #include <morph/range.h>
 
@@ -772,12 +773,12 @@ namespace morph {
         constexpr vec<S, N> pow (const S& p) const
         {
             vec<S, N> rtn{};
-            auto raise_to_p = [p](S elmnt) -> S { return static_cast<S>(std::pow(elmnt, p)); };
+            auto raise_to_p = [p](S elmnt) -> S { return static_cast<S>(morph::math::pow (elmnt, p)); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
         //! Raise each element to the power p
-        constexpr void pow_inplace (const S& p) { for (auto& i : *this) { i = static_cast<S>(std::pow (i, p)); } }
+        constexpr void pow_inplace (const S& p) { for (auto& i : *this) { i = static_cast<S>(morph::math::pow (i, p)); } }
 
         //! Element-wise power
         template<typename _S=S>
@@ -785,15 +786,15 @@ namespace morph {
         {
             auto pi = p.begin();
             vec<S, N> rtn{};
-            auto raise_to_p = [pi](S elmnt) mutable -> S { return static_cast<S>(std::pow(elmnt, (*pi++))); };
+            auto raise_to_p = [pi](S elmnt) mutable -> S { return static_cast<S>(morph::math::pow (elmnt, (*pi++))); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
         template<typename _S=S>
-        void pow_inplace (const vec<_S, N>& p)
+        constexpr void pow_inplace (const vec<_S, N>& p)
         {
             auto pi = p.begin();
-            for (auto& i : *this) { i = static_cast<S>(std::pow (i, (*pi++))); }
+            for (auto& i : *this) { i = static_cast<S>(morph::math::pow (i, (*pi++))); }
         }
 
         //! Return the signum of the vec, with signum(0)==0
@@ -810,7 +811,7 @@ namespace morph {
         constexpr vec<S, N> floor() const
         {
             vec<S, N> rtn{};
-            auto _floor = [](S elmnt) -> S { return (std::floor(elmnt)); };
+            auto _floor = [](S elmnt) -> S { return (morph::math::floor (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _floor);
             return rtn;
         }
@@ -830,11 +831,11 @@ namespace morph {
         constexpr vec<S, N> ceil() const
         {
             vec<S, N> rtn{};
-            auto _ceil = [](S elmnt) -> S { return (std::ceil(elmnt)); };
+            auto _ceil = [](S elmnt) -> S { return (morph::math::ceil (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
             return rtn;
         }
-        constexpr void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
+        constexpr void ceil_inplace() { for (auto& i : *this) { i = morph::math::ceil(i); } }
 
         /*!
          * Compute the element-wise square root of the vector
@@ -844,12 +845,12 @@ namespace morph {
         constexpr vec<S, N> sqrt() const
         {
             vec<S, N> rtn{};
-            auto sqrt_element = [](S elmnt) -> S { return static_cast<S>(std::sqrt(elmnt)); };
+            auto sqrt_element = [](S elmnt) -> S { return static_cast<S>(morph::math::sqrt (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
             return rtn;
         }
         //! Replace each element with its own square root
-        constexpr void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
+        constexpr void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(morph::math::sqrt (i)); } }
 
         /*!
          * Compute the element-wise square of the vector
@@ -874,12 +875,12 @@ namespace morph {
         constexpr vec<S, N> log() const
         {
             vec<S, N> rtn{};
-            auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log(elmnt)); };
+            auto log_element = [](S elmnt) -> S { return static_cast<S>(morph::math::log (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
         //! Replace each element with its own natural log
-        constexpr void log_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log(i)); } }
+        constexpr void log_inplace() { for (auto& i : *this) { i = static_cast<S>(morph::math::log (i)); } }
 
         /*!
          * Compute the element-wise log to base 10 of the vector
@@ -889,12 +890,12 @@ namespace morph {
         constexpr vec<S, N> log10() const
         {
             vec<S, N> rtn{};
-            auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log10(elmnt)); };
+            auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log10 (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
         //! Replace each element with its own log to base 10
-        constexpr void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10(i)); } }
+        constexpr void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10 (i)); } }
 
         /*!
          * Compute the element-wise natural exponential of the vector
@@ -904,12 +905,12 @@ namespace morph {
         constexpr vec<S, N> exp() const
         {
             vec<S, N> rtn{};
-            auto exp_element = [](S elmnt) -> S { return static_cast<S>(std::exp(elmnt)); };
+            auto exp_element = [](S elmnt) -> S { return static_cast<S>(morph::math::exp (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), exp_element);
             return rtn;
         }
         //! Replace each element with its own natural exponential
-        constexpr void exp_inplace() { for (auto& i : *this) { i = static_cast<S>(std::exp(i)); } }
+        constexpr void exp_inplace() { for (auto& i : *this) { i = static_cast<S>(morph::math::exp (i)); } }
 
         /*!
          * Compute the element-wise absolute values of the vector
@@ -919,12 +920,12 @@ namespace morph {
         constexpr vec<S, N> abs() const
         {
             vec<S, N> rtn{};
-            auto abs_element = [](S elmnt) -> S { return static_cast<S>(std::abs(elmnt)); };
+            auto abs_element = [](S elmnt) -> S { return static_cast<S>(morph::math::abs(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
             return rtn;
         }
         //! Replace each element with its own absolute value
-        constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
+        constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(morph::math::abs(i)); } }
 
         //! Less than a scalar. Return true if every element is less than the scalar
         constexpr bool operator<(const S rhs) const
@@ -1126,7 +1127,7 @@ namespace morph {
             // Assuming *this is cartesian, convert to spherical coordinates.
             S rho = this->length();
             spherical[0] = rho;                                  // rho
-            spherical[1] = std::atan2 ((*this)[1], (*this)[0]);  // theta
+            spherical[1] = morph::math::atan2 ((*this)[1], (*this)[0]);  // theta
             spherical[2] = std::acos ((*this)[2] / rho);         // phi
             return spherical;
         }
@@ -1161,7 +1162,7 @@ namespace morph {
         template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
         constexpr S angle() const
         {
-            S _angle = std::atan2 ((*this)[1], (*this)[0]);
+            S _angle = morph::math::atan2 ((*this)[1], (*this)[0]);
             return _angle;
         }
 
@@ -1173,8 +1174,8 @@ namespace morph {
         constexpr void set_angle (const _S _ang)
         {
             S l = this->length();
-            (*this)[0] = std::cos (_ang);
-            (*this)[1] = std::sin (_ang);
+            (*this)[0] = morph::math::cos (_ang);
+            (*this)[1] = morph::math::sin (_ang);
             (*this) *= l > S{0} ? l : S{1};
         }
 

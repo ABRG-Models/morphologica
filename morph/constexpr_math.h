@@ -55,183 +55,11 @@ namespace morph
         template<class T, std::enable_if_t<std::is_arithmetic_v<T>>...>
         constexpr auto abs (const T& x) noexcept { return x < T{0} ? -x : x; }
 
-        // is_odd/even
-        namespace internal
+        namespace internal // is_odd/even
         {
             constexpr bool is_odd (const int64_t x) noexcept { return (x & 1U) != 0; }
             constexpr bool is_even (const int64_t x) noexcept { return !is_odd (x); }
         }
-
-        // log
-        namespace internal
-        {
-            template<typename T>
-            constexpr T log_cf_main (const T xx, const int depth_end) noexcept
-            {
-                int depth = log_max_iter_small - 1;
-                T res = T(2 * (depth + 1) - 1);
-                while (depth > depth_end - 1) {
-                    res = T(2 * depth - 1) - T(depth * depth) * xx / res;
-                    --depth;
-                }
-                return res;
-            }
-            template<typename T>
-            constexpr T log_cf_begin (const T x) noexcept { return (T{2} * x / log_cf_main (x * x, 1)); }
-            template<typename T>
-            constexpr T log_main (const T x) noexcept { return (log_cf_begin ((x - T{1}) / (x + T{1}))); }
-
-            constexpr long double log_mantissa_integer(const int x) noexcept
-            {
-                return (x == 2  ? 0.6931471805599453094172321214581765680755L :
-                        x == 3  ? 1.0986122886681096913952452369225257046475L :
-                        x == 4  ? 1.3862943611198906188344642429163531361510L :
-                        x == 5  ? 1.6094379124341003746007593332261876395256L :
-                        x == 6  ? 1.7917594692280550008124773583807022727230L :
-                        x == 7  ? 1.9459101490553133051053527434431797296371L :
-                        x == 8  ? 2.0794415416798359282516963643745297042265L :
-                        x == 9  ? 2.1972245773362193827904904738450514092950L :
-                        x == 10 ? 2.3025850929940456840179914546843642076011L : 0.0L );
-            }
-
-            template<typename T>
-            constexpr T log_mantissa(const T x) noexcept
-            {   // divide by the integer part of x, which will be in [1,10], then adjust using tables
-                return (log_main(x / T{static_cast<int>(x)}) + T{log_mantissa_integer(static_cast<int>(x))});
-            }
-
-            template<typename T>
-            constexpr T log_breakup(const T x) noexcept
-            {   // x = a*b, where b = 10^c
-                return (log_mantissa (mantissa(x)) + morph::mathconst<T>::ln_10 * T{find_exponent (x, 0)});
-            }
-
-            template<typename T>
-            constexpr T log_check(const T x) noexcept
-            {
-                return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() :
-                        x < T(0) ? std::numeric_limits<T>::quiet_NaN() :
-                        std::numeric_limits<T>::min() > x ? -std::numeric_limits<T>::infinity() :
-                        std::numeric_limits<T>::min() > abs(x - T(1)) ? T{0} :
-                        x == std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity() :
-                        (x < T{0.5} || x > T{1.5}) ? log_breakup(x) : log_main(x));
-            }
-
-            template<typename T>
-            constexpr return_t<T> log_integral_check(const T x) noexcept
-            {
-                return (std::is_integral<T>::value ? x == T(0) ? -std::numeric_limits<return_t<T>>::infinity() :
-                        x > T(1) ? log_check (static_cast<return_t<T>>(x)) :
-                        static_cast<return_t<T>>(0) : log_check (static_cast<return_t<T>>(x)));
-            }
-        }
-        template<typename T>
-        constexpr return_t<T> log (const T x) noexcept { return internal::log_integral_check (x); }
-
-        // pow_integral
-        namespace internal
-        {
-            template<typename T1, typename T2>
-            constexpr T1 pow_integral_compute (const T1 base, const T2 exp_term) noexcept;
-            // integral-valued powers using method described in https://en.wikipedia.org/wiki/Exponentiation_by_squaring
-            template<typename T1, typename T2>
-            constexpr T1 pow_integral_compute_recur (const T1 base, const T1 val, const T2 exp_term) noexcept
-            {
-                return (exp_term > T2(1) ? (is_odd (exp_term) ?
-                                            pow_integral_compute_recur (base * base, val * base, exp_term / 2) :
-                                            pow_integral_compute_recur (base * base, val, exp_term / 2)) :
-                        (exp_term == T2(1) ? val * base : val));
-            }
-            template<typename T1, typename T2, typename std::enable_if<std::is_signed<T2>::value>::type* = nullptr>
-            constexpr T1 pow_integral_sgn_check (const T1 base, const T2 exp_term) noexcept
-            {
-                return (exp_term < T2{0} ? T1{1} / pow_integral_compute (base, -exp_term) : pow_integral_compute_recur (base, T1{1}, exp_term));
-            }
-            template<typename T1, typename T2, typename std::enable_if<!std::is_signed<T2>::value>::type* = nullptr>
-            constexpr T1 pow_integral_sgn_check (const T1 base, const T2 exp_term) noexcept { return (pow_integral_compute_recur (base, T1{1}, exp_term)); }
-
-            template<typename T1, typename T2>
-            constexpr T1 pow_integral_compute (const T1 base, const T2 exp_term) noexcept
-            {
-                return (exp_term == T2{3} ? base * base * base :
-                        exp_term == T2{2} ? base * base :
-                        exp_term == T2{1} ? base :
-                        exp_term == T2{0} ? T1{1} :
-                        // check for overflow
-                        exp_term == std::numeric_limits<T2>::min() ? T1{0} :
-                        exp_term == std::numeric_limits<T2>::max() ? std::numeric_limits<T1>::infinity() :
-                        pow_integral_sgn_check (base, exp_term));
-            }
-
-            template<typename T1, typename T2, typename std::enable_if<std::is_integral<T2>::value>::type* = nullptr>
-            constexpr T1 pow_integral_type_check (const T1 base, const T2 exp_term) noexcept { return pow_integral_compute (base,exp_term); }
-
-            template<typename T1, typename T2, typename std::enable_if<!std::is_integral<T2>::value>::type* = nullptr>
-            constexpr T1 pow_integral_type_check (const T1 base, const T2 exp_term) noexcept
-            {
-                return pow_integral_compute (base, static_cast<int64_t>(exp_term));
-            }
-
-            template<typename T1, typename T2>
-            constexpr T1 pow_integral (const T1 base, const T2 exp_term) noexcept { return internal::pow_integral_type_check (base, exp_term); }
-        }
-
-        // exp
-        namespace internal
-        {
-            template<typename T>
-            constexpr T exp_cf_recur (const T x, const int depth_end) noexcept
-            {
-                int depth = exp_max_iter_small - 1;
-                T res = T{1};
-                while (depth > depth_end - 1) {
-                    res = T{1} + x / T(depth - 1) - x / depth / res;
-                    --depth;
-                }
-                return res;
-            }
-
-            template<typename T>
-            constexpr T exp_cf (const T x) noexcept { return (T{1} / (T{1} - x / exp_cf_recur(x, 2))); }
-
-            template<typename T>
-            constexpr T exp_split(const T x) noexcept
-            {
-                return (static_cast<T>(pow_integral (morph::mathconst<T>::e, find_whole(x))) * exp_cf (find_fraction(x)));
-            }
-
-            template<typename T>
-            constexpr T exp_check(const T x) noexcept
-            {
-                return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() : is_neginf(x) ? T{0} :
-                        std::numeric_limits<T>::min() > abs(x) ? T{1} : is_posinf(x) ? std::numeric_limits<T>::infinity() :
-                        abs(x) < T{2} ? exp_cf(x) : exp_split(x));
-            }
-
-        }
-        template<typename T>
-        constexpr return_t<T> exp (const T x) noexcept { return internal::exp_check (static_cast<return_t<T>>(x)); }
-
-        // pow
-        namespace internal
-        {
-            template<typename T>
-            constexpr T pow_dbl (const T base, const T exp_term) noexcept { return exp (exp_term * log(base)); }
-
-            template<typename T1, typename T2, typename TC = common_t<T1, T2>,
-                     typename std::enable_if<!std::is_integral<T2>::value>::type* = nullptr>
-            constexpr TC pow_check (const T1 base, const T2 exp_term) noexcept
-            {
-                return (base < T1{0} ? std::numeric_limits<TC>::quiet_NaN() : pow_dbl (static_cast<TC>(base), static_cast<TC>(exp_term)));
-            }
-
-            template<typename T1, typename T2, typename TC = common_t<T1, T2>,
-                     typename std::enable_if<std::is_integral<T2>::value>::type* = nullptr>
-            constexpr TC pow_check (const T1 base, const T2 exp_term) noexcept { return pow_integral (base, exp_term); }
-
-        }
-        template<typename T1, typename T2>
-        constexpr common_t<T1, T2> pow (const T1 base, const T2 exp_term) noexcept { return internal::pow_check (base, exp_term); }
 
         namespace internal // is_nan
         {
@@ -259,7 +87,7 @@ namespace morph
             constexpr bool any_neginf (const T1 x, const T2 y, const T3 z) noexcept { return (is_neginf(x) || is_neginf(y) || is_neginf(z)); }
             template<typename T1, typename T2, typename T3>
             constexpr bool all_neginf (const T1 x, const T2 y, const T3 z) noexcept { return (is_neginf(x) && is_neginf(y) && is_neginf(z)); }
-            //
+
             template<typename T>
             constexpr bool is_posinf (const T x) noexcept { return x == std::numeric_limits<T>::infinity(); }
             template<typename T1, typename T2>
@@ -270,7 +98,7 @@ namespace morph
             constexpr bool any_posinf (const T1 x, const T2 y, const T3 z) noexcept { return (is_posinf(x) || is_posinf(y) || is_posinf(z)); }
             template<typename T1, typename T2, typename T3>
             constexpr bool all_posinf (const T1 x, const T2 y, const T3 z) noexcept { return (is_posinf(x) && is_posinf(y) && is_posinf(z)); }
-            //
+
             template<typename T>
             constexpr bool is_inf (const T x) noexcept { return (is_neginf(x) || is_posinf(x)); }
             template<typename T1, typename T2>
@@ -319,8 +147,137 @@ namespace morph
         // neg_zero
         template<typename T> constexpr bool neg_zero (const T x) noexcept { return ((x == T{0}) && (copysign(T{1}, x) == T{-1})); }
 
-        // ceil
-        namespace internal
+        namespace internal // mantissa
+        {
+            template<typename T>
+            constexpr T mantissa(const T x) noexcept { return (x < T{1} ? mantissa (x * T{10}) : x > T{10} ? mantissa (x / T{10}) : x ); }
+        }
+
+        namespace internal // find_exponent
+        {
+            template<typename T>
+            constexpr int64_t find_exponent (const T x, const int64_t exponent) noexcept
+            {
+                return (x < T{1e-03}  ? find_exponent(x * T{1e+04}, exponent - int64_t{4}) :
+                        x < T{1e-01}  ? find_exponent(x * T{1e+02}, exponent - int64_t{2}) :
+                        x < T{1} ? find_exponent(x * T{10}, exponent - int64_t{1}) :
+                        x > T{10} ? find_exponent(x / T{10}, exponent + int64_t{1}) :
+                        x > T{1e+02} ? find_exponent(x / T{1e+02}, exponent + int64_t{2}) :
+                        x > T{1e+04} ? find_exponent(x / T{1e+04}, exponent + int64_t{4}) : exponent);
+            }
+        }
+
+        namespace internal // log
+        {
+            template<typename T>
+            constexpr T log_cf_main (const T xx, const int depth_end) noexcept
+            {
+                int depth = log_max_iter_small - 1;
+                T res = T(2 * (depth + 1) - 1);
+                while (depth > depth_end - 1) {
+                    res = T(2 * depth - 1) - T(depth * depth) * xx / res;
+                    --depth;
+                }
+                return res;
+            }
+            template<typename T>
+            constexpr T log_cf_begin (const T x) noexcept { return (T{2} * x / log_cf_main (x * x, 1)); }
+            template<typename T>
+            constexpr T log_main (const T x) noexcept { return (log_cf_begin ((x - T{1}) / (x + T{1}))); }
+
+            constexpr long double log_mantissa_integer (const int x) noexcept
+            {
+                return (x == 2  ? 0.6931471805599453094172321214581765680755L :
+                        x == 3  ? 1.0986122886681096913952452369225257046475L :
+                        x == 4  ? 1.3862943611198906188344642429163531361510L :
+                        x == 5  ? 1.6094379124341003746007593332261876395256L :
+                        x == 6  ? 1.7917594692280550008124773583807022727230L :
+                        x == 7  ? 1.9459101490553133051053527434431797296371L :
+                        x == 8  ? 2.0794415416798359282516963643745297042265L :
+                        x == 9  ? 2.1972245773362193827904904738450514092950L :
+                        x == 10 ? 2.3025850929940456840179914546843642076011L : 0.0L );
+            }
+
+            template<typename T>
+            constexpr T log_mantissa (const T x) noexcept
+            {
+                return (log_main(x / T(static_cast<int>(x))) + T(log_mantissa_integer(static_cast<int>(x))));
+            }
+
+            template<typename T>
+            constexpr T log_breakup (const T x) noexcept
+            {
+                return (log_mantissa (mantissa(x)) + morph::mathconst<T>::ln_10 * T(find_exponent (x, 0)));
+            }
+
+            template<typename T>
+            constexpr T log_check (const T x) noexcept
+            {
+                return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() :
+                        x < T(0) ? std::numeric_limits<T>::quiet_NaN() :
+                        std::numeric_limits<T>::min() > x ? -std::numeric_limits<T>::infinity() :
+                        std::numeric_limits<T>::min() > abs(x - T{1}) ? T{0} :
+                        x == std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity() :
+                        (x < T{0.5} || x > T{1.5}) ? log_breakup(x) : log_main(x));
+            }
+
+            template<typename T>
+            constexpr return_t<T> log_integral_check (const T x) noexcept
+            {
+                return (std::is_integral<T>::value ? x == T(0) ? -std::numeric_limits<return_t<T>>::infinity() :
+                        x > T{1} ? log_check (static_cast<return_t<T>>(x)) :
+                        static_cast<return_t<T>>(0) : log_check (static_cast<return_t<T>>(x)));
+            }
+        }
+        template<typename T>
+        constexpr return_t<T> log (const T x) noexcept { return internal::log_integral_check (x); }
+
+        namespace internal // pow_integral
+        {
+            template<typename T1, typename T2>
+            constexpr T1 pow_integral_compute (const T1 base, const T2 exp_term) noexcept;
+            template<typename T1, typename T2>
+            constexpr T1 pow_integral_compute_recur (const T1 base, const T1 val, const T2 exp_term) noexcept
+            {
+                return (exp_term > T2{1} ? (is_odd (exp_term) ?
+                                            pow_integral_compute_recur (base * base, val * base, exp_term / 2) :
+                                            pow_integral_compute_recur (base * base, val, exp_term / 2)) :
+                        (exp_term == T2{1} ? val * base : val));
+            }
+            template<typename T1, typename T2, typename std::enable_if<std::is_signed<T2>::value>::type* = nullptr>
+            constexpr T1 pow_integral_sgn_check (const T1 base, const T2 exp_term) noexcept
+            {
+                return (exp_term < T2{0} ? T1{1} / pow_integral_compute (base, -exp_term) : pow_integral_compute_recur (base, T1{1}, exp_term));
+            }
+            template<typename T1, typename T2, typename std::enable_if<!std::is_signed<T2>::value>::type* = nullptr>
+            constexpr T1 pow_integral_sgn_check (const T1 base, const T2 exp_term) noexcept { return (pow_integral_compute_recur (base, T1{1}, exp_term)); }
+
+            template<typename T1, typename T2>
+            constexpr T1 pow_integral_compute (const T1 base, const T2 exp_term) noexcept
+            {
+                return (exp_term == T2{3} ? base * base * base :
+                        exp_term == T2{2} ? base * base :
+                        exp_term == T2{1} ? base :
+                        exp_term == T2{0} ? T1{1} :
+                        exp_term == std::numeric_limits<T2>::min() ? T1{0} :
+                        exp_term == std::numeric_limits<T2>::max() ? std::numeric_limits<T1>::infinity() :
+                        pow_integral_sgn_check (base, exp_term));
+            }
+
+            template<typename T1, typename T2, typename std::enable_if<std::is_integral<T2>::value>::type* = nullptr>
+            constexpr T1 pow_integral_type_check (const T1 base, const T2 exp_term) noexcept { return pow_integral_compute (base,exp_term); }
+
+            template<typename T1, typename T2, typename std::enable_if<!std::is_integral<T2>::value>::type* = nullptr>
+            constexpr T1 pow_integral_type_check (const T1 base, const T2 exp_term) noexcept
+            {
+                return pow_integral_compute (base, static_cast<int64_t>(exp_term));
+            }
+
+            template<typename T1, typename T2>
+            constexpr T1 pow_integral (const T1 base, const T2 exp_term) noexcept { return internal::pow_integral_type_check (base, exp_term); }
+        }
+
+        namespace internal // ceil
         {
             template<typename T>
             constexpr int ceil_resid (const T x, const T x_whole) noexcept { return ((x > T{0}) && (x > x_whole)); }
@@ -350,8 +307,7 @@ namespace morph
         template<typename T>
         constexpr return_t<T> ceil (const T x) noexcept { return internal::ceil_check (static_cast<return_t<T>>(x)); }
 
-        // floor
-        namespace internal
+        namespace internal // floor
         {
             template<typename T>
             constexpr int floor_resid (const T x, const T x_whole) noexcept { return ((x < T{0}) && (x < x_whole)); }
@@ -384,19 +340,87 @@ namespace morph
         template<typename T>
         constexpr return_t<T> floor (const T x) noexcept { return internal::floor_check (static_cast<return_t<T>>(x)); }
 
-        // atan
-        namespace internal
+        namespace internal // find_whole, find_fraction
         {
-            // Series
+            template<typename T>
+            constexpr int64_t find_whole (const T x) noexcept
+            {
+                return (abs(x - internal::floor_check(x)) >= T{0.5} ? static_cast<int64_t>(internal::floor_check(x) + sgn(x)) :
+                        static_cast<int64_t>(internal::floor_check(x)));
+            }
+
+            template<typename T>
+            constexpr T find_fraction (const T x) noexcept
+            {
+                return (abs(x - internal::floor_check(x)) >= T{0.5} ? x - internal::floor_check(x) - sgn(x) :
+                        x - internal::floor_check(x));
+            }
+        }
+
+        namespace internal // exp
+        {
+            template<typename T>
+            constexpr T exp_cf_recur (const T x, const int depth_end) noexcept
+            {
+                int depth = exp_max_iter_small - 1;
+                T res = T{1};
+                while (depth > depth_end - 1) {
+                    res = T{1} + x / T(depth - 1) - x / depth / res;
+                    --depth;
+                }
+                return res;
+            }
+
+            template<typename T>
+            constexpr T exp_cf (const T x) noexcept { return (T{1} / (T{1} - x / exp_cf_recur(x, 2))); }
+
+            template<typename T>
+            constexpr T exp_split(const T x) noexcept
+            {
+                return (static_cast<T>(pow_integral (morph::mathconst<T>::e, find_whole(x))) * exp_cf (find_fraction(x)));
+            }
+
+            template<typename T>
+            constexpr T exp_check(const T x) noexcept
+            {
+                return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() : is_neginf(x) ? T{0} :
+                        std::numeric_limits<T>::min() > abs(x) ? T{1} : is_posinf(x) ? std::numeric_limits<T>::infinity() :
+                        abs(x) < T{2} ? exp_cf(x) : exp_split(x));
+            }
+
+        }
+        template<typename T>
+        constexpr return_t<T> exp (const T x) noexcept { return internal::exp_check (static_cast<return_t<T>>(x)); }
+
+        namespace internal // pow
+        {
+            template<typename T>
+            constexpr T pow_dbl (const T base, const T exp_term) noexcept { return exp (exp_term * log(base)); }
+
+            template<typename T1, typename T2, typename TC = common_t<T1, T2>,
+                     typename std::enable_if<!std::is_integral<T2>::value>::type* = nullptr>
+            constexpr TC pow_check (const T1 base, const T2 exp_term) noexcept
+            {
+                return (base < T1{0} ? std::numeric_limits<TC>::quiet_NaN() : pow_dbl (static_cast<TC>(base), static_cast<TC>(exp_term)));
+            }
+
+            template<typename T1, typename T2, typename TC = common_t<T1, T2>,
+                     typename std::enable_if<std::is_integral<T2>::value>::type* = nullptr>
+            constexpr TC pow_check (const T1 base, const T2 exp_term) noexcept { return pow_integral (base, exp_term); }
+
+        }
+        template<typename T1, typename T2>
+        constexpr common_t<T1, T2> pow (const T1 base, const T2 exp_term) noexcept { return internal::pow_check (base, exp_term); }
+
+        namespace internal // atan
+        {
             template<typename T>
             constexpr T atan_series_order_calc (const T xx, const T x_pow, const uint32_t order) noexcept
-            { return (T(1)/( T((order-1)*4 - 1) * x_pow ) - T(1)/( T((order-1)*4 + 1) * x_pow * xx)); }
-
+            { return (T{1}/( T((order-1)*4 - 1) * x_pow ) - T{1}/( T((order-1)*4 + 1) * x_pow * xx)); }
             template<typename T>
             constexpr T atan_series_order (const T x, const T x_pow, const uint32_t order_begin, const uint32_t max_order) noexcept
             {
-                // run in reverse order to sum smallest numbers first
-                if (max_order == 1) { return morph::mathconst<T>::pi_over_2 - T{1} / x_pow; } // use x_pow to avoid a warning
+                if (max_order == 1) { return morph::mathconst<T>::pi_over_2 - T{1} / x_pow; }
 
                 T xx = x * x;
                 T res = atan_series_order_calc (xx, pow (x, 4 * max_order - 5), max_order);
@@ -408,7 +432,6 @@ namespace morph
                 res += morph::mathconst<T>::pi_over_2 - T{1} / x;
                 return res;
             }
-
             template<typename T>
             constexpr T atan_series_main (const T x) noexcept
             {
@@ -422,8 +445,6 @@ namespace morph
                         x < T{1000} ? atan_series_order (x, x, 1U, 3U)  :  // O(1/x^11)
                         atan_series_order (x, x, 1U, 2U));  // O(1/x^7)
             }
-
-            // CF
             template<typename T>
             constexpr T atan_cf_recur (const T xx, const uint32_t depth_begin, const uint32_t max_depth) noexcept
             {
@@ -435,7 +456,6 @@ namespace morph
                 }
                 return res;
             }
-
             template<typename T>
             constexpr T atan_cf_main (const T x) noexcept
             {
@@ -443,12 +463,8 @@ namespace morph
                         x < T{1.5} ? x/atan_cf_recur (x*x, 1U, 35U) : x < T{2}   ? x/atan_cf_recur (x*x, 1U, 45U) :
                         x / atan_cf_recur (x*x, 1U, 52U));
             }
-
-            // choose between series expansion and continued fraction
             template<typename T>
             constexpr T atan_begin (const T x) noexcept { return (x > T(2.5) ? atan_series_main(x) : atan_cf_main(x)); }
-
-            // check input
             template<typename T>
             constexpr T atan_check (const T x) noexcept
             {
@@ -459,8 +475,7 @@ namespace morph
         template<typename T>
         constexpr return_t<T> atan (const T x) noexcept { return internal::atan_check (static_cast<return_t<T>>(x)); }
 
-        // atan2
-        namespace internal
+        namespace internal // atan2
         {
             template<typename T>
             constexpr T atan2_compute (const T y, const T x) noexcept
@@ -503,14 +518,13 @@ namespace morph
                         x < T{0} ?  std::numeric_limits<T>::quiet_NaN() :
                         is_posinf(x) ? x :
                         std::numeric_limits<T>::min() > abs(x) ? T{0} :
-                        std::numeric_limits<T>::min() > abs(T(1) - x) ? x : sqrt_simplify (x, T{1}));
+                        std::numeric_limits<T>::min() > abs(T{1} - x) ? x : sqrt_simplify (x, T{1}));
             }
         }
         template<typename T>
         constexpr return_t<T> sqrt (const T x) noexcept { return internal::sqrt_check (static_cast<return_t<T>>(x)); }
 
-        // round
-        namespace internal
+        namespace internal // round
         {
             template<typename T>
             constexpr T round_int (const T x) noexcept
@@ -535,8 +549,7 @@ namespace morph
         template<typename T>
         constexpr return_t<T> round (const T x) noexcept { return internal::round_check (static_cast<return_t<T>>(x)); }
 
-        // cos
-        namespace internal
+        namespace internal // cos
         {
             template<typename T>
             constexpr T cos_compute (const T x) noexcept { return (T{1} - x * x) / (T{1} + x * x); }
@@ -554,8 +567,7 @@ namespace morph
         template<typename T>
         constexpr return_t<T> cos (const T x) noexcept { return internal::cos_check (static_cast<return_t<T>>(x)); }
 
-        // sin
-        namespace internal
+        namespace internal // sin
         {
             template<typename T>
             constexpr T sin_compute (const T x) noexcept { return T{2} * x / (T{1} + x * x); }
