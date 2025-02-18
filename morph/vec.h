@@ -831,11 +831,11 @@ namespace morph {
         constexpr vec<S, N> ceil() const
         {
             vec<S, N> rtn{};
-            auto _ceil = [](S elmnt) -> S { return (morph::math::ceil (elmnt)); };
+            auto _ceil = [](S elmnt) -> S { return (std::ceil (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
             return rtn;
         }
-        constexpr void ceil_inplace() { for (auto& i : *this) { i = morph::math::ceil(i); } }
+        constexpr void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
 
         /*!
          * Compute the element-wise square root of the vector
@@ -920,12 +920,12 @@ namespace morph {
         constexpr vec<S, N> abs() const
         {
             vec<S, N> rtn{};
-            auto abs_element = [](S elmnt) -> S { return static_cast<S>(morph::math::abs(elmnt)); };
+            auto abs_element = [](S elmnt) -> S { return static_cast<S>(std::abs(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
             return rtn;
         }
         //! Replace each element with its own absolute value
-        constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(morph::math::abs(i)); } }
+        constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
 
         //! Less than a scalar. Return true if every element is less than the scalar
         constexpr bool operator<(const S rhs) const

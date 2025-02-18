@@ -34,6 +34,7 @@
 #include <limits>
 #include <type_traits>
 #include <morph/mathconst.h>
+#include <cmath>
 
 namespace morph
 {
@@ -52,8 +53,8 @@ namespace morph
         static constexpr int exp_max_iter_small = 25;
         static constexpr int sqrt_max_iter = 100;
 
-        template<class T, std::enable_if_t<std::is_arithmetic_v<T>>...>
-        constexpr auto abs (const T& x) noexcept { return x < T{0} ? -x : x; }
+        //template<class T, std::enable_if_t<std::is_arithmetic_v<T>>...>
+        //constexpr auto abs (const T& x) noexcept { return x < T{0} ? -x : x; }
 
         namespace internal // is_odd/even
         {
@@ -216,7 +217,7 @@ namespace morph
                 return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() :
                         x < T(0) ? std::numeric_limits<T>::quiet_NaN() :
                         std::numeric_limits<T>::min() > x ? -std::numeric_limits<T>::infinity() :
-                        std::numeric_limits<T>::min() > abs(x - T{1}) ? T{0} :
+                        std::numeric_limits<T>::min() > std::abs(x - T{1}) ? T{0} :
                         x == std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity() :
                         (x < T{0.5} || x > T{1.5}) ? log_breakup(x) : log_main(x));
             }
@@ -288,20 +289,20 @@ namespace morph
             template<>
             constexpr float ceil_check_internal<float> (const float x) noexcept
             {
-                return (abs(x) >= 8388608.f ? x : ceil_int(x, float(static_cast<int>(x))));
+                return (std::abs(x) >= 8388608.f ? x : ceil_int(x, float(static_cast<int>(x))));
             }
             template<>
             constexpr double ceil_check_internal<double> (const double x) noexcept
-            { return (abs(x) >= 4503599627370496. ? x : ceil_int(x, double(static_cast<int64_t>(x)))); }
+            { return (std::abs(x) >= 4503599627370496. ? x : ceil_int(x, double(static_cast<int64_t>(x)))); }
             template<>
             constexpr long double ceil_check_internal<long double> (const long double x) noexcept
-            { return (abs(x) >= 9223372036854775808.l ?  x : ceil_int(x, ((long double)static_cast<uint64_t>(abs(x))) * sgn(x))); }
+            { return (std::abs(x) >= 9223372036854775808.l ?  x : ceil_int(x, ((long double)static_cast<uint64_t>(std::abs(x))) * sgn(x))); }
             template<typename T>
             constexpr T ceil_check (const T x) noexcept
             {
                 return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() :
                         !is_finite(x) ? x :
-                        std::numeric_limits<T>::min() > abs(x) ? x : ceil_check_internal(x));
+                        std::numeric_limits<T>::min() > std::abs(x) ? x : ceil_check_internal(x));
             }
         }
         template<typename T>
@@ -318,23 +319,23 @@ namespace morph
             template<>
             constexpr float floor_check_internal<float> (const float x) noexcept
             {
-                return (abs(x) >= 8388608.f ? x : floor_int (x, float(static_cast<int>(x))));
+                return (std::abs(x) >= 8388608.f ? x : floor_int (x, float(static_cast<int>(x))));
             }
             template<>
             constexpr double floor_check_internal<double> (const double x) noexcept
             {
-                return (abs(x) >= 4503599627370496. ? x : floor_int (x, double(static_cast<int64_t>(x))));
+                return (std::abs(x) >= 4503599627370496. ? x : floor_int (x, double(static_cast<int64_t>(x))));
             }
             template<>
             constexpr long double floor_check_internal<long double> (const long double x) noexcept
             {
-                return (abs(x) >= 9223372036854775808.l ? x : floor_int (x, ((long double)static_cast<uint64_t>(abs(x))) * sgn(x)));
+                return (std::abs(x) >= 9223372036854775808.l ? x : floor_int (x, ((long double)static_cast<uint64_t>(std::abs(x))) * sgn(x)));
             }
             template<typename T>
             constexpr T floor_check (const T x) noexcept
             {
                 return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() : !is_finite(x) ? x :
-                        std::numeric_limits<T>::min() > abs(x) ? x : floor_check_internal(x));
+                        std::numeric_limits<T>::min() > std::abs(x) ? x : floor_check_internal(x));
             }
         }
         template<typename T>
@@ -345,14 +346,14 @@ namespace morph
             template<typename T>
             constexpr int64_t find_whole (const T x) noexcept
             {
-                return (abs(x - internal::floor_check(x)) >= T{0.5} ? static_cast<int64_t>(internal::floor_check(x) + sgn(x)) :
+                return (std::abs(x - internal::floor_check(x)) >= T{0.5} ? static_cast<int64_t>(internal::floor_check(x) + sgn(x)) :
                         static_cast<int64_t>(internal::floor_check(x)));
             }
 
             template<typename T>
             constexpr T find_fraction (const T x) noexcept
             {
-                return (abs(x - internal::floor_check(x)) >= T{0.5} ? x - internal::floor_check(x) - sgn(x) :
+                return (std::abs(x - internal::floor_check(x)) >= T{0.5} ? x - internal::floor_check(x) - sgn(x) :
                         x - internal::floor_check(x));
             }
         }
@@ -384,8 +385,8 @@ namespace morph
             constexpr T exp_check(const T x) noexcept
             {
                 return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() : is_neginf(x) ? T{0} :
-                        std::numeric_limits<T>::min() > abs(x) ? T{1} : is_posinf(x) ? std::numeric_limits<T>::infinity() :
-                        abs(x) < T{2} ? exp_cf(x) : exp_split(x));
+                        std::numeric_limits<T>::min() > std::abs(x) ? T{1} : is_posinf(x) ? std::numeric_limits<T>::infinity() :
+                        std::abs(x) < T{2} ? exp_cf(x) : exp_split(x));
             }
 
         }
@@ -469,7 +470,7 @@ namespace morph
             constexpr T atan_check (const T x) noexcept
             {
                 return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() :
-                        std::numeric_limits<T>::min() > abs(x) ? T{0} : x < T(0) ? -atan_begin(-x) : atan_begin(x));
+                        std::numeric_limits<T>::min() > std::abs(x) ? T{0} : x < T(0) ? -atan_begin(-x) : atan_begin(x));
             }
         }
         template<typename T>
@@ -481,7 +482,7 @@ namespace morph
             constexpr T atan2_compute (const T y, const T x) noexcept
             {
                 return (any_nan(y,x) ? std::numeric_limits<T>::quiet_NaN() :
-                        std::numeric_limits<T>::min() > abs(x) ? std::numeric_limits<T>::min() > abs(y) ? neg_zero(y) ? neg_zero(x) ? -morph::mathconst<T>::pi :
+                        std::numeric_limits<T>::min() > std::abs(x) ? std::numeric_limits<T>::min() > std::abs(y) ? neg_zero(y) ? neg_zero(x) ? -morph::mathconst<T>::pi :
                         - T{0} : neg_zero(x) ? morph::mathconst<T>::pi : T{0} :
                         y > T{0} ? morph::mathconst<T>::pi_over_2 : -morph::mathconst<T>::pi_over_2 :
                         x < T{0} ? y < T{0} ? atan(y/x) - morph::mathconst<T>::pi :
@@ -499,7 +500,7 @@ namespace morph
             template<typename T>
             constexpr T sqrt_recur (const T x, const T xn, const int count) noexcept
             {
-                return (abs(xn - x/xn) / (T{1} + xn) < std::numeric_limits<T>::min() ? xn :
+                return (std::abs(xn - x/xn) / (T{1} + xn) < std::numeric_limits<T>::min() ? xn :
                         count < sqrt_max_iter ? sqrt_recur (x, T{0.5}*(xn + x/xn), count+1) : xn);
             }
             template<typename T>
@@ -517,33 +518,40 @@ namespace morph
                 return (is_nan (x) ? std::numeric_limits<T>::quiet_NaN() :
                         x < T{0} ?  std::numeric_limits<T>::quiet_NaN() :
                         is_posinf(x) ? x :
-                        std::numeric_limits<T>::min() > abs(x) ? T{0} :
-                        std::numeric_limits<T>::min() > abs(T{1} - x) ? x : sqrt_simplify (x, T{1}));
+                        std::numeric_limits<T>::min() > std::abs(x) ? T{0} :
+                        std::numeric_limits<T>::min() > std::abs(T{1} - x) ? x : sqrt_simplify (x, T{1}));
             }
         }
         template<typename T>
-        constexpr return_t<T> sqrt (const T x) noexcept { return internal::sqrt_check (static_cast<return_t<T>>(x)); }
+        constexpr return_t<T> sqrt (const T x) noexcept
+        {
+            if consteval { //  This is now possible with C++23
+                return internal::sqrt_check (static_cast<return_t<T>>(x));
+            } else {
+                return std::sqrt (x);
+            }
+        }
 
         namespace internal // round
         {
             template<typename T>
             constexpr T round_int (const T x) noexcept
             {
-                return (abs(x - internal::floor_check(x)) >= T{0.5} ? internal::floor_check(x) + sgn(x) : internal::floor_check(x));
+                return (std::abs(x - internal::floor_check(x)) >= T{0.5} ? internal::floor_check(x) + sgn(x) : internal::floor_check(x));
             }
             template<typename T>
             constexpr T round_check_internal (const T x) noexcept { return x; }
             template<>
-            constexpr float round_check_internal<float> (const float x) noexcept { return (abs(x) >= 8388608.f ? x : round_int (x)); }
+            constexpr float round_check_internal<float> (const float x) noexcept { return (std::abs(x) >= 8388608.f ? x : round_int (x)); }
             template<>
-            constexpr double round_check_internal<double> (const double x) noexcept { return (abs(x) >= 4503599627370496. ? x : round_int (x)); }
+            constexpr double round_check_internal<double> (const double x) noexcept { return (std::abs(x) >= 4503599627370496. ? x : round_int (x)); }
             template<>
-            constexpr long double round_check_internal<long double> (const long double x) noexcept { return (abs(x) >= 9223372036854775808.l ? x : round_int (x)); }
+            constexpr long double round_check_internal<long double> (const long double x) noexcept { return (std::abs(x) >= 9223372036854775808.l ? x : round_int (x)); }
             template<typename T>
             constexpr T round_check (const T x) noexcept
             {
                 return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() : !is_finite(x) ? x :
-                        std::numeric_limits<T>::min() > abs(x) ? x : sgn(x) * round_check_internal (abs(x)));
+                        std::numeric_limits<T>::min() > std::abs(x) ? x : sgn(x) * round_check_internal (std::abs(x)));
             }
         }
         template<typename T>
@@ -557,11 +565,11 @@ namespace morph
             constexpr T cos_check (const T x) noexcept
             {
                 return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() :
-                        std::numeric_limits<T>::min() > abs(x) ? T{1} :
-                        std::numeric_limits<T>::min() > abs(x - morph::mathconst<T>::pi_over_2) ? T{0} : // special cases: pi/2 and pi
-                        std::numeric_limits<T>::min() > abs(x + morph::mathconst<T>::pi_over_2) ? T{0} :
-                        std::numeric_limits<T>::min() > abs(x - morph::mathconst<T>::pi) ? T{-1} :
-                        std::numeric_limits<T>::min() > abs(x + morph::mathconst<T>::pi) ? T{-1} : cos_compute (tan (x/T{2})));
+                        std::numeric_limits<T>::min() > std::abs(x) ? T{1} :
+                        std::numeric_limits<T>::min() > std::abs(x - morph::mathconst<T>::pi_over_2) ? T{0} : // special cases: pi/2 and pi
+                        std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi_over_2) ? T{0} :
+                        std::numeric_limits<T>::min() > std::abs(x - morph::mathconst<T>::pi) ? T{-1} :
+                        std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi) ? T{-1} : cos_compute (tan (x/T{2})));
             }
         }
         template<typename T>
@@ -575,11 +583,11 @@ namespace morph
             constexpr T sin_check (const T x) noexcept
             {
                 return (is_nan(x) ? std::numeric_limits<T>::quiet_NaN() :
-                        std::numeric_limits<T>::min() > abs(x) ? T{0} :
-                        std::numeric_limits<T>::min() > abs(x - morph::mathconst<T>::pi_over_2) ? T{1} :
-                        std::numeric_limits<T>::min() > abs(x + morph::mathconst<T>::pi_over_2) ? T{-1} :
-                        std::numeric_limits<T>::min() > abs(x - morph::mathconst<T>::pi) ? T{0} :
-                        std::numeric_limits<T>::min() > abs(x + morph::mathconst<T>::pi) ? T{-0} : sin_compute (tan (x / T{2})));
+                        std::numeric_limits<T>::min() > std::abs(x) ? T{0} :
+                        std::numeric_limits<T>::min() > std::abs(x - morph::mathconst<T>::pi_over_2) ? T{1} :
+                        std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi_over_2) ? T{-1} :
+                        std::numeric_limits<T>::min() > std::abs(x - morph::mathconst<T>::pi) ? T{0} :
+                        std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi) ? T{-0} : sin_compute (tan (x / T{2})));
             }
         }
         template<typename T>

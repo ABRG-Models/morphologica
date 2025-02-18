@@ -247,25 +247,25 @@ add_test(testRotationsQuat_double testRotationsQuat_double)
 
 # Note that we only compile the constexpr tests if compiler is not Clang. Clang doesn't like std::abs,
 # std::sin (etc) within a constexpr function.
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+#if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   add_executable(testQuat_constexpr testQuat_constexpr.cpp)
-  set_property(TARGET testQuat_constexpr PROPERTY CXX_STANDARD 20)
+#  set_property(TARGET testQuat_constexpr PROPERTY CXX_STANDARD 20)
   add_test(testQuat_constexpr testQuat_constexpr)
-endif()
+#endif()
 
 # test morph::vec.
 add_executable(testvec testvec.cpp)
 add_test(testvec testvec)
 
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+#if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # constexpr functionality in morph::vec
   # Need C++20 for the way I use constexpr here so that it is legal to
   # have "a definition of a variable for which no initialization is
   # performed".
   add_executable(testvec_constexpr testvec_constexpr.cpp)
-  set_property(TARGET testvec_constexpr PROPERTY CXX_STANDARD 20)
+#  set_property(TARGET testvec_constexpr PROPERTY CXX_STANDARD 20)
   add_test(testvec_constexpr testvec_constexpr)
-endif()
+#endif()
 
 add_executable(testvec_casting testvec_casting.cpp)
 add_test(testvec_casting testvec_casting)
@@ -352,12 +352,12 @@ add_test(testScale_complex testScale_complex)
 add_executable(testTransformMatrix testTransformMatrix.cpp)
 add_test(testTransformMatrix testTransformMatrix)
 
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+#if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # constexpr TransformMatrix
   add_executable(testTransMat_constexpr testTransMat_constexpr.cpp)
-  set_property(TARGET testTransMat_constexpr PROPERTY CXX_STANDARD 20)
+#  set_property(TARGET testTransMat_constexpr PROPERTY CXX_STANDARD 20)
   add_test(testTransMat_constexpr testTransMat_constexpr)
-endif()
+#endif()
 
 # Test morph::Matrix33 (3x3 matrix)
 add_executable(testMatrix33 testMatrix33.cpp)
@@ -514,22 +514,22 @@ add_executable(testboxfilter testboxfilter.cpp)
 add_test(testboxfilter testboxfilter)
 
 # morph::Gridct requires C++-20
-if(CXX_20_AVAILABLE)
+#if(CXX_20_AVAILABLE)
   add_executable(testGridct testGridct.cpp)
-  set_property(TARGET testGridct PROPERTY CXX_STANDARD 20)
+#  set_property(TARGET testGridct PROPERTY CXX_STANDARD 20)
   add_test(testGridct testGridct)
 
   add_executable(profileGrid profileGrid.cpp)
-  set_property(TARGET profileGrid PROPERTY CXX_STANDARD 20)
+#  set_property(TARGET profileGrid PROPERTY CXX_STANDARD 20)
 
   add_executable(testGridctRowCol testGridctRowCol.cpp)
-  set_property(TARGET testGridctRowCol PROPERTY CXX_STANDARD 20)
+#  set_property(TARGET testGridctRowCol PROPERTY CXX_STANDARD 20)
   add_test(testGridctRowCol testGridctRowCol)
 
   add_executable(testGridctNeighbours testGridctNeighbours.cpp)
-  set_property(TARGET testGridctNeighbours PROPERTY CXX_STANDARD 20)
+#  set_property(TARGET testGridctNeighbours PROPERTY CXX_STANDARD 20)
   add_test(testGridctNeighbours testGridctNeighbours)
-endif()
+#endif()
 
 add_executable(testGrid testGrid.cpp)
 add_test(testGrid testGrid)
