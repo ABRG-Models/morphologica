@@ -30,33 +30,20 @@ endif()
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
 #
-# The base C++ version in morphologica is current C++-17.
+# The base C++ version in morphologica is current C++-17 but I am considering C++23!
 #
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 
-#
-# C++-20 availability testing for optional examples
-#
-# Some morphologica examples use C++-20 features, and one or two use
-# the <format> library. Some library code uses C++-20 features. The
-# testing here will make use of C++-20 only if the build is using
-# gcc. Extension to testing for clang versions could be added to this.
-#
-
-# Load this module which is useful for checking for include files such
-# as <format>. Do this with:
-#  CHECK_INCLUDE_FILE_CXX(format, HAVE_STD_FORMAT)
-# then test on HAVE_STD_FORMAT to choose what/how to compile.
 include(CheckIncludeFileCXX) # CHECK_INCLUDE_FILE_CXX will be used in later scripts
 
-# C++-20 testing; GNU compiler support
-set(CXX_20_AVAILABLE 0)
-if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.0)
-    set(CXX_20_AVAILABLE 1) # Can do C++-20.
-    # FIXME: Also set(CMAKE_CXX_STANDARD 20) here? Doesn't *seem* to be necessary, but may be correct?
-  endif()
-endif()
+# C++-20 testing; GNU compiler support now assumed
+#set(CXX_20_AVAILABLE 1)
+#if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+#  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.0)
+#    set(CXX_20_AVAILABLE 1) # Can do C++-20.
+#    # FIXME: Also set(CMAKE_CXX_STANDARD 20) here? Doesn't *seem* to be necessary, but may be correct?
+#  endif()
+#endif()
 
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)

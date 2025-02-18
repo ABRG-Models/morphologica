@@ -101,7 +101,7 @@ namespace morph {
         {
             bool rtn = true;
             Flt metric = Flt{1} - (w*w + x*x + y*y + z*z);
-            if (morph::math::abs(metric) > morph::quaternion<Flt>::unitThresh) {
+            if (std::abs(metric) > morph::quaternion<Flt>::unitThresh) {
                 rtn = false;
             }
             return rtn;
@@ -119,19 +119,19 @@ namespace morph {
         //! Equality operator. True if all elements match
         constexpr bool operator==(const quaternion<Flt>& rhs) const
         {
-            return (morph::math::abs(this->w - rhs.w) < std::numeric_limits<Flt>::epsilon()
-                    && morph::math::abs(this->x - rhs.x) < std::numeric_limits<Flt>::epsilon()
-                    && morph::math::abs(this->y - rhs.y) < std::numeric_limits<Flt>::epsilon()
-                    && morph::math::abs(this->z - rhs.z) < std::numeric_limits<Flt>::epsilon());
+            return (std::abs(this->w - rhs.w) < std::numeric_limits<Flt>::epsilon()
+                    && std::abs(this->x - rhs.x) < std::numeric_limits<Flt>::epsilon()
+                    && std::abs(this->y - rhs.y) < std::numeric_limits<Flt>::epsilon()
+                    && std::abs(this->z - rhs.z) < std::numeric_limits<Flt>::epsilon());
         }
 
         //! Not equals
         constexpr bool operator!=(const quaternion<Flt>& rhs) const
         {
-            return (morph::math::abs(this->w - rhs.w) >= std::numeric_limits<Flt>::epsilon()
-                    || morph::math::abs(this->x - rhs.x) >= std::numeric_limits<Flt>::epsilon()
-                    || morph::math::abs(this->y - rhs.y) >= std::numeric_limits<Flt>::epsilon()
-                    || morph::math::abs(this->z - rhs.z) >= std::numeric_limits<Flt>::epsilon());
+            return (std::abs(this->w - rhs.w) >= std::numeric_limits<Flt>::epsilon()
+                    || std::abs(this->x - rhs.x) >= std::numeric_limits<Flt>::epsilon()
+                    || std::abs(this->y - rhs.y) >= std::numeric_limits<Flt>::epsilon()
+                    || std::abs(this->z - rhs.z) >= std::numeric_limits<Flt>::epsilon());
         }
 
         //! Multiply this quaternion by other as: this = this * q2, i.e. q1 is 'this->'
