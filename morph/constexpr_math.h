@@ -462,6 +462,57 @@ namespace morph
             }
         }
 
+        // tan
+        namespace internal
+        {
+            template<typename T>
+            constexpr T tan_series_exp_long (const T z) noexcept
+            {   // this is based on a fourth-order expansion of tan(z) using Bernoulli numbers
+                return (-1 / z + (z / 3 + (pow_integral (z, 3) / 45 + (2 * pow_integral(z, 5) / 945 + pow_integral(z, 7) / 4725))));
+            }
+            template<typename T>
+            constexpr T tan_series_exp (const T x) noexcept
+            {
+                return (std::numeric_limits<T>::min() > std::abs (x - morph::mathconst<T>::pi_over_2) ? T{1.633124e+16} :
+                        tan_series_exp_long (x - morph::mathconst<T>::pi_over_2));
+            }
+            template<typename T>
+            constexpr T tan_cf_recur (const T xx, const int depth, const int max_depth) noexcept
+            {
+                return (depth < max_depth ? T(2 * depth - 1) - xx / tan_cf_recur (xx, depth + 1, max_depth) : T(2 * depth - 1));
+            }
+            template<typename T>
+            constexpr T tan_cf_main (const T x) noexcept
+            {
+                return ((x > T{1.55} && x < T{1.60}) ?  tan_series_exp (x) : // deals with a singularity at tan(pi/2)
+                        x > T{1.4} ? x / tan_cf_recur (x * x, 1, 45) :
+                        x > T{1} ? x / tan_cf_recur (x * x, 1, 35) : x / tan_cf_recur (x * x, 1, 25));
+            }
+            template<typename T>
+            constexpr T tan_begin (const T x, const int count = 0) noexcept
+            {
+                // std::floor() replaces internal::floor_check() in C++23
+                return (x > morph::mathconst<T>::pi ? count > 1 ? std::numeric_limits<T>::quiet_NaN() :
+                        tan_begin (x - morph::mathconst<T>::pi * std::floor (x / morph::mathconst<T>::pi), count+1 ) :
+                        tan_cf_main(x));
+            }
+            template<typename T>
+            constexpr T tan_check(const T x) noexcept
+            {
+                return (std::isnan(x) ? std::numeric_limits<T>::quiet_NaN() :
+                        std::numeric_limits<T>::min() > std::abs(x) ? T{0} : x < T{0} ? -tan_begin (-x) : tan_begin (x));
+            }
+        }
+        template<typename T>
+        constexpr return_t<T> tan (const T x) noexcept
+        {
+            if consteval {
+                return internal::tan_check (static_cast<return_t<T>>(x));
+            } else {
+                return std::tan (static_cast<return_t<T>>(x));
+            }
+        }
+
         namespace internal // cos
         {
             template<typename T>
@@ -474,7 +525,7 @@ namespace morph
                         std::numeric_limits<T>::min() > std::abs(x - morph::mathconst<T>::pi_over_2) ? T{0} : // special cases: pi/2 and pi
                         std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi_over_2) ? T{0} :
                         std::numeric_limits<T>::min() > std::abs(x - morph::mathconst<T>::pi) ? T{-1} :
-                        std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi) ? T{-1} : cos_compute (tan (x/T{2})));
+                        std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi) ? T{-1} : cos_compute (math::tan (x/T{2})));
             }
         }
         template<typename T>
@@ -499,7 +550,7 @@ namespace morph
                         std::numeric_limits<T>::min() > std::abs(x - morph::mathconst<T>::pi_over_2) ? T{1} :
                         std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi_over_2) ? T{-1} :
                         std::numeric_limits<T>::min() > std::abs(x - morph::mathconst<T>::pi) ? T{0} :
-                        std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi) ? T{-0} : sin_compute (tan (x / T{2})));
+                        std::numeric_limits<T>::min() > std::abs(x + morph::mathconst<T>::pi) ? T{-0} : sin_compute (math::tan (x / T{2})));
             }
         }
         template<typename T>

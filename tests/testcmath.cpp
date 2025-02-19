@@ -23,4 +23,6 @@ int main()
     std::cout << "4 ^ 3 = " << pow43 << std::endl;
 
     if (pow43 != 64) { --rtn; }
+
+    return rtn;
 }

@@ -80,7 +80,7 @@ namespace morph {
             };
 
             // Set up the transform matrix for our rotation, made up of a rotation about the z axis...
-            morph::quaternion<F> rotn1(_uz, -std::atan2(F{1}, phi));
+            morph::quaternion<F> rotn1(_uz, -morph::math::atan2(F{1}, phi));
             // ...and a rotation about the x axis:
             morph::quaternion<F> rotn2(_ux, morph::mathconst<F>::pi_over_2);
 

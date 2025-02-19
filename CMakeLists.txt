@@ -70,6 +70,8 @@ else()
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
         # Make it possible to compile complex constexpr functions (gcc only)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=5000000000")
+      else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-steps=500000000")
       endif()
     endif()
   else() # Windows
