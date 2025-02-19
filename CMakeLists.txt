@@ -33,6 +33,8 @@ option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArr
 # The base C++ version in morphologica is current C++-17 but I am considering C++23!
 #
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CheckIncludeFileCXX) # CHECK_INCLUDE_FILE_CXX will be used in later scripts
 
