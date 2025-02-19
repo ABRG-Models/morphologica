@@ -90,7 +90,7 @@ int main()
         update_dur += (t2 - t1);
         k += 0.02f;
 
-        if (fcount % 500 == 0) {
+        if (fcount > 0 && fcount % 500 == 0) {
             // Update FPS text
             double data_tau = duration_cast<milliseconds>(data_dur).count();
             double update_tau = duration_cast<milliseconds>(update_dur).count();
