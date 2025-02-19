@@ -78,7 +78,7 @@ namespace morph {
         }
 
         //! Update the scalar data
-        void updateData (const std::vector<T>* _data)
+        virtual void updateData (const std::vector<T>* _data)
         {
             this->scalarData = _data;
             this->reinit();
