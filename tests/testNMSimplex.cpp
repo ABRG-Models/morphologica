@@ -5,6 +5,7 @@
 #include "morph/NM_Simplex.h"
 #include "morph/vvec.h"
 #include <iostream>
+#include <cmath>
 
 int main()
 {
@@ -42,7 +43,7 @@ int main()
     // Test our optimization end point
     morph::vvec<FLT> thebest = simp.best_vertex();
     std::cout << "FINISHED! Best approximation: (" << thebest << ") has value " << simp.best_value() << std::endl;
-    if (abs(thebest[0] - FLT{1}) < FLT{1e-3} && abs(thebest[1] - FLT{1}) < FLT{1e-3}) {
+    if (std::abs(thebest[0] - FLT{1}) < FLT{1e-3} && std::abs(thebest[1] - FLT{1}) < FLT{1e-3}) {
         std::cout << "Test success" << std::endl;
         return 0;
     }

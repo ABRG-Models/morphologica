@@ -60,7 +60,6 @@ int main()
     auto t2 = sc::now();
     sc::duration data_dur = sc::duration{0};
     sc::duration update_dur = sc::duration{0};
-    sc::duration rest_dur = sc::duration{0};
     sc::duration all_dur = sc::duration{0};
     unsigned int fcount = 0;
     double data_fps = 0;
