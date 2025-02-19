@@ -196,31 +196,36 @@ namespace morph {
         std::function<T(const morph::vvec<T>& point)> objective = {};
 
         /*!
+         * Perform one step of the process
+         */
+        void step()
+        {
+            if (this->state == NM_Simplex_State::NeedToComputeThenOrder) {
+                for (unsigned int i = 0; i <= this->n; ++i) {
+                    this->values[i] = this->objective (this->vertices[i]);
+                }
+                this->order();
+            } else if (this->state == NM_Simplex_State::NeedToOrder) {
+                this->order();
+            } else if (this->state == NM_Simplex_State::NeedToComputeReflection) {
+                T val = this->objective (this->xr);
+                this->apply_reflection (val);
+            } else if (this->state == NM_Simplex_State::NeedToComputeExpansion) {
+                T val = this->objective (this->xe);
+                this->apply_expansion (val);
+            } else if (this->state == NM_Simplex_State::NeedToComputeContraction) {
+                T val = this->objective (this->xc);
+                this->apply_contraction (val);
+            }
+        }
+
+        /*!
          * Run the optimization. If it returns false, you didn't set the objective function
          */
         bool run()
         {
             if (!this->objective) { return false; } // user did not set an objective function
-
-            while (this->state != NM_Simplex_State::ReadyToStop) {
-                if (this->state == NM_Simplex_State::NeedToComputeThenOrder) {
-                    for (unsigned int i = 0; i <= this->n; ++i) {
-                        this->values[i] = this->objective (this->vertices[i]);
-                    }
-                    this->order();
-                } else if (this->state == NM_Simplex_State::NeedToOrder) {
-                    this->order();
-                } else if (this->state == NM_Simplex_State::NeedToComputeReflection) {
-                    T val = this->objective (this->xr);
-                    this->apply_reflection (val);
-                } else if (this->state == NM_Simplex_State::NeedToComputeExpansion) {
-                    T val = this->objective (this->xe);
-                    this->apply_expansion (val);
-                } else if (this->state == NM_Simplex_State::NeedToComputeContraction) {
-                    T val = this->objective (this->xc);
-                    this->apply_contraction (val);
-                }
-            }
+            while (this->state != NM_Simplex_State::ReadyToStop) { this->step(); }
             return true;
         }
 
