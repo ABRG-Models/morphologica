@@ -67,7 +67,6 @@ int main()
     double update_fps = 0;
     double rest_fps = 0;
     double all_fps = 0; // or all
-    unsigned int dcount = 0; // data counts
     while (v.readyToFinish == false) {
         all_dur += sc::now() - t00;
         t00 = sc::now();
@@ -90,20 +89,23 @@ int main()
         update_dur += (t2 - t1);
         k += 0.02f;
 
-        if (fcount > 0 && fcount % 500 == 0) {
+        if (fcount == 500) {
             // Update FPS text
             double data_tau = duration_cast<milliseconds>(data_dur).count();
             double update_tau = duration_cast<milliseconds>(update_dur).count();
             double all_tau = duration_cast<milliseconds>(all_dur).count();
             double rest_tau = all_tau - data_tau - update_tau;
-            ++dcount;
-            data_fps = std::round((((double)fcount/data_tau))*1000.0);
-            update_fps = std::round((((double)fcount/update_tau))*1000.0);
-            all_fps = std::round((((double)fcount/all_tau))*1000.0);
-            rest_fps = std::round((((double)fcount/rest_tau))*1000.0);
+            data_fps = std::max (data_fps, std::round((((double)fcount/data_tau))*1000.0));
+            update_fps = std::max (update_fps, std::round((((double)fcount/update_tau))*1000.0));
+            all_fps = std::max (all_fps, std::round((((double)fcount/all_tau))*1000.0));
+            rest_fps = std::max (rest_fps, std::round((((double)fcount/rest_tau))*1000.0));
             std::stringstream ss;
             ss << "FPS: " << data_fps << " [dat] " << update_fps << " [upd] " << rest_fps << " [rest] " << all_fps << " [all]\n";
             fps_tm->setupText (ss.str());
+            data_dur = sc::duration{0};
+            update_dur = sc::duration{0};
+            all_dur = sc::duration{0};
+            fcount = 0;
         }
 
         v.render();
