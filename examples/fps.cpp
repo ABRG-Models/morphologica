@@ -18,32 +18,32 @@
 int main()
 {
     morph::Visual v(1600, 1000, "morph::Visual");
-    v.fov = 15;
-    v.zFar = 200;
+    v.fov = 15.0f;
+    v.zFar = 200.0f;
     v.lightingEffects();
     morph::VisualTextModel<>* fps_tm;
     v.addLabel ("0 FPS", {0.13f, -0.23f, 0.0f}, fps_tm); // With fps_tm can update the VisualTextModel with fps_tm->setupText("new text")
 
     // Create a HexGrid to show in the scene
-    morph::HexGrid hg(0.02, 15, 0);
-    hg.setEllipticalBoundary (4, 4);
+    morph::HexGrid hg(0.02f, 15.0f, 0.0f);
+    hg.setEllipticalBoundary (4.0f, 4.0f);
     std::cout << "Number of hexes in grid:" << hg.num() << std::endl;
     std::stringstream sss;
     sss << "Surface evaluated at " << hg.num() << " coordinates";
     v.addLabel (sss.str(), {0.0f, 0.0f, 0.0f});
 
     // Make some dummy data (a radially symmetric Bessel fn) to make an interesting surface
-    std::vector<float> data(hg.num(), 0.0);
-    std::vector<float> r(hg.num(), 0.0);
+    std::vector<float> data(hg.num(), 0.0f);
+    std::vector<float> r(hg.num(), 0.0f);
     float k = 1.0f;
-    for (unsigned int hi=0; hi<hg.num(); ++hi) {
+    for (unsigned int hi = 0; hi < hg.num(); ++hi) {
         // x/y: hg.d_x[hi] hg.d_y[hi]
-        r[hi] = std::sqrt (hg.d_x[hi]*hg.d_x[hi] + hg.d_y[hi]*hg.d_y[hi]);
-        data[hi] = std::sin(k*r[hi])/k*r[hi];
+        r[hi] = std::sqrt (hg.d_x[hi] * hg.d_x[hi] + hg.d_y[hi] * hg.d_y[hi]);
+        data[hi] = std::sin (k * r[hi]) / k * r[hi];
     }
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
-    morph::vec<float, 3> offset = { 0.0, -0.05, 0.0 };
+    morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
     auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
     v.bindmodel (hgv);
     hgv->setScalarData (&data);
@@ -58,14 +58,15 @@ int main()
     auto t0 = sc::now();
     auto t1 = sc::now();
     auto t2 = sc::now();
-    sc::duration data_dur = sc::duration{0};
-    sc::duration update_dur = sc::duration{0};
-    sc::duration all_dur = sc::duration{0};
-    unsigned int fcount = 0;
-    double data_fps = 0;
-    double update_fps = 0;
-    double rest_fps = 0;
-    double all_fps = 0; // or all
+    auto data_dur = sc::duration{0};
+    auto update_dur = sc::duration{0};
+    auto all_dur = sc::duration{0};
+    double data_fps = 0.0;
+    double update_fps = 0.0;
+    double rest_fps = 0.0;
+    double all_fps = 0.0;
+    unsigned int fcount = 0u;
+
     while (v.readyToFinish == false) {
         all_dur += sc::now() - t00;
         t00 = sc::now();
@@ -75,8 +76,8 @@ int main()
 
         t0 = sc::now();
 #pragma omp parallel for shared(r,k,data)
-        for (unsigned int hi=0; hi<hg.num(); ++hi) {
-            data[hi] = std::sin(k*r[hi])/k*r[hi];
+        for (unsigned int hi = 0; hi < hg.num(); ++hi) {
+            data[hi] = std::sin (k * r[hi]) / k * r[hi];
         }
         t1 = sc::now();
         data_dur += (t1 - t0);
