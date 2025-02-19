@@ -2,13 +2,19 @@
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
 name: Ubuntu latest
 on:
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - 'docs/**'
-      - 'README**'
-  pull_request:
-    branches: [ "main" ]
+#  push:
+#    branches: [ "main" ]
+#    paths-ignore:
+#      - 'docs/**'
+#      - 'README**'
+#  pull_request:
+#    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Test scenario tags'
+        required: false
+        type: boolean
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
