@@ -17,14 +17,12 @@
 
 int main()
 {
-    // Contructor args are width, height, title, coordinate arrows offset, cooridnate
-    // arrows lengths, coord arrow thickness, ?
-    morph::Visual v(1600, 1000, "morph::Visual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    morph::Visual v(1600, 1000, "morph::Visual");
     v.fov = 15;
     v.zFar = 200;
     v.lightingEffects();
     morph::VisualTextModel<>* fps_tm;
-    v.addLabel ("0 FPS", {0.33f, -0.23f, 0.0f}, fps_tm); // With fps_tm can update the VisualTextModel with fps_tm->setupText("new text")
+    v.addLabel ("0 FPS", {0.13f, -0.23f, 0.0f}, fps_tm); // With fps_tm can update the VisualTextModel with fps_tm->setupText("new text")
 
     // Create a HexGrid to show in the scene
     morph::HexGrid hg(0.02, 15, 0);
@@ -54,33 +52,58 @@ int main()
     auto hgvp = v.addVisualModel (hgv);
 
     using namespace std::chrono;
-    using std::chrono::steady_clock;
+    using sc = std::chrono::steady_clock;
 
-    auto tstart = steady_clock::now();
+    auto t00 = sc::now();
+    auto t0 = sc::now();
+    auto t1 = sc::now();
+    auto t2 = sc::now();
+    sc::duration data_dur = sc::duration{0};
+    sc::duration update_dur = sc::duration{0};
+    sc::duration rest_dur = sc::duration{0};
+    sc::duration all_dur = sc::duration{0};
     unsigned int fcount = 0;
+    double data_fps = 0;
+    double update_fps = 0;
+    double rest_fps = 0;
+    double all_fps = 0; // or all
+    unsigned int dcount = 0; // data counts
     while (v.readyToFinish == false) {
+        all_dur += sc::now() - t00;
+        t00 = sc::now();
+
         v.waitevents (0.00001);
         if (k > 8.0f) { k = 1.0f; }
 
+        t0 = sc::now();
 #pragma omp parallel for shared(r,k,data)
         for (unsigned int hi=0; hi<hg.num(); ++hi) {
             data[hi] = std::sin(k*r[hi])/k*r[hi];
         }
+        t1 = sc::now();
+        data_dur += (t1 - t0);
 
         if (v.validVisualModel (hgvp) != nullptr) { // Test hgvp is still valid
             hgvp->updateData (&data);
         }
+        t2 = sc::now();
+        update_dur += (t2 - t1);
         k += 0.02f;
 
-        auto tduration = steady_clock::now() - tstart;
-        if (duration_cast<milliseconds>(tduration).count() > 500) {
+        if (fcount % 500 == 0) {
             // Update FPS text
-            double tau = duration_cast<milliseconds>(tduration).count();
+            double data_tau = duration_cast<milliseconds>(data_dur).count();
+            double update_tau = duration_cast<milliseconds>(update_dur).count();
+            double all_tau = duration_cast<milliseconds>(all_dur).count();
+            double rest_tau = all_tau - data_tau - update_tau;
+            ++dcount;
+            data_fps = std::round((((double)fcount/data_tau))*1000.0);
+            update_fps = std::round((((double)fcount/update_tau))*1000.0);
+            all_fps = std::round((((double)fcount/all_tau))*1000.0);
+            rest_fps = std::round((((double)fcount/rest_tau))*1000.0);
             std::stringstream ss;
-            ss << std::round((((double)fcount/tau))*1000.0) << " FPS";
+            ss << "FPS: " << data_fps << " [dat] " << update_fps << " [upd] " << rest_fps << " [rest] " << all_fps << " [all]\n";
             fps_tm->setupText (ss.str());
-            tstart = steady_clock::now();
-            fcount = 0;
         }
 
         v.render();
