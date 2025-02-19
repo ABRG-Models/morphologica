@@ -33,6 +33,8 @@ option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArr
 # The base C++ version in morphologica is current C++-17.
 #
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON) # Require that compiler meets our CXX_STANDARD
+set(CMAKE_CXX_EXTENSIONS OFF) # Turn off extra extensions (-std=c++17 rather than -std=gnu++17)
 
 #
 # C++-20 availability testing for optional examples
@@ -54,7 +56,6 @@ set(CXX_20_AVAILABLE 0)
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.0)
     set(CXX_20_AVAILABLE 1) # Can do C++-20.
-    # FIXME: Also set(CMAKE_CXX_STANDARD 20) here? Doesn't *seem* to be necessary, but may be correct?
   endif()
 endif()
 
