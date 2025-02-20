@@ -370,10 +370,41 @@ namespace morph
             } else { return std::trunc (x); }
         }
 
-#else // C++23 provides constexpr-capable ceil/floor/trunc
+        namespace internal // round
+        {
+            template<typename T>
+            constexpr T round_int (const T x) noexcept
+            {
+                return (math::abs(x - internal::floor_check(x)) >= T{0.5} ? internal::floor_check(x) + sgn(x) : internal::floor_check(x) );
+            }
+            template<typename T>
+            constexpr T round_check_internal (const T x) noexcept { return x; }
+            template<>
+            constexpr float round_check_internal<float> (const float x) noexcept { return (math::abs(x) >= 8388608.f ? x : round_int(x)); }
+            template<>
+            constexpr double round_check_internal<double> (const double x) noexcept { return (math::abs(x) >= 4503599627370496. ? x : round_int(x)); }
+            template<>
+            constexpr long double round_check_internal<long double>(const long double x) noexcept { return (math::abs(x) >= 9223372036854775808.l ? x : round_int(x)); }
+            template<typename T>
+            constexpr T round_check (const T x) noexcept
+            {
+                return (math::isnan(x) ? std::numeric_limits<T>::quiet_NaN() : !math::isfinite(x) ? x :
+                        std::numeric_limits<T>::min() > math::abs(x) ? x : sgn(x) * round_check_internal(math::abs(x)));
+            }
+        }
+        template<typename T>
+        constexpr return_t<T> round (const T x) noexcept
+        {
+            if (std::is_constant_evaluated()) {
+                return internal::round_check( static_cast<return_t<T>>(x) );
+            } else { return std::round (x); }
+        }
+
+#else // C++23 provides constexpr-capable ceil/floor/trunc/round
         template<typename T> constexpr return_t<T> ceil (const T x) noexcept { return std::ceil (x); }
         template<typename T> constexpr return_t<T> floor (const T x) noexcept { return std::floor (x); }
         template<typename T> constexpr return_t<T> trunc (const T x) noexcept { return std::trunc (x); }
+        template<typename T> constexpr return_t<T> round (const T x) noexcept { return std::round (x); }
 #endif
 
         namespace internal // find_whole, find_fraction
