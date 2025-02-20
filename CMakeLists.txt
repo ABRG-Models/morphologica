@@ -17,7 +17,7 @@ elseif(APPLE)
 elseif(CMAKE_SYSTEM MATCHES Win.*)
   set(MORPH_HOST_DEFINITION "-D__WIN__")
 else()
-  message(ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
+  message(FATAL_ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
 # Need to find the host system processor to fine tune assembly in VisualFace.h
@@ -30,22 +30,22 @@ endif()
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
 #
-# The base C++ version in morphologica is current C++-17 but I am considering C++23!
+# The base C++ version in morphologica is current C++-17 but I am considering C++20 or 23
 #
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CheckIncludeFileCXX) # CHECK_INCLUDE_FILE_CXX will be used in later scripts
 
-# C++-20 testing; GNU compiler support now assumed
-#set(CXX_20_AVAILABLE 1)
-#if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-#  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.0)
-#    set(CXX_20_AVAILABLE 1) # Can do C++-20.
-#    # FIXME: Also set(CMAKE_CXX_STANDARD 20) here? Doesn't *seem* to be necessary, but may be correct?
-#  endif()
-#endif()
+# If I *require* std::format, I can start using it across morph. That
+# limits us to gcc-13 on Ubuntu (though it's the libc++ that contains
+# <format>). For now, test and use it only in examples.
+check_include_file_cxx(format HAVE_STD_FORMAT)
+if(NOT HAVE_STD_FORMAT)
+  message(INFO " Your compiler does not appear to provide std::format, some examples won't build.")
+  message(INFO " In future, <format> may be required across morphologica.")
+endif()
 
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
