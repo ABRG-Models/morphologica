@@ -509,12 +509,17 @@ int main() {
     std::cout << sos1.as_uint() << " uint8_t to power 3: sos1.pow<unsigned int>(4) = " << sos1.pow<unsigned int>(4) << std::endl;
 
     // Correctly fails to compile/errors (will fail to compile when morph moves to C++-20)
+#if __cplusplus >= 202002L
+    // This line:
+    // std::cout << sos1.as_uint() << " uint8_t sum of squares: length_sq.sos<vec<>>(): " << sos1.length_sq<morph::vec<float, 2>>() << std::endl;
+    // should fail to compile
+#else
     try {
         std::cout << sos1.as_uint() << " uint8_t sum of squares: length_sq.sos<vec<>>(): " << sos1.length_sq<morph::vec<float, 2>>() << std::endl;
     } catch (const std::exception& e) {
         std::cout << "Expected error: " << e.what() << std::endl;
     }
-
+#endif
     vvec<morph::vec<int, 2>> sosv1 = {{1,2}, {3,2}, {2,4}};
     //std::cout << sosv1 << " sum of squares: " << sosv1.sos() << std::endl; // won't compile or will runtime error
     std::cout << sosv1 << " is a vector of vectors, so sosv1.length_sq<int>() returns a sum of squared lengths: " << sosv1.length_sq<int>() << std::endl;
