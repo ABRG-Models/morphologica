@@ -98,7 +98,7 @@ namespace morph
         template <typename T>
         constexpr bool signbit (const T x) noexcept {
 #ifdef _MSC_VER
-            return _signbit(x); // or: ((x == T{0}) ? (_fpclass(x) == _FPCLASS_NZ) : (x < T{0}));
+            return ((x == T{0}) ? (_fpclass(x) == _FPCLASS_NZ) : (x < T{0}));
 #else
             return __builtin_signbit(x);
 #endif
