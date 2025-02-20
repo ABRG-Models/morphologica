@@ -8,7 +8,7 @@ example programs which require all of the dependencies to be met.
 
 Programs that ```#include``` morphologica headers will also need to link to
 some or all of those dependencies. Finally, you'll need the cmake
-program and a C++ compiler which can compile c++-17 code.
+program and a C++ compiler which can compile c++-20 code.
 
 ## *Required*: Install dependencies
 
