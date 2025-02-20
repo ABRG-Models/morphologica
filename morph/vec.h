@@ -1355,9 +1355,11 @@ namespace morph {
             return rtn;
         }
 
-#if !defined(__has_warning) || __has_warning("-Wmaybe-uninitialized")
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // for gcc-14
+#if defined( __GNUC__ ) // Seems to be dfeined with clang too...
+# if !defined( __clang__ )
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // for gcc-14
+# endif
 #endif
         //! vec subtraction operator
         template<typename _S=S>
@@ -1369,8 +1371,10 @@ namespace morph {
             std::transform (this->begin(), this->end(), vrtn.begin(), subtract_v);
             return vrtn;
         }
-#if !defined(__has_warning) || __has_warning("-Wmaybe-uninitialized")
-# pragma GCC diagnostic pop
+#if defined( __GNUC__ )
+# if !defined( __clang__ )
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
         //! Scalar subtraction
