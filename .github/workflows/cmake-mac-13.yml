@@ -2,13 +2,20 @@
 
 name: Mac OS 13
 on:
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - 'docs/**'
-      - 'README**'
-  pull_request:
-    branches: [ "main" ]
+#  push:
+#    branches: [ "main" ]
+#    paths-ignore:
+#      - 'docs/**'
+#      - 'README**'
+#  pull_request:
+#    branches: [ "main" ]
+# If not the above, then:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Test scenario tags'
+        required: false
+        type: boolean
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

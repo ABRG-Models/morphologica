@@ -11,7 +11,7 @@
 #include <morph/mathconst.h>
 #include <morph/quaternion.h>
 #include <morph/vec.h>
-#include <cmath>
+#include <morph/constexpr_math.h>
 #include <array>
 #include <string>
 #include <sstream>
@@ -1005,9 +1005,9 @@ namespace morph {
             if (zNear == zFar || aspect == F{0}) { return; }
 
             F fovRad_ov2 = fovDeg * morph::mathconst<F>::pi_over_360; // fovDeg/2 converted to radians
-            F sineFov = std::sin (fovRad_ov2);
+            F sineFov = morph::math::sin (fovRad_ov2);
             if (sineFov == F{0}) { return; }
-            F cotanFov = std::cos (fovRad_ov2) / sineFov;
+            F cotanFov = morph::math::cos (fovRad_ov2) / sineFov;
             F clip = zFar - zNear;
 
             // Perspective matrix to multiply self by

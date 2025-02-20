@@ -17,7 +17,7 @@ elseif(APPLE)
 elseif(CMAKE_SYSTEM MATCHES Win.*)
   set(MORPH_HOST_DEFINITION "-D__WIN__")
 else()
-  message(ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
+  message(FATAL_ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
 # Need to find the host system processor to fine tune assembly in VisualFace.h
@@ -30,32 +30,21 @@ endif()
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
 #
-# The base C++ version in morphologica is current C++-17.
+# The base C++ version in morphologica is current C++-17 but I am considering C++20 or 23
 #
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-#
-# C++-20 availability testing for optional examples
-#
-# Some morphologica examples use C++-20 features, and one or two use
-# the <format> library. Some library code uses C++-20 features. The
-# testing here will make use of C++-20 only if the build is using
-# gcc. Extension to testing for clang versions could be added to this.
-#
-
-# Load this module which is useful for checking for include files such
-# as <format>. Do this with:
-#  CHECK_INCLUDE_FILE_CXX(format, HAVE_STD_FORMAT)
-# then test on HAVE_STD_FORMAT to choose what/how to compile.
 include(CheckIncludeFileCXX) # CHECK_INCLUDE_FILE_CXX will be used in later scripts
 
-# C++-20 testing; GNU compiler support
-set(CXX_20_AVAILABLE 0)
-if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.0)
-    set(CXX_20_AVAILABLE 1) # Can do C++-20.
-    # FIXME: Also set(CMAKE_CXX_STANDARD 20) here? Doesn't *seem* to be necessary, but may be correct?
-  endif()
+# If I *require* std::format, I can start using it across morph. That
+# limits us to gcc-13 on Ubuntu (though it's the libc++ that contains
+# <format>). For now, test and use it only in examples.
+check_include_file_cxx(format HAVE_STD_FORMAT)
+if(NOT HAVE_STD_FORMAT)
+  message(INFO " Your compiler does not appear to provide std::format, some examples won't build.")
+  message(INFO " In future, <format> may be required across morphologica.")
 endif()
 
 # Add the host definition to CXXFLAGS along with other switches
@@ -66,7 +55,7 @@ else()
     # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
     if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
       message(WARNING "Intel compiler has not been tested for some time")
-      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++20 -xHOST -O3 -D__ICC__")
     else() # GCC or Clang
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
         # Add compiler version check, to ensure gcc is version 11 or later.
@@ -81,6 +70,8 @@ else()
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
         # Make it possible to compile complex constexpr functions (gcc only)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=5000000000")
+      else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-steps=500000000")
       endif()
     endif()
   else() # Windows
@@ -93,6 +84,17 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # FIXME: Add clang compiler test
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
+endif()
+
+# Some programs require the ability to define literal template args of
+# type std::array (a C++-20 feature). Clang versions less than 18 can't.
+set(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK 0)
+if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 18)
+    set(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK 1)
+  endif()
+else()
+  set(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK 1)
 endif()
 
 # Note that we require OpenMP version 3 or above for ability to use

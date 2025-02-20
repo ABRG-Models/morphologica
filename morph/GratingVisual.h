@@ -524,7 +524,7 @@ namespace morph {
                     std::bitset<2> ti = morph::MathAlgo::segments_intersect (p1, q1, top_p, top_q);
                     std::bitset<2> li = morph::MathAlgo::segments_intersect (p1, q1, left_p, left_q);
                     std::bitset<2> ri = morph::MathAlgo::segments_intersect (p1, q1, right_p, right_q);
-                    if constexpr (this->debug_text) {
+                    if constexpr (debug_text) {
                         std::cout << "p1/q1 intersections  bi: " << bi << "  ti: " << ti << "  li: " << li << "  ri: " << ri << std::endl;
                     }
 
@@ -546,10 +546,10 @@ namespace morph {
                         first_colin = false;
                         // Test if we're off the rectangle
                         if (!bi.test(0) && !ti.test(0) && !li.test(0) && !ri.test(0)) {
-                            if constexpr (this->debug_text) { std::cout << "First band-edge was OFF rectangle\n"; }
+                            if constexpr (debug_text) { std::cout << "First band-edge was OFF rectangle\n"; }
                             first_off = true;
                         } else {
-                            if constexpr (this->debug_text) { std::cout << "First band-edge was ON; find fp1 and fq1...\n"; }
+                            if constexpr (debug_text) { std::cout << "First band-edge was ON; find fp1 and fq1...\n"; }
                             // From p1, q1 find fp1 and fp1_id
                             find_border_points (p1, q1,  fp1, fq1, fp1_id, fq1_id, bi, ti, li, ri);
                         }
@@ -574,7 +574,7 @@ namespace morph {
                     ti = morph::MathAlgo::segments_intersect (p2, q2, top_p, top_q);
                     li = morph::MathAlgo::segments_intersect (p2, q2, left_p, left_q);
                     ri = morph::MathAlgo::segments_intersect (p2, q2, right_p, right_q);
-                    if constexpr (this->debug_text) {
+                    if constexpr (debug_text) {
                         std::cout << "p2/q2 intersections  bi: " << bi << "  ti: " << ti << "  li: " << li << "  ri: " << ri << std::endl;
                     }
 
@@ -607,7 +607,7 @@ namespace morph {
                             second_off = true;
 
                         } else {
-                            if constexpr (this->debug_text) { std::cout << "Second band-edge was ON; find fp2 and fq2...\n"; }
+                            if constexpr (debug_text) { std::cout << "Second band-edge was ON; find fp2 and fq2...\n"; }
                             find_border_points (p2, q2,  fp2, fq2, fp2_id, fq2_id, bi, ti, li, ri);
                             border_id_set.insert (fp2_id);
                             border_id_set.insert (fq2_id);

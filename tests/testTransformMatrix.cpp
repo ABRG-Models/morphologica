@@ -1,6 +1,7 @@
 #include "morph/mat44.h"
 #include <iostream>
 #include <array>
+#include <cmath>
 #include <morph/vec.h>
 
 void setMatrixSequence (morph::mat44<float>& tm)
@@ -171,15 +172,15 @@ int main()
               << "," << v3[2]
               << "," << v3[3] << ") (should be equal to v1)" << std::endl;
 
-    std::cout << "v1-v3 errors: " << abs(v1[0]-v3[0]) << ", "
-              << abs(v1[1]-v3[1]) << ", "
-              << abs(v1[2]-v3[2]) << ", "
-              << abs(v1[3]-v3[3]) << std::endl;
+    std::cout << "v1-v3 errors: " << std::abs(v1[0]-v3[0]) << ", "
+              << std::abs(v1[1]-v3[1]) << ", "
+              << std::abs(v1[2]-v3[2]) << ", "
+              << std::abs(v1[3]-v3[3]) << std::endl;
 
-    float esum = abs(v1[0]-v3[0])
-        + abs(v1[1]-v3[1])
-        + abs(v1[2]-v3[2])
-        + abs(v1[3]-v3[3]);
+    float esum = std::abs(v1[0]-v3[0])
+        + std::abs(v1[1]-v3[1])
+        + std::abs(v1[2]-v3[2])
+        + std::abs(v1[3]-v3[3]);
 
     if (esum > 1e-5) {
         std::cout << "Inverse failed to re-create the vector" << std::endl;

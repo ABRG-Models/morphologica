@@ -208,17 +208,14 @@ if(USE_GLEW)
   target_link_libraries(myvisual GLEW::GLEW)
 endif()
 
-# morph::Gridct is compile-time-configured
-if(CXX_20_AVAILABLE)
+if(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK)
   add_executable(gridct_simple gridct_simple.cpp)
-  set_property(TARGET gridct_simple PROPERTY CXX_STANDARD 20)
   target_link_libraries(gridct_simple OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
     target_link_libraries(gridct_simple GLEW::GLEW)
   endif()
 
   add_executable(gridct_image gridct_image.cpp)
-  set_property(TARGET gridct_image PROPERTY CXX_STANDARD 20)
   target_link_libraries(gridct_image OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
     target_link_libraries(gridct_image GLEW::GLEW)
@@ -348,21 +345,14 @@ if(USE_GLEW)
   target_link_libraries(colourmaps_matplotlib GLEW::GLEW)
 endif()
 
-# On MacOS 13 as a github runner, HAVE_STD_FORMAT gets set to 1, but
-# the compile still fails. Odd. The build of these targets *does* work
-# on MacOS 14. Nevertheless, I have excluded APPLE builds for these
-# examples for now.
-CHECK_INCLUDE_FILE_CXX(format HAVE_STD_FORMAT)
-if(NOT APPLE AND HAVE_STD_FORMAT)
+if(HAVE_STD_FORMAT)
   add_executable(colourmaps_mono colourmaps_mono.cpp)
-  set_property(TARGET colourmaps_mono PROPERTY CXX_STANDARD 20)
   target_link_libraries(colourmaps_mono OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
     target_link_libraries(colourmaps_mono GLEW::GLEW)
   endif()
 
   add_executable(colourmaps_hsv1d colourmaps_hsv1d.cpp)
-  set_property(TARGET colourmaps_hsv1d PROPERTY CXX_STANDARD 20)
   target_link_libraries(colourmaps_hsv1d OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
     target_link_libraries(colourmaps_hsv1d GLEW::GLEW)
@@ -388,14 +378,13 @@ if(USE_GLEW)
 endif()
 
 add_executable(scatter scatter.cpp)
-set_property(TARGET scatter PROPERTY CXX_STANDARD 20)
 target_link_libraries(scatter OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(scatter GLEW::GLEW)
 endif()
 
 # This sphere example uses constexpr code
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if(NOT APPLE)
   add_executable(scatter_ico scatter_ico.cpp)
   target_link_libraries(scatter_ico OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
@@ -554,7 +543,7 @@ if(USE_GLEW)
 endif()
 
 # This example uses constexpr code
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if(NOT APPLE)
   add_executable(grating grating.cpp)
   target_link_libraries(grating OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
@@ -575,17 +564,16 @@ if(USE_GLEW)
 endif()
 
 # This sphere example uses constexpr code
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if(NOT APPLE)
   add_executable(sphere sphere.cpp)
   target_link_libraries(sphere OpenGL::GL glfw Freetype::Freetype)
-  set_property(TARGET sphere PROPERTY CXX_STANDARD 20)
   if(USE_GLEW)
     target_link_libraries(sphere GLEW::GLEW)
   endif()
 endif()
 
-# constexpr code won't work on Clang
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+# constexpr code won't work on Apple Clang
+if(NOT APPLE)
   add_executable(icosahedron icosahedron.cpp)
   target_link_libraries(icosahedron OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
@@ -596,7 +584,6 @@ if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # have "a definition of a variable for which no initialization is
   # performed".
   add_executable(testce testce.cpp)
-  set_property(TARGET testce PROPERTY CXX_STANDARD 20)
 
   add_executable(geodesic geodesic.cpp)
   target_link_libraries(geodesic OpenGL::GL glfw Freetype::Freetype)
@@ -605,7 +592,6 @@ if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
   endif()
 
   add_executable(geodesic_ce geodesic_ce.cpp)
-  set_property(TARGET geodesic_ce PROPERTY CXX_STANDARD 20)
   target_link_libraries(geodesic_ce OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
     target_link_libraries(geodesic_ce GLEW::GLEW)

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <morph/mathconst.h>
+#include <morph/constexpr_math.h>
 #include <morph/vec.h>
 #include <limits>
 #include <cmath>
@@ -82,7 +83,7 @@ namespace morph {
          */
         constexpr void renormalize()
         {
-            Flt oneovermag = Flt{1} / std::sqrt (w*w + x*x + y*y + z*z);
+            Flt oneovermag = Flt{1} / morph::math::sqrt (w*w + x*x + y*y + z*z);
             this->w *= oneovermag;
             this->x *= oneovermag;
             this->y *= oneovermag;
@@ -100,7 +101,7 @@ namespace morph {
         {
             bool rtn = true;
             Flt metric = Flt{1} - (w*w + x*x + y*y + z*z);
-            if (std::abs(metric) > morph::quaternion<Flt>::unitThresh) {
+            if (morph::math::abs(metric) > morph::quaternion<Flt>::unitThresh) {
                 rtn = false;
             }
             return rtn;
@@ -118,19 +119,19 @@ namespace morph {
         //! Equality operator. True if all elements match
         constexpr bool operator==(const quaternion<Flt>& rhs) const
         {
-            return (std::abs(this->w - rhs.w) < std::numeric_limits<Flt>::epsilon()
-                    && std::abs(this->x - rhs.x) < std::numeric_limits<Flt>::epsilon()
-                    && std::abs(this->y - rhs.y) < std::numeric_limits<Flt>::epsilon()
-                    && std::abs(this->z - rhs.z) < std::numeric_limits<Flt>::epsilon());
+            return (morph::math::abs(this->w - rhs.w) < std::numeric_limits<Flt>::epsilon()
+                    && morph::math::abs(this->x - rhs.x) < std::numeric_limits<Flt>::epsilon()
+                    && morph::math::abs(this->y - rhs.y) < std::numeric_limits<Flt>::epsilon()
+                    && morph::math::abs(this->z - rhs.z) < std::numeric_limits<Flt>::epsilon());
         }
 
         //! Not equals
         constexpr bool operator!=(const quaternion<Flt>& rhs) const
         {
-            return (std::abs(this->w - rhs.w) >= std::numeric_limits<Flt>::epsilon()
-                    || std::abs(this->x - rhs.x) >= std::numeric_limits<Flt>::epsilon()
-                    || std::abs(this->y - rhs.y) >= std::numeric_limits<Flt>::epsilon()
-                    || std::abs(this->z - rhs.z) >= std::numeric_limits<Flt>::epsilon());
+            return (morph::math::abs(this->w - rhs.w) >= std::numeric_limits<Flt>::epsilon()
+                    || morph::math::abs(this->x - rhs.x) >= std::numeric_limits<Flt>::epsilon()
+                    || morph::math::abs(this->y - rhs.y) >= std::numeric_limits<Flt>::epsilon()
+                    || morph::math::abs(this->z - rhs.z) >= std::numeric_limits<Flt>::epsilon());
         }
 
         //! Multiply this quaternion by other as: this = this * q2, i.e. q1 is 'this->'
@@ -256,10 +257,10 @@ namespace morph {
         }
 
         //! Return the magnitude of the quaternion (aka the norm)
-        constexpr Flt magnitude() const { return std::sqrt (w*w + x*x + y*y + z*z); }
+        constexpr Flt magnitude() const { return morph::math::sqrt (w*w + x*x + y*y + z*z); }
         //! Return the norm of the quaternion (aka the magnitude)
-        constexpr Flt norm() const { return std::sqrt (w*w + x*x + y*y + z*z); }
-        //! Sometimes you'll want the norm squared. Save the std::sqrt and a multiplication.
+        constexpr Flt norm() const { return morph::math::sqrt (w*w + x*x + y*y + z*z); }
+        //! Sometimes you'll want the norm squared. Save the morph::math::sqrt and a multiplication.
         constexpr Flt norm_squared() const { return (w*w + x*x + y*y + z*z); }
 
         //! Reset to a zero rotation
@@ -276,8 +277,8 @@ namespace morph {
         constexpr void set_rotation (const vec<Flt>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
-            Flt cosHalf = std::cos(halfangle);
-            Flt sinHalf = std::sin(halfangle);
+            Flt cosHalf = morph::math::cos(halfangle);
+            Flt sinHalf = morph::math::sin(halfangle);
             vec<Flt> ax = axis;
             ax.renormalize();
 
@@ -296,8 +297,8 @@ namespace morph {
         constexpr void rotate (const Flt& axis_x, const Flt& axis_y, const Flt& axis_z, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
-            Flt cosHalf = std::cos (halfangle);
-            Flt sinHalf = std::sin (halfangle);
+            Flt cosHalf = morph::math::cos (halfangle);
+            Flt sinHalf = morph::math::sin (halfangle);
             quaternion<Flt> local(cosHalf, axis_x * sinHalf, axis_y * sinHalf, axis_z * sinHalf);
             this->premultiply (local);
             this->renormalize();
@@ -310,8 +311,8 @@ namespace morph {
         constexpr void rotate (const std::array<Flt, 3>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
-            Flt cosHalf = std::cos (halfangle);
-            Flt sinHalf = std::sin (halfangle);
+            Flt cosHalf = morph::math::cos (halfangle);
+            Flt sinHalf = morph::math::sin (halfangle);
             quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
             this->renormalize();
@@ -324,8 +325,8 @@ namespace morph {
         constexpr void rotate (const vec<Flt, 3>& axis, const Flt& angle)
         {
             Flt halfangle = angle * Flt{0.5};
-            Flt cosHalf = std::cos (halfangle);
-            Flt sinHalf = std::sin (halfangle);
+            Flt cosHalf = morph::math::cos (halfangle);
+            Flt sinHalf = morph::math::sin (halfangle);
             quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
             this->renormalize();
@@ -339,8 +340,8 @@ namespace morph {
         constexpr morph::vec<Flt, 4> axis_angle() const
         {
             morph::vec<Flt, 4> aa{Flt{0}};
-            aa[3] =  2 * std::acos (this->w);
-            Flt s = std::sqrt(Flt{1} - this->w * this->w);
+            aa[3] =  2 * morph::math::acos (this->w);
+            Flt s = morph::math::sqrt (Flt{1} - this->w * this->w);
             aa[0] = this->x / s;
             aa[1] = this->y / s;
             aa[2] = this->z / s;

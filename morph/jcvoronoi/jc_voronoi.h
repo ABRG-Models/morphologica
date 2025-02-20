@@ -8,7 +8,7 @@
 #ifndef JC_VORONOI_H
 #define JC_VORONOI_H
 
-#include <math.h>
+#include <cmath>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -29,11 +29,11 @@ extern "C" {
 #endif
 
 #ifndef JCV_ATAN2
-    #define JCV_ATAN2(_Y_, _X_) atan2f(_Y_, _X_)
+#define JCV_ATAN2(_Y_, _X_) std::atan2(_Y_, _X_)
 #endif
 
 #ifndef JCV_SQRT
-    #define JCV_SQRT(_X_)       sqrtf(_X_)
+#define JCV_SQRT(_X_)       std::sqrt(_X_)
 #endif
 
 #ifndef JCV_PI

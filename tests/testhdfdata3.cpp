@@ -2,7 +2,6 @@
 #include <utility>
 #include <iostream>
 #include <fstream>
-#include <math.h>
 #include <list>
 #include <vector>
 #include <deque>

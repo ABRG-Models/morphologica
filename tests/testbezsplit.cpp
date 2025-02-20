@@ -3,13 +3,7 @@
 #include <utility>
 #include <iostream>
 #include <fstream>
-#include <math.h>
 #include <limits>
-
-using namespace std;
-using morph::BezCoord;
-using morph::BezCurve;
-using morph::HexGrid;
 
 int main()
 {
@@ -21,22 +15,22 @@ int main()
         {10,1}
     };
 
-    BezCurve<FLT> cv (c);
-    cout << "Defined a " << cv.getOrder() << " nd/rd/th order curve" << endl;
+    morph::BezCurve<FLT> cv (c);
+    std::cout << "Defined a " << cv.getOrder() << " nd/rd/th order curve" << std::endl;
 
-    cout << "cv = [" << cv.output(static_cast<FLT>(1.0)) << "];\n";
+    std::cout << "cv = [" << cv.output(FLT{1}) << "];\n";
 
-    pair<arma::Mat<FLT>, arma::Mat<FLT>> nc = cv.split (static_cast<FLT>(0.5));
+    std::pair<arma::Mat<FLT>, arma::Mat<FLT>> nc = cv.split (FLT{0.5});
 
-    cout << "oc=[" << cv.outputControl() << "]\n";
-    cout << "c1=[" << nc.first << "]\n";
-    cout << "c2=[" << nc.second << "]\n";
+    std::cout << "oc=[" << cv.outputControl() << "]\n";
+    std::cout << "c1=[" << nc.first << "]\n";
+    std::cout << "c2=[" << nc.second << "]\n";
 
-    BezCurve<FLT> cv1 (nc.first);
-    BezCurve<FLT> cv2 (nc.second);
+    morph::BezCurve<FLT> cv1 (nc.first);
+    morph::BezCurve<FLT> cv2 (nc.second);
 
-    cout << "cv1 = [" << cv1.output(static_cast<FLT>(1.0)) << "];\n";
-    cout << "cv2 = [" << cv2.output(static_cast<FLT>(1.0)) << "];\n";
+    std::cout << "cv1 = [" << cv1.output(FLT{1}) << "];\n";
+    std::cout << "cv2 = [" << cv2.output(FLT{1}) << "];\n";
 
     return rtn;
 }

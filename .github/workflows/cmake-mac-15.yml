@@ -1,6 +1,6 @@
-# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
-name: Ubuntu latest
+# Mac workflow. Adapted from the Ubuntu one.
+
+name: Mac OS 15
 on:
   push:
     branches: [ "main" ]
@@ -19,16 +19,21 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    runs-on: macos-15
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Check out repository code
+      uses: actions/checkout@v4
 
-    - name: Update index
-      run: sudo apt update
+    - name: Install GitHub CLI
+      run: |
+        brew update
+        brew install gh
 
     - name: Install dependencies
-      run: sudo apt-get install libgbm-dev freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev nlohmann-json3-dev librapidxml-dev
+      run: |
+        brew update
+        brew install libomp glfw armadillo hdf5 nlohmann-json
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

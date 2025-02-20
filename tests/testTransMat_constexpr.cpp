@@ -3,6 +3,7 @@
 #include <iostream>
 #include <array>
 #include <morph/vec.h>
+#include <cmath>
 
 constexpr void setMatrixSequence (morph::mat44<float>& tm)
 {
@@ -154,10 +155,10 @@ constexpr int do_test()
     v2 = mult4 * v1;
     v3 = mult4inv * v2;
 
-    float esum = abs(v1[0]-v3[0])
-        + abs(v1[1]-v3[1])
-        + abs(v1[2]-v3[2])
-        + abs(v1[3]-v3[3]);
+    float esum = std::abs(v1[0]-v3[0])
+        + std::abs(v1[1]-v3[1])
+        + std::abs(v1[2]-v3[2])
+        + std::abs(v1[3]-v3[3]);
 
     if (esum > 1e-5) {
         //std::cout << "Inverse failed to re-create the vector" << std::endl;
