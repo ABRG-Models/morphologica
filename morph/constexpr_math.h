@@ -95,14 +95,11 @@ namespace morph
         template<typename T> constexpr int sgn (const T x) noexcept { return (x > T{0} ? 1 : (x < T{0} ? -1 : 0)); }
 
         // signbit
-        template <typename T>
-        constexpr bool signbit (const T x) noexcept {
 #ifdef _MSC_VER
-            return ((x == T{0}) ? (_fpclass(x) == _FPCLASS_NZ) : (x < T{0}));
+        template <typename T> constexpr bool signbit (const T x) noexcept { return ((x == T{0}) ? (_fpclass(x) == _FPCLASS_NZ) : (x < T{0})); }
 #else
-            return __builtin_signbit(x);
+        template <typename T> constexpr bool signbit (const T x) noexcept { return __builtin_signbit(x); }
 #endif
-        }
 
         // copysign
         template <typename T1, typename T2>
