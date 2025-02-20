@@ -1,21 +1,14 @@
 # Mac workflow. Adapted from the Ubuntu one.
 
-name: Mac latest
+name: Mac OS 15
 on:
-#  push:
-#    branches: [ "main" ]
-#    paths-ignore:
-#      - 'docs/**'
-#      - 'README**'
-#  pull_request:
-#    branches: [ "main" ]
-# If not the above, then:
-  workflow_dispatch:
-    inputs:
-      tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README**'
+  pull_request:
+    branches: [ "main" ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -26,7 +19,7 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
     - name: Check out repository code
