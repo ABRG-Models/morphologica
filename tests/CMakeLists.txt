@@ -254,7 +254,7 @@ endif()
 add_executable(testvec testvec.cpp)
 add_test(testvec testvec)
 
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang) # def doesn't like - due to std::ceil
+if(NOT APPLE)
   # constexpr functionality in morph::vec
   # Need C++20 for the way I use constexpr here so that it is legal to
   # have "a definition of a variable for which no initialization is

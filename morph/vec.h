@@ -170,10 +170,10 @@ namespace morph {
         {
             this->zero();
             // Figure out how many elements given the increment:
-            S num = std::ceil((stop - start) / increment);
+            S num = morph::math::ceil((stop - start) / increment);
             if (num > S{0}) {
                 for (std::size_t i = 0; i < static_cast<std::size_t>(num) && i < N; ++i) {
-                    (*this)[i] = start + increment*static_cast<S>(i);
+                    (*this)[i] = start + increment * static_cast<S>(i);
                 }
             } // else vector will now be full of zeros, not quite like Python does it (it returns an
               // empty array with no elements)
@@ -462,7 +462,7 @@ namespace morph {
 
             auto subtract_squared = [](_S a, _S b) { return static_cast<_S>(a - b * b); };
             const _S metric = std::accumulate (this->begin(), this->end(), _S{1}, subtract_squared);
-            if (std::abs(metric) > unitThresh) {
+            if (morph::math::abs(metric) > unitThresh) {
                 return false;
             }
             return true;
@@ -477,7 +477,7 @@ namespace morph {
         constexpr _S length() const
         {
             auto add_squared = [](_S a, S b) { return a + b * b; };
-            // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of std::sqrt()
+            // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of sqrt()
             if constexpr (std::is_integral<std::decay_t<_S>>::value == true) {
                 return static_cast<_S>(std::round(morph::math::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared))));
             } else {
@@ -569,7 +569,7 @@ namespace morph {
         //! Return the value of the longest component of the vector.
         constexpr S longest() const
         {
-            auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
+            auto abs_compare = [](S a, S b) { return (morph::math::abs(a) < morph::math::abs(b)); };
             auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
             S rtn = *thelongest;
             return rtn;
@@ -580,7 +580,7 @@ namespace morph {
         {
             std::size_t idx = 0;
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
-                auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
+                auto abs_compare = [](S a, S b) { return (morph::math::abs(a) < morph::math::abs(b)); };
                 auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
                 idx = (thelongest - this->begin());
             } else {
@@ -594,7 +594,7 @@ namespace morph {
         //! Return the value of the shortest component of the vector.
         constexpr S shortest() const
         {
-            auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
+            auto abs_compare = [](S a, S b) { return (morph::math::abs(a) > morph::math::abs(b)); };
             auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
             S rtn = *theshortest;
             return rtn;
@@ -606,7 +606,7 @@ namespace morph {
             std::size_t idx = 0;
             // Check on the type S. If S is a vec thing, then abs_compare needs to be different.
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
-                auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
+                auto abs_compare = [](S a, S b) { return (morph::math::abs(a) > morph::math::abs(b)); };
                 auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
                 idx = (theshortest - this->begin());
             } else {
@@ -666,7 +666,7 @@ namespace morph {
         constexpr bool has_inf() const
         {
             if constexpr (std::numeric_limits<S>::has_infinity) {
-                return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isinf(i);});
+                return std::any_of (this->cbegin(), this->cend(), [](S i){return morph::math::isinf(i);});
             } else {
                 return false;
             }
@@ -676,7 +676,7 @@ namespace morph {
         constexpr bool has_nan() const
         {
             if constexpr (std::numeric_limits<S>::has_quiet_NaN || std::numeric_limits<S>::has_signaling_NaN) {
-                return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isnan(i);});
+                return std::any_of (this->cbegin(), this->cend(), [](S i){return morph::math::isnan(i);});
             } else {
                 return false;
             }
@@ -693,14 +693,14 @@ namespace morph {
         constexpr void replace_nan_with (const S replacement)
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
-            for (auto& i : *this) { if (std::isnan(i)) { i = replacement; } }
+            for (auto& i : *this) { if (morph::math::isnan(i)) { i = replacement; } }
         }
 
         constexpr void replace_nan_or_inf_with (const S replacement)
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
             static_assert (std::numeric_limits<S>::has_infinity, "S does not have infinities");
-            for (auto& i : *this) { if (std::isnan(i) || std::isinf(i)) { i = replacement; } }
+            for (auto& i : *this) { if (morph::math::isnan(i) || morph::math::isinf(i)) { i = replacement; } }
         }
 
         /*!
@@ -810,31 +810,31 @@ namespace morph {
         constexpr vec<S, N> floor() const
         {
             vec<S, N> rtn{};
-            auto _floor = [](S elmnt) -> S { return (std::floor (elmnt)); };
+            auto _floor = [](S elmnt) -> S { return (morph::math::floor (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _floor);
             return rtn;
         }
-        constexpr void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
+        constexpr void floor_inplace() { for (auto& i : *this) { i = morph::math::floor(i); } }
 
-        //! Return the floor-or-ceiling of the vector's elements - i.e. apply std::trunc
+        //! Return the floor-or-ceiling of the vector's elements - i.e. apply trunc()
         constexpr vec<S, N> trunc() const
         {
             vec<S, N> rtn{};
-            auto _trunc = [](S elmnt) -> S { return (std::trunc(elmnt)); };
+            auto _trunc = [](S elmnt) -> S { return (morph::math::trunc(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _trunc);
             return rtn;
         }
-        constexpr void trunc_inplace() { for (auto& i : *this) { i = std::trunc(i); } }
+        constexpr void trunc_inplace() { for (auto& i : *this) { i = morph::math::trunc(i); } }
 
         //! Return the ceiling of the vec
         constexpr vec<S, N> ceil() const
         {
             vec<S, N> rtn{};
-            auto _ceil = [](S elmnt) -> S { return (std::ceil (elmnt)); };
+            auto _ceil = [](S elmnt) -> S { return (morph::math::ceil (elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
             return rtn;
         }
-        constexpr void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
+        constexpr void ceil_inplace() { for (auto& i : *this) { i = morph::math::ceil(i); } }
 
         /*!
          * Compute the element-wise square root of the vector
@@ -919,12 +919,12 @@ namespace morph {
         constexpr vec<S, N> abs() const
         {
             vec<S, N> rtn{};
-            auto abs_element = [](S elmnt) -> S { return static_cast<S>(std::abs(elmnt)); };
+            auto abs_element = [](S elmnt) -> S { return static_cast<S>(morph::math::abs(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
             return rtn;
         }
         //! Replace each element with its own absolute value
-        constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
+        constexpr void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(morph::math::abs(i)); } }
 
         //! Less than a scalar. Return true if every element is less than the scalar
         constexpr bool operator<(const S rhs) const
