@@ -1355,8 +1355,8 @@ namespace morph {
             return rtn;
         }
 
-#if defined( __GNUC__ ) // Seems to be dfeined with clang too...
-# if !defined( __clang__ )
+#if defined( __GNUC__ )    // gcc defines __GNUC__, but this seems to be defined when using clang so...
+# if !defined( __clang__ ) // Also check __clang__ is NOT defined
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // for gcc-14
 # endif
