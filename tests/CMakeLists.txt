@@ -508,8 +508,7 @@ add_test(testTools testTools)
 add_executable(testboxfilter testboxfilter.cpp)
 add_test(testboxfilter testboxfilter)
 
-# morph::Gridct requires C++-20
-if(NOT APPLE)
+if(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK)
   add_executable(testGridct testGridct.cpp)
   add_test(testGridct testGridct)
 

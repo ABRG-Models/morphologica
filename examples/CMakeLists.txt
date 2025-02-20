@@ -208,8 +208,7 @@ if(USE_GLEW)
   target_link_libraries(myvisual GLEW::GLEW)
 endif()
 
-# morph::Gridct is compile-time-configured
-if(NOT APPLE)
+if(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK)
   add_executable(gridct_simple gridct_simple.cpp)
   target_link_libraries(gridct_simple OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)

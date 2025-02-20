@@ -1355,8 +1355,10 @@ namespace morph {
             return rtn;
         }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // for gcc-14
+#if !defined(__has_warning) || __has_warning("-Wmaybe-uninitialized")
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // for gcc-14
+#endif
         //! vec subtraction operator
         template<typename _S=S>
         constexpr vec<S, N> operator- (const vec<_S, N>& v) const
@@ -1367,7 +1369,9 @@ namespace morph {
             std::transform (this->begin(), this->end(), vrtn.begin(), subtract_v);
             return vrtn;
         }
-#pragma GCC diagnostic pop
+#if !defined(__has_warning) || __has_warning("-Wmaybe-uninitialized")
+# pragma GCC diagnostic pop
+#endif
 
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >

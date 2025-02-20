@@ -55,7 +55,7 @@ else()
     # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
     if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
       message(WARNING "Intel compiler has not been tested for some time")
-      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++20 -xHOST -O3 -D__ICC__")
     else() # GCC or Clang
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
         # Add compiler version check, to ensure gcc is version 11 or later.
@@ -84,6 +84,17 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # FIXME: Add clang compiler test
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
+endif()
+
+# Some programs require the ability to define literal template args of
+# type std::array (a C++-20 feature). Clang versions less than 18 can't.
+set(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK 0)
+if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 18)
+    set(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK 1)
+  endif()
+else()
+  set(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK 1)
 endif()
 
 # Note that we require OpenMP version 3 or above for ability to use
