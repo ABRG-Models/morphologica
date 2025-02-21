@@ -2,8 +2,7 @@
 # This is an example CMakeLists.txt file to compile a morphologica program
 #
 
-# cmake version 3.1 provides the set(CMAKE_CXX_STANDARD 17) feature
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 # Give your project a name
 project(ElmanNet)
@@ -11,8 +10,8 @@ project(ElmanNet)
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
-# morphologica uses c++-17 language features
-set(CMAKE_CXX_STANDARD 17)
+# morphologica uses c++-20 language features
+set(CMAKE_CXX_STANDARD 20)
 
 # From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})

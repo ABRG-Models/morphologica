@@ -2,8 +2,7 @@
 # This is an example CMakeLists.txt file to compile a program against morphologica headers
 #
 
-# cmake version 3.1 provides the set(CMAKE_CXX_STANDARD 17) feature
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 # Give your project a name
 project(RecurrentNet)
@@ -25,8 +24,8 @@ else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
-# morphologica uses c++-17 language features
-set(CMAKE_CXX_STANDARD 17)
+# morphologica uses c++-20 language features
+set(CMAKE_CXX_STANDARD 20)
 
 # Common cflags
 set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -Wno-sign-compare -g")

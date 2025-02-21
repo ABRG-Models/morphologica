@@ -3,8 +3,7 @@
 # a morphologica that is 'in-tree'
 #
 
-# cmake version 3.1 provides the set(CMAKE_CXX_STANDARD 17) feature
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 # Give your project a name
 project(Schnakenberg)
