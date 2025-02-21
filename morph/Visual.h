@@ -29,29 +29,31 @@
 #ifdef _glfw3_h_ // glfw3 has already been externally included
 # ifdef OWNED_MODE
 #  error "glfw3 has been #included but OWNED_MODE is defined"
-# endif
+# endif // def OWNED_MODE
 #else // glfw3 not yet included
 # ifndef OWNED_MODE
 #  define GLFW_INCLUDE_NONE // Here, we tell GLFW that we will explicitly include GL3/gl3.h and GL/glext.h
 #  include <GLFW/glfw3.h>
 #  ifndef VISUAL_MANAGES_GLFW
 #   define VISUAL_MANAGES_GLFW 1 // Used in VisualResources.h
-#  endif
-# endif
+#  endif // ndef VIDUAL_MANAGES_GLFW
+# endif // ndef OWNED_MODE
 #endif // _glfw3_h_
 
-#if defined __gl3_h_ || defined __gl_h_
+#if defined __gl3_h_ || defined __gl_h_ // get fuller list from glfw.h
 // GL headers appear to have been externally included.
 #else
 // Include the correct GL headers before VisualCommon.h (VisualModel.h will bring these in, too)
 # ifndef USE_GLEW
-#  ifdef __OSX__
+#  if defined USE_GLAD || defined __WIN__
+#   include <glad/gl.h>
+#  elif defined __OSX__
 #   include <OpenGL/gl3.h>
-#  else
+#  else // Linux
 #   include <GL/gl.h>
 #   include <GL/glext.h>
-#  endif
-# endif
+#  endif // USE_GLAD/__OSX__/Linux
+# endif // ndef USE_GLEW
 #endif // GL headers
 
 #include <morph/gl/version.h>
@@ -1006,6 +1008,23 @@ namespace morph {
 
     private:
 
+#ifndef OWNED_MODE
+# if defined USE_GLAD || defined __WIN__
+        // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
+        GladGLContext* create_gladgl_context (GLFWwindow *window)
+        {
+            glfwMakeContextCurrent(window);
+            GladGLContext* context = (GladGLContext*) calloc(1, sizeof(GladGLContext));
+            if (!context) { return nullptr; }
+            int version = gladLoadGLContext (context, glfwGetProcAddress);
+            std::cout << "Loaded OpenGL " << GLAD_VERSION_MAJOR(version)
+                      << "." << GLAD_VERSION_MINOR(version) << std::endl;
+            return context;
+        }
+        void free_gladgl_context (GladGLContext *context) { free(context); }
+# endif
+#endif // ndef OWNED_MODE
+
         void init_window()
         {
 #ifndef OWNED_MODE
@@ -1024,7 +1043,19 @@ namespace morph {
             glfwSetWindowSizeCallback (this->window, window_size_callback_dispatch);
             glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
             glfwSetScrollCallback (this->window, scroll_callback_dispatch);
-#endif
+
+# if defined USE_GLAD || defined __WIN__
+            // What IS this GladGLContext struct?
+            /* GladGLContext* */ this->gl = this->create_gladgl_context (window1);
+            if (!this->gl) {
+                std::cout << "Failed to initialize GLAD GL context" << std::endl;
+                free_context (this->gl);
+            }
+
+            // Now can call gl functions like:
+            this->gl->GetString (GL_VERSION); // instead of glGetString (GL_VERSION)
+# endif
+#endif // ndef OWNED_MODE
         }
 
         // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any external

@@ -79,6 +79,8 @@ namespace morph {
             float xscale, yscale;
             glfwGetMonitorContentScale (primary, &xscale, &yscale); // glfw 3.3+
 #endif
+
+            // The rest of this function may be right to call with each window?
             if constexpr (morph::gl::version::gles (glver) == true) {
                 glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
                 glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
@@ -106,8 +108,7 @@ namespace morph {
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
-        std::map<std::tuple<morph::VisualFont, unsigned int,
-                            morph::Visual<glver>*>,
+        std::map<std::tuple<morph::VisualFont, unsigned int, morph::Visual<glver>*>,
                  std::unique_ptr<morph::visgl::VisualFace>> faces;
 
         //! An error callback function for the GLFW windowing library
