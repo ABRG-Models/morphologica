@@ -43,30 +43,27 @@ set of compiler flags for morphologica:
 # From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})
 if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(EXTRA_HOST_DEFINITION "-D__GLN__")
+  set(OS_FLAG "-D__GLN__")
 elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(EXTRA_HOST_DEFINITION "-D__NIX__")
+  set(OS_FLAG "-D__NIX__")
 elseif(APPLE)
-  set(EXTRA_HOST_DEFINITION "-D__OSX__")
+  set(OS_FLAG "-D__OSX__")
+elseif(WIN32)
+  set(OS_FLAG "-D__WIN__")
 else()
-  message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
+  message(FATAL_ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
 # morphologica uses c++-20 language features
 set(CMAKE_CXX_STANDARD 20)
 
-# Add the host definition to CXXFLAGS along with other switches,
-# depending on OS/Compiler and your needs/preferences
+# Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -O3")
+  set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wfatal-errors")
 else() # assume g++ (or a gcc/g++ mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -O3")
+  set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors -Wno-psabi -Wno-unknown-pragmas")
 endif()
-
-# Tell clang to be quiet about brace initialisers:
-if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
-endif()
+set(CMAKE_CXX_FLAGS "${OS_FLAG} -g -O3 ${COMPREHENSIVE_WARNING_FLAGS}")
 
 # Add OpenMP flags here, if necessary
 find_package(OpenMP)
