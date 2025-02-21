@@ -80,9 +80,6 @@ install(
   ReadCurves.h
   RectangleVisual.h
   Rect.h
-  RecurrentNetwork.h
-  RecurrentNetworkModel.h
-  RecurrentNetworkTools.h
   RhomboVisual.h
   RingVisual.h
   rngd.h
