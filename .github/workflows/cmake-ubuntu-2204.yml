@@ -10,7 +10,7 @@ on:
 
 jobs:
   call-workflow-passing-data:
-    uses: rremilian/morphologica/.github/workflows/cmake-ubuntu-template.yml@github_actions_improvments
+    uses: rremilian/morphologica/.github/workflows/cmake-ubuntu-template.yml@feat/github_actions_improvments
     with:
       CONTAINER_IMAGE: ubuntu-22.04
       BUILD_TYPE: Release
