@@ -49,7 +49,8 @@ int main()
     for (unsigned int ep = 0; ep < epochs; ++ep) {
 
         // At start of epoch, make a copy of the training data:
-        std::multimap<unsigned char, morph::vvec<float>> training_f = m.training_f;
+//      std::multimap<unsigned char,                morph::vvec<float>  > training_f = m.training_f;
+        std::multimap<unsigned char, std::pair<int, morph::vvec<float>> > training_f = m.training_f;
 
         unsigned int jj = training_f.size()/mini_batch_size;
         for (unsigned int j = 0; j < jj; ++j) {
@@ -75,7 +76,7 @@ int main()
                     }
                 }
                 unsigned int key = static_cast<unsigned int>(t_iter->first);
-                morph::vvec<float> thein = t_iter->second;
+                morph::vvec<float> thein = t_iter->second.second;
                 morph::vvec<float> theout(10);
                 theout.zero();
                 theout[key] = 1.0f;
