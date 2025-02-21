@@ -32,30 +32,28 @@ set of compiler flags for morphologica:
 # From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})
 if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(EXTRA_HOST_DEFINITION "-D__GLN__")
+  set(OS_FLAG "-D__GLN__")
 elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(EXTRA_HOST_DEFINITION "-D__NIX__")
+  set(OS_FLAG "-D__NIX__")
 elseif(APPLE)
-  set(EXTRA_HOST_DEFINITION "-D__OSX__")
+  set(OS_FLAG "-D__OSX__")
+elseif(WIN)
+  set(OS_FLAG "-D__WIN__")
 else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
-# morphologica uses c++-17 language features
-set(CMAKE_CXX_STANDARD 17)
+# morphologica uses c++-20 language features
+set(CMAKE_CXX_STANDARD 20)
 
 # Add the host definition to CXXFLAGS along with other switches,
 # depending on OS/Compiler and your needs/preferences
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -O3")
+  set(WARNING_FLAGS "-Wall -Wfatal-errors")
 else() # assume g++ (or a gcc/g++ mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -O3")
+  set(WARNING_FLAGS "-Wall -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas")
 endif()
-
-# Tell clang to be quiet about brace initialisers:
-if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
-endif()
+set(CMAKE_CXX_FLAGS "${OS_FLAG} -g -O3 ${WARNING_FLAGS}")
 
 # Add OpenMP flags here, if necessary
 find_package(OpenMP)
@@ -89,7 +87,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share
 # Find the libraries which will be needed
 find_package(HDF5 REQUIRED)        # Only required if you used morph::HdfData
 find_package(Armadillo REQUIRED)   # Only required if you use the Bezier curve classes or HexGrid/CartGrid
-find_package(OpenGL REQUIRED)      # This, glfw3 and Freetype are required for morph::Visual
+find_package(OpenGL REQUIRED)      # This, glfw3, Freetype and nlohmann-json are required for morph::Visual
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(nlohmann-json REQUIRED)
@@ -99,17 +97,15 @@ set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INC
 set(MORPH_INC_GL ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
-# MORPH_INCLUDE_PATH is set to the location at which the header directory 'morph' is found. For 'Installed morpholoigca':
-set(MORPH_INCLUDE_PATH /usr/local CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph) # Allows GL3/gl3.h to be found
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)       # Allows morph/Header.h to be found
-```
-If you are working with in-tree morphologica, then replace the last section with:
-```cmake
 # Assuming that you installed morphologica in-tree (i.e. 'next to' schnakenberg.cpp).
 set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include) # Allows GL3/gl3.h to be found
 include_directories(BEFORE ${MORPH_INCLUDE_PATH})         # Allows morph/Header.h to be found
+```
+If you are working with a system-installed morphologica (with /usr/local/include/morph or similar), then replace the last section with:
+```cmake
+# MORPH_INCLUDE_PATH is set to the location at which the header directory 'morph' is found. For 'Installed morpholoigca':
+set(MORPH_INCLUDE_PATH /usr/local CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)       # Allows morph/Header.h to be found
 ```
 
 ### 3) Links to dynamically linked libraries
