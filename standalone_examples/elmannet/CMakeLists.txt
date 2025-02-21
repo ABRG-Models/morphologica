@@ -42,11 +42,6 @@ else()
   endif()
 endif()
 
-# Tell clang to be quiet about brace initialisers:
-if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
-endif()
-
 # Additional GL compiler flags.
 #
 # Following `cmake --help-policy CMP0072`
