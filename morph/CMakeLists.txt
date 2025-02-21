@@ -23,6 +23,7 @@ install(
   ConeVisual.h
   Config.h
   ConfigVisual.h
+  constexpr_math.h
   CoordArrows.h
   CurvyTellyVisual.h
   CyclicColourVisual.h
