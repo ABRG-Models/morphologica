@@ -1,5 +1,11 @@
 ﻿# Building with Visual Studio
 
+## 2025
+
+Watch this space. [vcpkg](https://github.com/microsoft/vcpkg) makes it easier to get dependencies in place and I have been working towards compatibility with Visual Studio in the current code.
+
+## 2021 
+
 In late 2021 I ported morphologica code to run on Windows, because I
 wanted to be able to port [Stalefish](https://github.com/ABRG-Models/Stalefish) to Windows (although I didn't end up doing this).
 
@@ -91,6 +97,12 @@ C:/Users/Seb James/source/repos/freetype/out/install/x64-Debug" ..
 ```
 
 # Building on Windows Subsystem for Linux
+
+## 2025
+
+WSL is now able to compile a program with OpenGL and display the graphics. When I did this it appeared to use software rendering, so the frame rate was slow, but, it *did* work.
+
+## 2021
 
 While it was possible to compile and build morphologica on Windows subsystem for Linux in 2021, none of the OpenGL graphics were available.
 Everything else should work as normal.
