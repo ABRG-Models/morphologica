@@ -46,7 +46,7 @@ It appears that some of the code I wrote for setting up a large HexGrid is order
 I don't know why this is and I don't really have any reason to fix it, as I don't run numerically intensive programs involving HexGrids on Windows (feel free to contribute a pull request).
 Other than this issue, the programs all seem to work, even text in OpenGL!
 
-## CMakeSettings.json
+### CMakeSettings.json
 
 This is the settings file that allowed me to run CMake within Visual Studio to attempt to compile morphologica code on Windows.
 
@@ -70,7 +70,7 @@ This is the settings file that allowed me to run CMake within Visual Studio to a
 }
 ```
 
-## cmake commands used on Windows
+### cmake commands used on Windows
 
 There are some more hints at how I built targets on Windows:
 
