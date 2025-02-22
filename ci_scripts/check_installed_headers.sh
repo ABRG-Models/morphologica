@@ -1,5 +1,5 @@
 #!/bin/bash
-morph_headers=$(find ../morph | grep -v "fonts" | rev | cut -d"/" -f1 | rev | grep "\.h")
+morph_headers=$(find ../morph -type f | grep -v "fonts" | rev | cut -d"/" -f1 | rev | grep "\.h")
 installed_headers=$(grep "\.h" install_manifest.txt | rev | cut -d"/" -f1 | rev)
 missing_headers=$(echo $morph_headers | tr ' ' '\n' | grep -Fxv -f <(echo $installed_headers | tr ' ' '\n'))
 
