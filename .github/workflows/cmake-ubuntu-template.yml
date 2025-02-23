@@ -2,7 +2,7 @@ name: Ubuntu Template
 on:
   workflow_call:
     inputs:
-      CONTAINER_IMAGE:
+      RUNNER_IMAGE:
         required: true
         type: string
       BUILD_TYPE:
@@ -17,7 +17,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ inputs.CONTAINER_IMAGE }}
+    runs-on: ${{ inputs.RUNNER_IMAGE }}
 
     steps:
     - uses: actions/checkout@v4

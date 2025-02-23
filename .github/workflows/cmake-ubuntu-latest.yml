@@ -18,7 +18,7 @@ jobs:
   call-workflow-passing-data:
     uses: ABRG-Models/morphologica/.github/workflows/cmake-ubuntu-template.yml@feat/github_actions_improvments
     with:
-      CONTAINER_IMAGE: ubuntu-latest
+      RUNNER_IMAGE: ubuntu-latest
       BUILD_TYPE: Release
       CC: gcc
       CXX: g++

@@ -12,7 +12,7 @@ jobs:
   call-workflow-passing-data:
     uses: ABRG-Models/morphologica/.github/workflows/cmake-mac-template.yml@main
     with:
-      CONTAINER_IMAGE: macos-14
+      RUNNER_IMAGE: macos-14
       BUILD_TYPE: Release
       CC: clang-15
       CXX: clang++-15
