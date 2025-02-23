@@ -10,7 +10,7 @@ on:
 
 jobs:
   call-workflow-passing-data:
-    uses: rremilian/morphologica/.github/workflows/cmake-mac-template.yml@feat/github_actions_improvments
+    uses: ABRG-Models/morphologica/.github/workflows/cmake-mac-template.yml@main
     with:
       CONTAINER_IMAGE: macos-14
       BUILD_TYPE: Release
