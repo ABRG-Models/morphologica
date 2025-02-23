@@ -139,13 +139,8 @@ namespace morph {
                 freetype = this->freetypes.at (_vis);
             } catch (const std::out_of_range&) {
                 // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
-#if defined USE_GLAD || defined __WIN__
                 glfn->PixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
                 morph::gl::Util::checkError (__FILE__, __LINE__, glfn);
-#else
-                glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
-                morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
 
                 if (FT_Init_FreeType (&freetype)) {
                     std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;

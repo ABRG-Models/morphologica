@@ -12,8 +12,7 @@
 #pragma once
 
 #ifdef USE_GLEW
-// Including glew.h and linking with libglew helps older platforms,
-// such as Ubuntu 16.04. Not necessary on later platforms.
+// Including glew.h and linking with libglew is necessary for wxWindows operation
 # include <GL/glew.h>
 #endif
 
@@ -43,18 +42,11 @@
 #if defined __gl3_h_ || defined __gl_h_ // get fuller list from glfw.h
 // GL headers appear to have been externally included.
 #else
-// Include the correct GL headers before VisualCommon.h (VisualModel.h will bring these in, too)
 # ifndef USE_GLEW
-#  if defined USE_GLAD || defined __WIN__
-#   define GLAD_GL_IMPLEMENTATION
-#   include <morph/glad/gl.h>
-#  elif defined __OSX__
-#   include <OpenGL/gl3.h>
-#  else // Linux
-#   include <GL/gl.h>
-#   include <GL/glext.h>
-#  endif // USE_GLAD/__OSX__/Linux
-# endif // ndef USE_GLEW
+// Include glad header
+#  define GLAD_GL_IMPLEMENTATION
+#  include <morph/glad/gl.h>
+# endif // GLEW
 #endif // GL headers
 
 #include <morph/gl/version.h>
@@ -218,11 +210,7 @@ namespace morph {
             this->setContext(); // For freetype_init
 #endif
             // Now make sure that Freetype is set up
-#if defined USE_GLAD || defined __WIN__
             morph::VisualResources<glver>::i().freetype_init (this, this->glfn);
-#else
-            morph::VisualResources<glver>::i().freetype_init (this);
-#endif
 
 #ifndef OWNED_MODE
             this->releaseContext();
@@ -335,9 +323,7 @@ namespace morph {
             model->get_shaderprogs = &morph::Visual<glver>::get_shaderprogs;
             model->get_gprog = &morph::Visual<glver>::get_gprog;
             model->get_tprog = &morph::Visual<glver>::get_tprog;
-#if defined USE_GLAD || defined __WIN__
             model->get_glfn = &morph::Visual<glver>::get_glfn;
-#endif
 
 #ifndef OWNED_MODE
             model->setContext = &morph::Visual<glver>::set_context;
@@ -700,9 +686,8 @@ namespace morph {
         static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual<glver>* _v) { return _v->shaders; };
         static GLuint get_gprog (morph::Visual<glver>* _v) { return _v->shaders.gprog; };
         static GLuint get_tprog (morph::Visual<glver>* _v) { return _v->shaders.tprog; };
-#if defined USE_GLAD || defined __WIN__
         static GladGLContext* get_glfn (morph::Visual<glver>* _v) { return _v->glfn; };
-#endif
+
         //! The colour of ambient and diffuse light sources
         morph::vec<float, 3> light_colour = { 1.0f, 1.0f, 1.0f };
         //! Strength of the ambient light
@@ -1023,7 +1008,7 @@ namespace morph {
     private:
 
 #ifndef OWNED_MODE
-# if defined USE_GLAD || defined __WIN__
+
         // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
         GladGLContext* create_gladgl_context (GLFWwindow *window)
         {
@@ -1036,7 +1021,7 @@ namespace morph {
             return context;
         }
         void free_gladgl_context (GladGLContext *context) { free(context); }
-# endif
+
 #endif // ndef OWNED_MODE
 
         void init_window()
@@ -1058,16 +1043,15 @@ namespace morph {
             glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
             glfwSetScrollCallback (this->window, scroll_callback_dispatch);
 
-# if defined USE_GLAD || defined __WIN__
-            // What IS this GladGLContext struct?
-            /* GladGLContext* */ this->glfn = this->create_gladgl_context (this->window);
+            // Create the OpenGL function context - a GladGLContext*
+            this->glfn = this->create_gladgl_context (this->window);
             if (!this->glfn) {
                 std::cout << "Failed to initialize GLAD GL context" << std::endl;
                 free_gladgl_context (this->glfn);
             }
             // Now can call gl functions like this [instead of glGetString (GL_VERSION)]
             // std::cout << "Have GL function context at version " << this->glfn->GetString (GL_VERSION);
-# endif
+
 #endif // ndef OWNED_MODE
         }
 
@@ -1079,25 +1063,8 @@ namespace morph {
 #ifndef OWNED_MODE
             this->setContext();
 #endif
-
-#ifdef USE_GLEW
-            glewExperimental = GL_FALSE;
-            GLenum error = glGetError();
-            if (error != GL_NO_ERROR) {
-                std::cerr << "OpenGL error: " << error << std::endl;
-            }
-            GLenum err = glewInit();
-            if (GLEW_OK != err) {
-                std::cerr << "GLEW initialization failed!" << glewGetErrorString(err) << std::endl;
-            }
-#endif
-
-           if (this->version_stdout == true) {
-# if defined USE_GLAD || defined __WIN__
+            if (this->version_stdout == true) {
                 unsigned char* glv = (unsigned char*)this->glfn->GetString(GL_VERSION);
-#else
-                unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
-#endif
                 std::cout << "This is version " << morph::version_string()
                           << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)
                           << "> running on OpenGL Version " << glv << std::endl;
@@ -1129,19 +1096,11 @@ namespace morph {
             this->shaders.tprog = morph::gl::LoadShaders (this->text_shader_progs, this->glfn);
 
             // OpenGL options
-# if defined USE_GLAD || defined __WIN__
             this->glfn->Enable (GL_DEPTH_TEST);
             this->glfn->Enable (GL_BLEND);
             this->glfn->BlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             this->glfn->Disable (GL_CULL_FACE);
             morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
-#else
-            glEnable (GL_DEPTH_TEST);
-            glEnable (GL_BLEND);
-            glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glDisable (GL_CULL_FACE);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
 
             // If possible, read in scenetrans and rotation state from a special config file
             try {

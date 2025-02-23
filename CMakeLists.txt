@@ -118,6 +118,8 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 
 # Additional GL compiler flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
+
+# GLEW may be required for wxWindows. Can't get rid of entirely
 if(USE_GLEW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GLEW")
 endif(USE_GLEW)

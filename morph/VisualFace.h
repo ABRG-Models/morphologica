@@ -430,7 +430,6 @@ namespace morph {
 
                     // generate texture
                     unsigned int texture;
-#  if defined USE_GLAD || defined __WIN__
                     if (glfn == nullptr) { throw std::runtime_error ("glfn problem"); }
                     glfn->GenTextures (1, &texture);
                     glfn->BindTexture (GL_TEXTURE_2D, texture);
@@ -450,26 +449,7 @@ namespace morph {
                     glfn->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                     glfn->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                     glfn->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Could be GL_NEAREST, but doesn't look as good.
-#else
-                    glGenTextures (1, &texture);
-                    glBindTexture (GL_TEXTURE_2D, texture);
-                    glTexImage2D(
-                        GL_TEXTURE_2D,
-                        0,
-                        GL_RED,
-                        this->face->glyph->bitmap.width,
-                        this->face->glyph->bitmap.rows,
-                        0,
-                        GL_RED,
-                        GL_UNSIGNED_BYTE,
-                        this->face->glyph->bitmap.buffer
-                        );
-                    // set texture options
-                    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Could be GL_NEAREST, but doesn't look as good.
-#endif
+
                     // now store character for later use
                     morph::visgl::CharInfo glchar = {
                         texture,
@@ -485,11 +465,8 @@ namespace morph {
                     }
                     this->glchars.insert (std::pair<char32_t, morph::visgl::CharInfo>(c, glchar));
                 }
-#if defined USE_GLAD || defined __WIN__
                 glfn->BindTexture(GL_TEXTURE_2D, 0);
-#else
-                glBindTexture(GL_TEXTURE_2D, 0);
-#endif
+
                 // At this point could FT_Done_Face() etc, I think. as we no longer do anything Freetypey with it.
                 FT_Done_Face (this->face);
             }

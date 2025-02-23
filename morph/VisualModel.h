@@ -18,7 +18,6 @@
 #   include <OpenGL/gl3.h>
 #  else
 #   include <GL/gl.h>
-#   include <GL/glext.h>
 #  endif
 # endif
 #endif
@@ -34,7 +33,6 @@
 #include <morph/gl/util.h>
 #include <morph/VisualCommon.h>
 #include <morph/VisualTextModel.h>
-//#include <morph/VisualFace.h> // Don't think it's required here
 #include <morph/colour.h>
 #include <morph/base64.h>
 #include <morph/MathAlgo.h>
