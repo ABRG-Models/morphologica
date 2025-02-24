@@ -1,12 +1,6 @@
 // Test a few morph::tools functions
 #include "morph/tools.h"
-
 #include <cstring>
-// For readDirectoryTree
-extern "C" {
-# include <dirent.h>
-# include <sys/stat.h>
-}
 
 int main()
 {
