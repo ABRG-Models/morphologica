@@ -76,7 +76,7 @@ else()
     endif()
   else() # Windows
     # Set flags for Windows. /EHsc required for use of exceptions
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc /constexpr:steps500000000")
   endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
 
