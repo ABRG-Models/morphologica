@@ -25,6 +25,7 @@ install(
   ConfigVisual.h
   constexpr_math.h
   CoordArrows.h
+  crc32.h
   CurvyTellyVisual.h
   CyclicColourVisual.h
   DatasetStyle.h
