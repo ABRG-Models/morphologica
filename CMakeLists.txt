@@ -81,10 +81,10 @@ else()
 endif()
 
 # Tell clang to be quiet about brace initialisers
-if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  # FIXME: Add clang compiler test
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
-endif()
+# Not necessary with clang 18 or 16 apparently
+#if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
+#endif()
 
 # Some programs require the ability to define literal template args of
 # type std::array (a C++-20 feature). Clang versions less than 18 can't.

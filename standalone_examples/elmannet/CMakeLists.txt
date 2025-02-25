@@ -2,8 +2,7 @@
 # This is an example CMakeLists.txt file to compile a morphologica program
 #
 
-# cmake version 3.1 provides the set(CMAKE_CXX_STANDARD 17) feature
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 # Give your project a name
 project(ElmanNet)
@@ -41,11 +40,6 @@ else()
     # This assumes a gcc compiler (or a gcc mimic like Clang)
     set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -O3")
   endif()
-endif()
-
-# Tell clang to be quiet about brace initialisers:
-if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
 
 # Additional GL compiler flags.

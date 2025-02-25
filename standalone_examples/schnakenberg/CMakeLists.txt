@@ -3,8 +3,7 @@
 # a morphologica that is 'in-tree'
 #
 
-# cmake version 3.1 provides the set(CMAKE_CXX_STANDARD 17) feature
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 # Give your project a name
 project(Schnakenberg)
@@ -31,11 +30,6 @@ else()
   set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas")
 endif()
 
-# Tell clang to be quiet about brace initialisers:
-if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
-endif()
-
 # Add OpenMP flags here, if necessary
 find_package(OpenMP)
 if(OpenMP_FOUND)
@@ -52,6 +46,9 @@ endif()
 
 # Tell the program where the morph fonts are, to compile them into the binary
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
+
+# Declare the path to morphologica
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
 
 # Find the libraries which will be needed
 find_package(HDF5 REQUIRED)
@@ -72,7 +69,6 @@ set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INC
 set(MORPH_INC_GL ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 # Assuming that you installed morphologica in-tree (i.e. 'next to' schnakenberg.cpp).
-set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
 include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include) # Allows GL3/gl3.h to be found
 include_directories(BEFORE ${MORPH_INCLUDE_PATH})         # Allows morph/Header.h to be found
 

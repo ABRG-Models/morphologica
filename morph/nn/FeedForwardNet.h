@@ -102,7 +102,7 @@ namespace morph {
 
             // FIXME: Put in a derived class specifically for Mnist handling.
             //! Evaluate against the Mnist test image set
-            unsigned int evaluate (const std::multimap<unsigned char, std::pair<int, morph::vvec<float>>>& testData, int num=10000)
+            unsigned int evaluate (const std::multimap<unsigned char, std::pair<int, morph::vvec<float>> >& testData, int num=10000)
             {
                 // For each image in testData, compute cost
                 float evalcost = 0.0f;

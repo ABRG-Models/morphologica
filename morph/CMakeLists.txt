@@ -23,6 +23,7 @@ install(
   ConeVisual.h
   Config.h
   ConfigVisual.h
+  constexpr_math.h
   CoordArrows.h
   CurvyTellyVisual.h
   CyclicColourVisual.h
@@ -80,9 +81,6 @@ install(
   ReadCurves.h
   RectangleVisual.h
   Rect.h
-  RecurrentNetwork.h
-  RecurrentNetworkModel.h
-  RecurrentNetworkTools.h
   RhomboVisual.h
   RingVisual.h
   rngd.h
