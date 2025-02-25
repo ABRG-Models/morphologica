@@ -41,6 +41,7 @@
 #include <utility>
 #include <tuple>
 #include <stdexcept>
+#include <morph/vec.h>
 #include <morph/vvec.h>
 
 namespace morph {
