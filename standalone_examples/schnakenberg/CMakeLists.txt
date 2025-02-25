@@ -59,6 +59,13 @@ find_package(Armadillo REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(rapidxml QUIET)
+
+# Use bundled version of rapidxml if rapidxml is not found on the system
+if(NOT rapidxml_FOUND)
+    message("-- Using the bundled version of rapidxml")
+    include_directories("${MORPH_INCLUDE_PATH}/include/rapidxml-1.13")
+endif()
 
 # Define collections of includes that have to be made for morphologica
 set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
