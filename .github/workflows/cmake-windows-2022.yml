@@ -15,4 +15,3 @@ jobs:
       RUNNER_IMAGE: windows-2022
       BUILD_TYPE: Release
       VCPKG_TRIPLET: x64-windows
-      VCPKG_VERSION: 2025.02.14

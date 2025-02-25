@@ -11,9 +11,6 @@ on:
       VCPKG_TRIPLET:
         required: true
         type: string
-      VCPKG_VERSION:
-        required: true
-        type: string
 
 jobs:
   build:
@@ -29,16 +26,16 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: microsoft/vcpkg
-        ref: 2025.02.14
-        path: vcpkg
+        path: vcpkg_repo
+        fetch-depth: 0
 
     - name: Bootstrap vcpkg
       run: ./bootstrap-vcpkg.bat
-      working-directory: vcpkg
+      working-directory: vcpkg_repo
 
     - name: Install dependencies using vcpkg
-      run: ./vcpkg install --triplet=${{ inputs.VCPKG_TRIPLET }} armadillo freetype glfw3 hdf5 nlohmann-json opengl rapidxml
-      working-directory: vcpkg
+      run: ./vcpkg install --triplet=${{ inputs.VCPKG_TRIPLET }} --x-manifest-root=${{ github.workspace }}/vcpkg
+      working-directory: vcpkg_repo
 
     - name: Configure CMake
       run: |
