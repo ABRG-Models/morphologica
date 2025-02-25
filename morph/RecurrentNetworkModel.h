@@ -586,8 +586,7 @@ namespace morph {
                 v.zFar = 20;
                 v.fov = 45;
                 v.sceneLocked = false;
-                v.setZDefault(-3.7f);
-                v.setSceneTransXY (0.0f,0.0f);
+                v.setSceneTrans (0.0f,0.0f,-3.7f);
                 morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::scale<float> scale;
                 scale.do_autoscale = true;
@@ -614,8 +613,7 @@ namespace morph {
                 v.zFar = 20;
                 v.fov = 45;
                 v.sceneLocked = false;
-                v.setZDefault(-2.7f);
-                v.setSceneTransXY (0.0f,0.0f);
+                v.setSceneTrans (0.0f,0.0f,-2.7f);
                 morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::scale<float> scale;
                 scale.do_autoscale = true;
@@ -651,8 +649,7 @@ namespace morph {
                 v.zFar = 20;
                 v.fov = 45;
                 v.sceneLocked = false;
-                v.setZDefault(-2.7f);
-                v.setSceneTransXY (0.0f,0.0f);
+                v.setSceneTrans (0.0f,0.0f,-2.7f);
                 morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::scale<float> scale;
 
