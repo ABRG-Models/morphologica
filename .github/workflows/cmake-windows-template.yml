@@ -33,20 +33,20 @@ jobs:
       working-directory: vcpkg_repo
 
     - name: Install dependencies using vcpkg
-      run: ./vcpkg install --triplet=${{ inputs.VCPKG_TRIPLET }} --x-manifest-root=${{ github.workspace }}/vcpkg
+      run: ./vcpkg install --triplet=${{ inputs.VCPKG_TRIPLET }} --x-manifest-root=${{ github.workspace }}\vcpkg
       working-directory: vcpkg_repo
 
     - name: Configure CMake
       run: |
         cmake -B ${{ github.workspace }}/build `
-        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake `
-        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/build/install `
+        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\scripts\buildsystems\vcpkg.cmake `
+        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\build\install `
         -DCMAKE_BUILD_TYPE=${{ inputs.BUILD_TYPE }} `
         -DBUILD_TESTS=ON `
         -DBUILD_EXAMPLES=ON
 
     - name: Build
-      run: cmake --build ${{ github.workspace }}/build --config ${{ inputs.BUILD_TYPE }}
+      run: cmake --build ${{ github.workspace }}\build --config ${{ inputs.BUILD_TYPE }}
 
     - name: Test
       working-directory: ${{ github.workspace }}/build
