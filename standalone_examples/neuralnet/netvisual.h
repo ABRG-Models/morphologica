@@ -8,11 +8,6 @@
  */
 #pragma once
 
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
-#endif
 #include <morph/VisualModel.h>
 #include <morph/vec.h>
 #include <morph/scale.h>
