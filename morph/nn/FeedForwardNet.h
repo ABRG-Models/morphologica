@@ -102,7 +102,7 @@ namespace morph {
 
             // FIXME: Put in a derived class specifically for Mnist handling.
             //! Evaluate against the Mnist test image set
-            unsigned int evaluate (const std::multimap<unsigned char, morph::vvec<float>>& testData, int num=10000)
+            unsigned int evaluate (const std::multimap<unsigned char, std::pair<int, morph::vvec<float>>>& testData, int num=10000)
             {
                 // For each image in testData, compute cost
                 float evalcost = 0.0f;
@@ -111,7 +111,7 @@ namespace morph {
                 for (auto img : testData) {
                     unsigned int key = static_cast<unsigned int>(img.first);
                     // Set input
-                    this->neurons.front() = img.second;
+                    this->neurons.front() = img.second.second;
                     // Set output
                     this->desiredOutput.zero();
                     this->desiredOutput[key] = 1.0f;
