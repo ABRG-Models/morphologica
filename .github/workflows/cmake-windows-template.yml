@@ -39,7 +39,7 @@ jobs:
     - name: Configure CMake
       run: |
         cmake -B ${{ github.workspace }}/build `
-        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\scripts\buildsystems\vcpkg.cmake `
+        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg_repo\scripts\buildsystems\vcpkg.cmake `
         -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\build\install `
         -DCMAKE_BUILD_TYPE=${{ inputs.BUILD_TYPE }} `
         -DBUILD_TESTS=ON `
