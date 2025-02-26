@@ -19,8 +19,10 @@
  *
  * and we can use it in a switch statement like:
  *
+ *   using std::literals::string_view_literals::operator""sv;
+ *
  *   switch (string_crc) {
- *   case morph::crc32 (std::string_view{"abc"sv}):
+ *   case morph::crc32 ("abc"sv):
  *   {
  *       std::cout << "Matched abc" << std::endl;
  *       break;
