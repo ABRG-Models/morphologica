@@ -8,6 +8,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   call-workflow-passing-data:
     uses: ABRG-Models/morphologica/.github/workflows/cmake-ubuntu-template.yml@main
