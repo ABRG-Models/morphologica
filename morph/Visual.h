@@ -32,7 +32,6 @@
 #else // glfw3 not yet included
 # ifndef OWNED_MODE
 #  define GLFW_INCLUDE_NONE // Here, we tell GLFW that we will explicitly include GL3/gl3.h and GL/glext.h
-#  warning "Include glfw3"
 #  include <GLFW/glfw3.h>
 #  ifndef VISUAL_MANAGES_GLFW
 #   define VISUAL_MANAGES_GLFW 1 // Used in VisualResources.h
@@ -42,7 +41,6 @@
 
 #if defined __gl3_h_ || defined __gl_h_ // get fuller list from glfw.h
 // GL headers appear to have been externally included.
-# warning "GL headers externally included"
 #else
 # ifndef USE_GLEW
 // Include glad header
