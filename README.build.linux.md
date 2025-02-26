@@ -27,11 +27,11 @@ sudo apt install build-essential cmake git \
 ```
 For the optional dependencies it's:
 ```sh
-sudo apt install libarmadillo-dev libhdf5-dev qtcreator libwxgtk3.2-dev libgbm-dev libegl-dev
+sudo apt install libarmadillo-dev libhdf5-dev qtcreator qtbase5-dev libwxgtk3.2-dev libgbm-dev libegl-dev
 ```
 * Armadillo. Only required if you use the ```morph::BezCurve``` class.
 * HDF5 library. Required if you use the wrapper class ```morph::HdfData``` or any of the classes that make use of HdfData (```HexGrid```,```CartGrid```,```Anneal```,```DirichDom```,```RecurrentNetworkModel```,```RD_Base``` and ```DirichVtx```). Their tests and examples should all compile if the libraries are detected and be omitted if not.
-* Qt library. Installing qtcreator will bring in the Qt5 libraries that are used to compile some Qt-morphologica example programs. It almost certainly possible to install *only* the Qt5 Core, Gui and Widgets libraries, but that hasn't been verified.
+* Qt library. Installing qtcreator will bring in the Qt5 libraries that are used to compile some Qt-morphologica example programs. It almost certainly possible to install *only* the Qt5 Core, Gui and Widgets libraries, but that hasn't been verified. On recent Ubuntu systems, you may well need qtbase5-dev to get the cmake scripts to `find_package(Qt5...)`.
 * WxWindows. libwxgtk3.2-dev (you'll need Ubuntu 23.04+) will enable the compilation of morphologica-wxWidgets example programs.
 * GBM. Required only for window-less OpenGL compute compilations. Currently that's one example program only.
 * EGL. Requried to build GLES applications that are compatible with Raspberry Pi 4 and 5.
