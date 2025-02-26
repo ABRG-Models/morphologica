@@ -217,7 +217,10 @@ namespace morph {
 #endif
         }
 
+        //! GLAD OpenGL function context pointer
         GladGLContext* glfn = nullptr;
+        //! Stores the OpenGL function context version that was loaded
+        int glfn_version = 0;
 
         //! Take a screenshot of the window. Return vec containing width * height or {-1, -1} on
         //! failure. Set transparent_bg to get a transparent background.
@@ -1012,12 +1015,12 @@ namespace morph {
         // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
         GladGLContext* create_gladgl_context (GLFWwindow *window)
         {
-            glfwMakeContextCurrent(window);
+            glfwMakeContextCurrent(window); // The window has an OpenGL version hint...
             GladGLContext* context = (GladGLContext*) calloc(1, sizeof(GladGLContext));
             if (!context) { return nullptr; }
-            int version = gladLoadGLContext (context, glfwGetProcAddress);
-            std::cout << "create_gladgl_context: Loaded OpenGL " << GLAD_VERSION_MAJOR(version)
-                      << "." << GLAD_VERSION_MINOR(version) << std::endl;
+            this->glfn_version = gladLoadGLContext (context, glfwGetProcAddress);
+            // ...so glfn_version should (more or less) match the version specified in the glver
+            // template arg
             return context;
         }
         void free_gladgl_context (GladGLContext *context) { free(context); }
