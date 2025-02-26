@@ -32,6 +32,7 @@
 #else // glfw3 not yet included
 # ifndef OWNED_MODE
 #  define GLFW_INCLUDE_NONE // Here, we tell GLFW that we will explicitly include GL3/gl3.h and GL/glext.h
+#  warning "Include glfw3"
 #  include <GLFW/glfw3.h>
 #  ifndef VISUAL_MANAGES_GLFW
 #   define VISUAL_MANAGES_GLFW 1 // Used in VisualResources.h
@@ -41,6 +42,7 @@
 
 #if defined __gl3_h_ || defined __gl_h_ // get fuller list from glfw.h
 // GL headers appear to have been externally included.
+# warning "GL headers externally included"
 #else
 # ifndef USE_GLEW
 // Include glad header
@@ -1009,13 +1011,9 @@ namespace morph {
         std::vector<std::unique_ptr<morph::VisualModel<glver>>> vm;
 
     private:
-
-#ifndef OWNED_MODE
-
         // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
-        GladGLContext* create_gladgl_context (GLFWwindow *window)
+        GladGLContext* create_gladgl_context (procaddress)
         {
-            glfwMakeContextCurrent(window); // The window has an OpenGL version hint...
             GladGLContext* context = (GladGLContext*) calloc(1, sizeof(GladGLContext));
             if (!context) { return nullptr; }
             this->glfn_version = gladLoadGLContext (context, glfwGetProcAddress);
@@ -1024,8 +1022,6 @@ namespace morph {
             return context;
         }
         void free_gladgl_context (GladGLContext *context) { free(context); }
-
-#endif // ndef OWNED_MODE
 
         void init_window()
         {
@@ -1046,16 +1042,17 @@ namespace morph {
             glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
             glfwSetScrollCallback (this->window, scroll_callback_dispatch);
 
+            glfwMakeContextCurrent(window);
+#endif // ndef OWNED_MODE
+
             // Create the OpenGL function context - a GladGLContext*
-            this->glfn = this->create_gladgl_context (this->window);
+            this->glfn = this->create_gladgl_context();
             if (!this->glfn) {
                 std::cout << "Failed to initialize GLAD GL context" << std::endl;
                 free_gladgl_context (this->glfn);
             }
             // Now can call gl functions like this [instead of glGetString (GL_VERSION)]
             // std::cout << "Have GL function context at version " << this->glfn->GetString (GL_VERSION);
-
-#endif // ndef OWNED_MODE
         }
 
         // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any external

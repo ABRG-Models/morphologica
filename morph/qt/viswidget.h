@@ -3,19 +3,23 @@
 #include <iostream>
 #include <functional>
 
-#include <QtWidgets/QOpenGLWidget>
-#include <QOpenGLFunctions_4_1_Core>
-#include <QSurfaceFormat>
-#include <QMouseEvent>
-#include <QWheelEvent>
+struct QOpenGLWidget; // fwd decl
 
 // Visual is going to be owned by the QOpenGLWidget
 #define OWNED_MODE 1
 // Define morph::win_t before #including morph/Visual.h
 namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/Visual.h>
+
+#include <QtWidgets/QOpenGLWidget>
+//#include <QOpenGLFunctions_4_1_Core>
+#include <QSurfaceFormat>
+#include <QMouseEvent>
+#include <QWheelEvent>
+
 // We need to be able to convert from Qt keycodes to morph keycodes
 #include <morph/qt/keycodes.h>
+
 
 namespace morph {
     namespace qt {
@@ -24,7 +28,7 @@ namespace morph {
         constexpr int gl_version = morph::gl::version_4_1;
 
         // A morph::Visual widget
-        struct viswidget : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
+        struct viswidget : public QOpenGLWidget //, protected QOpenGLFunctions_4_1_Core
         {
             // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::Visual
             // inside the widget.
@@ -60,11 +64,13 @@ namespace morph {
             void initializeGL() override
             {
                 // Make sure we can call gl functions
-                initializeOpenGLFunctions();
-                // Switch on multisampling anti-aliasing (with the num samples set in constructor)
-                glEnable (GL_MULTISAMPLE);
+                //initializeOpenGLFunctions();
+
                 // Initialise morph::Visual
                 v.init (this);
+
+                // Switch on multisampling anti-aliasing (with the num samples set in constructor)
+                v.glfn->Enable (GL_MULTISAMPLE);
             }
 
             void resizeGL (int w, int h) override
