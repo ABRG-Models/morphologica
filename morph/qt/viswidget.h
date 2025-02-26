@@ -67,9 +67,32 @@ namespace morph {
                 //initializeOpenGLFunctions();
 
                 // Initialise morph::Visual
-                //std::function<QFunctionPointer(const char*)> fn = static_cast<QFunctionPointer(const char*)>(&this->context()->getProcAddress);
-                QFunctionPointer (*fptr)(const char*) = &(this->context()->getProcAddress);
-                v.init (this, fptr);
+#if 0
+                // fatal error: call to non-static member function without an object argument
+                // 71 |                 v.init_glad (QOpenGLContext::getProcAddress);
+                v.init_glad (QOpenGLContext::getProcAddress);
+#elif 0
+                // fatal error: reference to non-static member function must be called
+                // 77 |                 v.init_glad (this->context()->getProcAddress);
+                v.init_glad (this->context()->getProcAddress);
+#elif 1
+                //auto mem_fptr1 = std::mem_fn<QFunctionPointer(*)(const char*)>(&QOpenGLContext::getProcAddress);
+                //auto mem_fptr1 = std::mem_fn(&QOpenGLContext::getProcAddress);
+
+                // fatal error: no matching function for call to 'gladLoadGLContext'
+                // 1021 |             this->glfn_version = gladLoadGLContext (context, procaddressfn);
+                auto mylambda = [this](const char* name) { return this->context()->getProcAddress(name); };
+                v.init_glad (mylambda);
+#else
+
+                // fatal error: cannot create a non-constant pointer to member function
+                // 78 |                 const void (*(*fptr)(const char *))() = &this->context()->getProcAddress;
+                void (*(*fptr)(const char *))() = &this->context()->getProcAddress;
+
+                //QFunctionPointer(QOpenGLContext::*getprocaddress_fn1)(const char*) = fptr;
+                v.init_glad (fptr);
+#endif
+                v.init (this);
 
                 // Switch on multisampling anti-aliasing (with the num samples set in constructor)
                 v.glfn->Enable (GL_MULTISAMPLE);
@@ -78,8 +101,7 @@ namespace morph {
             void resizeGL (int w, int h) override
             {
                 double dpr = this->devicePixelRatio();
-                v.set_winsize (static_cast<int>(std::round(w * dpr)),
-                               static_cast<int>(std::round(h * dpr)));
+                v.set_winsize (static_cast<int>(std::round(w * dpr)), static_cast<int>(std::round(h * dpr)));
                 this->update();
             }
 
