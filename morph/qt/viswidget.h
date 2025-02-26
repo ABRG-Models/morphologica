@@ -12,7 +12,7 @@ namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/Visual.h>
 
 #include <QtWidgets/QOpenGLWidget>
-//#include <QOpenGLFunctions_4_1_Core>
+#include <QOpenGLContext>
 #include <QSurfaceFormat>
 #include <QMouseEvent>
 #include <QWheelEvent>
@@ -67,7 +67,9 @@ namespace morph {
                 //initializeOpenGLFunctions();
 
                 // Initialise morph::Visual
-                v.init (this);
+                //std::function<QFunctionPointer(const char*)> fn = static_cast<QFunctionPointer(const char*)>(&this->context()->getProcAddress);
+                QFunctionPointer (*fptr)(const char*) = &(this->context()->getProcAddress);
+                v.init (this, fptr);
 
                 // Switch on multisampling anti-aliasing (with the num samples set in constructor)
                 v.glfn->Enable (GL_MULTISAMPLE);

@@ -142,7 +142,9 @@ namespace morph {
             , title(_title)
             , version_stdout(_version_stdout)
         {
-            this->init_resources();
+#ifndef OWNED_MODE
+            this->init_resources (glfwGetProcAddress);
+#endif // not expected
             this->init_gl();
         }
 
@@ -162,7 +164,9 @@ namespace morph {
             , coordArrowsThickness(caThickness)
             , coordArrowsEm(caEm)
         {
-            this->init_resources();
+#ifndef OWNED_MODE
+            this->init_resources (glfwGetProcAddress);
+#endif // not expected
             this->init_gl();
         }
 
@@ -189,24 +193,24 @@ namespace morph {
 
         // Public init that is given a context (window or widget) and then sets up the
         // VisualResource, shaders and so on.
-        void init (morph::win_t* ctx)
+        void init (morph::win_t* ctx, std::function<void*(const char*)> procaddressfn)
         {
             this->window = ctx;
-            this->init_resources();
+            this->init_resources (procaddressfn);
             this->init_gl();
         }
 
         // Do one-time init of the Visual's resources. This gets/creates the VisualResources,
         // registers this visual with resources, calls init_window for any glfw stuff that needs to
         // happen, and lastly initializes the freetype code.
-        void init_resources()
+        void init_resources (auto procaddressfn)
         {
             // VisualResources provides font management and GLFW management. Ensure it exists in memory.
             morph::VisualResources<glver>::i().create();
 
             // Set up the window that will present the OpenGL graphics. No-op in Qt-managed Visual,
             // but this has to happen BEFORE the call to VisualResources::freetype_init()
-            this->init_window();
+            this->init_window (procaddressfn);
 
 #ifndef OWNED_MODE
             this->setContext(); // For freetype_init
@@ -1012,18 +1016,18 @@ namespace morph {
 
     private:
         // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
-        GladGLContext* create_gladgl_context (procaddress)
+        GladGLContext* create_gladgl_context (auto procaddressfn)
         {
             GladGLContext* context = (GladGLContext*) calloc(1, sizeof(GladGLContext));
             if (!context) { return nullptr; }
-            this->glfn_version = gladLoadGLContext (context, glfwGetProcAddress);
+            this->glfn_version = gladLoadGLContext (context, procaddressfn);
             // ...so glfn_version should (more or less) match the version specified in the glver
             // template arg
             return context;
         }
         void free_gladgl_context (GladGLContext *context) { free(context); }
 
-        void init_window()
+        void init_window (auto procaddressfn)
         {
 #ifndef OWNED_MODE
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
@@ -1046,7 +1050,8 @@ namespace morph {
 #endif // ndef OWNED_MODE
 
             // Create the OpenGL function context - a GladGLContext*
-            this->glfn = this->create_gladgl_context();
+            this->glfn = this->create_gladgl_context (procaddressfn);
+
             if (!this->glfn) {
                 std::cout << "Failed to initialize GLAD GL context" << std::endl;
                 free_gladgl_context (this->glfn);
