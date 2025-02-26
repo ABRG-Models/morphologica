@@ -158,7 +158,7 @@ int main()
                      << "                break;\n"
                      << "            }\n";
 
-        cpp_content2 << "            case morph::crc32 (std::string_view{\"" << name_upperfirst << "\"sv}):\n"
+        cpp_content2 << "            case morph::crc32 (\"" << name_upperfirst << "\"sv):\n"
                      << "                cmt = morph::ColourMapType::" << name_upperfirst << "; break;\n";
 
         cpp_content3 << "            case ColourMapType::"<< name_upperfirst << ":\n"
