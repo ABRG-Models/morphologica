@@ -196,13 +196,6 @@ if(USE_GLEW)
   target_link_libraries(helloworld GLEW::GLEW)
 endif()
 
-add_executable(gladworld helloworld.cpp)
-target_link_libraries(gladworld OpenGL::GL glfw Freetype::Freetype)
-target_compile_definitions(gladworld PUBLIC USE_GLAD=1)
-if(USE_GLEW)
-  target_link_libraries(gladworld GLEW::GLEW)
-endif()
-
 add_executable(helloversion helloversion.cpp)
 target_link_libraries(helloversion OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
