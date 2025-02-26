@@ -59,7 +59,7 @@
 
 namespace morph {
 
-    static constexpr uint32_t table[256] =
+    static constexpr uint32_t crc_table[256] =
     {
         0x00000000u, 0x77073096u, 0xee0e612cu, 0x990951bau, 0x076dc419u,
         0x706af48fu, 0xe963a535u, 0x9e6495a3u, 0x0edb8832u, 0x79dcb8a4u,
@@ -123,7 +123,7 @@ namespace morph {
 
         crc = crc ^ 0xffffffffu;
         for (uint32_t i = 0; i < len; i++) {
-            crc = table[*data ^ (crc & 0xff)] ^ (crc >> 8);
+            crc = crc_table[*data ^ (crc & 0xff)] ^ (crc >> 8);
             data++;
         }
         crc = crc ^ 0xffffffffu;
