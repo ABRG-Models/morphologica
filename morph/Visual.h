@@ -45,10 +45,10 @@
 # ifndef USE_GLEW
 // Include glad header
 #  define GLAD_GL_IMPLEMENTATION
-#  ifdef GLAD_SINGLE_CONTEXT
-#   include <morph/glad/gl_single.h>  // GLAD_OPTION_GL_MX remains undefined
+#  ifdef GLAD_OPTION_MX
+#   include <morph/glad/gl_mx.h>   // Now GLAD_OPTION_GL_MX is defined
 #  else
-#   include <morph/glad/gl.h>         // Now GLAD_OPTION_GL_MX is defined
+#   include <morph/glad/gl.h>      // GLAD_OPTION_GL_MX remains undefined
 #  endif
 # endif // GLEW
 #endif // GL headers

@@ -136,8 +136,8 @@ add_subdirectory(jcvoronoi)
 
 # The Visual-in-a-Qt-Widget code
 add_subdirectory(qt)
-# WxWidgets code disabled for OpenGL complexity reasons...
-## add_subdirectory(wx)
+# wxWindows
+add_subdirectory(wx)
 
 # Install the EXPORT so that morphologica has its own .cmake file and find_package(morphologica) should work
 install(FILES morphologica-config.cmake DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/morphologica)

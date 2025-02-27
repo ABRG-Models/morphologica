@@ -12,10 +12,12 @@ add_subdirectory(schnakenberg)
 # A retinotectal model published by Simpson and Goodhill, 2011
 add_subdirectory(SimpsonGoodhill)
 
-# Shader compute examples. Not supported on Apple, which is limited to OpenGL 4.1.
-##if(NOT APPLE)
-##  add_subdirectory(gl_compute) # disabled while developing GLAD
-##endif()
+# Shader compute examples. Not supported on Apple, which is limited to
+# OpenGL 4.1 or Windows because I want to keep the GL header inclusion
+# simple on these examples.
+if(NOT APPLE AND NOT WIN32)
+  add_subdirectory(gl_compute)
+endif()
 
 # Examples showing how to use morphologica with Qt. Compiled only if
 # find_package found Qt5 and USE_GLEW is false
@@ -515,10 +517,10 @@ endif()
 add_executable(twowindows twowindows.cpp)
 target_link_libraries(twowindows OpenGL::GL glfw Freetype::Freetype)
 
-# Load the single context glad header (the one without 'mx')
-add_executable(twowindows_singlecontext twowindows.cpp)
-target_compile_definitions(twowindows_singlecontext PUBLIC GLAD_SINGLE_CONTEXT=1)
-target_link_libraries(twowindows_singlecontext OpenGL::GL glfw Freetype::Freetype)
+# Load the multi context glad header (the one with 'mx')
+add_executable(twowindows_mx twowindows.cpp)
+target_compile_definitions(twowindows_mx PUBLIC GLAD_OPTION_MX=1)
+target_link_libraries(twowindows_mx OpenGL::GL glfw Freetype::Freetype)
 
 add_executable(twowindows_mutex twowindows_mutex.cpp)
 target_link_libraries(twowindows_mutex OpenGL::GL glfw Freetype::Freetype)
