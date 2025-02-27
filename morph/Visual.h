@@ -1014,7 +1014,7 @@ namespace morph {
 
     private:
         // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
-        GladGLContext* create_gladgl_context (GLADloadfunc procaddressfn)
+        GladGLContext* create_gladgl_context (const GLADloadfunc procaddressfn)
         {
             GladGLContext* context = (GladGLContext*) calloc(1, sizeof(GladGLContext));
             if (!context) { return nullptr; }
@@ -1051,7 +1051,7 @@ namespace morph {
         }
 
     public:
-        void init_glad (GLADloadfunc procaddressfn)
+        void init_glad (const GLADloadfunc procaddressfn)
         {
             // Create the OpenGL function context - a GladGLContext*
             this->glfn = this->create_gladgl_context (procaddressfn);

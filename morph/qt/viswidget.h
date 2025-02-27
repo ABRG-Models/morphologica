@@ -27,6 +27,17 @@ namespace morph {
         // This must match the QOpenGLFunctions_4_1_Core class you derive from
         constexpr int gl_version = morph::gl::version_4_1;
 
+        // A free morph::qt::gl_context pointer is required
+        QOpenGLContext* gl_context = nullptr;
+
+        // A free function that can be passed as a GLADloadproc (which is a free
+        // function signature). Figured out in a godbolt: https://godbolt.org/z/41c4n3GGe
+        QFunctionPointer getProcAddress (const char* name)
+        {
+            if (gl_context == nullptr) { return nullptr; }
+            return morph::qt::gl_context->getProcAddress (name);
+        }
+
         // A morph::Visual widget
         struct viswidget : public QOpenGLWidget //, protected QOpenGLFunctions_4_1_Core
         {
@@ -63,35 +74,9 @@ namespace morph {
 
             void initializeGL() override
             {
-                // Make sure we can call gl functions
-                //initializeOpenGLFunctions();
-
-                // Initialise morph::Visual
-#if 0
-                // fatal error: call to non-static member function without an object argument
-                // 71 |                 v.init_glad (QOpenGLContext::getProcAddress);
-                v.init_glad (QOpenGLContext::getProcAddress);
-#elif 0
-                // fatal error: reference to non-static member function must be called
-                // 77 |                 v.init_glad (this->context()->getProcAddress);
-                v.init_glad (this->context()->getProcAddress);
-#elif 1
-                //auto mem_fptr1 = std::mem_fn<QFunctionPointer(*)(const char*)>(&QOpenGLContext::getProcAddress);
-                //auto mem_fptr1 = std::mem_fn(&QOpenGLContext::getProcAddress);
-
-                // fatal error: no matching function for call to 'gladLoadGLContext'
-                // 1021 |             this->glfn_version = gladLoadGLContext (context, procaddressfn);
-                auto mylambda = [this](const char* name) { return this->context()->getProcAddress(name); };
-                v.init_glad (mylambda);
-#else
-
-                // fatal error: cannot create a non-constant pointer to member function
-                // 78 |                 const void (*(*fptr)(const char *))() = &this->context()->getProcAddress;
-                void (*(*fptr)(const char *))() = &this->context()->getProcAddress;
-
-                //QFunctionPointer(QOpenGLContext::*getprocaddress_fn1)(const char*) = fptr;
-                v.init_glad (fptr);
-#endif
+                // Initialise morph::Visual, which must set up GLAD's access to the OpenGL context
+                morph::qt::gl_context = this->context();
+                v.init_glad (morph::qt::getProcAddress);
                 v.init (this);
 
                 // Switch on multisampling anti-aliasing (with the num samples set in constructor)
