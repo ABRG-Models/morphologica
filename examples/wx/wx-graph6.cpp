@@ -1,6 +1,8 @@
 #include <wx/wx.h>
 
-#include <GL/glew.h> // must be included before glcanvas.h
+#define GLAD_GL_IMPLEMENTATION
+#include <morph/glad/gl.h> // must be included before glcanvas.h
+
 #include <wx/glcanvas.h>
 
 #include <wx/colordlg.h>
