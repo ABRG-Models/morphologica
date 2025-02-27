@@ -5,6 +5,7 @@
 #include <morph/lenthe_colormap.hpp>  // William Lenthe's implementation of perceptually uniform colour maps
 #include <morph/colourmaps_cet.h>     // Colour map tables from CET
 
+#include <string_view>
 #include <stdexcept>
 #include <cmath>
 #include <cstdint>
@@ -574,8 +575,11 @@ namespace morph {
         static ColourMapType strToColourMapType (const std::string& s)
         {
             // Allow use of string_view constants: "like this"sv
+#ifndef __WIN__
             using std::literals::string_view_literals::operator""sv;
-
+#else
+            using namespace std::literals;
+#endif
             ColourMapType cmt = morph::ColourMapType::Plasma;
             std::string _s = s;
             morph::tools::toLowerCase (_s);

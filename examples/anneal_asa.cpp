@@ -244,7 +244,7 @@ int main (int argc, char** argv)
 // This sets up a noisy 2D objective function with multiple peaks
 void setup_objective()
 {
-    hg = std::make_unique<morph::HexGrid>(0.01, 1.5, 0);
+    hg = std::make_unique<morph::HexGrid>(0.01f, 1.5f, 0.0f);
     hg->setCircularBoundary(1);
     obj_f.resize (hg->num());
 
@@ -324,7 +324,7 @@ void setup_objective()
 // during the anneal, we'll use the actual function values
 void setup_objective_boha()
 {
-    hg = std::make_unique<morph::HexGrid>(0.01, 2.5, 0);
+    hg = std::make_unique<morph::HexGrid>(0.01f, 2.5f, 0.0f);
     hg->setCircularBoundary(1.2f);
     obj_f.resize (hg->num());
     F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=morph::mathconst<F>::three_pi, gamma=morph::mathconst<F>::four_pi;
