@@ -38,19 +38,25 @@ namespace morph {
                 return instance;
             }
 
-            void set_context (int widget_index, QOpenGLContext* _ctx) { ctx_ptrs[widget_index] = _ctx; }
+            // Set the context. Store the QOpenGLContext pointer into ctx_ptrs[widget_index].
+            template<int widget_index>
+            void set_context (QOpenGLContext* _ctx)
+            {
+                static_assert (widget_index < morph::qt::max_contexts);
+                ctx_ptrs[widget_index] = _ctx;
+            }
 
+            // The static getProcAddress function for the index widget_index.
             template<int widget_index>
             static QFunctionPointer getProcAddress (const char* name)
             {
                 static_assert (widget_index < morph::qt::max_contexts);
-
                 if (morph::qt::gl_contexts::i().ctx_ptrs[widget_index] == nullptr) { return nullptr; }
                 return morph::qt::gl_contexts::i().ctx_ptrs[widget_index]->getProcAddress (name);
             }
 
         private:
-            gl_contexts() {}
+            gl_contexts() { ctx_ptrs = { nullptr }; }
             ~gl_contexts() {}
             std::array<QOpenGLContext*, morph::qt::max_contexts> ctx_ptrs;
         };
@@ -96,7 +102,7 @@ namespace morph {
             void initializeGL() override
             {
                 // Initialise morph::Visual, which must set up GLAD's access to the OpenGL context
-                morph::qt::gl_contexts::i().set_context (widget_index, this->context());
+                morph::qt::gl_contexts::i().set_context<widget_index> (this->context());
                 v.init_glad (morph::qt::gl_contexts::getProcAddress<widget_index>);
                 v.init (this);
 
