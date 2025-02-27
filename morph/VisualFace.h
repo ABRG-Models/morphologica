@@ -21,13 +21,7 @@
 #if defined __gl3_h_ || defined __gl_h_
 // GL headers have been externally included
 #else
-# ifndef USE_GLEW
-#  ifdef __OSX__
-#   include <OpenGL/gl3.h>
-#  else
-#   include <GL/gl.h>
-#  endif
-# endif
+# error "GL headers should have been included already"
 #endif
 
 // FreeType for text rendering

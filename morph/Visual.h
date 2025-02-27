@@ -11,11 +11,6 @@
  */
 #pragma once
 
-#ifdef USE_GLEW
-// Including glew.h and linking with libglew is necessary for wxWindows operation
-# include <GL/glew.h>
-#endif
-
 // Normally, a morph::Visual is the *owner* of a GLFW window in which it does its rendering.
 //
 // "OWNED_MODE" means that the morph::Visual is itself owned by a windowing system of some sort. At
@@ -39,18 +34,16 @@
 # endif // ndef OWNED_MODE
 #endif // _glfw3_h_
 
-#if defined __gl3_h_ || defined __gl_h_ // get fuller list from glfw.h
+#if defined __gl3_h_ || defined __gl_h_ // could get a fuller list from glfw.h
 // GL headers appear to have been externally included.
 #else
-# ifndef USE_GLEW
-// Include glad header
-#  define GLAD_GL_IMPLEMENTATION
-#  ifdef GLAD_OPTION_MX
-#   include <morph/glad/gl_mx.h>   // Now GLAD_OPTION_GL_MX is defined
-#  else
-#   include <morph/glad/gl.h>      // GLAD_OPTION_GL_MX remains undefined
-#  endif
-# endif // GLEW
+// Include GLAD header
+# define GLAD_GL_IMPLEMENTATION
+# ifdef GLAD_OPTION_MX            // Could be defined when compiling
+#  include <morph/glad/gl_mx.h>   // Now GLAD_OPTION_GL_MX is defined
+# else
+#  include <morph/glad/gl.h>      // GLAD_OPTION_GL_MX remains undefined
+# endif
 #endif // GL headers
 
 #include <morph/gl/version.h>

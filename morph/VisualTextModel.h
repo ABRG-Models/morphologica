@@ -13,7 +13,6 @@
 #if defined __gl3_h_ || defined __gl_h_
 // GL headers have been externally included
 #else
-// Bad - expect header to have been included?
 # error "GL headers should have been included already"
 #endif
 
