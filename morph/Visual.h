@@ -45,7 +45,11 @@
 # ifndef USE_GLEW
 // Include glad header
 #  define GLAD_GL_IMPLEMENTATION
-#  include <morph/glad/gl.h>
+#  ifdef GLAD_SINGLE_CONTEXT
+#   include <morph/glad/gl_single.h>  // GLAD_OPTION_GL_MX remains undefined
+#  else
+#   include <morph/glad/gl.h>         // Now GLAD_OPTION_GL_MX is defined
+#  endif
 # endif // GLEW
 #endif // GL headers
 
@@ -176,15 +180,25 @@ namespace morph {
             glfwDestroyWindow (this->window);
 #endif
             if (this->shaders.gprog) {
+#ifdef GLAD_OPTION_GL_MX
                 this->glfn->DeleteProgram (this->shaders.gprog);
+#else
+                glDeleteProgram (this->shaders.gprog);
+#endif
                 this->shaders.gprog = 0;
                 this->active_gprog = morph::visgl::graphics_shader_type::none;
             }
             if (this->shaders.tprog) {
+#ifdef GLAD_OPTION_GL_MX
                 this->glfn->DeleteProgram (this->shaders.tprog);
+#else
+                glDeleteProgram (this->shaders.tprog);
+#endif
                 this->shaders.tprog = 0;
             }
-
+#ifdef GLAD_OPTION_GL_MX
+            this->free_gladgl_context (this->glfn);
+#endif
             // Free up the Fonts associated with this morph::Visual
             morph::VisualResources<glver>::i().freetype_deinit (this);
         }
@@ -214,15 +228,21 @@ namespace morph {
             this->setContext(); // For freetype_init
 #endif
             // Now make sure that Freetype is set up
+#ifdef GLAD_OPTION_GL_MX
             morph::VisualResources<glver>::i().freetype_init (this, this->glfn);
+#else
+            morph::VisualResources<glver>::i().freetype_init (this);
+#endif
 
 #ifndef OWNED_MODE
             this->releaseContext();
 #endif
         }
 
+#ifdef GLAD_OPTION_GL_MX
         //! GLAD OpenGL function context pointer
         GladGLContext* glfn = nullptr;
+#endif
         //! Stores the OpenGL function context version that was loaded
         int glfn_version = 0;
 
@@ -234,18 +254,31 @@ namespace morph {
             this->setContext();
 #endif
             GLint viewport[4]; // current viewport
+#ifdef GLAD_OPTION_GL_MX
             this->glfn->GetIntegerv (GL_VIEWPORT, viewport);
+#else
+            glGetIntegerv (GL_VIEWPORT, viewport);
+#endif
             morph::vec<int, 2> dims;
             dims[0] = viewport[2];
             dims[1] = viewport[3];
             auto bits = std::make_unique<GLubyte[]>(dims.product() * 4);
             auto rbits = std::make_unique<GLubyte[]>(dims.product() * 4);
+#ifdef GLAD_OPTION_GL_MX
             this->glfn->Finish(); // finish all commands of OpenGL
             this->glfn->PixelStorei (GL_PACK_ALIGNMENT, 1);
             this->glfn->PixelStorei (GL_PACK_ROW_LENGTH, 0);
             this->glfn->PixelStorei (GL_PACK_SKIP_ROWS, 0);
             this->glfn->PixelStorei (GL_PACK_SKIP_PIXELS, 0);
             this->glfn->ReadPixels (0, 0, dims[0], dims[1], GL_RGBA, GL_UNSIGNED_BYTE, bits.get());
+#else
+            glFinish(); // finish all commands of OpenGL
+            glPixelStorei (GL_PACK_ALIGNMENT, 1);
+            glPixelStorei (GL_PACK_ROW_LENGTH, 0);
+            glPixelStorei (GL_PACK_SKIP_ROWS, 0);
+            glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
+            glReadPixels (0, 0, dims[0], dims[1], GL_RGBA, GL_UNSIGNED_BYTE, bits.get());
+#endif
             for (int i = 0; i < dims[1]; ++i) {
                 int rev_line = (dims[1] - i - 1) * 4 * dims[0];
                 int for_line = i * 4 * dims[0];
@@ -330,7 +363,9 @@ namespace morph {
             model->get_shaderprogs = &morph::Visual<glver>::get_shaderprogs;
             model->get_gprog = &morph::Visual<glver>::get_gprog;
             model->get_tprog = &morph::Visual<glver>::get_tprog;
+#ifdef GLAD_OPTION_GL_MX
             model->get_glfn = &morph::Visual<glver>::get_glfn;
+#endif
 
 #ifndef OWNED_MODE
             model->setContext = &morph::Visual<glver>::set_context;
@@ -414,7 +449,11 @@ namespace morph {
             this->setContext(); // For VisualTextModel
 #endif
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures, this->glfn);
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures
+#ifdef GLAD_OPTION_GL_MX
+                                                                         , this->glfn
+#endif
+                );
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
                 morph::vec<float, 3> centred_locn = _toffset;
@@ -443,7 +482,11 @@ namespace morph {
             this->setContext(); // For VisualTextModel
 #endif
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures, this->glfn);
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures
+#ifdef GLAD_OPTION_GL_MX
+                                                                         , this->glfn
+#endif
+                );
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
                 morph::vec<float, 3> centred_locn = _toffset;
@@ -520,23 +563,36 @@ namespace morph {
 #endif
             if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
                 if (this->active_gprog != morph::visgl::graphics_shader_type::projection2d) {
+#ifdef GLAD_OPTION_GL_MX
                     if (this->shaders.gprog) { this->glfn->DeleteProgram (this->shaders.gprog); }
                     this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs, this->glfn);
+#else
+                    if (this->shaders.gprog) { glDeleteProgram (this->shaders.gprog); }
+                    this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs);
+#endif
                     this->active_gprog = morph::visgl::graphics_shader_type::projection2d;
                 }
             } else if (this->ptype == perspective_type::cylindrical) {
                 if (this->active_gprog != morph::visgl::graphics_shader_type::cylindrical) {
+#ifdef GLAD_OPTION_GL_MX
                     if (this->shaders.gprog) { this->glfn->DeleteProgram (this->shaders.gprog); }
                     this->shaders.gprog = morph::gl::LoadShaders (this->cyl_shader_progs, this->glfn);
+#else
+                    if (this->shaders.gprog) { glDeleteProgram (this->shaders.gprog); }
+                    this->shaders.gprog = morph::gl::LoadShaders (this->cyl_shader_progs);
+#endif
                     this->active_gprog = morph::visgl::graphics_shader_type::cylindrical;
                 }
             }
 
+#ifdef GLAD_OPTION_GL_MX
             this->glfn->UseProgram (this->shaders.gprog);
-
             // Can't do this in a new thread:
             this->glfn->Viewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
-
+#else
+            glUseProgram (this->shaders.gprog);
+            glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
+#endif
             // Set the perspective
             if (this->ptype == perspective_type::orthographic) {
                 this->setOrthographic();
@@ -544,12 +600,21 @@ namespace morph {
                 this->setPerspective();
             } else if (this->ptype == perspective_type::cylindrical) {
                 // Set cylindrical-specific uniforms
+#ifdef GLAD_OPTION_GL_MX
                 GLint loc_campos = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_cam_pos"));
                 if (loc_campos != -1) { this->glfn->Uniform4fv (loc_campos, 1, this->cyl_cam_pos.data()); }
                 GLint loc_cyl_radius = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_radius"));
                 if (loc_cyl_radius != -1) { this->glfn->Uniform1f (loc_cyl_radius, this->cyl_radius); }
                 GLint loc_cyl_height = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_height"));
                 if (loc_cyl_height != -1) { this->glfn->Uniform1f (loc_cyl_height, this->cyl_height); }
+#else
+                GLint loc_campos = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_cam_pos"));
+                if (loc_campos != -1) { glUniform4fv (loc_campos, 1, this->cyl_cam_pos.data()); }
+                GLint loc_cyl_radius = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_radius"));
+                if (loc_cyl_radius != -1) { glUniform1f (loc_cyl_radius, this->cyl_radius); }
+                GLint loc_cyl_height = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_height"));
+                if (loc_cyl_height != -1) { glUniform1f (loc_cyl_height, this->cyl_height); }
+#endif
             } else {
                 throw std::runtime_error ("Unknown projection");
             }
@@ -563,6 +628,7 @@ namespace morph {
             // And this rotation completes the transition from model to world
             sceneview.rotate (this->rotation);
 
+#ifdef GLAD_OPTION_GL_MX
             // Clear color buffer and **also depth buffer**
             this->glfn->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -595,6 +661,40 @@ namespace morph {
             // Set the projection matrix just once
             loc_p = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("p_matrix"));
             if (loc_p != -1) { this->glfn->UniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+#else
+            // Clear color buffer and **also depth buffer**
+            glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // Set the background colour:
+            glClearBufferfv (GL_COLOR, 0, bgcolour.data());
+
+            // Lighting shader variables
+            //
+            // Ambient light colour
+            GLint loc_lightcol = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("light_colour"));
+            if (loc_lightcol != -1) { glUniform3fv (loc_lightcol, 1, this->light_colour.data()); }
+            // Ambient light intensity
+            GLint loc_ai = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("ambient_intensity"));
+            if (loc_ai != -1) { glUniform1f (loc_ai, this->ambient_intensity); }
+            // Diffuse light position
+            GLint loc_dp = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_position"));
+            if (loc_dp != -1) { glUniform3fv (loc_dp, 1, this->diffuse_position.data()); }
+            // Diffuse light intensity
+            GLint loc_di = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_intensity"));
+            if (loc_di != -1) { glUniform1f (loc_di, this->diffuse_intensity); }
+
+            // Switch to text shader program and set the projection matrix
+            glUseProgram (this->shaders.tprog);
+            GLint loc_p = glGetUniformLocation (this->shaders.tprog, static_cast<const GLchar*>("p_matrix"));
+            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+
+            // Switch back to the regular shader prog and render the VisualModels.
+            glUseProgram (this->shaders.gprog);
+
+            // Set the projection matrix just once
+            loc_p = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("p_matrix"));
+            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+#endif
 
             if ((this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective)
                 && this->showCoordArrows == true) {
@@ -625,8 +725,6 @@ namespace morph {
                 (*vmi)->render();
                 ++vmi;
             }
-
-            morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
 
             morph::vec<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
             if (this->showTitle == true) {
@@ -693,8 +791,9 @@ namespace morph {
         static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual<glver>* _v) { return _v->shaders; };
         static GLuint get_gprog (morph::Visual<glver>* _v) { return _v->shaders.gprog; };
         static GLuint get_tprog (morph::Visual<glver>* _v) { return _v->shaders.tprog; };
+#ifdef GLAD_OPTION_GL_MX
         static GladGLContext* get_glfn (morph::Visual<glver>* _v) { return _v->glfn; };
-
+#endif
         //! The colour of ambient and diffuse light sources
         morph::vec<float, 3> light_colour = { 1.0f, 1.0f, 1.0f };
         //! Strength of the ambient light
@@ -1013,6 +1112,7 @@ namespace morph {
         std::vector<std::unique_ptr<morph::VisualModel<glver>>> vm;
 
     private:
+#ifdef GLAD_OPTION_GL_MX
         // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
         GladGLContext* create_gladgl_context (const GLADloadfunc procaddressfn)
         {
@@ -1024,7 +1124,7 @@ namespace morph {
             return context;
         }
         void free_gladgl_context (GladGLContext *context) { free(context); }
-
+#endif
         void init_window()
         {
 #ifndef OWNED_MODE
@@ -1047,12 +1147,14 @@ namespace morph {
             glfwMakeContextCurrent(window);
 
             this->init_glad (glfwGetProcAddress); // Must go here in non-OWNED MODE. In owned mode, must go before init
+
 #endif // ndef OWNED_MODE
         }
 
     public:
         void init_glad (const GLADloadfunc procaddressfn)
         {
+#ifdef GLAD_OPTION_GL_MX
             // Create the OpenGL function context - a GladGLContext*
             this->glfn = this->create_gladgl_context (procaddressfn);
 
@@ -1062,9 +1164,14 @@ namespace morph {
             }
             // Now can call gl functions like this [instead of glGetString (GL_VERSION)]
             // std::cout << "Have GL function context at version " << this->glfn->GetString (GL_VERSION);
+#else
+            this->glfn_version = gladLoadGL (procaddressfn);
+            if (this->glfn_version == 0) {
+                throw std::runtime_error ("Failed to initialize GLAD GL context");
+            }
+#endif
         }
     private:
-
         // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any external
         // state from json, and set up the coordinate arrows and any VisualTextModels that will be
         // required to render the Visual.
@@ -1074,7 +1181,11 @@ namespace morph {
             this->setContext();
 #endif
             if (this->version_stdout == true) {
+#ifdef GLAD_OPTION_GL_MX
                 unsigned char* glv = (unsigned char*)this->glfn->GetString(GL_VERSION);
+#else
+                unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
+#endif
                 std::cout << "This is version " << morph::version_string()
                           << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)
                           << "> running on OpenGL Version " << glv << std::endl;
@@ -1089,7 +1200,11 @@ namespace morph {
                 {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::getDefaultVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::getDefaultFragShader(glver), 0 }
             };
-            this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs, this->glfn);
+            this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs
+#ifdef GLAD_OPTION_GL_MX
+                                                          , this->glfn
+#endif
+                );
             this->active_gprog = morph::visgl::graphics_shader_type::projection2d;
 
             // Alternative cylindrical shader for possible later use. (NB: not loaded immediately)
@@ -1103,15 +1218,26 @@ namespace morph {
                 {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::getDefaultTextVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::getDefaultTextFragShader(glver), 0 }
             };
-            this->shaders.tprog = morph::gl::LoadShaders (this->text_shader_progs, this->glfn);
+            this->shaders.tprog = morph::gl::LoadShaders (this->text_shader_progs
+#ifdef GLAD_OPTION_GL_MX
+                                                          , this->glfn
+#endif
+                );
 
             // OpenGL options
+#ifdef GLAD_OPTION_GL_MX
             this->glfn->Enable (GL_DEPTH_TEST);
             this->glfn->Enable (GL_BLEND);
             this->glfn->BlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             this->glfn->Disable (GL_CULL_FACE);
             morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
-
+#else
+            glEnable (GL_DEPTH_TEST);
+            glEnable (GL_BLEND);
+            glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDisable (GL_CULL_FACE);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
             // If possible, read in scenetrans and rotation state from a special config file
             try {
                 nlohmann::json vconf;
@@ -1144,14 +1270,22 @@ namespace morph {
 #ifndef OWNED_MODE
             this->setContext();            // ...but we've got more work to do, so re-acquire context
 #endif
-            morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
+            morph::gl::Util::checkError (__FILE__, __LINE__
+#ifdef GLAD_OPTION_GL_MX
+                                         , this->glfn
+#endif
+                );
 
             // Set up the title, which may or may not be rendered
             morph::TextFeatures title_tf(0.035f, 64);
             //this->textModel = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog,
             //                                                                   morph::vec<float, 3>{0.0f},
             //                                                                   this->title, title_tf);
-            this->textModel = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, title_tf, this->glfn);
+            this->textModel = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, title_tf
+#ifdef GLAD_OPTION_GL_MX
+                                                                               , this->glfn
+#endif
+                );
             this->textModel->setSceneTranslation ({0.0f, 0.0f, 0.0f});
             this->textModel->setupText (this->title);
 

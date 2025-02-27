@@ -132,15 +132,24 @@ namespace morph {
         //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
         //! but that's a task for the future, as I coded it this way under the false
         //! assumption that I'd only need one FT_Library.
-        void freetype_init (morph::Visual<glver>* _vis, GladGLContext* glfn = nullptr)
+        void freetype_init (morph::Visual<glver>* _vis
+#ifdef GLAD_OPTION_GL_MX
+                            , GladGLContext* glfn = nullptr
+#endif
+            )
         {
             FT_Library freetype = nullptr;
             try {
                 freetype = this->freetypes.at (_vis);
             } catch (const std::out_of_range&) {
                 // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
+#ifdef GLAD_OPTION_GL_MX
                 glfn->PixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
                 morph::gl::Util::checkError (__FILE__, __LINE__, glfn);
+#else
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
 
                 if (FT_Init_FreeType (&freetype)) {
                     std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
@@ -178,15 +187,22 @@ namespace morph {
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
-                                                 morph::Visual<glver>* _vis, GladGLContext* glfn)
+        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::Visual<glver>* _vis
+#ifdef GLAD_OPTION_GL_MX
+                                                 , GladGLContext* glfn
+#endif
+            )
         {
             morph::visgl::VisualFace* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);
             try {
                 rtn = this->faces.at(key).get();
             } catch (const std::out_of_range&) {
-                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis), glfn);
+                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis)
+#ifdef GLAD_OPTION_GL_MX
+                                                                               , glfn
+#endif
+                    );
                 rtn = this->faces.at(key).get();
             }
             return rtn;

@@ -13,11 +13,8 @@
 #if defined __gl3_h_ || defined __gl_h_
 // GL headers have been externally included
 #else
-# ifdef __OSX__
-#  include <OpenGL/gl3.h>
-# else
-#  include <GL/gl.h>
-# endif
+// Bad - expect header to have been included?
+# error "GL headers should have been included already"
 #endif
 
 #include <morph/gl/version.h>
@@ -55,22 +52,35 @@ namespace morph {
     {
     public:
         //! A more compact version of the VisualTextModel(GLuint, VisualFont, float, int), taking a TextFeatures object.
-        VisualTextModel (morph::Visual<glver>* _vis, GLuint tsp, morph::TextFeatures tfeatures, GladGLContext* _glfn)
+        VisualTextModel (morph::Visual<glver>* _vis, GLuint tsp, morph::TextFeatures tfeatures
+#ifdef GLAD_OPTION_GL_MX
+                         , GladGLContext* _glfn
+#endif
+            )
         {
             this->parentVis = _vis;
             this->tshaderprog = tsp;
             this->m_width = tfeatures.fontsize;
             this->fontpixels = tfeatures.fontres;
             this->fontscale = this->m_width/(float)this->fontpixels;
+#ifdef GLAD_OPTION_GL_MX
             this->face = VisualResources<glver>::i().getVisualFace (tfeatures.font, this->fontpixels, this->parentVis, _glfn);
             this->glfn = _glfn;
+#else
+            this->face = VisualResources<glver>::i().getVisualFace (tfeatures.font, this->fontpixels, this->parentVis);
+#endif
         }
 
         virtual ~VisualTextModel()
         {
             if (this->vbos != nullptr) {
+#ifdef GLAD_OPTION_GL_MX
                 this->glfn->DeleteBuffers (numVBO, this->vbos.get());
                 this->glfn->DeleteVertexArrays (1, &this->vao);
+#else
+                glDeleteBuffers (numVBO, this->vbos.get());
+                glDeleteVertexArrays (1, &this->vao);
+#endif
             }
         }
 
@@ -80,6 +90,7 @@ namespace morph {
             if (this->hide == true) { return; }
 
             GLint prev_shader;
+#ifdef GLAD_OPTION_GL_MX
             this->glfn->GetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
 
             // Ensure the correct program is in play for this VisualModel
@@ -116,6 +127,44 @@ namespace morph {
             this->glfn->UseProgram (prev_shader);
 
             morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
+#else
+            glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
+
+            // Ensure the correct program is in play for this VisualModel
+            glUseProgram (this->tshaderprog);
+
+            // Set uniforms
+            GLint loc_tc = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("textColor"));
+            if (loc_tc != -1) { glUniform3f (loc_tc, this->clr_text[0], this->clr_text[1], this->clr_text[2]); }
+            GLint loc_a = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("alpha"));
+            if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
+            GLint loc_v = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("v_matrix"));
+            if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
+            GLint loc_m = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("m_matrix"));
+            if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
+
+            glActiveTexture (GL_TEXTURE0);
+
+            // It is only necessary to bind the vertex array object before rendering
+            glBindVertexArray (this->vao);
+
+            // We have a max of (2^32)-1 characters. Should be enough.
+            for (unsigned int i = 0U; i < quads.size(); ++i) {
+                // Bind the right texture for the quad.
+                glBindTexture (GL_TEXTURE_2D, this->quad_ids[i]);
+                // This is 'draw a subset of the elements from the vertex array
+                // object'. You say how many indices to draw and which base *vertex* you
+                // start from. In my scheme, I have 4 vertices for each two triangles
+                // that are constructed. Thus, I draw 6 indices, but increment the base
+                // vertex by 4 for each letter.
+                glDrawElementsBaseVertex (GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 4*i);
+            }
+
+            glBindVertexArray(0);
+            glUseProgram (prev_shader);
+
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
         }
 
         //! Set clr_text to a value suitable to be visible on the background colour bgcolour
@@ -398,30 +447,26 @@ namespace morph {
         //! Common code to call after the vertices have been set up.
         void postVertexInit()
         {
+#ifdef GLAD_OPTION_GL_MX
             if (this->vbos == nullptr) {
                 // Create vertex array object
                 this->glfn->GenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
-                morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
             }
 
             this->glfn->BindVertexArray (this->vao);
-            morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
 
             if (this->vbos == nullptr) {
                 // Create the vertex buffer objects
                 this->vbos = std::make_unique<GLuint[]>(numVBO);
                 this->glfn->GenBuffers (numVBO, this->vbos.get()); // OpenGL 4.4- safe
-                morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
             }
 
             // Set up the indices buffer - bind and buffer the data in this->indices
             this->glfn->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-            morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
 
             //std::cout << "indices.size(): " << this->indices.size() << std::endl;
             std::size_t sz = this->indices.size() * sizeof(GLuint);
             this->glfn->BufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
 
             // Binds data from the "C++ world" to the OpenGL shader world for
             // "position", "normalin" and "color"
@@ -431,11 +476,39 @@ namespace morph {
             this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
             this->setupVBO (this->vbos[textureVBO], this->vertexTextures, visgl::textureLoc);
 
-#ifdef CAREFULLY_UNBIND_AND_REBIND
+# ifdef CAREFULLY_UNBIND_AND_REBIND
             // Possibly release (unbind) the vertex buffers, but have to unbind vertex
             // array object first.
             this->glfn->BindVertexArray(0);
-            morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
+# endif
+#else
+            if (this->vbos == nullptr) {
+                // Create vertex array object
+                glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
+            }
+
+            glBindVertexArray (this->vao);
+
+            if (this->vbos == nullptr) {
+                // Create the vertex buffer objects
+                this->vbos = std::make_unique<GLuint[]>(numVBO);
+                glGenBuffers (numVBO, this->vbos.get()); // OpenGL 4.4- safe
+            }
+
+            // Set up the indices buffer - bind and buffer the data in this->indices
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
+
+            //std::cout << "indices.size(): " << this->indices.size() << std::endl;
+            std::size_t sz = this->indices.size() * sizeof(GLuint);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
+
+            // Binds data from the "C++ world" to the OpenGL shader world for
+            // "position", "normalin" and "color"
+            // (bind, buffer and set vertex array object attribute)
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
+            this->setupVBO (this->vbos[textureVBO], this->vertexTextures, visgl::textureLoc);
 #endif
         }
 
@@ -447,8 +520,9 @@ namespace morph {
         //! Parent Visual
         morph::Visual<glver>* parentVis = nullptr;
 
+#ifdef GLAD_OPTION_GL_MX
         GladGLContext* glfn = nullptr;
-
+#endif
     protected:
         //! A face for this text
         morph::visgl::VisualFace* face = nullptr;
@@ -528,10 +602,17 @@ namespace morph {
         void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition)
         {
             std::size_t sz = dat.size() * sizeof(float);
+#ifdef GLAD_OPTION_GL_MX
             this->glfn->BindBuffer (GL_ARRAY_BUFFER, buf);
             this->glfn->BufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
             this->glfn->VertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
             this->glfn->EnableVertexAttribArray (bufferAttribPosition);
+#else
+            glBindBuffer (GL_ARRAY_BUFFER, buf);
+            glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
+            glVertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+            glEnableVertexAttribArray (bufferAttribPosition);
+#endif
         }
 
         //! Push three floats onto the vector of floats \a vp

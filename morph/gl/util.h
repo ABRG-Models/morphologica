@@ -17,14 +17,21 @@ namespace morph {
     namespace gl {
         //! A GL error checking function. The additional namespace was a class, but didn't need to be.
         namespace Util {
-
-            GLenum checkError (const char *file, int line, GladGLContext* glfn)
+            GLenum checkError (const char *file, int line
+#ifdef GLAD_OPTION_GL_MX
+                               , GladGLContext* glfn
+#endif
+                )
             {
                 GLenum errorCode = 0;
 #ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
                 unsigned int ecount = 0;
                 std::string error;
+#ifdef GLAD_OPTION_GL_MX
                 while ((errorCode = glfn->GetError()) != GL_NO_ERROR) {
+#else
+                while ((errorCode = glGetError()) != GL_NO_ERROR) {
+#endif
                     switch (errorCode) {
                     case GL_INVALID_ENUM:
                     {

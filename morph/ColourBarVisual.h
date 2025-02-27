@@ -183,8 +183,11 @@ namespace morph {
                     // Labels above
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
-                        auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf,
-                                                                                    this->get_glfn(this->parentVis));
+                        auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf
+#ifdef GLAD_OPTION_GL_MX
+                                                                                    , this->get_glfn(this->parentVis)
+#endif
+                            );
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
                         this->ticklabelwidth = geom.width() > this->ticklabelwidth ? geom.width() : this->ticklabelwidth;
@@ -200,8 +203,11 @@ namespace morph {
                     // Labels left
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
-                        auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf,
-                                                                                    this->get_glfn(this->parentVis));
+                        auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf
+#ifdef GLAD_OPTION_GL_MX
+                                                                                    , this->get_glfn(this->parentVis)
+#endif
+                            );
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
                         this->ticklabelwidth = geom.width() > this->ticklabelwidth ? geom.width() : this->ticklabelwidth;
@@ -220,9 +226,12 @@ namespace morph {
                     // Labels below
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
-                        auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf,
-                                                                                    this->get_glfn(this->parentVis));
-                        morph::TextGeometry geom = lbl->getTextGeometry (s);
+                        auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf
+#ifdef GLAD_OPTION_GL_MX
+                                                                                    , this->get_glfn(this->parentVis)
+#endif
+                            );
+                       morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
                         this->ticklabelwidth = geom.width() > this->ticklabelwidth ? geom.width() : this->ticklabelwidth;
                         morph::vec<float> lblpos = {
@@ -237,8 +246,11 @@ namespace morph {
                     // Labels right
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
-                        auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf,
-                                                                                    this->get_glfn(this->parentVis));
+                        auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf
+#ifdef GLAD_OPTION_GL_MX
+                                                                                    , this->get_glfn(this->parentVis)
+#endif
+                            );
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
                         this->ticklabelwidth = geom.width() > this->ticklabelwidth ? geom.width() : this->ticklabelwidth;
@@ -261,8 +273,11 @@ namespace morph {
 
             float ticksgap = this->tickstyle == tickstyle::ticksin ? 0.0f : this->ticklength;
 
-            auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf,
-                                                                        this->get_glfn(this->parentVis));
+            auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf
+#ifdef GLAD_OPTION_GL_MX
+                                                                        , this->get_glfn(this->parentVis)
+#endif
+                );
             morph::TextGeometry geom = lbl->getTextGeometry (this->label);
             morph::vec<float> lblpos = {0,0,0};
 
