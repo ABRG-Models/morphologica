@@ -10,7 +10,7 @@ on:
 
 jobs:
   call-workflow-passing-data:
-    uses: ABRG-Models/morphologica/.github/workflows/cmake-ubuntu-template.yml@main
+    uses: ABRG-Models/morphologica/.github/workflows/cmake-ubuntu-template.yml@359-windows-gl-headers
     with:
       RUNNER_IMAGE: ubuntu-24.04
       BUILD_TYPE: Release
