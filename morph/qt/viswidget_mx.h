@@ -3,28 +3,68 @@
 #include <iostream>
 #include <functional>
 
-#include <QtWidgets/QOpenGLWidget>
-#include <QOpenGLFunctions_4_1_Core> // problem is that this loads GL headers, so we don't load glad, further on
-#include <QSurfaceFormat>
-#include <QMouseEvent>
-#include <QWheelEvent>
+struct QOpenGLWidget; // fwd decl
 
 // Visual is going to be owned by the QOpenGLWidget
 #define OWNED_MODE 1
 // Define morph::win_t before #including morph/Visual.h
 namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/Visual.h>
+
+#include <QtWidgets/QOpenGLWidget>
+#include <QOpenGLContext>
+#include <QSurfaceFormat>
+#include <QMouseEvent>
+#include <QWheelEvent>
+
 // We need to be able to convert from Qt keycodes to morph keycodes
 #include <morph/qt/keycodes.h>
+
 
 namespace morph {
     namespace qt {
 
-        // This must match the QOpenGLFunctions_4_1_Core class you derive from
         constexpr int gl_version = morph::gl::version_4_1;
 
-        // A morph::Visual widget
-        struct viswidget : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
+        // How many separate OpenGL contexts (i.e. how many viswidget_mxs) to support in one Qt program?
+        constexpr int max_contexts = 32; // with 32 we use 32 * 8 bytes of memory = 256 bytes.
+
+        // A container class to manage a getProcAddress function from each viswidget_mx/QOpenGLWidget context
+        struct gl_contexts
+        {
+            static auto& i() // The instance public function.
+            {
+                static gl_contexts instance;
+                return instance;
+            }
+
+            // Set the context. Store the QOpenGLContext pointer into ctx_ptrs[widget_index].
+            template<int widget_index>
+            void set_context (QOpenGLContext* _ctx)
+            {
+                static_assert (widget_index < morph::qt::max_contexts);
+                ctx_ptrs[widget_index] = _ctx;
+            }
+
+            // The static getProcAddress function for the index widget_index.
+            template<int widget_index>
+            static QFunctionPointer getProcAddress (const char* name)
+            {
+                static_assert (widget_index < morph::qt::max_contexts);
+                if (morph::qt::gl_contexts::i().ctx_ptrs[widget_index] == nullptr) { return nullptr; }
+                return morph::qt::gl_contexts::i().ctx_ptrs[widget_index]->getProcAddress (name);
+            }
+
+        private:
+            gl_contexts() { ctx_ptrs = { nullptr }; }
+            ~gl_contexts() {}
+            std::array<QOpenGLContext*, morph::qt::max_contexts> ctx_ptrs;
+        };
+
+        // A morph::Visual widget. You have to choose and provide a widget_index in the range [0,
+        // morph::gl::max_contexts)
+        template<int widget_index>
+        struct viswidget_mx : public QOpenGLWidget //, protected QOpenGLFunctions_4_1_Core
         {
             // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::Visual
             // inside the widget.
@@ -41,8 +81,12 @@ namespace morph {
                 this->needs_reinit = reinit_required ? model_idx : -1;
             }
 
-            viswidget (QWidget* parent = 0) : QOpenGLWidget(parent)
+            viswidget_mx (QWidget* parent = 0) : QOpenGLWidget(parent)
             {
+                static_assert (widget_index < morph::qt::max_contexts);
+
+                std::cout << "viswidget_mx\n";
+
                 // You have to set the format in the constructor
                 QSurfaceFormat format;
                 format.setDepthBufferSize (4);
@@ -59,19 +103,19 @@ namespace morph {
 
             void initializeGL() override
             {
-                // Make sure we can call gl functions
-                initializeOpenGLFunctions();
-                // Switch on multisampling anti-aliasing (with the num samples set in constructor)
-                glEnable (GL_MULTISAMPLE);
-                // Initialise morph::Visual
+                // Initialise morph::Visual, which must set up GLAD's access to the OpenGL context
+                morph::qt::gl_contexts::i().set_context<widget_index> (this->context());
+                v.init_glad (morph::qt::gl_contexts::getProcAddress<widget_index>);
                 v.init (this);
+
+                // Switch on multisampling anti-aliasing (with the num samples set in constructor)
+                v.glfn->Enable (GL_MULTISAMPLE);
             }
 
             void resizeGL (int w, int h) override
             {
                 double dpr = this->devicePixelRatio();
-                v.set_winsize (static_cast<int>(std::round(w * dpr)),
-                               static_cast<int>(std::round(h * dpr)));
+                v.set_winsize (static_cast<int>(std::round(w * dpr)), static_cast<int>(std::round(h * dpr)));
                 this->update();
             }
 

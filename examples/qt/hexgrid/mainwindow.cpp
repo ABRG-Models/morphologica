@@ -1,8 +1,7 @@
-#include <morph/qt/viswidget.h> // Include this before mainwindow.h and thus before Qt includes any OpenGL headers
-
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+#include <morph/qt/viswidget.h>
 #include <morph/GraphVisual.h>
 #include <morph/TriangleVisual.h>
 #include <morph/HexGrid.h>
@@ -48,7 +47,7 @@ void MainWindow::setupHexGridVisual()
     // VisualModels that do text, like a GraphVisual). This gives the VisualModel access
     // to shader progs from the Visual environment, and allows the VisualModel to know
     // its parent Visual.
-    static_cast<morph::qt::viswidget<0>*>(this->p_vw)->v.bindmodel (hgv);
+    static_cast<morph::qt::viswidget*>(this->p_vw)->v.bindmodel (hgv);
 
     // Give the HexGridVisual access to the scalar data for the surface
     hgv->setScalarData (&this->data);
@@ -56,13 +55,13 @@ void MainWindow::setupHexGridVisual()
     // Now add the HexGridVisual model to newvisualmodels. It has to be cast to a plain morph::VisualModel first:
     std::unique_ptr<morph::VisualModel<morph::qt::gl_version>> vmp = std::move (hgv);
     // The vector of VisualModels lives in viswidget, accessible via p_vw:
-    static_cast<morph::qt::viswidget<0>*>(this->p_vw)->newvisualmodels.push_back (std::move(vmp));
+    static_cast<morph::qt::viswidget*>(this->p_vw)->newvisualmodels.push_back (std::move(vmp));
 }
 
 void MainWindow::viswidget_init()
 {
     // Create widget. Seems to open in its own window with a new context.
-    morph::qt::viswidget<0>* vw = new morph::qt::viswidget<0> (this->parentWidget());
+    morph::qt::viswidget* vw = new morph::qt::viswidget (this->parentWidget());
     // Choose lighting effects if you want
     vw->v.lightingEffects();
     // Add the OpenGL widget to the UI.
@@ -77,7 +76,7 @@ void MainWindow::on_pushButton_clicked()
 
     auto gv = std::make_unique<morph::GraphVisual<double, morph::qt::gl_version>> (this->graphlocn);
     // Bind the new (Graph)VisualModel to the morph::Visual associated with the viswidget
-    static_cast<morph::qt::viswidget<0>*>(this->p_vw)->v.bindmodel (gv);
+    static_cast<morph::qt::viswidget*>(this->p_vw)->v.bindmodel (gv);
 
     gv->twodimensional = false;
     morph::vvec<double> x;
@@ -86,7 +85,7 @@ void MainWindow::on_pushButton_clicked()
 
     // Cast and add
     std::unique_ptr<morph::VisualModel<morph::qt::gl_version>> vmp = std::move (gv);
-    static_cast<morph::qt::viswidget<0>*>(this->p_vw)->newvisualmodels.push_back (std::move(vmp));
+    static_cast<morph::qt::viswidget*>(this->p_vw)->newvisualmodels.push_back (std::move(vmp));
 
     // request a render, otherwise it won't appear until user interacts with window
     this->p_vw->update();

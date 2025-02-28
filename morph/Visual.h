@@ -99,6 +99,10 @@ namespace morph {
     // widget. win_t should be defined (with a using win_t = something line) externally.
 #endif
 
+    // Types reproduced from glad/gl.h
+    //typedef void (*GLADapiproc_like)(void);
+    //typedef GLADapiproc_like (*GLADloadfunc_like)(const char *name);
+
     /*!
      * Visual 'scene' class
      *
@@ -1139,7 +1143,8 @@ namespace morph {
         }
 
     public:
-        void init_glad (const GLADloadfunc procaddressfn)
+#ifdef GLAD_GL
+        void init_glad (GLADloadfunc procaddressfn) // need basic version of this in case client code does not use glad
         {
 #ifdef GLAD_OPTION_GL_MX
             // Create the OpenGL function context - a GladGLContext*
@@ -1158,6 +1163,8 @@ namespace morph {
             }
 #endif
         }
+#endif
+
     private:
         // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any external
         // state from json, and set up the coordinate arrows and any VisualTextModels that will be

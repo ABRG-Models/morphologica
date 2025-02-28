@@ -1,5 +1,5 @@
 #include <QtWidgets/QApplication>
-#include <morph/qt/viswidget.h>
+#include <morph/qt/viswidget_mx.h>
 #include <morph/GraphVisual.h>
 #include <morph/vvec.h>
 
@@ -9,8 +9,8 @@ int main (int argc, char **argv)
     QApplication app(argc, argv);
 
     // Create widget. The GL version to be used is set inside viswidget. It's accessible as
-    // morph::qt::gl_version.
-    morph::qt::viswidget widget;
+    // morph::qt::gl_version. You have to give an index to your widget (0 for the first, 1 for the next one, etc)
+    morph::qt::viswidget_mx<0> widget;
     // Calling show ensures initializeGL() method gets called. The alternative to
     // calling show() at the start of the main() function, is to set viswidget's
     // buildmodels callback (see app2).
