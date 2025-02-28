@@ -25,6 +25,7 @@ install(
   ConfigVisual.h
   constexpr_math.h
   CoordArrows.h
+  crc32.h
   CurvyTellyVisual.h
   CyclicColourVisual.h
   DatasetStyle.h
@@ -108,6 +109,7 @@ install(
   VisualDataModel.h
   VisualDefaultShaders.h
   VisualFace.h
+  VisualFont.h
   Visual.h
   VisualModel.h
   VisualResources.h
@@ -127,6 +129,7 @@ endif()
 add_subdirectory(nn) # 'nn' for neural network code
 add_subdirectory(bn) # 'bn' for boolean net code
 add_subdirectory(gl) # GL common and compute code
+add_subdirectory(glad) # GLAD header library
 add_subdirectory(healpix) # Public, but slightly modified HEALPix headers
 
 # And the jcvoronoi code
@@ -134,7 +137,7 @@ add_subdirectory(jcvoronoi)
 
 # The Visual-in-a-Qt-Widget code
 add_subdirectory(qt)
-# WxWidgets code
+# wxWindows
 add_subdirectory(wx)
 
 # Install the EXPORT so that morphologica has its own .cmake file and find_package(morphologica) should work

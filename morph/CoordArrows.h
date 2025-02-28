@@ -63,29 +63,31 @@ namespace morph {
 
                 if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
+                morph::TextFeatures tfca(this->em, 48, false, morph::colour::black, morph::VisualFont::DVSansItalic);
+
                 // These texts are black by default
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
-                auto vtm1 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                      morph::VisualFont::DVSansItalic,
-                                                                      this->em, 48, toffset,
-                                                                      this->x_label);
+                auto vtm1 = std::make_unique<VisualTextModel<glver>> (tfca);
+                this->bindmodel (vtm1);
+                vtm1->setSceneTranslation (toffset);
+                vtm1->setupText (this->x_label);
                 this->texts.push_back (std::move(vtm1));
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
-                auto vtm2 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                      morph::VisualFont::DVSansItalic,
-                                                                      this->em, 48, toffset,
-                                                                      this->y_label);
+                auto vtm2 = std::make_unique<VisualTextModel<glver>> (tfca);
+                this->bindmodel (vtm2);
+                vtm2->setSceneTranslation (toffset);
+                vtm2->setupText (this->y_label);
                 this->texts.push_back (std::move(vtm2));
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
-                auto vtm3 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                      morph::VisualFont::DVSansItalic,
-                                                                      this->em, 48, toffset,
-                                                                      this->z_label);
+                auto vtm3 = std::make_unique<VisualTextModel<glver>> (tfca);
+                this->bindmodel (vtm3);
+                vtm3->setSceneTranslation (toffset);
+                vtm3->setupText (this->z_label);
                 this->texts.push_back (std::move(vtm3));
 
                 if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }

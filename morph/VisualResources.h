@@ -28,6 +28,7 @@
 #include <morph/gl/version.h>
 #include <morph/gl/util.h>
 #include <morph/VisualFace.h>
+#include <morph/VisualFont.h>
 // FreeType for text rendering
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -79,6 +80,8 @@ namespace morph {
             float xscale, yscale;
             glfwGetMonitorContentScale (primary, &xscale, &yscale); // glfw 3.3+
 #endif
+
+            // The rest of this function may be right to call with each window?
             if constexpr (morph::gl::version::gles (glver) == true) {
                 glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
                 glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
@@ -106,8 +109,7 @@ namespace morph {
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
-        std::map<std::tuple<morph::VisualFont, unsigned int,
-                            morph::Visual<glver>*>,
+        std::map<std::tuple<morph::VisualFont, unsigned int, morph::Visual<glver>*>,
                  std::unique_ptr<morph::visgl::VisualFace>> faces;
 
         //! An error callback function for the GLFW windowing library
@@ -131,15 +133,25 @@ namespace morph {
         //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
         //! but that's a task for the future, as I coded it this way under the false
         //! assumption that I'd only need one FT_Library.
-        void freetype_init (morph::Visual<glver>* _vis)
+        void freetype_init (morph::Visual<glver>* _vis
+#ifdef GLAD_OPTION_GL_MX
+                            , GladGLContext* glfn = nullptr
+#endif
+            )
         {
             FT_Library freetype = nullptr;
             try {
                 freetype = this->freetypes.at (_vis);
             } catch (const std::out_of_range&) {
                 // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
+#ifdef GLAD_OPTION_GL_MX
+                glfn->PixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+                morph::gl::Util::checkError (__FILE__, __LINE__, glfn);
+#else
                 glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
                 morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
+
                 if (FT_Init_FreeType (&freetype)) {
                     std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
                 } else {
@@ -176,19 +188,38 @@ namespace morph {
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
-                                                 morph::Visual<glver>* _vis)
+        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::Visual<glver>* _vis
+#ifdef GLAD_OPTION_GL_MX
+                                                 , GladGLContext* glfn
+#endif
+            )
         {
             morph::visgl::VisualFace* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);
             try {
                 rtn = this->faces.at(key).get();
             } catch (const std::out_of_range&) {
-                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis));
+                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis)
+#ifdef GLAD_OPTION_GL_MX
+                                                                               , glfn
+#endif
+                    );
                 rtn = this->faces.at(key).get();
             }
             return rtn;
         }
+
+#ifdef GLAD_OPTION_GL_MX
+        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::Visual<glver>* _vis, GladGLContext* glfn)
+        {
+            return this->getVisualFace (tf.font, tf.fontres, _vis, glfn);
+        }
+#else
+        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::Visual<glver>* _vis)
+        {
+            return this->getVisualFace (tf.font, tf.fontres, _vis);
+        }
+#endif
 
         //! Loop through this->faces clearing out those associated with the given morph::Visual
         void clearVisualFaces (morph::Visual<glver>* _vis)

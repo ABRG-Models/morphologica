@@ -26,9 +26,6 @@ if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES aarch64)
   set(MORPH_HOST_DEFINITION "${MORPH_HOST_DEFINITION} -D__AARCH64__")
 endif()
 
-# An option that's useful for unusual/old Linux builds OR wxWidgets
-option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
-
 #
 # The base C++ version in morphologica is current C++-17 but I am considering C++20 or 23
 #
@@ -76,15 +73,9 @@ else()
     endif()
   else() # Windows
     # Set flags for Windows. /EHsc required for use of exceptions
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc /constexpr:steps500000000")
   endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
-
-# Tell clang to be quiet about brace initialisers
-# Not necessary with clang 18 or 16 apparently
-#if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
-#endif()
 
 # Some programs require the ability to define literal template args of
 # type std::array (a C++-20 feature). Clang versions less than 18 can't.
@@ -118,9 +109,15 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 
 # Additional GL compiler flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
-if(USE_GLEW)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GLEW")
-endif(USE_GLEW)
+
+# We use GLAD headers. A multi-context (I think this for multiple
+# windows with different OpenGL drivers) or single context (everything
+# on the same GPU) header is available. The simpler single context is
+# default, but the multi-context scheme may also be chosen.
+option(USE_GLAD_MX "Use multi-context GLAD header morph/glad/gl_mx.h" OFF)
+if(USE_GLAD_MX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GLAD_MX")
+endif(USE_GLAD_MX)
 
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
@@ -141,10 +138,6 @@ else()
   find_package(OpenGL REQUIRED EGL) # GL ES 3.1 used in one gl compute example
 endif()
 
-if(USE_GLEW)
-  find_package(GLEW REQUIRED)
-  include_directories(${GLEW_INCLUDE_DIRS})
-endif(USE_GLEW)
 find_package(glfw3 3.2...3.4 REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
 #set(HDF5_USE_STATIC_LIBRARIES ON)
@@ -173,30 +166,18 @@ find_package(nlohmann_json REQUIRED)
 
 # If Qt5 is present, then some optional Qt examples will be compiled
 find_package(Qt5 QUIET COMPONENTS Gui Core Widgets)
-set(FOUND_QT_AND_HAVE_NO_GLEW 0)
 if(Qt5_FOUND)
-  if(USE_GLEW)
-    message(WARNING "NOT compiling Qt examples. Qt was found, but GLEW was requested with -DUSE_GLEW=ON. GLEW *interferes* with Qt, so can not compile the Qt examples")
-  else()
-    set(FOUND_QT_AND_HAVE_NO_GLEW 1)
-    message(STATUS "Compiling Qt examples")
-  endif()
+  message(STATUS "Compiling Qt examples")
 else()
   message(STATUS "NOT compiling Qt examples (Qt5 libraries not found)")
 endif()
 
 
 # wxwidgets. Optional. Use `apt install libwxgtk3.2-dev` on Debian/Ubuntu Linux (Min compatible Ubuntu version is 23.04)
-set(FOUND_WX_AND_GLEW 0)
 set(WX_OPTIONAL_COMPONENTS "")
 find_package(wxWidgets 3.1 COMPONENTS gl core base ${WX_OPTIONAL_COMPONENTS} net QUIET)
 if(wxWidgets_FOUND)
-  if(USE_GLEW)
-    message(STATUS "Compiling wx examples")
-    set(FOUND_WX_AND_GLEW 1)
-  else()
-    message(STATUS "NOT compiling wx examples. wxWidgets *was* found but USE_GLEW is set to OFF. The wxWidgets examples require the OpenGL Extension Wrangler library GLEW. If you would like to compile wxWidgets examples, please re-run cmake with the -DUSE_GLEW=ON option.")
-  endif()
+  message(STATUS "Compiling wx examples")
 else()
   message(STATUS "NOT compiling wx examples (no wxWidgets library found)")
 endif()

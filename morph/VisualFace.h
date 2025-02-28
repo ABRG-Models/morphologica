@@ -17,17 +17,13 @@
 
 #include <morph/tools.h>
 #include <morph/VisualCommon.h> // for visgl::CharInfo
+#include <morph/VisualFont.h>
+#include <morph/TextFeatures.h>
 
 #if defined __gl3_h_ || defined __gl_h_
 // GL headers have been externally included
 #else
-# ifndef USE_GLEW
-#  ifdef __OSX__
-#   include <OpenGL/gl3.h>
-#  else
-#   include <GL/gl.h>
-#  endif
-# endif
+# error "GL headers should have been included already"
 #endif
 
 // FreeType for text rendering
@@ -171,24 +167,6 @@ extern const char __stop_dvsansbi_ttf[];
 
 namespace morph {
 
-    //! The fonts supported (i.e. compiled in) to morph::Visual
-    enum class VisualFont {
-        DVSans,             // fonts/dejavu/DejaVuSans.ttf
-        DVSansItalic,       // fonts/dejavu/DejaVuSans-Oblique.ttf
-        DVSansBold,         // fonts/dejavu/DejaVuSans-Bold.ttf
-        DVSansBoldItalic,   // fonts/dejavu/DejaVuSans-BoldOblique.ttf
-        Vera,               // fonts/ttf-bitstream-vera/Vera.ttf
-        VeraItalic,         // fonts/ttf-bitstream-vera/VeraIt.ttf
-        VeraBold,           // fonts/ttf-bitstream-vera/VeraBd.ttf
-        VeraBoldItalic,     // fonts/ttf-bitstream-vera/VeraBI.ttf
-        VeraMono,           // fonts/ttf-bitstream-vera/VeraMono.ttf
-        VeraMonoItalic,     // fonts/ttf-bitstream-vera/VeraMoIt.ttf
-        VeraMonoBold,       // fonts/ttf-bitstream-vera/VeraMoBD.ttf
-        VeraMonoBoldItalic, // fonts/ttf-bitstream-vera/VeraMoBI.ttf
-        VeraSerif,          // fonts/ttf-bitstream-vera/VeraSe.ttf
-        VeraSerifBold       // fonts/ttf-bitstream-vera/VeraSeBd.ttf
-    };
-
     namespace visgl {
 
         class VisualFace
@@ -207,7 +185,11 @@ namespace morph {
              * of font textures for separate VisualTextModel instances which might have
              * the same pixel size.
              */
-            VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
+            VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype
+#ifdef GLAD_OPTION_GL_MX
+                        , GladGLContext* glfn = nullptr
+#endif
+                )
             {
                 std::string fontpath = "";
 #ifdef __WIN__
@@ -428,7 +410,28 @@ namespace morph {
                     }
 
                     // generate texture
-                    unsigned int texture;
+                    unsigned int texture = 0;
+#ifdef GLAD_OPTION_GL_MX
+                    if (glfn == nullptr) { throw std::runtime_error ("glfn problem"); }
+                    glfn->GenTextures (1, &texture);
+                    glfn->BindTexture (GL_TEXTURE_2D, texture);
+                    glfn->TexImage2D(
+                        GL_TEXTURE_2D,
+                        0,
+                        GL_RED,
+                        this->face->glyph->bitmap.width,
+                        this->face->glyph->bitmap.rows,
+                        0,
+                        GL_RED,
+                        GL_UNSIGNED_BYTE,
+                        this->face->glyph->bitmap.buffer
+                        );
+                    // set texture options
+                    glfn->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                    glfn->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                    glfn->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                    glfn->TexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Could be GL_NEAREST, but doesn't look as good.
+#else
                     glGenTextures (1, &texture);
                     glBindTexture (GL_TEXTURE_2D, texture);
                     glTexImage2D(
@@ -447,6 +450,7 @@ namespace morph {
                     glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                     glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                     glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Could be GL_NEAREST, but doesn't look as good.
+#endif
                     // now store character for later use
                     morph::visgl::CharInfo glchar = {
                         texture,
@@ -462,7 +466,11 @@ namespace morph {
                     }
                     this->glchars.insert (std::pair<char32_t, morph::visgl::CharInfo>(c, glchar));
                 }
+#ifdef GLAD_OPTION_GL_MX
+                glfn->BindTexture(GL_TEXTURE_2D, 0);
+#else
                 glBindTexture(GL_TEXTURE_2D, 0);
+#endif
                 // At this point could FT_Done_Face() etc, I think. as we no longer do anything Freetypey with it.
                 FT_Done_Face (this->face);
             }

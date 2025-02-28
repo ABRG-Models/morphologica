@@ -12,8 +12,8 @@
 namespace morph {
 
     //! A version definition for the whole of morphologica
-    static constexpr unsigned int version_major = 3;
-    static constexpr unsigned int version_minor = 4;
+    static constexpr unsigned int version_major = 4;
+    static constexpr unsigned int version_minor = 0;
     //! Returns a string for the version of the morphologica library
     std::string version_string()
     {

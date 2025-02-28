@@ -45,7 +45,8 @@ namespace morph {
         void initializeVertices()
         {
             // Auto-set ticklabelgap
-            auto em = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf);
+            auto em = std::make_unique<morph::VisualTextModel<glver>> (this->tf);
+            this->bindmodel (em);
             morph::TextGeometry em_geom = em->getTextGeometry (std::string("m"));
             this->ticklabelgap = em_geom.width()/2.0f;
             if (this->draw_frame == true) { this->drawFrame(); }
@@ -86,7 +87,8 @@ namespace morph {
 
             for (unsigned int i = 0; i < this->label_angles.size(); ++i) {
                 std::string s = this->labels[i];
-                auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf);
+                auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->tf);
+                this->bindmodel (lbl);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
                 this->ticklabelwidth = geom.width() > this->ticklabelwidth ? geom.width() : this->ticklabelwidth;
