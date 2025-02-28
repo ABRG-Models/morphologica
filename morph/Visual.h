@@ -99,10 +99,6 @@ namespace morph {
     // widget. win_t should be defined (with a using win_t = something line) externally.
 #endif
 
-    // Types reproduced from glad/gl.h
-    //typedef void (*GLADapiproc_like)(void);
-    //typedef GLADapiproc_like (*GLADloadfunc_like)(const char *name);
-
     /*!
      * Visual 'scene' class
      *
