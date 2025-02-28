@@ -28,6 +28,7 @@
 #include <morph/gl/version.h>
 #include <morph/gl/util.h>
 #include <morph/VisualFace.h>
+#include <morph/VisualFont.h>
 // FreeType for text rendering
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -207,6 +208,18 @@ namespace morph {
             }
             return rtn;
         }
+
+#ifdef GLAD_OPTION_GL_MX
+        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::Visual<glver>* _vis, GladGLContext* glfn)
+        {
+            return this->getVisualFace (tf.font, tf.fontres, _vis, glfn);
+        }
+#else
+        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::Visual<glver>* _vis)
+        {
+            return this->getVisualFace (tf.font, tf.fontres, _vis);
+        }
+#endif
 
         //! Loop through this->faces clearing out those associated with the given morph::Visual
         void clearVisualFaces (morph::Visual<glver>* _vis)

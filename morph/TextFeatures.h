@@ -2,7 +2,7 @@
 
 #include <array>
 #include <morph/colour.h>
-#include <morph/VisualFace.h>
+#include <morph/VisualFont.h>
 
 namespace morph {
 

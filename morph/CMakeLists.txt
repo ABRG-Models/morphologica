@@ -109,6 +109,7 @@ install(
   VisualDataModel.h
   VisualDefaultShaders.h
   VisualFace.h
+  VisualFont.h
   Visual.h
   VisualModel.h
   VisualResources.h

@@ -107,6 +107,29 @@ namespace morph {
             }
         }
 
+        /*!
+         * Set up the passed-in VisualTextModel with functions that need access to the parent Visual attributes.
+         */
+        template <typename T>
+        void bindmodel (std::unique_ptr<T>& model)
+        {
+            if (this->parentVis == nullptr) {
+                throw std::runtime_error ("Can't bind a model, because I am not bound");
+            }
+            model->set_parent (this->parentVis);
+            model->get_shaderprogs = &morph::Visual<glver>::get_shaderprogs;
+            model->get_gprog = &morph::Visual<glver>::get_gprog;
+            model->get_tprog = &morph::Visual<glver>::get_tprog;
+#ifdef GLAD_OPTION_GL_MX
+            model->get_glfn = &morph::Visual<glver>::get_glfn;
+#endif
+
+#ifndef OWNED_MODE
+            model->setContext = &morph::Visual<glver>::set_context;
+            model->releaseContext = &morph::Visual<glver>::release_context;
+#endif
+        }
+
         bool postVertexInitRequired = false;
         //! Common code to call after the vertices have been set up. GL has to have been initialised.
         void postVertexInit()
@@ -422,13 +445,8 @@ namespace morph {
 
             if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis,
-                                                                         this->get_shaderprogs(this->parentVis).tprog,
-                                                                         tfeatures
-#ifdef GLAD_OPTION_GL_MX
-                                                                         , this->get_glfn(this->parentVis)
-#endif
-                );
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
+            this->bindmodel (tmup);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -463,13 +481,8 @@ namespace morph {
 
             if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis,
-                                                                         this->get_shaderprogs(this->parentVis).tprog,
-                                                                         tfeatures
-#ifdef GLAD_OPTION_GL_MX
-                                                                         , this->get_glfn(this->parentVis)
-#endif
-                );
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
+            this->bindmodel (tmup);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);

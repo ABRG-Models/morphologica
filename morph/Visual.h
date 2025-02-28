@@ -39,7 +39,7 @@
 #else
 // Include GLAD header
 # define GLAD_GL_IMPLEMENTATION
-# ifdef GLAD_OPTION_MX            // Could be defined when compiling
+# ifdef USE_GLAD_MX               // Could be defined when compiling
 #  include <morph/glad/gl_mx.h>   // Now GLAD_OPTION_GL_MX is defined
 # else
 #  include <morph/glad/gl.h>      // GLAD_OPTION_GL_MX remains undefined
@@ -347,7 +347,7 @@ namespace morph {
 #endif
 
         /*!
-         * Set up the passed-in VisualModel with functions that need access to Visual attributes.
+         * Set up the passed-in VisualModel (or indeed, VisualTextModel) with functions that need access to Visual attributes.
          */
         template <typename T>
         void bindmodel (std::unique_ptr<T>& model)
@@ -442,11 +442,8 @@ namespace morph {
             this->setContext(); // For VisualTextModel
 #endif
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures
-#ifdef GLAD_OPTION_GL_MX
-                                                                         , this->glfn
-#endif
-                );
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
+            this->bindmodel (tmup);
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
                 morph::vec<float, 3> centred_locn = _toffset;
@@ -475,11 +472,8 @@ namespace morph {
             this->setContext(); // For VisualTextModel
 #endif
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures
-#ifdef GLAD_OPTION_GL_MX
-                                                                         , this->glfn
-#endif
-                );
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
+            this->bindmodel (tmup);
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
                 morph::vec<float, 3> centred_locn = _toffset;
@@ -1271,14 +1265,8 @@ namespace morph {
 
             // Set up the title, which may or may not be rendered
             morph::TextFeatures title_tf(0.035f, 64);
-            //this->textModel = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog,
-            //                                                                   morph::vec<float, 3>{0.0f},
-            //                                                                   this->title, title_tf);
-            this->textModel = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, title_tf
-#ifdef GLAD_OPTION_GL_MX
-                                                                               , this->glfn
-#endif
-                );
+            this->textModel = std::make_unique<morph::VisualTextModel<glver>> (title_tf);
+            this->bindmodel (this->textModel);
             this->textModel->setSceneTranslation ({0.0f, 0.0f, 0.0f});
             this->textModel->setupText (this->title);
 
