@@ -80,8 +80,8 @@ public:
 
                 // Text label for activation
                 {
-                    auto vtm = std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                           morph::TextFeatures(em));
+                    auto vtm = std::make_unique<morph::VisualTextModel<>> (morph::TextFeatures(em));
+                    this->bindmodel (vtm);
                     vtm->setupText (ss.str(), nloc+toffset);
                     this->texts.push_back (std::move(vtm));
                 }
@@ -128,8 +128,8 @@ public:
                     morph::vec<float,3> nloccross = nloc.cross (nloc2);
                     toffset = (nloccross[2] > 0) ? toffset1 : toffset2;
                     {
-                        auto vtm = std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                               morph::TextFeatures(em));
+                        auto vtm = std::make_unique<morph::VisualTextModel<>> (morph::TextFeatures(em));
+                        this->bindmodel (vtm);
                         vtm->setupText (ss.str(), ((nloc+nloc2)/2.0f) + toffset);
                         this->texts.push_back (std::move(vtm));
                     }
@@ -140,8 +140,8 @@ public:
                         std::stringstream bb1;
                         bb1 << "bias " << std::setprecision(3) << cl.b[bidx++];
                         {
-                            auto vtm = std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                                   morph::TextFeatures(em/2));
+                            auto vtm = std::make_unique<morph::VisualTextModel<>> (morph::TextFeatures(em/2));
+                            this->bindmodel (vtm);
                             vtm->setupText (bb1.str(), (nloc2+toffsetbias));
                             this->texts.push_back (std::move(vtm));
                         }
