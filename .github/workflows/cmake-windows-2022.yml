@@ -1,0 +1,17 @@
+name: Windows 2022
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README**'
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  call-workflow-passing-data:
+    uses: rremilian/morphologica/.github/workflows/cmake-windows-template.yml@feat/add_windows_workflows
+    with:
+      RUNNER_IMAGE: windows-2022
+      BUILD_TYPE: Release
+      VCPKG_TRIPLET: x64-windows
