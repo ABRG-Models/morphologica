@@ -123,11 +123,8 @@ namespace morph {
 #ifdef GLAD_OPTION_GL_MX
             model->get_glfn = &morph::VisualOwnable<glver>::get_glfn;
 #endif
-
-#ifndef OWNED_MODE
             model->setContext = &morph::VisualOwnable<glver>::set_context;
             model->releaseContext = &morph::VisualOwnable<glver>::release_context;
-#endif
         }
 
         bool postVertexInitRequired = false;
