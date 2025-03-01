@@ -51,3 +51,15 @@ jobs:
     - name: Test
       working-directory: ${{ github.workspace }}/build
       run: ctest -C ${{ inputs.BUILD_TYPE }}
+
+    - name: Test if all morph headers are installed
+      working-directory: ${{ github.workspace }}/build
+      run: |
+        make install
+        ./../ci_scripts/check_installed_headers.sh
+      shell: bash
+
+    - name: Test standalone examples
+      working-directory: ${{github.workspace}}/standalone_examples
+      run: ./compile_standalone_examples.sh
+      shell: bash
