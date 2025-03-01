@@ -92,7 +92,7 @@ namespace morph {
 
         //! Make this Visual the current one, so that when creating/adding a visual model, the vao
         //! ids relate to the correct OpenGL context.
-        void setContext() { glfwMakeContextCurrent (this->window); }
+        void setContext() final { glfwMakeContextCurrent (this->window); }
 
         //! swapBuffers implementation for glfw
         void swapBuffers() final { glfwSwapBuffers (this->window); }
@@ -124,7 +124,7 @@ namespace morph {
         }
 
         //! Release the OpenGL context
-        void releaseContext() { glfwMakeContextCurrent (nullptr); }
+        void releaseContext() final { glfwMakeContextCurrent (nullptr); }
 
         /*!
          * \brief OpenGL context check
