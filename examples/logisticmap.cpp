@@ -14,7 +14,7 @@ int main()
 {
     int rtn = -1;
 
-    morph::Visual v(1024, 768, "The Logistic Map", {-0.8,-0.8}, {.1,.1,.1}, 2.0f, 0.01f);
+    morph::Visual v(1024, 768, "The Logistic Map");
     v.zNear = 0.001;
     v.showCoordArrows = false;
     v.backgroundWhite();

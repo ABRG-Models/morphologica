@@ -17,10 +17,7 @@ int main()
 {
     int rtn = -1;
 
-    // Demonstrates use of offset (left at 0,0,0), lengths (3,2,1) and the 'thickness'
-    // scaling factor (0.5) for the coordinate arrows. Defines, and makes current a new
-    // window and OpenGL context.
-    morph::Visual v(1024, 768, "Window 1", {0.8,-0.8}, {.1,.05,.05}, 3.0f, 0.01f);
+    morph::Visual v(1024, 768, "Window 1");
     v.showCoordArrows = true;
     v.showTitle = true;
     v.backgroundWhite();
@@ -28,7 +25,7 @@ int main()
 
     // If I define a second Visual here, then the OpenGL context will now be 'pointing'
     // at this Visual v2
-    morph::Visual v2(768, 768, "Graph on Window 2", {0.8,-0.8}, {.05,.05,.1}, 2.0f, 0.01f);
+    morph::Visual v2(768, 768, "Graph on Window 2");
     v2.showCoordArrows = true;
     v2.showTitle = true;
     v2.backgroundWhite();

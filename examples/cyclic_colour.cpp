@@ -14,7 +14,7 @@ int main()
 {
     // The main function is simple. Create a morph::Visual, add a single SquareGridVisual and then 'keep it open'
     std::string titlestr = "Cyclic colour map";
-    morph::Visual v(1600, 1000, titlestr, {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    morph::Visual v(1600, 1000, titlestr);
     v.backgroundBlack();
 
     morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };

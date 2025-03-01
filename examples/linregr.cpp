@@ -22,7 +22,7 @@ int main()
     morph::vvec<float> fit = (absc * mc[0]) + mc[1];
 
     // Visualise data and linear fit
-    morph::Visual v(1024, 768, "Linear regression", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
+    morph::Visual v(1024, 768, "Linear regression");
     auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
     v.bindmodel (gv);
 

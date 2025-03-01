@@ -17,7 +17,7 @@ int main()
 {
     int rtn = -1;
 
-    morph::Visual v(1024, 768, "VoronoiVisual", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
+    morph::Visual v(1024, 768, "VoronoiVisual");
 
     morph::RandUniform<float> rngxy(-2.0f, 2.0f, 1000);
     morph::RandUniform<float> rngz(0.8f, 1.0f, 1000);

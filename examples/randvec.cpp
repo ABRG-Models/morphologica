@@ -39,7 +39,7 @@ int main()
     morph::histo h(sp, 100);
 
     // Set up a morph::Visual for a graph
-    morph::Visual v(1024, 768, "Histogram", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
+    morph::Visual v(1024, 768, "Histogram");
 
     // Create a new GraphVisual with offset within the scene of 0,0,0
     auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));

@@ -16,7 +16,7 @@ int main()
 {
     int rtn = -1;
 
-    morph::Visual v(1024, 768, "morph::ScatterVisual", {0,0}, {1,1,1}, 1.0f, 0.05f);
+    morph::Visual v(1024, 768, "morph::ScatterVisual");
     v.zNear = 0.001;
     v.showCoordArrows = true;
     v.coordArrowsInScene = true;
