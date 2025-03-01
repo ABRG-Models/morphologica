@@ -11,13 +11,15 @@
 ![cmake ubuntu 22 default (gcc 11?) build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-ubuntu-2204.yml/badge.svg)
 ![cmake mac 14 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-mac-14.yml/badge.svg) 
 ![cmake mac 15 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-mac-15.yml/badge.svg)
+![cmake ubuntu 24 glad mx build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-ubu24-gladmx.yml/badge.svg)
+![cmake windows 22 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-windows-2022.yml/badge.svg)
 
 **Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
 
 Morphologica creates a window (using GLFW) in which you can draw 3D data visualization objects called `VisualModels`.
 It can also be integrated with other GUI frameworks including Qt (see [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)) and [wxWidgets](https://www.wxwidgets.org/) (see [**examples/wx/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/wx)).
 
-Morphologica is compatible with **Linux** (including **Raspberry Pi**) and **Mac OS** and it has also previously been compiled and run on **Windows** (though we do not currently have Windows CI testing of the code).
+Morphologica is compatible with **Linux** (including **Raspberry Pi**), **Mac OS** and **Windows**.
 
 Morphologica has **OpenGL Compute Shader managers** . See [**examples/gl_compute**](https://github.com/ABRG-Models/morphologica/tree/main/examples/gl_compute) for details.
 

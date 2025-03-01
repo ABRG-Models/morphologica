@@ -20,10 +20,8 @@ using morph::unicode;
 class MyVisual : public morph::Visual<>
 {
 public:
-    MyVisual (int width, int height, const std::string& title,
-              const morph::vec<float, 2> caOffset, const morph::vec<float> caLength,
-              const float caThickness, const float caEm)
-        : morph::Visual<> (width, height, title, caOffset, caLength, caThickness, caEm)
+    MyVisual (int width, int height, const std::string& title)
+        : morph::Visual<> (width, height, title)
     {
         this->backgroundWhite();
         this->coordArrows->clear();
@@ -37,9 +35,8 @@ public:
 
 int main()
 {
-    // Contructor args are width, height, title, coordinate arrows offset, cooridnate
-    // arrows lengths, coord arrow thickness, coord arrow font size
-    MyVisual v(1600, 1000, "morph::HexGridVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
+    // Contructor args are width, height, title
+    MyVisual v(1600, 1000, "morph::HexGridVisual");
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
