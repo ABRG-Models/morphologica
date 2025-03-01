@@ -19,9 +19,9 @@ int main()
 {
     int rtn = -1;
 #ifdef MESH
-    morph::Visual v(1024, 768, "morph::PointRowsMeshVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
+    morph::Visual v(1024, 768, "morph::PointRowsMeshVisual");
 #else
-    morph::Visual v(1024, 768, "morph::PointRowsVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
+    morph::Visual v(1024, 768, "morph::PointRowsVisual");
 #endif
     v.zNear = 0.001;
     v.showCoordArrows = true;

@@ -15,11 +15,7 @@
 struct myvisual final : public morph::Visual<>
 {
     // Boilerplate constructor (just copy this):
-    myvisual (int width, int height, const std::string& title,
-              const morph::vec<float, 2> caOffset = {-0.8,-0.8},
-              const morph::vec<float> caLength = {.05,.05,.05},
-              const float caThickness = 2.0f, const float caEm = 0.0f)
-        : morph::Visual<> (width, height, title, caOffset, caLength, caThickness, caEm) {}
+    myvisual (int width, int height, const std::string& title) : morph::Visual<> (width, height, title) {}
 
     // Angle of the bands
     float angle = 0.0f;

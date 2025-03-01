@@ -37,9 +37,9 @@
 
 namespace morph {
 
-    //! Forward declaration of a Visual class
+    //! Forward declaration of a VisualOwnable class
     template <int>
-    class Visual;
+    class VisualOwnable;
 
     /*!
      * A separate data-containing model which is used to render text. It is intended
@@ -538,7 +538,7 @@ namespace morph {
         //! Line spacing, in multiples of the height of an 'h'
         float line_spacing = 1.4f;
         //! Parent Visual
-        morph::Visual<glver>* parentVis = nullptr;
+        morph::VisualOwnable<glver>* parentVis = nullptr;
 
 #ifdef GLAD_OPTION_GL_MX
         GladGLContext* glfn = nullptr;
@@ -546,22 +546,22 @@ namespace morph {
         /*!
          * Callbacks are analogous to those in VisualModel
          */
-        std::function<morph::visgl::visual_shaderprogs(morph::Visual<glver>*)> get_shaderprogs;
+        std::function<morph::visgl::visual_shaderprogs(morph::VisualOwnable<glver>*)> get_shaderprogs;
         //! Get the graphics shader prog id
-        std::function<GLuint(morph::Visual<glver>*)> get_gprog;
+        std::function<GLuint(morph::VisualOwnable<glver>*)> get_gprog;
         //! Get the text shader prog id
-        std::function<GLuint(morph::Visual<glver>*)> get_tprog;
+        std::function<GLuint(morph::VisualOwnable<glver>*)> get_tprog;
 #ifdef GLAD_OPTION_GL_MX
         //! Get the GladGLContext function pointer
-        std::function<GladGLContext*(morph::Visual<glver>*)> get_glfn;
+        std::function<GladGLContext*(morph::VisualOwnable<glver>*)> get_glfn;
 #endif
-        //! Set OpenGL context. Should call parentVis->setContext(). Can be nullptr (if in OWNED_MODE).
-        std::function<void(morph::Visual<glver>*)> setContext;
-        //! Release OpenGL context. Should call parentVis->releaseContext(). Can be nullptr (if in OWNED_MODE).
-        std::function<void(morph::Visual<glver>*)> releaseContext;
+        //! Set OpenGL context. Should call parentVis->setContext().
+        std::function<void(morph::VisualOwnable<glver>*)> setContext;
+        //! Release OpenGL context. Should call parentVis->releaseContext().
+        std::function<void(morph::VisualOwnable<glver>*)> releaseContext;
 
         //! Setter for the parent pointer, parentVis
-        void set_parent (morph::Visual<glver>* _vis)
+        void set_parent (morph::VisualOwnable<glver>* _vis)
         {
             //if (this->parentVis != nullptr) { throw std::runtime_error ("VisualTextModel: Set the parent pointer once only!"); }
             this->parentVis = _vis;

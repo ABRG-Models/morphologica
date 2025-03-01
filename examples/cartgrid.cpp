@@ -14,9 +14,8 @@
 
 int main()
 {
-    // Contructor args are width, height, title, coordinate arrows offset, cooridnate
-    // arrows lengths, coord arrow thickness, ?
-    morph::Visual v(1600, 1000, "morph::CartGridVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    // Contructor args are width, height, title
+    morph::Visual v(1600, 1000, "morph::CartGridVisual");
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?

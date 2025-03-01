@@ -10,9 +10,7 @@ int main()
 {
     int rtn = -1;
 
-    // Demonstrates use of offset (left at 0,0,0), lengths (3,2,1) and the 'thickness'
-    // scaling factor (0.5) for the coordinate arrows
-    morph::Visual v(1024, 768, "Visualization", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
+    morph::Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
     v.showCoordArrows = false;
     v.coordArrowsInScene = true;

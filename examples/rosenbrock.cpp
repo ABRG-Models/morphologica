@@ -26,7 +26,7 @@ int main()
     int rtn = -1;
 
     // Set up a visual environment
-    morph::Visual v(2600, 1800, "Rosenbrock bananas", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
+    morph::Visual v(2600, 1800, "Rosenbrock bananas");
     v.zNear = 0.001;
     v.zFar = 100000;
     v.fov=60;
