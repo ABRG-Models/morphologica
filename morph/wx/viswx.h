@@ -18,7 +18,7 @@ namespace morph { using win_t = wxGLCanvas; }
 
 #include <morph/gl/version.h>
 // In the wx examples, we include <morph/glad/gl.h> early in the main.cpp file
-#include <morph/Visual.h>
+#include <morph/VisualOwnable.h>
 // We need to be able to convert from wxWidgets keycodes to morph keycodes
 #include <morph/wx/keycodes.h>
 
@@ -210,7 +210,7 @@ namespace morph {
 
             bool ready() { return this->glInitialized; }
 
-            morph::Visual<glver> v;
+            morph::VisualOwnable<glver> v;
 
         private:
             std::unique_ptr<wxGLContext> glContext;

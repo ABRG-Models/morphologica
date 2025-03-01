@@ -35,9 +35,9 @@
 
 namespace morph {
 
-    // Pointers to morph::Visual are used to index font faces
+    // Pointers to morph::VisualOwnable are used to index font faces
     template<int>
-    class Visual;
+    class VisualOwnable;
 
     //! Singleton resource class for morph::Visual scenes.
     template <int glver>
@@ -109,7 +109,7 @@ namespace morph {
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
-        std::map<std::tuple<morph::VisualFont, unsigned int, morph::Visual<glver>*>,
+        std::map<std::tuple<morph::VisualFont, unsigned int, morph::VisualOwnable<glver>*>,
                  std::unique_ptr<morph::visgl::VisualFace>> faces;
 
         //! An error callback function for the GLFW windowing library
@@ -119,7 +119,7 @@ namespace morph {
         }
 
         //! FreeType library object, public for access by client code?
-        std::map<morph::Visual<glver>*, FT_Library> freetypes;
+        std::map<morph::VisualOwnable<glver>*, FT_Library> freetypes;
 
     public:
         VisualResources(const VisualResources<glver>&) = delete;
@@ -133,7 +133,7 @@ namespace morph {
         //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
         //! but that's a task for the future, as I coded it this way under the false
         //! assumption that I'd only need one FT_Library.
-        void freetype_init (morph::Visual<glver>* _vis
+        void freetype_init (morph::VisualOwnable<glver>* _vis
 #ifdef GLAD_OPTION_GL_MX
                             , GladGLContext* glfn = nullptr
 #endif
@@ -163,9 +163,9 @@ namespace morph {
 
         //! When a morph::Visual goes out of scope, its freetype library instance should be
         //! deinitialized.
-        void freetype_deinit (morph::Visual<glver>* _vis)
+        void freetype_deinit (morph::VisualOwnable<glver>* _vis)
         {
-            // First clear the faces associated with Visual<>* _vis
+            // First clear the faces associated with VisualOwnable<>* _vis
             this->clearVisualFaces (_vis);
             // Second, clean up the FreeType library instance and erase from this->freetypes
             auto freetype = this->freetypes.find (_vis);
@@ -188,7 +188,7 @@ namespace morph {
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::Visual<glver>* _vis
+        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::VisualOwnable<glver>* _vis
 #ifdef GLAD_OPTION_GL_MX
                                                  , GladGLContext* glfn
 #endif
@@ -210,24 +210,24 @@ namespace morph {
         }
 
 #ifdef GLAD_OPTION_GL_MX
-        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::Visual<glver>* _vis, GladGLContext* glfn)
+        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::VisualOwnable<glver>* _vis, GladGLContext* glfn)
         {
             return this->getVisualFace (tf.font, tf.fontres, _vis, glfn);
         }
 #else
-        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::Visual<glver>* _vis)
+        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::VisualOwnable<glver>* _vis)
         {
             return this->getVisualFace (tf.font, tf.fontres, _vis);
         }
 #endif
 
         //! Loop through this->faces clearing out those associated with the given morph::Visual
-        void clearVisualFaces (morph::Visual<glver>* _vis)
+        void clearVisualFaces (morph::VisualOwnable<glver>* _vis)
         {
             auto f = this->faces.begin();
             while (f != this->faces.end()) {
                 // f->first is a key. If its third, Visual<>* element == _vis, then delete and erase
-                if (std::get<morph::Visual<glver>*>(f->first) == _vis) {
+                if (std::get<morph::VisualOwnable<glver>*>(f->first) == _vis) {
                     f = this->faces.erase (f);
                 } else { f++; }
             }

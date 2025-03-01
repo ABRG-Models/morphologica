@@ -9,7 +9,7 @@ struct QOpenGLWidget; // fwd decl
 #define OWNED_MODE 1
 // Define morph::win_t before #including morph/Visual.h
 namespace morph { using win_t = QOpenGLWidget; }
-#include <morph/Visual.h>
+#include <morph/VisualOwnable.h>
 
 #include <QtWidgets/QOpenGLWidget>
 #include <QOpenGLContext>
@@ -66,9 +66,9 @@ namespace morph {
         template<int widget_index>
         struct viswidget_mx : public QOpenGLWidget //, protected QOpenGLFunctions_4_1_Core
         {
-            // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::Visual
+            // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::VisualOwnable
             // inside the widget.
-            morph::Visual<gl_version> v;
+            morph::VisualOwnable<gl_version> v;
 
             // In your Qt code, build VisualModels that should be added to the scene and add them to this.
             std::vector<std::unique_ptr<morph::VisualModel<gl_version>>> newvisualmodels;

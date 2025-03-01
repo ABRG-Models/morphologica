@@ -117,16 +117,16 @@ namespace morph {
                 throw std::runtime_error ("Can't bind a model, because I am not bound");
             }
             model->set_parent (this->parentVis);
-            model->get_shaderprogs = &morph::Visual<glver>::get_shaderprogs;
-            model->get_gprog = &morph::Visual<glver>::get_gprog;
-            model->get_tprog = &morph::Visual<glver>::get_tprog;
+            model->get_shaderprogs = &morph::VisualOwnable<glver>::get_shaderprogs;
+            model->get_gprog = &morph::VisualOwnable<glver>::get_gprog;
+            model->get_tprog = &morph::VisualOwnable<glver>::get_tprog;
 #ifdef GLAD_OPTION_GL_MX
-            model->get_glfn = &morph::Visual<glver>::get_glfn;
+            model->get_glfn = &morph::VisualOwnable<glver>::get_glfn;
 #endif
 
 #ifndef OWNED_MODE
-            model->setContext = &morph::Visual<glver>::set_context;
-            model->releaseContext = &morph::Visual<glver>::release_context;
+            model->setContext = &morph::VisualOwnable<glver>::set_context;
+            model->releaseContext = &morph::VisualOwnable<glver>::release_context;
 #endif
         }
 
@@ -790,22 +790,22 @@ namespace morph {
          * Visual (saving a boilerplate argument and avoiding that killer circular
          * dependency at the cost of one line of boilerplate in client programs)
          */
-        std::function<morph::visgl::visual_shaderprogs(morph::Visual<glver>*)> get_shaderprogs;
+        std::function<morph::visgl::visual_shaderprogs(morph::VisualOwnable<glver>*)> get_shaderprogs;
         //! Get the graphics shader prog id
-        std::function<GLuint(morph::Visual<glver>*)> get_gprog;
+        std::function<GLuint(morph::VisualOwnable<glver>*)> get_gprog;
         //! Get the text shader prog id
-        std::function<GLuint(morph::Visual<glver>*)> get_tprog;
+        std::function<GLuint(morph::VisualOwnable<glver>*)> get_tprog;
 #ifdef GLAD_OPTION_GL_MX
         //! Get the GladGLContext function pointer
-        std::function<GladGLContext*(morph::Visual<glver>*)> get_glfn;
+        std::function<GladGLContext*(morph::VisualOwnable<glver>*)> get_glfn;
 #endif
-        //! Set OpenGL context. Should call parentVis->setContext(). Can be nullptr (if in OWNED_MODE).
-        std::function<void(morph::Visual<glver>*)> setContext;
-        //! Release OpenGL context. Should call parentVis->releaseContext(). Can be nullptr (if in OWNED_MODE).
-        std::function<void(morph::Visual<glver>*)> releaseContext;
+        //! Set OpenGL context. Should call parentVis->setContext().
+        std::function<void(morph::VisualOwnable<glver>*)> setContext;
+        //! Release OpenGL context. Should call parentVis->releaseContext().
+        std::function<void(morph::VisualOwnable<glver>*)> releaseContext;
 
         //! Setter for the parent pointer, parentVis
-        void set_parent (morph::Visual<glver>* _vis)
+        void set_parent (morph::VisualOwnable<glver>* _vis)
         {
             if (this->parentVis != nullptr) { throw std::runtime_error ("VisualModel: Set the parent pointer once only!"); }
             this->parentVis = _vis;
@@ -893,8 +893,8 @@ namespace morph {
         //! If true, then calls to VisualModel::render should return
         bool hide = false;
 
-        // The morph::Visual in which this model exists.
-        morph::Visual<glver>* parentVis = nullptr;
+        // The morph::VisualOwnable in which this model exists.
+        morph::VisualOwnable<glver>* parentVis = nullptr;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)

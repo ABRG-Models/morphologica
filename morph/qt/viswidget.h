@@ -13,7 +13,7 @@
 #define OWNED_MODE 1
 // Define morph::win_t before #including morph/Visual.h
 namespace morph { using win_t = QOpenGLWidget; }
-#include <morph/Visual.h>
+#include <morph/VisualOwnable.h>
 // We need to be able to convert from Qt keycodes to morph keycodes
 #include <morph/qt/keycodes.h>
 
@@ -23,12 +23,12 @@ namespace morph {
         // This must match the QOpenGLFunctions_4_1_Core class you derive from
         constexpr int gl_version = morph::gl::version_4_1;
 
-        // A morph::Visual widget
+        // A morph::VisualOwnable-based widget
         struct viswidget : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
         {
-            // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::Visual
+            // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::VisualOwnable
             // inside the widget.
-            morph::Visual<gl_version> v;
+            morph::VisualOwnable<gl_version> v;
 
             // In your Qt code, build VisualModels that should be added to the scene and add them to this.
             std::vector<std::unique_ptr<morph::VisualModel<gl_version>>> newvisualmodels;
@@ -63,7 +63,7 @@ namespace morph {
                 initializeOpenGLFunctions();
                 // Switch on multisampling anti-aliasing (with the num samples set in constructor)
                 glEnable (GL_MULTISAMPLE);
-                // Initialise morph::Visual
+                // Initialise morph::VisualOwnable
                 v.init (this);
             }
 
