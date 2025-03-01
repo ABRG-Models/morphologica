@@ -5,9 +5,8 @@
 
 struct QOpenGLWidget; // fwd decl
 
-// Visual is going to be owned by the QOpenGLWidget
-#define OWNED_MODE 1
-// Define morph::win_t before #including morph/Visual.h
+// VisualOwnable is going to be owned by the QOpenGLWidget
+// Define morph::win_t before #including morph/VisualOwnable.h
 namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/VisualOwnable.h>
 

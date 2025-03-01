@@ -11,9 +11,8 @@
 #include <wx/glcanvas.h>
 #include <wx/colordlg.h>
 
-// Visual is going to be owned either by the morph::wx::canvas or by the morph::wx::frame
-#define OWNED_MODE 1
-// Define morph::win_t before #including morph/Visual.h
+// VisualOwnable is going to be owned either by the morph::wx::canvas or by the morph::wx::frame
+// Define morph::win_t before #including morph/VisualOwnable.h
 namespace morph { using win_t = wxGLCanvas; }
 
 #include <morph/gl/version.h>
