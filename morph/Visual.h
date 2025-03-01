@@ -1,8 +1,10 @@
 /*!
  * \file
  *
- * Awesome graphics code for high performance graphing and visualisation. Uses modern OpenGL and the
- * library GLFW for window management (or can be owned by a widget such as a QOpenGLWidget).
+ * Awesome graphics code for high performance graphing and visualisation.
+ *
+ * This is the main visual scene class in morphologica and derives from
+ * morph::VisualOwnable, adding window handling with GLFW3.
  *
  * Created by Seb James on 2019/05/01
  *
@@ -10,15 +12,6 @@
  * \date May 2019
  */
 #pragma once
-
-// Normally, a morph::Visual is the *owner* of a GLFW window in which it does its rendering.
-//
-// "OWNED_MODE" means that the morph::Visual is itself owned by a windowing system of some sort. At
-// present, that can be a QOpenGLWidget or a wxWidget. It could in principle be any other window
-// drawing system that's able to provide an OpenGL context for morph::Visual to render into.
-//
-// Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
-// morph::Visual is the owner of a Window provided by GLFW.
 
 #ifndef _glfw3_h_ // glfw3 has not yet been externally included
 # define GLFW_INCLUDE_NONE // Here, we tell GLFW that we will explicitly include GL3/gl3.h and GL/glext.h
@@ -218,7 +211,7 @@ namespace morph {
 
             glfwMakeContextCurrent (this->window);
 
-            this->init_glad (glfwGetProcAddress); // Must go here in non-OWNED MODE. In owned mode, must go before init
+            this->init_glad (glfwGetProcAddress);
         }
 
     private:
