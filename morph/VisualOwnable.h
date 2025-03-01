@@ -1,27 +1,22 @@
 /*!
  * \file
  *
- * Awesome graphics code for high performance graphing and visualisation. Uses modern OpenGL and the
- * library GLFW for window management (or can be owned by a widget such as a QOpenGLWidget).
+ * Awesome graphics code for high performance graphing and visualisation. This is the
+ * base class that sets up GL, leaving choice of window system (GLFW3/Qt/wx/etc) to a
+ * derived class such as morph::Visual or morph::qt::viswidget.
  *
- * Created by Seb James on 2019/05/01
+ * Normally, a morph::Visual is the *owner* of a GLFW window in which it does its
+ * rendering.
+ *
+ * This is a base class that is ownable, and can be used in other window drawing system
+ * such as Qt and wx.
+ *
+ * Created by Seb James on 2025/03/01, from morph::Visual.h
  *
  * \author Seb James
- * \date May 2019
+ * \date March 2025
  */
 #pragma once
-
-// Normally, a morph::Visual is the *owner* of a GLFW window in which it does its rendering.
-//
-// This is a base class that is ownable, and can be used in other window drawing system such as Qt and wx.
-//
-// Old desc:
-// "OWNED_MODE" means that the morph::Visual is itself owned by a windowing system of some sort. At
-// present, that can be a QOpenGLWidget or a wxWidget. It could in principle be any other window
-// drawing system that's able to provide an OpenGL context for morph::Visual to render into.
-//
-// Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
-// morph::Visual is the owner of a Window provided by GLFW.
 
 #if defined __gl3_h_ || defined __gl_h_ // could get a fuller list from glfw.h
 // GL headers appear to have been externally included.
@@ -78,18 +73,16 @@ namespace morph {
     };
 
     /*!
-     * Visual 'scene' class
+     * VisualOwnable 'scene' base class
      *
      * A class for visualising computational models on an OpenGL screen.
      *
-     * Each Visual will have its own GLFW window and is essentially a "scene" containing a number of
-     * objects. One object might be the visualisation of some data expressed over a HexGrid. Another
-     * could be a GraphVisual object. The class handles mouse events to allow the user to rotate and
-     * translate the scene, as well as use keys to generate particular effects/views.
-     *
-     * It's possible to set the background colour of the scene (Visual::bgcolour), the location of
-     * the objects in the scene (Visual::setSceneTransZ and friends) and the position and field of
-     * view of the 'camera' (Visual::zNear, Visual::zFar and Visual::fov).
+     * Each VisualOwnable provides a "scene" containing a number of objects. One object
+     * might be the visualisation of some data expressed over a HexGrid. Another could
+     * be a GraphVisual object. The class can pass through mouse events to allow the
+     * user to rotate and translate the scene, as well as use keys to generate
+     * particular effects/views (though particular implementations will live in derived
+     * classes).
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
@@ -98,8 +91,9 @@ namespace morph {
     {
     public:
         /*!
-         * Default constructor is used when incorporating Visual inside a QWidget.  We have to wait
-         * on calling init functions until an OpenGL environment is guaranteed to exist.
+         * Default constructor is used when incorporating Visual inside another object
+         * such as a QWidget.  We have to wait on calling init functions until an OpenGL
+         * environment is guaranteed to exist.
          */
         VisualOwnable() { }
 

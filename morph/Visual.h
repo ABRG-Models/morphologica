@@ -23,9 +23,6 @@
 #ifndef _glfw3_h_ // glfw3 has not yet been externally included
 # define GLFW_INCLUDE_NONE // Here, we tell GLFW that we will explicitly include GL3/gl3.h and GL/glext.h
 # include <GLFW/glfw3.h>
-# ifndef VISUAL_MANAGES_GLFW
-#  define VISUAL_MANAGES_GLFW 1 // Used in VisualResources.h
-# endif // ndef VIDUAL_MANAGES_GLFW
 #endif // _glfw3_h_
 
 #include <mutex>
@@ -37,6 +34,7 @@ namespace morph {
 }
 
 #include <morph/VisualOwnable.h>
+#include <morph/VisualGlfw.h>
 
 namespace morph {
 
@@ -88,7 +86,8 @@ namespace morph {
         // happen, and lastly initializes the freetype code.
         void init_resources()
         {
-            // VisualResources provides font management and GLFW management. Ensure it exists in memory.
+            morph::VisualGlfw<glver>::i().init(); // Init GLFW windows system
+            // VisualResources provides font management. Ensure it exists in memory.
             morph::VisualResources<glver>::i().create();
             // Set up the window that will present the OpenGL graphics.  This has to
             // happen BEFORE the call to VisualResources::freetype_init()

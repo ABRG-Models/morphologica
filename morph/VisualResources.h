@@ -1,7 +1,7 @@
 /*!
  * \file
  *
- * Declares a VisualResource class to hold the information about Freetype and other
+ * Declares a VisualResource class to hold the information about Freetype and any other
  * one-per-program resources.
  *
  * \author Seb James
@@ -9,16 +9,6 @@
  */
 
 #pragma once
-
-#ifndef _glfw3_h_
-# ifndef OWNED_MODE
-#  define GLFW_INCLUDE_NONE
-#  include <GLFW/glfw3.h>
-#  ifndef VISUAL_MANAGES_GLFW
-#   define VISUAL_MANAGES_GLFW 1 // Probably already defined in Visual.h
-#  endif
-# endif
-#endif
 
 #include <iostream>
 #include <tuple>
@@ -56,67 +46,15 @@ namespace morph {
             // instance gets cleaned up. So at this stage freetypes should also be empy and nothing
             // will happen here either.
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
-
-#ifndef OWNED_MODE
-# ifdef VISUAL_MANAGES_GLFW
-            // Shut down GLFW
-            glfwTerminate();
-# endif
-#endif
         }
 
-#ifndef OWNED_MODE
-        void glfw_init()
-        {
-            if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
-
-            // Set up error callback
-            glfwSetErrorCallback (morph::VisualResources<glver>::errorCallback);
-
-#ifdef HAVE_A_USE_FOR_MONITOR_CONTENT_SCALE
-            // See https://www.glfw.org/docs/latest/monitor_guide.html
-            GLFWmonitor* primary = glfwGetPrimaryMonitor(); // glfw 3.0+
-            if (primary == nullptr) { throw std::runtime_error ("Primary was null"); }
-            float xscale, yscale;
-            glfwGetMonitorContentScale (primary, &xscale, &yscale); // glfw 3.3+
-#endif
-
-            // The rest of this function may be right to call with each window?
-            if constexpr (morph::gl::version::gles (glver) == true) {
-                glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-                glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
-            }
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, morph::gl::version::major (glver));
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, morph::gl::version::minor (glver));
-#ifdef __OSX__
-            glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
-            // Tell glfw that we'd like to do anti-aliasing.
-            glfwWindowHint (GLFW_SAMPLES, 4);
-        }
-#endif
-        void init()
-        {
-#ifndef OWNED_MODE
-# ifdef VISUAL_MANAGES_GLFW
-            // The initial init only does glfw. Have to wait until later for Freetype init
-            this->glfw_init();
-# endif
-#endif
-        }
+        void init() {} // no-op
 
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
         std::map<std::tuple<morph::VisualFont, unsigned int, morph::VisualOwnable<glver>*>,
                  std::unique_ptr<morph::visgl::VisualFace>> faces;
-
-        //! An error callback function for the GLFW windowing library
-        static void errorCallback (int error, const char* description)
-        {
-            std::cerr << "Error: " << description << " (code "  << error << ")\n";
-        }
 
         //! FreeType library object, public for access by client code?
         std::map<morph::VisualOwnable<glver>*, FT_Library> freetypes;
@@ -143,7 +81,7 @@ namespace morph {
             try {
                 freetype = this->freetypes.at (_vis);
             } catch (const std::out_of_range&) {
-                // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
+                // Use of gl calls here may make it neat to set up GL here in VisualResources?
 #ifdef GLAD_OPTION_GL_MX
                 glfn->PixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
                 morph::gl::Util::checkError (__FILE__, __LINE__, glfn);

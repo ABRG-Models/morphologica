@@ -110,8 +110,10 @@ install(
   VisualDefaultShaders.h
   VisualFace.h
   VisualFont.h
+  VisualGlfw.h
   Visual.h
   VisualModel.h
+  VisualOwnable.h
   VisualResources.h
   VisualTextModel.h
   VoronoiVisual.h
