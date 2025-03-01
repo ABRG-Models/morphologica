@@ -10,7 +10,7 @@ on:
 
 jobs:
   call-workflow-passing-data:
-    uses: rremilian/morphologica/.github/workflows/cmake-windows-template.yml@feat/add_windows_workflows
+    uses: rremilian/morphologica/.github/workflows/cmake-windows-template.yml@feat/workflow-scripts-windows
     with:
       RUNNER_IMAGE: windows-2022
       BUILD_TYPE: Release
