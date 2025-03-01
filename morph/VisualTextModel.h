@@ -37,9 +37,9 @@
 
 namespace morph {
 
-    //! Forward declaration of a Visual class
+    //! Forward declaration of a VisualOwnable class
     template <int>
-    class Visual;
+    class VisualOwnable;
 
     /*!
      * A separate data-containing model which is used to render text. It is intended
@@ -555,9 +555,9 @@ namespace morph {
         //! Get the GladGLContext function pointer
         std::function<GladGLContext*(morph::VisualOwnable<glver>*)> get_glfn;
 #endif
-        //! Set OpenGL context. Should call parentVis->setContext(). Can be nullptr (if in OWNED_MODE).
+        //! Set OpenGL context. Should call parentVis->setContext().
         std::function<void(morph::VisualOwnable<glver>*)> setContext;
-        //! Release OpenGL context. Should call parentVis->releaseContext(). Can be nullptr (if in OWNED_MODE).
+        //! Release OpenGL context. Should call parentVis->releaseContext().
         std::function<void(morph::VisualOwnable<glver>*)> releaseContext;
 
         //! Setter for the parent pointer, parentVis
