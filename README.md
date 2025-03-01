@@ -11,6 +11,8 @@
 ![cmake ubuntu 22 default (gcc 11?) build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-ubuntu-2204.yml/badge.svg)
 ![cmake mac 14 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-mac-14.yml/badge.svg) 
 ![cmake mac 15 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-mac-15.yml/badge.svg)
+![cmake ubuntu 24 glad mx build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-ubu24-gladmx.yml/badge.svg)
+![cmake windows 22 build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-windows-2022.yml/badge.svg)
 
 **Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
 
