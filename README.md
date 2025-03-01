@@ -19,7 +19,7 @@
 Morphologica creates a window (using GLFW) in which you can draw 3D data visualization objects called `VisualModels`.
 It can also be integrated with other GUI frameworks including Qt (see [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)) and [wxWidgets](https://www.wxwidgets.org/) (see [**examples/wx/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/wx)).
 
-Morphologica is compatible with **Linux** (including **Raspberry Pi**) and **Mac OS** and it has also previously been compiled and run on **Windows** (though we do not currently have Windows CI testing of the code).
+Morphologica is compatible with **Linux** (including **Raspberry Pi**), **Mac OS** and **Windows**.
 
 Morphologica has **OpenGL Compute Shader managers** . See [**examples/gl_compute**](https://github.com/ABRG-Models/morphologica/tree/main/examples/gl_compute) for details.
 
