@@ -90,6 +90,12 @@ namespace morph {
             this->releaseContext();
         }
 
+        void setSwapInterval()
+        {
+            // Swap as fast as possible (fixes lag of scene with mouse movements)
+            glfwSwapInterval (0);
+        }
+
         //! Make this Visual the current one, so that when creating/adding a visual model, the vao
         //! ids relate to the correct OpenGL context.
         void setContext() final { glfwMakeContextCurrent (this->window); }
