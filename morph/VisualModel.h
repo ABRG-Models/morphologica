@@ -97,13 +97,8 @@ namespace morph {
         virtual ~VisualModel()
         {
             if (this->vbos != nullptr) {
-#ifdef GLAD_OPTION_GL_MX
                 this->get_glfn(this->parentVis)->DeleteBuffers (numVBO, this->vbos.get());
                 this->get_glfn(this->parentVis)->DeleteVertexArrays (1, &this->vao);
-#else
-                glDeleteBuffers (numVBO, this->vbos.get());
-                glDeleteVertexArrays (1, &this->vao);
-#endif
             }
         }
 
@@ -120,9 +115,7 @@ namespace morph {
             model->get_shaderprogs = &morph::VisualOwnable<glver>::get_shaderprogs;
             model->get_gprog = &morph::VisualOwnable<glver>::get_gprog;
             model->get_tprog = &morph::VisualOwnable<glver>::get_tprog;
-#ifdef GLAD_OPTION_GL_MX
             model->get_glfn = &morph::VisualOwnable<glver>::get_glfn;
-#endif
             model->setContext = &morph::VisualOwnable<glver>::set_context;
             model->releaseContext = &morph::VisualOwnable<glver>::release_context;
         }
@@ -131,7 +124,6 @@ namespace morph {
         //! Common code to call after the vertices have been set up. GL has to have been initialised.
         void postVertexInit()
         {
-#ifdef GLAD_OPTION_GL_MX
             GladGLContext* _glfn = this->get_glfn(this->parentVis);
 
             // Do gl memory allocation of vertex array once only
@@ -164,38 +156,6 @@ namespace morph {
             _glfn->BindVertexArray(0); // carefully unbind and rebind
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
 
-#else // not GLAD_OPTION_GL_MX
-
-            // Do gl memory allocation of vertex array once only
-            if (this->vbos == nullptr) {
-                // Create vertex array object
-                glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
-            }
-            glBindVertexArray (this->vao);
-
-            // Create the vertex buffer objects (once only)
-            if (this->vbos == nullptr) {
-                this->vbos = std::make_unique<GLuint[]>(numVBO);
-                glGenBuffers (numVBO, this->vbos.get()); // OpenGL 4.4- safe
-            }
-
-            // Set up the indices buffer - bind and buffer the data in this->indices
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-
-            std::size_t sz = this->indices.size() * sizeof(GLuint);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-
-            // Binds data from the "C++ world" to the OpenGL shader world for
-            // "position", "normalin" and "color"
-            // (bind, buffer and set vertex array object attribute)
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
-
-            // Unbind only the vertex array (not the buffers, that causes GL_INVALID_ENUM errors)
-            glBindVertexArray(0); // carefully unbind and rebind
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
             this->postVertexInitRequired = false;
         }
 
@@ -208,7 +168,6 @@ namespace morph {
          */
         void reinit_buffers()
         {
-#ifdef GLAD_OPTION_GL_MX
             GladGLContext* _glfn = this->get_glfn(this->parentVis);
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
@@ -224,23 +183,6 @@ namespace morph {
 
             _glfn->BindVertexArray(0);                                // carefully unbind and rebind
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);  // carefully unbind and rebind
-
-#else // not GLAD_OPTION_GL_MX
-            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
-            if (this->postVertexInitRequired == true) { this->postVertexInit(); }
-            // Now re-set up the VBOs
-            glBindVertexArray (this->vao);                              // carefully unbind and rebind
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);  // carefully unbind and rebind
-
-            std::size_t sz = this->indices.size() * sizeof(GLuint);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
-
-            glBindVertexArray(0);                               // carefully unbind and rebind
-            morph::gl::Util::checkError (__FILE__, __LINE__);   // carefully unbind and rebind
-#endif
         }
 
         //! reinit ONLY vertexColors buffer
@@ -248,20 +190,13 @@ namespace morph {
         {
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
-#ifdef GLAD_OPTION_GL_MX
+
             GladGLContext* _glfn = this->get_glfn(this->parentVis);
             // Now re-set up the VBOs
             _glfn->BindVertexArray (this->vao);  // carefully unbind and rebind
             this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
             _glfn->BindVertexArray(0);  // carefully unbind and rebind
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
-#else
-            // Now re-set up the VBOs
-            glBindVertexArray (this->vao);  // carefully unbind and rebind
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
-            glBindVertexArray(0);  // carefully unbind and rebind
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
         }
 
         void clearTexts() { this->texts.clear(); }
@@ -344,7 +279,6 @@ namespace morph {
 
             GLint prev_shader = 0;
 
-#ifdef GLAD_OPTION_GL_MX
             GladGLContext* _glfn = this->get_glfn(this->parentVis);
 
             _glfn->GetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
@@ -379,51 +313,12 @@ namespace morph {
                 _glfn->BindVertexArray(0);
             }
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
-#else
-            glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
-            // Ensure the correct program is in play for this VisualModel
-            glUseProgram (this->get_gprog(this->parentVis));
-
-            if (!this->indices.empty()) {
-                // It is only necessary to bind the vertex array object before rendering
-                // (not the vertex buffer objects)
-                glBindVertexArray (this->vao);
-
-                // Pass this->float to GLSL so the model can have an alpha value.
-                GLint loc_a = glGetUniformLocation (this->get_gprog(this->parentVis), static_cast<const GLchar*>("alpha"));
-                if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
-
-                GLint loc_v = glGetUniformLocation (this->get_gprog(this->parentVis), static_cast<const GLchar*>("v_matrix"));
-                if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
-
-                // Should be able to apply scaling to the model matrix
-                GLint loc_m = glGetUniformLocation (this->get_gprog(this->parentVis), static_cast<const GLchar*>("m_matrix"));
-                if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, (this->model_scaling * this->viewmatrix).mat.data()); }
-
-                if constexpr (debug_render) {
-                    std::cout << "VisualModel::render: scenematrix:\n" << scenematrix << std::endl;
-                    std::cout << "VisualModel::render: model viewmatrix:\n" << viewmatrix << std::endl;
-                }
-
-                // Draw the triangles
-                glDrawElements (GL_TRIANGLES, static_cast<unsigned int>(this->indices.size()), GL_UNSIGNED_INT, 0);
-
-                // Unbind the VAO
-                glBindVertexArray(0);
-            }
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
 
             // Now render any VisualTextModels
             auto ti = this->texts.begin();
             while (ti != this->texts.end()) { (*ti)->render(); ti++; }
-#ifdef GLAD_OPTION_GL_MX
             _glfn->UseProgram (prev_shader);
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
-#else
-            glUseProgram (prev_shader);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
         }
 
         /*!
@@ -792,10 +687,8 @@ namespace morph {
         std::function<GLuint(morph::VisualOwnable<glver>*)> get_gprog;
         //! Get the text shader prog id
         std::function<GLuint(morph::VisualOwnable<glver>*)> get_tprog;
-#ifdef GLAD_OPTION_GL_MX
         //! Get the GladGLContext function pointer
         std::function<GladGLContext*(morph::VisualOwnable<glver>*)> get_glfn;
-#endif
         //! Set OpenGL context. Should call parentVis->setContext().
         std::function<void(morph::VisualOwnable<glver>*)> setContext;
         //! Release OpenGL context. Should call parentVis->releaseContext().
@@ -914,7 +807,7 @@ namespace morph {
         void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition)
         {
             std::size_t sz = dat.size() * sizeof(float);
-#ifdef GLAD_OPTION_GL_MX
+
             GladGLContext* _glfn = this->get_glfn(this->parentVis);
             _glfn->BindBuffer (GL_ARRAY_BUFFER, buf);
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
@@ -924,16 +817,6 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
             _glfn->EnableVertexAttribArray (bufferAttribPosition);
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
-#else
-            glBindBuffer (GL_ARRAY_BUFFER, buf);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            glVertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            glEnableVertexAttribArray (bufferAttribPosition);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
         }
 
         /*!

@@ -70,8 +70,8 @@ namespace morph {
         virtual ~Visual()
         {
             this->setContext();
-            glfwDestroyWindow (this->window);
             this->deconstructCommon();
+            glfwDestroyWindow (this->window);
         }
 
         // Do one-time init of the Visual's resources. This gets/creates the VisualResources,

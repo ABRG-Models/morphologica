@@ -97,27 +97,15 @@ namespace morph {
         }
 
         //! Shader loading code.
-        GLuint LoadShaders (const std::vector<morph::gl::ShaderInfo>& shader_info
-#ifdef GLAD_OPTION_GL_MX
-                            , GladGLContext* glfn
-#endif
-            )
+        GLuint LoadShaders (const std::vector<morph::gl::ShaderInfo>& shader_info, GladGLContext* glfn)
         {
             if (shader_info.empty()) { return 0; }
 
-#ifdef GLAD_OPTION_GL_MX
             GLuint program = glfn->CreateProgram();
-#else
-            GLuint program = glCreateProgram();
-#endif
 
 #ifdef GL_SHADER_COMPILER
             GLboolean shaderCompilerPresent = GL_FALSE;
-# ifdef GLAD_OPTION_GL_MX
             glfn->GetBooleanv (GL_SHADER_COMPILER, &shaderCompilerPresent);
-# else
-            glGetBooleanv (GL_SHADER_COMPILER, &shaderCompilerPresent);
-# endif
             if (shaderCompilerPresent == GL_FALSE) {
                 std::cerr << "Shader compiler NOT present!\n";
             } else {
@@ -127,11 +115,7 @@ namespace morph {
             }
 #endif
             for (auto entry : shader_info) {
-#ifdef GLAD_OPTION_GL_MX
                 GLuint shader = glfn->CreateShader (entry.type);
-#else
-                GLuint shader = glCreateShader (entry.type);
-#endif
                 entry.shader = shader;
                 // Test entry.filename. If this GLSL file can be read, then do so, otherwise,
                 // compile the default version specified in the ShaderInfo
@@ -151,11 +135,7 @@ namespace morph {
                 }
                 if (source == nullptr) {
                     for (auto entry : shader_info) {
-#ifdef GLAD_OPTION_GL_MX
                         glfn->DeleteShader (entry.shader);
-#else
-                        glDeleteShader (entry.shader);
-#endif
                         entry.shader = 0;
                     }
                     return 0;
@@ -168,26 +148,14 @@ namespace morph {
                 }
                 GLint slen = (GLint)strlen (source.get());
                 const GLchar* sptr = source.get();
-#ifdef GLAD_OPTION_GL_MX
                 glfn->ShaderSource (shader, 1, &sptr, &slen);
                 glfn->CompileShader (shader);
-#else
-                glShaderSource (shader, 1, &sptr, &slen);
-                glCompileShader (shader);
-#endif
                 GLint shaderCompileSuccess = GL_FALSE;
                 char infoLog[512];
-#ifdef GLAD_OPTION_GL_MX
                 glfn->GetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompileSuccess);
-#else
-                glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompileSuccess);
-#endif
+
                 if (!shaderCompileSuccess) {
-#ifdef GLAD_OPTION_GL_MX
                     glfn->GetShaderInfoLog(shader, 512, NULL, infoLog);
-#else
-                    glGetShaderInfoLog(shader, 512, NULL, infoLog);
-#endif
                     std::cerr << "\nShader compilation failed!";
                     std::cerr << "\n--------------------------\n\n";
                     std::cerr << source.get();
@@ -198,11 +166,7 @@ namespace morph {
                 }
 
                 // Test glGetError:
-#ifdef GLAD_OPTION_GL_MX
                 GLenum shaderError = glfn->GetError();
-#else
-                GLenum shaderError = glGetError();
-#endif
                 if (shaderError == GL_INVALID_VALUE) {
                     std::cerr << "Shader compilation resulted in GL_INVALID_VALUE\n";
                     exit (3);
@@ -214,26 +178,15 @@ namespace morph {
                 if constexpr (debug_shaders == true) {
                     std::cout << "Successfully compiled a " << morph::gl::shader_type_str(entry.type) << " shader!\n";
                 }
-#ifdef GLAD_OPTION_GL_MX
                 glfn->AttachShader (program, shader);
                 glfn->DeleteShader (shader); // Note it's correct to glDeleteShader after attaching it to program
-#else
-                glAttachShader (program, shader);
-                glDeleteShader (shader); // Note it's correct to glDeleteShader after attaching it to program
-#endif
             }
 
             GLint linked = 0;
-#ifdef GLAD_OPTION_GL_MX
             glfn->LinkProgram (program);
             glfn->GetProgramiv (program, GL_LINK_STATUS, &linked);
-#else
-            glLinkProgram (program);
-            glGetProgramiv (program, GL_LINK_STATUS, &linked);
-#endif
             if (!linked) {
                 GLsizei len = 0;
-#ifdef GLAD_OPTION_GL_MX
                 glfn->GetProgramiv (program, GL_INFO_LOG_LENGTH, &len);
                 {
                     std::unique_ptr<GLchar[]> log = std::make_unique<GLchar[]>(len+1);
@@ -241,15 +194,6 @@ namespace morph {
                     std::cerr << "Shader linking failed: " << log.get() << std::endl << "Exiting.\n";
                 }
                 glfn->DeleteProgram (program);
-#else
-                glGetProgramiv (program, GL_INFO_LOG_LENGTH, &len);
-                {
-                    std::unique_ptr<GLchar[]> log = std::make_unique<GLchar[]>(len+1);
-                    glGetProgramInfoLog (program, len, &len, log.get());
-                    std::cerr << "Shader linking failed: " << log.get() << std::endl << "Exiting.\n";
-                }
-                glDeleteProgram (program);
-#endif
                 exit (5);
             } // else successfully linked
 

@@ -60,13 +60,8 @@ namespace morph {
         virtual ~VisualTextModel()
         {
             if (this->vbos != nullptr) {
-#ifdef GLAD_OPTION_GL_MX
                 this->get_glfn(this->parentVis)->DeleteBuffers (numVBO, this->vbos.get());
                 this->get_glfn(this->parentVis)->DeleteVertexArrays (1, &this->vao);
-#else
-                glDeleteBuffers (numVBO, this->vbos.get());
-                glDeleteVertexArrays (1, &this->vao);
-#endif
             }
         }
 
@@ -77,7 +72,7 @@ namespace morph {
 
             GLint prev_shader;
             GLuint tshaderprog = this->get_tprog (this->parentVis);
-#ifdef GLAD_OPTION_GL_MX
+
             auto _glfn = this->get_glfn (this->parentVis);
 
             _glfn->GetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
@@ -116,44 +111,6 @@ namespace morph {
             _glfn->UseProgram (prev_shader);
 
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
-#else
-            glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
-
-            // Ensure the correct program is in play for this VisualModel
-            glUseProgram (tshaderprog);
-
-            // Set uniforms
-            GLint loc_tc = glGetUniformLocation (tshaderprog, static_cast<const GLchar*>("textColor"));
-            if (loc_tc != -1) { glUniform3f (loc_tc, this->clr_text[0], this->clr_text[1], this->clr_text[2]); }
-            GLint loc_a = glGetUniformLocation (tshaderprog, static_cast<const GLchar*>("alpha"));
-            if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
-            GLint loc_v = glGetUniformLocation (tshaderprog, static_cast<const GLchar*>("v_matrix"));
-            if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
-            GLint loc_m = glGetUniformLocation (tshaderprog, static_cast<const GLchar*>("m_matrix"));
-            if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
-
-            glActiveTexture (GL_TEXTURE0);
-
-            // It is only necessary to bind the vertex array object before rendering
-            glBindVertexArray (this->vao);
-
-            // We have a max of (2^32)-1 characters. Should be enough.
-            for (unsigned int i = 0U; i < quads.size(); ++i) {
-                // Bind the right texture for the quad.
-                glBindTexture (GL_TEXTURE_2D, this->quad_ids[i]);
-                // This is 'draw a subset of the elements from the vertex array
-                // object'. You say how many indices to draw and which base *vertex* you
-                // start from. In my scheme, I have 4 vertices for each two triangles
-                // that are constructed. Thus, I draw 6 indices, but increment the base
-                // vertex by 4 for each letter.
-                glDrawElementsBaseVertex (GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 4*i);
-            }
-
-            glBindVertexArray(0);
-            glUseProgram (prev_shader);
-
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
         }
 
         //! Set clr_text to a value suitable to be visible on the background colour bgcolour
@@ -242,17 +199,12 @@ namespace morph {
         morph::TextGeometry getTextGeometry (const std::string& _txt)
         {
             morph::TextGeometry geom;
-#ifdef GLAD_OPTION_GL_MX
             if (!this->get_glfn) { return geom; }
             if (this->face == nullptr) {
                 this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
                                                                         this->get_glfn(this->parentVis));
             }
-#else
-            if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (tfeatures, this->parentVis);
-            }
-#endif
+
             // First convert string from ASCII/UTF-8 into Unicode.
             std::basic_string<char32_t> utxt = morph::unicode::fromUtf8(_txt);
             for (std::basic_string<char32_t>::const_iterator c = utxt.begin(); c != utxt.end(); c++) {
@@ -270,17 +222,13 @@ namespace morph {
         morph::TextGeometry getTextGeometry()
         {
             morph::TextGeometry geom;
-#ifdef GLAD_OPTION_GL_MX
+
             if (!this->get_glfn) { return geom; }
             if (this->face == nullptr) {
                 this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
                                                                         this->get_glfn(this->parentVis));
             }
-#else
-            if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (tfeatures, this->parentVis);
-            }
-#endif
+
             for (std::basic_string<char32_t>::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
                 morph::visgl::CharInfo ci = this->face->glchars[*c];
                 float drop = (ci.size.y() - ci.bearing.y()) * this->fontscale;
@@ -326,16 +274,10 @@ namespace morph {
         //! With the given text and font size information, create the quads for the text.
         void setupText (const std::basic_string<char32_t>& _txt)
         {
-#ifdef GLAD_OPTION_GL_MX
             if (this->face == nullptr) {
                 this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
                                                                         this->get_glfn(this->parentVis));
             }
-#else
-            if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (tfeatures, this->parentVis);
-            }
-#endif
             this->txt = _txt;
             // With glyph information from txt, set up this->quads.
             this->quads.clear();
@@ -466,7 +408,6 @@ namespace morph {
         //! Common code to call after the vertices have been set up.
         void postVertexInit()
         {
-#ifdef GLAD_OPTION_GL_MX
             auto _glfn = this->get_glfn (this->parentVis);
             if (this->vbos == nullptr) {
                 // Create vertex array object
@@ -501,35 +442,6 @@ namespace morph {
             // array object first.
             _glfn->BindVertexArray(0);
 # endif
-#else
-            if (this->vbos == nullptr) {
-                // Create vertex array object
-                glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
-            }
-
-            glBindVertexArray (this->vao);
-
-            if (this->vbos == nullptr) {
-                // Create the vertex buffer objects
-                this->vbos = std::make_unique<GLuint[]>(numVBO);
-                glGenBuffers (numVBO, this->vbos.get()); // OpenGL 4.4- safe
-            }
-
-            // Set up the indices buffer - bind and buffer the data in this->indices
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-
-            //std::cout << "indices.size(): " << this->indices.size() << std::endl;
-            std::size_t sz = this->indices.size() * sizeof(GLuint);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-
-            // Binds data from the "C++ world" to the OpenGL shader world for
-            // "position", "normalin" and "color"
-            // (bind, buffer and set vertex array object attribute)
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
-            this->setupVBO (this->vbos[textureVBO], this->vertexTextures, visgl::textureLoc);
-#endif
         }
 
     public:
@@ -540,9 +452,8 @@ namespace morph {
         //! Parent Visual
         morph::VisualOwnable<glver>* parentVis = nullptr;
 
-#ifdef GLAD_OPTION_GL_MX
         GladGLContext* glfn = nullptr;
-#endif
+
         /*!
          * Callbacks are analogous to those in VisualModel
          */
@@ -551,10 +462,8 @@ namespace morph {
         std::function<GLuint(morph::VisualOwnable<glver>*)> get_gprog;
         //! Get the text shader prog id
         std::function<GLuint(morph::VisualOwnable<glver>*)> get_tprog;
-#ifdef GLAD_OPTION_GL_MX
         //! Get the GladGLContext function pointer
         std::function<GladGLContext*(morph::VisualOwnable<glver>*)> get_glfn;
-#endif
         //! Set OpenGL context. Should call parentVis->setContext().
         std::function<void(morph::VisualOwnable<glver>*)> setContext;
         //! Release OpenGL context. Should call parentVis->releaseContext().
@@ -641,18 +550,11 @@ namespace morph {
         void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition)
         {
             std::size_t sz = dat.size() * sizeof(float);
-#ifdef GLAD_OPTION_GL_MX
             auto _glfn = this->get_glfn (this->parentVis);
             _glfn->BindBuffer (GL_ARRAY_BUFFER, buf);
             _glfn->BufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
             _glfn->VertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
             _glfn->EnableVertexAttribArray (bufferAttribPosition);
-#else
-            glBindBuffer (GL_ARRAY_BUFFER, buf);
-            glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
-            glVertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
-            glEnableVertexAttribArray (bufferAttribPosition);
-#endif
         }
 
         //! Push three floats onto the vector of floats \a vp
