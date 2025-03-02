@@ -2,8 +2,8 @@
  * \file
  *
  * Awesome graphics code for high performance graphing and visualisation. This is the
- * base class that sets up multicontext GL, leaving choice of window system
- * (GLFW3/Qt/wx/etc) to a derived class such as morph::Visual or morph::qt::viswidget.
+ * base class that sets up GL, leaving choice of window system (GLFW3/Qt/wx/etc) to a
+ * derived class such as morph::Visual or morph::qt::viswidget.
  *
  * Normally, a morph::Visual is the *owner* of a GLFW window in which it does its
  * rendering.
@@ -11,7 +11,7 @@
  * This is a base class that is ownable, and can be used in other window drawing system
  * such as Qt and wx.
  *
- * Created by Seb James on 2025/03/01, from morph::VisualOwnable.h
+ * Created by Seb James on 2025/03/01, from morph::Visual.h
  *
  * \author Seb James
  * \date March 2025
@@ -21,22 +21,39 @@
 #if defined __gl3_h_ || defined __gl_h_ // could get a fuller list from glfw.h
 // GL headers appear to have been externally included.
 #else
-// Include GLAD MX header
+// Include GLAD header
 # define GLAD_GL_IMPLEMENTATION
-#include <morph/glad/gl_mx.h>
+#  include <morph/glad/gl_mx.h>
 #endif // GL headers
 
-#include <morph/VisualOwnable.h>
+#include <morph/VisualBase.h>
 
 namespace morph {
 
+#ifdef __OSX__
+    // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
+    static constexpr double retinaScale = 2; // deals with quadrant issue on osx
+#else
+    static constexpr double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
+#endif
+
     /*!
-     * VisualOwnableGladMX - an extension of VisualOwnable that uses multiple context Glad.
+     * VisualOwnableGladMX - adds GL (multiple context aware) calls to the 'scene' base
+     * class, VisualBase
+     *
+     * A class for visualising computational models on an OpenGL screen.
+     *
+     * Each VisualOwnable provides a "scene" containing a number of objects. One object
+     * might be the visualisation of some data expressed over a HexGrid. Another could
+     * be a GraphVisual object. The class can pass through mouse events to allow the
+     * user to rotate and translate the scene, as well as use keys to generate
+     * particular effects/views (though particular implementations will live in derived
+     * classes).
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
     template <int glver = morph::gl::version_4_1>
-    class VisualOwnableGladMX : public VisualOwnable<glver> // Doesn't work as derived, because glDeleteProgram and other gl* functions must be declared, even though they are not used.
+    class VisualOwnableGladMX : public morph::VisualBase<glver>
     {
     public:
         /*!
@@ -56,11 +73,12 @@ namespace morph {
             this->window_h = _height;
             this->title = _title;
             this->version_stdout = _version_stdout;
+
             this->init_gl();
         }
 
         //! Deconstruct gl memory/context
-        void deconstructCommon() override
+        void deconstructCommon()
         {
             if (this->shaders.gprog) {
                 this->glfn->DeleteProgram (this->shaders.gprog);
@@ -79,11 +97,24 @@ namespace morph {
 
         virtual ~VisualOwnableGladMX() { this->deconstructCommon(); }
 
-
     protected:
-        void freetype_init() { morph::VisualResources<glver>::i().freetype_init (this, this->glfn); }
+        void freetype_init() final
+        {
+            // Now make sure that Freetype is set up (we assume that caller code has set the correct OpenGL context)
+            morph::VisualResources<glver>::i().freetype_init (this, this->glfn);
+        }
 
     public:
+        // Do one-time init of the Visual's resources. This gets/creates the VisualResources,
+        // registers this visual with resources, calls init_window for any glfw stuff that needs to
+        // happen, and lastly initializes the freetype code.
+        void init_resources()
+        {
+            // VisualResources provides font management and GLFW management. Ensure it exists in memory.
+            morph::VisualResources<glver>::i().create();
+            this->freetype_init();
+        }
+
         //! GLAD OpenGL function context pointer
         GladGLContext* glfn = nullptr;
 
@@ -134,30 +165,11 @@ namespace morph {
             return dims;
         }
 
-        /*!
-         * Set up the passed-in VisualModel (or indeed, VisualTextModel) with functions that need access to Visual attributes.
-         */
-        template <typename T>
-        void bindmodel (std::unique_ptr<T>& model)
-        {
-            model->set_parent (this);
-            model->get_shaderprogs = &morph::VisualOwnable<glver>::get_shaderprogs;
-            model->get_gprog = &morph::VisualOwnable<glver>::get_gprog;
-            model->get_tprog = &morph::VisualOwnable<glver>::get_tprog;
-            model->get_glfn = &morph::VisualOwnable<glver>::get_glfn;
-        }
-
         //! Render the scene
-        void render()
+        void render() noexcept final
         {
             this->setContext();
 
-#ifdef __OSX__
-            // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
-            const double retinaScale = 2; // deals with quadrant issue on osx
-#else
-            const double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
-#endif
             if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
                 if (this->active_gprog != morph::visgl::graphics_shader_type::projection2d) {
                     if (this->shaders.gprog) { this->glfn->DeleteProgram (this->shaders.gprog); }
@@ -173,8 +185,7 @@ namespace morph {
             }
 
             this->glfn->UseProgram (this->shaders.gprog);
-            // Can't do this in a new thread:
-            this->glfn->Viewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
+            this->glfn->Viewport (0, 0, this->window_w * morph::retinaScale, this->window_h * morph::retinaScale);
 
             // Set the perspective
             if (this->ptype == perspective_type::orthographic) {
@@ -190,7 +201,8 @@ namespace morph {
                 GLint loc_cyl_height = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_height"));
                 if (loc_cyl_height != -1) { this->glfn->Uniform1f (loc_cyl_height, this->cyl_height); }
             } else {
-                throw std::runtime_error ("Unknown projection");
+                // unknown projection
+                return;
             }
 
             // Calculate model view transformation - transforming from "model space" to "worldspace".
@@ -206,7 +218,7 @@ namespace morph {
             this->glfn->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Set the background colour:
-            this->glfn->ClearBufferfv (GL_COLOR, 0, bgcolour.data());
+            this->glfn->ClearBufferfv (GL_COLOR, 0, this->bgcolour.data());
 
             // Lighting shader variables
             //
@@ -284,10 +296,9 @@ namespace morph {
         }
 
         //! Glad MX specific callback
-        static GladGLContext* get_glfn (morph::VisualOwnable<glver>* _v) { return _v->glfn; };
+        static GladGLContext* get_glfn (morph::VisualOwnableGladMX<glver>* _v) { return _v->glfn; };
 
     protected:
-
         // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
         GladGLContext* create_gladgl_context (const GLADloadfunc procaddressfn)
         {
@@ -313,6 +324,15 @@ namespace morph {
             }
         }
 #endif
+        template <typename T>
+        void bindmodel (std::unique_ptr<T>& model)
+        {
+            model->set_parent (this);
+            model->get_shaderprogs = &morph::VisualBase<glver>::get_shaderprogs;
+            model->get_gprog = &morph::VisualBase<glver>::get_gprog;
+            model->get_tprog = &morph::VisualBase<glver>::get_tprog;
+            model->get_glfn = &morph::VisualOwnableGladMX<glver>::get_glfn;
+        }
 
     protected:
         // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any external
@@ -395,7 +415,7 @@ namespace morph {
             // Set up the title, which may or may not be rendered
             morph::TextFeatures title_tf(0.035f, 64);
             this->textModel = std::make_unique<morph::VisualTextModel<glver>> (title_tf);
-            this->bindmodel (this->textModel);
+            this->bindmodel (this->textModel); // not working
             this->textModel->setSceneTranslation ({0.0f, 0.0f, 0.0f});
             this->textModel->setupText (this->title);
 

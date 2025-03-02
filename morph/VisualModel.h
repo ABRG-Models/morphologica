@@ -56,7 +56,12 @@ namespace morph {
 
     //! Forward declaration of a Visual class
     template <int>
-    class Visual;
+    class VisualBase;
+
+#ifdef GLAD_OPTION_GL_MX
+    template <int>
+    class VisualOwnableGladMX;
+#endif
 
     /*!
      * OpenGL model base class
@@ -98,8 +103,9 @@ namespace morph {
         {
             if (this->vbos != nullptr) {
 #ifdef GLAD_OPTION_GL_MX
-                this->get_glfn(this->parentVis)->DeleteBuffers (numVBO, this->vbos.get());
-                this->get_glfn(this->parentVis)->DeleteVertexArrays (1, &this->vao);
+                GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
+                _glfn->DeleteBuffers (numVBO, this->vbos.get());
+                _glfn->DeleteVertexArrays (1, &this->vao);
 #else
                 glDeleteBuffers (numVBO, this->vbos.get());
                 glDeleteVertexArrays (1, &this->vao);
@@ -117,14 +123,14 @@ namespace morph {
                 throw std::runtime_error ("Can't bind a model, because I am not bound");
             }
             model->set_parent (this->parentVis);
-            model->get_shaderprogs = &morph::VisualOwnable<glver>::get_shaderprogs;
-            model->get_gprog = &morph::VisualOwnable<glver>::get_gprog;
-            model->get_tprog = &morph::VisualOwnable<glver>::get_tprog;
+            model->get_shaderprogs = &morph::VisualBase<glver>::get_shaderprogs;
+            model->get_gprog = &morph::VisualBase<glver>::get_gprog;
+            model->get_tprog = &morph::VisualBase<glver>::get_tprog;
 #ifdef GLAD_OPTION_GL_MX
-            model->get_glfn = &morph::VisualOwnable<glver>::get_glfn;
+            model->get_glfn = &morph::VisualOwnableGladMX<glver>::get_glfn;
 #endif
-            model->setContext = &morph::VisualOwnable<glver>::set_context;
-            model->releaseContext = &morph::VisualOwnable<glver>::release_context;
+            model->setContext = &morph::VisualBase<glver>::set_context;
+            model->releaseContext = &morph::VisualBase<glver>::release_context;
         }
 
         bool postVertexInitRequired = false;
@@ -132,7 +138,7 @@ namespace morph {
         void postVertexInit()
         {
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(this->parentVis);
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
 
             // Do gl memory allocation of vertex array once only
             if (this->vbos == nullptr) {
@@ -209,7 +215,7 @@ namespace morph {
         void reinit_buffers()
         {
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(this->parentVis);
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
             // Now re-set up the VBOs
@@ -249,7 +255,7 @@ namespace morph {
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(this->parentVis);
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
             // Now re-set up the VBOs
             _glfn->BindVertexArray (this->vao);  // carefully unbind and rebind
             this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
@@ -345,8 +351,7 @@ namespace morph {
             GLint prev_shader = 0;
 
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(this->parentVis);
-
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
             _glfn->GetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
             // Ensure the correct program is in play for this VisualModel
             _glfn->UseProgram (this->get_gprog(this->parentVis));
@@ -787,22 +792,22 @@ namespace morph {
          * Visual (saving a boilerplate argument and avoiding that killer circular
          * dependency at the cost of one line of boilerplate in client programs)
          */
-        std::function<morph::visgl::visual_shaderprogs(morph::VisualOwnable<glver>*)> get_shaderprogs;
+        std::function<morph::visgl::visual_shaderprogs(morph::VisualBase<glver>*)> get_shaderprogs;
         //! Get the graphics shader prog id
-        std::function<GLuint(morph::VisualOwnable<glver>*)> get_gprog;
+        std::function<GLuint(morph::VisualBase<glver>*)> get_gprog;
         //! Get the text shader prog id
-        std::function<GLuint(morph::VisualOwnable<glver>*)> get_tprog;
+        std::function<GLuint(morph::VisualBase<glver>*)> get_tprog;
 #ifdef GLAD_OPTION_GL_MX
         //! Get the GladGLContext function pointer
-        std::function<GladGLContext*(morph::VisualOwnable<glver>*)> get_glfn;
+        std::function<GladGLContext*(morph::VisualOwnableGladMX<glver>*)> get_glfn;
 #endif
         //! Set OpenGL context. Should call parentVis->setContext().
-        std::function<void(morph::VisualOwnable<glver>*)> setContext;
+        std::function<void(morph::VisualBase<glver>*)> setContext;
         //! Release OpenGL context. Should call parentVis->releaseContext().
-        std::function<void(morph::VisualOwnable<glver>*)> releaseContext;
+        std::function<void(morph::VisualBase<glver>*)> releaseContext;
 
         //! Setter for the parent pointer, parentVis
-        void set_parent (morph::VisualOwnable<glver>* _vis)
+        void set_parent (morph::VisualBase<glver>* _vis)
         {
             if (this->parentVis != nullptr) { throw std::runtime_error ("VisualModel: Set the parent pointer once only!"); }
             this->parentVis = _vis;
@@ -890,8 +895,8 @@ namespace morph {
         //! If true, then calls to VisualModel::render should return
         bool hide = false;
 
-        // The morph::VisualOwnable in which this model exists.
-        morph::VisualOwnable<glver>* parentVis = nullptr;
+        // The morph::VisualBase in which this model exists.
+        morph::VisualBase<glver>* parentVis = nullptr;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)
@@ -915,7 +920,7 @@ namespace morph {
         {
             std::size_t sz = dat.size() * sizeof(float);
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(this->parentVis);
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
             _glfn->BindBuffer (GL_ARRAY_BUFFER, buf);
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
             _glfn->BufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);

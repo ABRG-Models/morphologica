@@ -104,6 +104,7 @@ install(
   vec.h
   VectorVisual.h
   version.h
+  VisualBase.h
   VisualCommon.h
   VisualCompoundRay.h
   VisualDataModel.h

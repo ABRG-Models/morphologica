@@ -60,8 +60,8 @@ namespace morph {
             this->window_w = _width;
             this->window_h = _height;
             this->title = _title;
-
             this->version_stdout = _version_stdout;
+
             this->init_resources();
             this->init_gl();
         }
@@ -152,9 +152,9 @@ namespace morph {
         template <typename T>
         void bindmodel (std::unique_ptr<T>& model)
         {
-            morph::VisualOwnable<glver>::template bindmodel<T> (model);
-            model->setContext = &morph::VisualOwnable<glver>::set_context;
-            model->releaseContext = &morph::VisualOwnable<glver>::release_context;
+            morph::VisualBase<glver>::template bindmodel<T> (model);
+            model->setContext = &morph::VisualBase<glver>::set_context;
+            model->releaseContext = &morph::VisualBase<glver>::release_context;
         }
 
         /*

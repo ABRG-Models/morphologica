@@ -52,16 +52,12 @@ namespace morph {
     };
 
     /*!
-     * VisualOwnable 'scene' base class
+     * morph::Visual 'scene' base class
      *
-     * A class for visualising computational models on an OpenGL screen.
+     * A base class for visualising computational models on an OpenGL screen.
      *
-     * Each VisualOwnable provides a "scene" containing a number of objects. One object
-     * might be the visualisation of some data expressed over a HexGrid. Another could
-     * be a GraphVisual object. The class can pass through mouse events to allow the
-     * user to rotate and translate the scene, as well as use keys to generate
-     * particular effects/views (though particular implementations will live in derived
-     * classes).
+     * This contains code that is not OpenGL dependent. OpenGL dependent code is in
+     * VisualOwnable or VisualOwnableGladMX.
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
@@ -115,7 +111,7 @@ namespace morph {
         }
 
     protected:
-        void freetype_init()
+        virtual void freetype_init()
         {
             // Now make sure that Freetype is set up (we assume that caller code has set the correct OpenGL context)
             morph::VisualResources<glver>::i().freetype_init (this);
@@ -267,7 +263,7 @@ namespace morph {
         void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
 
         //! A callback function
-        static void callback_render (morph::VisualOwnable<glver>* _v) { _v->render(); };
+        static void callback_render (morph::VisualBase<glver>* _v) { _v->render(); };
 
         //! Render the scene
         virtual void render() noexcept = 0;
@@ -313,7 +309,7 @@ namespace morph {
         float cyl_height = 0.01f;
 
         // These static functions will be set as callbacks in each VisualModel object.
-        static morph::visgl::visual_shaderprogs get_shaderprogs (morph::VisualOwnable<glver>* _v) { return _v->shaders; };
+        static morph::visgl::visual_shaderprogs get_shaderprogs (morph::VisualBase<glver>* _v) { return _v->shaders; };
         static GLuint get_gprog (morph::VisualBase<glver>* _v) { return _v->shaders.gprog; };
         static GLuint get_tprog (morph::VisualBase<glver>* _v) { return _v->shaders.tprog; };
 

@@ -37,9 +37,14 @@
 
 namespace morph {
 
-    //! Forward declaration of a VisualOwnable class
+    //! Forward declaration of a VisualBase class
     template <int>
-    class VisualOwnable;
+    class VisualBase;
+
+#ifdef GLAD_OPTION_GL_MX
+    template <int>
+    class VisualOwnableGladMX;
+#endif
 
     /*!
      * A separate data-containing model which is used to render text. It is intended
@@ -61,8 +66,8 @@ namespace morph {
         {
             if (this->vbos != nullptr) {
 #ifdef GLAD_OPTION_GL_MX
-                this->get_glfn(this->parentVis)->DeleteBuffers (numVBO, this->vbos.get());
-                this->get_glfn(this->parentVis)->DeleteVertexArrays (1, &this->vao);
+                this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis))->DeleteBuffers (numVBO, this->vbos.get());
+                this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis))->DeleteVertexArrays (1, &this->vao);
 #else
                 glDeleteBuffers (numVBO, this->vbos.get());
                 glDeleteVertexArrays (1, &this->vao);
@@ -78,7 +83,7 @@ namespace morph {
             GLint prev_shader;
             GLuint tshaderprog = this->get_tprog (this->parentVis);
 #ifdef GLAD_OPTION_GL_MX
-            auto _glfn = this->get_glfn (this->parentVis);
+            auto _glfn = this->get_glfn (reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
 
             _glfn->GetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
 
@@ -246,7 +251,7 @@ namespace morph {
             if (!this->get_glfn) { return geom; }
             if (this->face == nullptr) {
                 this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
-                                                                        this->get_glfn(this->parentVis));
+                                                                        this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
             }
 #else
             if (this->face == nullptr) {
@@ -274,7 +279,7 @@ namespace morph {
             if (!this->get_glfn) { return geom; }
             if (this->face == nullptr) {
                 this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
-                                                                        this->get_glfn(this->parentVis));
+                                                                        this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
             }
 #else
             if (this->face == nullptr) {
@@ -329,7 +334,7 @@ namespace morph {
 #ifdef GLAD_OPTION_GL_MX
             if (this->face == nullptr) {
                 this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
-                                                                        this->get_glfn(this->parentVis));
+                                                                        this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
             }
 #else
             if (this->face == nullptr) {
@@ -467,7 +472,7 @@ namespace morph {
         void postVertexInit()
         {
 #ifdef GLAD_OPTION_GL_MX
-            auto _glfn = this->get_glfn (this->parentVis);
+            auto _glfn = this->get_glfn (reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
             if (this->vbos == nullptr) {
                 // Create vertex array object
                 _glfn->GenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
@@ -538,30 +543,27 @@ namespace morph {
         //! Line spacing, in multiples of the height of an 'h'
         float line_spacing = 1.4f;
         //! Parent Visual
-        morph::VisualOwnable<glver>* parentVis = nullptr;
+        morph::VisualBase<glver>* parentVis = nullptr;
 
-#ifdef GLAD_OPTION_GL_MX
-        GladGLContext* glfn = nullptr;
-#endif
         /*!
          * Callbacks are analogous to those in VisualModel
          */
-        std::function<morph::visgl::visual_shaderprogs(morph::VisualOwnable<glver>*)> get_shaderprogs;
+        std::function<morph::visgl::visual_shaderprogs(morph::VisualBase<glver>*)> get_shaderprogs;
         //! Get the graphics shader prog id
-        std::function<GLuint(morph::VisualOwnable<glver>*)> get_gprog;
+        std::function<GLuint(morph::VisualBase<glver>*)> get_gprog;
         //! Get the text shader prog id
-        std::function<GLuint(morph::VisualOwnable<glver>*)> get_tprog;
+        std::function<GLuint(morph::VisualBase<glver>*)> get_tprog;
 #ifdef GLAD_OPTION_GL_MX
         //! Get the GladGLContext function pointer
-        std::function<GladGLContext*(morph::VisualOwnable<glver>*)> get_glfn;
+        std::function<GladGLContext*(morph::VisualOwnableGladMX<glver>*)> get_glfn;
 #endif
         //! Set OpenGL context. Should call parentVis->setContext().
-        std::function<void(morph::VisualOwnable<glver>*)> setContext;
+        std::function<void(morph::VisualBase<glver>*)> setContext;
         //! Release OpenGL context. Should call parentVis->releaseContext().
-        std::function<void(morph::VisualOwnable<glver>*)> releaseContext;
+        std::function<void(morph::VisualBase<glver>*)> releaseContext;
 
         //! Setter for the parent pointer, parentVis
-        void set_parent (morph::VisualOwnable<glver>* _vis)
+        void set_parent (morph::VisualBase<glver>* _vis)
         {
             //if (this->parentVis != nullptr) { throw std::runtime_error ("VisualTextModel: Set the parent pointer once only!"); }
             this->parentVis = _vis;
@@ -642,7 +644,7 @@ namespace morph {
         {
             std::size_t sz = dat.size() * sizeof(float);
 #ifdef GLAD_OPTION_GL_MX
-            auto _glfn = this->get_glfn (this->parentVis);
+            auto _glfn = this->get_glfn (reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
             _glfn->BindBuffer (GL_ARRAY_BUFFER, buf);
             _glfn->BufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
             _glfn->VertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
