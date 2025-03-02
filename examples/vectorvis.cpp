@@ -14,7 +14,7 @@
 
 int main()
 {
-    morph::Visual v(1024, 768, "morph::VectorVisual", {0,0}, {.5,.5,.5}, 1.0f, 0.05f);
+    morph::Visual v(1024, 768, "morph::VectorVisual");
     v.lightingEffects();
     v.showCoordArrows = true;
     v.coordArrowsInScene = true;

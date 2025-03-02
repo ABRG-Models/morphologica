@@ -17,11 +17,7 @@ namespace morph {
     template <int glver = morph::gl::version_4_1>
     struct VisualCompoundRay : public morph::Visual<glver>
     {
-        VisualCompoundRay (int width, int height, const std::string& title,
-                           const morph::vec<float, 2> caOffset = { -0.8f, -0.8f },
-                           const morph::vec<float> caLength = { 0.05f, 0.05f, 0.05f },
-                           const float caThickness = 2.0f, const float caEm = 0.0f)
-            : morph::Visual<glver> (width, height, title, caOffset, caLength, caThickness, caEm) {}
+        VisualCompoundRay (int width, int height, const std::string& title) : morph::Visual<glver> (width, height, title) {}
     public:
         //! If set true, then output additional glTF to make files compatible with compound-ray
         bool enable_compound_ray_gltf = true;

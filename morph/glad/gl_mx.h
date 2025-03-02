@@ -5714,6 +5714,7 @@ static int glad_gl_get_extensions(GladGLContext *context, const char **out_exts,
     *out_exts = (const char *)context->GetString(GL_EXTENSIONS);
     return 1;
 }
+#if 0 // [Seb]
 static int glad_gl_has_extension(const char *exts, char **exts_i, const char *ext) {
     if(exts_i) {
         unsigned int index;
@@ -5746,7 +5747,7 @@ static int glad_gl_has_extension(const char *exts, char **exts_i, const char *ex
     }
     return 0;
 }
-
+#endif
 static GLADapiproc glad_gl_get_proc_from_userptr(void *userptr, const char* name) {
     return (GLAD_GNUC_EXTENSION (GLADapiproc (*)(const char *name)) userptr)(name);
 }
@@ -5755,9 +5756,9 @@ static int glad_gl_find_extensions_gl(GladGLContext *context) {
     const char *exts = NULL;
     char **exts_i = NULL;
     if (!glad_gl_get_extensions(context, &exts, &exts_i)) return 0;
-
+#if 0 // [Seb]
     GLAD_UNUSED(glad_gl_has_extension);
-
+#endif
     glad_gl_free_extensions(exts_i);
 
     return 1;
@@ -5851,7 +5852,7 @@ int gladLoadGLContext(GladGLContext *context, GLADloadfunc load) {
 
 
 
- 
+
 
 
 #ifdef __cplusplus
@@ -5859,4 +5860,3 @@ int gladLoadGLContext(GladGLContext *context, GLADloadfunc load) {
 #endif
 
 #endif /* GLAD_GL_IMPLEMENTATION */
-
