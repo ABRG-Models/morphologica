@@ -92,7 +92,6 @@ namespace morph {
 
         void setSwapInterval() final
         {
-            std::cout << "calling glfwSwapInterval (0);\n";
             // Swap as fast as possible (fixes lag of scene with mouse movements)
             glfwSwapInterval (0);
         }
