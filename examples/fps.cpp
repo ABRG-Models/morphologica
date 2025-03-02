@@ -25,7 +25,13 @@ int main()
     v.addLabel ("0 FPS", {0.13f, -0.23f, 0.0f}, fps_tm); // With fps_tm can update the VisualTextModel with fps_tm->setupText("new text")
 
     // Create a HexGrid to show in the scene
-    morph::HexGrid hg(0.02f, 15.0f, 0.0f);
+#ifdef __WIN__
+    constexpr float hex_to_hex = 0.08f;
+#else
+    constexpr float hex_to_hex = 0.02f;
+#endif
+
+    morph::HexGrid hg(hex_to_hex, 15.0f, 0.0f);
     hg.setEllipticalBoundary (4.0f, 4.0f);
     std::cout << "Number of hexes in grid:" << hg.num() << std::endl;
     std::stringstream sss;
