@@ -5,7 +5,7 @@
 #include <sstream>
 #include <cstddef>
 #include <morph/gl/version.h>
-#include <morph/gl/util.h>
+//#include <morph/gl/compute_util.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 

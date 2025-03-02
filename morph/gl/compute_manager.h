@@ -18,7 +18,7 @@
 // file.
 
 #include <morph/gl/version.h>
-#include <morph/gl/util.h>
+#include <morph/gl/compute_util.h>
 #include <morph/gl/shaders.h>
 #include <morph/gl/compute_shaderprog.h> // A compute-shader class
 #include <morph/keys.h>
@@ -114,7 +114,7 @@ namespace morph {
                 }
                 glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, morph::gl::version::major (glver));
                 glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, morph::gl::version::minor (glver));
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
             }
 
             void init_window()
@@ -131,7 +131,7 @@ namespace morph {
                 // Lastly make the context current
                 glfwMakeContextCurrent (this->window);
                 glfwSwapInterval (0);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
             }
 
             // Initialize OpenGL shaders, set any GL flags required
@@ -146,27 +146,27 @@ namespace morph {
 
                 // Store, and also output to stdout, some info about the GL resources available
                 glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTERS, &this->max_compute_atomic_counters);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMPUTE_ATOMIC_COUNTERS: " << this->max_compute_atomic_counters << std::endl;
 
                 glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS, &this->max_compute_atomic_counters_buffers);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS: " << this->max_compute_atomic_counters_buffers << std::endl;
 
                 glGetIntegerv (GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &this->max_compute_shader_storage_blocks);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS: " << this->max_compute_shader_storage_blocks << std::endl;
 
                 glGetIntegerv (GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &this->max_compute_texture_image_units);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS: " << this->max_compute_texture_image_units << std::endl;
 
                 glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_BLOCKS, &this->max_compute_uniform_blocks);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMPUTE_UNIFORM_BLOCKS: " << this->max_compute_uniform_blocks << std::endl;
 
                 glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_COMPONENTS, &this->max_compute_uniform_components);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMPUTE_UNIFORM_COMPONENTS: " << this->max_compute_uniform_components << std::endl;
 
                 glGetInteger64v (GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &this->max_compute_work_group_invocations);
@@ -183,41 +183,41 @@ namespace morph {
                 std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE (x, y, z): " << this->max_compute_work_group_size << std::endl;
 
                 glGetIntegerv (GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &this->max_compute_shared_memory_size);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMPUTE_SHARED_MEMORY_SIZE: " << this->max_compute_shared_memory_size << " bytes" << std::endl;
 
                 // Shader storage
                 glGetIntegerv (GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &this->max_shader_storage_block_size);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_SHADER_STORAGE_BLOCK_SIZE: " << this->max_shader_storage_block_size << std::endl;
 
                 glGetIntegerv (GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &this->max_shader_storage_buffer_bindings);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS: " << this->max_shader_storage_buffer_bindings << std::endl;
 
                 // Combined
                 glGetIntegerv (GL_MAX_TEXTURE_IMAGE_UNITS, &this->max_texture_image_units);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_TEXTURE_IMAGE_UNITS: " << this->max_texture_image_units << std::endl;
 
                 glGetIntegerv (GL_MAX_TEXTURE_SIZE, &this->max_texture_size);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_TEXTURE_SIZE: " << this->max_texture_size << std::endl;
 
                 glGetIntegerv (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &this->max_combined_texture_image_units);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: " << this->max_combined_texture_image_units << std::endl;
 
                 // Not mentioned on es3.1 Reference page https://registry.khronos.org/OpenGL-Refpages/es3.1/html/glGet.xhtml but can be queried:
                 glGetIntegerv (GL_MAX_IMAGE_UNITS, &this->max_image_units);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_IMAGE_UNITS: " << this->max_image_units << std::endl;
 
                 load_shaders();
 
                 // No need to set any GL flags (though a derived class may need to if it is to render any graphics)
 
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
             }
 
         public:

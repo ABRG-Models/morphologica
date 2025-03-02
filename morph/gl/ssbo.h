@@ -13,7 +13,7 @@
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/range.h>
-#include <morph/gl/util.h>
+#include <morph/gl/compute_util.h>
 
 namespace morph {
     namespace gl {
@@ -44,11 +44,11 @@ namespace morph {
             void copy_to_gpu()
             {
                 glBindBufferBase (GL_SHADER_STORAGE_BUFFER, index, this->name);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 glBufferData (GL_SHADER_STORAGE_BUFFER, N * sizeof(T), this->data.data(), GL_STATIC_DRAW);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
             }
 
             // Map the GPU memory to CPU space, then copy the values into this->data. NB: it's a
@@ -58,13 +58,13 @@ namespace morph {
             void copy_from_gpu()
             {
                 glBindBufferBase (GL_SHADER_STORAGE_BUFFER, index, this->name);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 T* cpuptr = static_cast<T*>(glMapBufferRange (GL_SHADER_STORAGE_BUFFER, 0, N*sizeof(T), GL_MAP_READ_BIT));
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 for (unsigned int i = 0; i < N; ++i) { this->data[i] = cpuptr[i]; }
                 glUnmapBuffer (GL_SHADER_STORAGE_BUFFER);
                 glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
             }
 
             // Find the range of the data in the given Shader Storage Buffer Object
@@ -77,13 +77,13 @@ namespace morph {
                 morph::range<T> r;
                 r.search_init();
                 glBindBufferBase (GL_SHADER_STORAGE_BUFFER, index, this->name);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 T* cpuptr = static_cast<T*>(glMapBufferRange (GL_SHADER_STORAGE_BUFFER, 0, N*sizeof(T), GL_MAP_READ_BIT));
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 for (unsigned int i = 0; i < N; ++i) { r.update (cpuptr[i]); }
                 glUnmapBuffer (GL_SHADER_STORAGE_BUFFER);
                 glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::checkError (__FILE__, __LINE__);
                 return r;
             }
         };
@@ -100,7 +100,7 @@ namespace morph {
             // void glBufferStorage(GLenum target​, GLsizeiptr size​, const GLvoid * data​, GLbitfield flags​);
             //glBufferStorage (GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), GL_CLIENT_STORAGE_BIT | GL_MAP_READ_BIT);
             glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            morph::gl::checkError (__FILE__, __LINE__);
         }
 
         // Set up a Shader Storage Buffer Object (SSBO) and buffer data into it (morph::vec version)
@@ -111,7 +111,7 @@ namespace morph {
             glBindBufferBase (GL_SHADER_STORAGE_BUFFER, target_index, ssbo_id);
             glBufferData (GL_SHADER_STORAGE_BUFFER, N * sizeof(T), data.data(), GL_STATIC_DRAW);
             glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            morph::gl::checkError (__FILE__, __LINE__);
         }
 
         // Copy data to an existing SSBO
@@ -121,7 +121,7 @@ namespace morph {
             glBindBufferBase (GL_SHADER_STORAGE_BUFFER, target_index, ssbo_id);
             glBufferData (GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), GL_STATIC_DRAW);
             glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            morph::gl::checkError (__FILE__, __LINE__);
         }
 
         template<typename T, unsigned int N>
@@ -130,7 +130,7 @@ namespace morph {
             glBindBufferBase (GL_SHADER_STORAGE_BUFFER, target_index, ssbo_id);
             glBufferData (GL_SHADER_STORAGE_BUFFER, N * sizeof(T), data.data(), GL_STATIC_DRAW);
             glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            morph::gl::checkError (__FILE__, __LINE__);
         }
 
         // Map the SSBO to cpu space, then make a copy of the data into a passed-in vvec.
@@ -148,7 +148,7 @@ namespace morph {
             for (unsigned int i = 0; i < cpu_side.size(); ++i) { cpu_side[i] = cpuptr[i]; }
             glUnmapBuffer (GL_SHADER_STORAGE_BUFFER);
             glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            morph::gl::checkError (__FILE__, __LINE__);
         }
 
         template <typename T, unsigned int N>
@@ -161,7 +161,7 @@ namespace morph {
             for (unsigned int i = 0; i < N; ++i) { cpu_side[i] = cpuptr[i]; }
             glUnmapBuffer (GL_SHADER_STORAGE_BUFFER);
             glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            morph::gl::checkError (__FILE__, __LINE__);
         }
 
         // Find the range of the data in the given Shader Storage Buffer Object
@@ -179,7 +179,7 @@ namespace morph {
             for (unsigned int i = 0; i < ssbo_num_elements; ++i) { r.update (cpuptr[i]); }
             glUnmapBuffer (GL_SHADER_STORAGE_BUFFER);
             glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            morph::gl::checkError (__FILE__, __LINE__);
             return r;
         }
 
