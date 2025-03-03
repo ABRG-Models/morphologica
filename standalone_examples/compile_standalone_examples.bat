@@ -9,7 +9,7 @@ for /d %%d in (*) do (
     mklink /d morphologica ..\..\..\morphologica
     if not exist build mkdir build
     pushd build
-    cmake .. -DCMAKE_TOOLCHAIN_FILE=..\vcpkg_repo\scripts\buildsystems\vcpkg.cmake
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=%GITHUB_WORKSPACE%\vcpkg_repo\scripts\buildsystems\vcpkg.cmake
     make
     if errorlevel 1 (
         set "failed_examples=!failed_examples! %%d"
