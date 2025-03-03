@@ -64,4 +64,3 @@ jobs:
     - name: Test
       working-directory: ${{ github.workspace }}/build
       run: ctest -C ${{ inputs.BUILD_TYPE }}
-
