@@ -125,6 +125,7 @@ install(
   VisualResourcesBase.h
   VisualResources.h
   VisualResourcesMX.h
+  VisualSgl.h
   VisualTextModelBase.h
   VisualTextModel.h
   VisualTextModelMX.h
