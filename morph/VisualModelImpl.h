@@ -16,6 +16,8 @@
 # error "GL headers should have been included already"
 #endif
 
+#include <type_traits>
+
 #include <morph/VisualModelBase.h>
 
 #include <morph/gl/util.h>
@@ -28,9 +30,9 @@ namespace morph {
     template <int> class VisualBase;
 
     /*!
-     * Single context safe implementation (gladtype 0)
+     * Single context safe implementation (multicontext 0)
      */
-    template <int gladtype = 0, int glver = morph::gl::version_4_1>
+    template <int glver = morph::gl::version_4_1, int mx = morph::gl::multicontext, std::enable_if_t<mx==0, bool> = true >
     struct VisualModelImpl : public morph::VisualModelBase<glver>
     {
         VisualModelImpl() : morph::VisualModelBase<glver>::VisualModelBase() {}

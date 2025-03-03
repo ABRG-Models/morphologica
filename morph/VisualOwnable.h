@@ -26,7 +26,8 @@
 #  include <morph/glad/gl.h>
 #endif // GL headers
 
-// A constexpr int that says that we're not in multicontext mode
+// By including this header, you take out a contract that you are not using multicontext (MX) GLAD
+// headers. This must appear BEFORE the rest of the morph headers.
 namespace morph { namespace gl { static constexpr int multicontext = 0; } }
 
 #include <morph/VisualResources.h>
