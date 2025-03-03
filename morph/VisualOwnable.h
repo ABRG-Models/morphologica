@@ -33,6 +33,7 @@ namespace morph { namespace gl { static constexpr int multicontext = 0; } }
 #include <morph/VisualResources.h>
 #include <morph/VisualTextModel.h>
 #include <morph/VisualBase.h>
+#include <morph/gl/loadshaders.h>
 
 namespace morph {
 

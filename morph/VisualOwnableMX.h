@@ -33,6 +33,7 @@ namespace morph { namespace gl { static constexpr int multicontext = 1; } }
 #include <morph/VisualResourcesMX.h>
 #include <morph/VisualTextModel.h>
 #include <morph/VisualBase.h>
+#include <morph/gl/loadshaders_mx.h>
 
 namespace morph {
 
@@ -170,13 +171,13 @@ namespace morph {
             if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
                 if (this->active_gprog != morph::visgl::graphics_shader_type::projection2d) {
                     if (this->shaders.gprog) { this->glfn->DeleteProgram (this->shaders.gprog); }
-                    this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs, this->glfn);
+                    this->shaders.gprog = morph::gl::LoadShadersMX (this->proj2d_shader_progs, this->glfn);
                     this->active_gprog = morph::visgl::graphics_shader_type::projection2d;
                 }
             } else if (this->ptype == perspective_type::cylindrical) {
                 if (this->active_gprog != morph::visgl::graphics_shader_type::cylindrical) {
                     if (this->shaders.gprog) { this->glfn->DeleteProgram (this->shaders.gprog); }
-                    this->shaders.gprog = morph::gl::LoadShaders (this->cyl_shader_progs, this->glfn);
+                    this->shaders.gprog = morph::gl::LoadShadersMX (this->cyl_shader_progs, this->glfn);
                     this->active_gprog = morph::visgl::graphics_shader_type::cylindrical;
                 }
             }
@@ -410,7 +411,7 @@ namespace morph {
                 {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::getDefaultVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::getDefaultFragShader(glver), 0 }
             };
-            this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs, this->glfn);
+            this->shaders.gprog = morph::gl::LoadShadersMX (this->proj2d_shader_progs, this->glfn);
             this->active_gprog = morph::visgl::graphics_shader_type::projection2d;
 
             // Alternative cylindrical shader for possible later use. (NB: not loaded immediately)
@@ -424,7 +425,7 @@ namespace morph {
                 {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::getDefaultTextVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::getDefaultTextFragShader(glver), 0 }
             };
-            this->shaders.tprog = morph::gl::LoadShaders (this->text_shader_progs, this->glfn);
+            this->shaders.tprog = morph::gl::LoadShadersMX (this->text_shader_progs, this->glfn);
 
             // OpenGL options
             this->glfn->Enable (GL_DEPTH_TEST);

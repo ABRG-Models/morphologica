@@ -14,7 +14,7 @@
 #include <morph/TextFeatures.h>
 #include <morph/TextGeometry.h>
 #include <morph/VisualCommon.h>
-#include <morph/gl/shaders.h> // for ShaderInfo/LoadShaders
+#include <morph/gl/shaders.h>
 #include <morph/keys.h>
 #include <morph/version.h>
 
