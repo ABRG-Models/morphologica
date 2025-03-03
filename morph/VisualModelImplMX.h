@@ -19,7 +19,8 @@
 #include <morph/VisualModelBase.h>
 
 #include <morph/gl/util_mx.h>
-#include <morph/VisualTextModelMX.h>
+#include <morph/VisualTextModelImplMX.h>
+#include <morph/TextGeometry.h>
 
 namespace morph {
 
@@ -30,7 +31,7 @@ namespace morph {
     /*!
      * Multiple context safe implementation (gladtype 1)
      */
-    template <int glad_type = 1, int glver = morph::gl::version_4_1> // Might still have to #include VisualModelImpl.h?
+    template <int gladtype = 1, int glver = morph::gl::version_4_1> // Might still have to #include VisualModelImpl.h?
     struct VisualModelImpl : public morph::VisualModelBase<glver>
     {
         VisualModelImpl() : morph::VisualModelBase<glver>::VisualModelBase() {}
@@ -202,7 +203,7 @@ namespace morph {
         //! Helper to make the right kind of text model
         auto make_text_model(const morph::TextFeatures& tfeatures)
         {
-            auto tmup = std::make_unique<morph::VisualTextModelMX<glver>> (tfeatures);
+            auto tmup = std::make_unique<morph::VisualTextModelImpl<gladtype, glver>> (tfeatures);
             this->bindmodel (tmup);
             return tmup;
         }
@@ -249,7 +250,7 @@ namespace morph {
          */
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModelMX<glver>*& tm,
+                                      morph::VisualTextModelImpl<gladtype, glver>*& tm,
                                       const morph::TextFeatures& tfeatures = morph::TextFeatures())
         {
             if (this->get_shaderprogs(this->parentVis).tprog == 0) {
@@ -320,7 +321,7 @@ namespace morph {
     protected:
 
         //! A vector of pointers to text models that should be rendered.
-        std::vector<std::unique_ptr<morph::VisualTextModelMX<glver>>> texts;
+        std::vector<std::unique_ptr<morph::VisualTextModelImpl<gladtype, glver>>> texts;
 
         //! Set up a vertex buffer object - bind, buffer and set vertex array object attribute
         virtual void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition) final

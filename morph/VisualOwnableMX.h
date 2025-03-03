@@ -26,8 +26,11 @@
 #  include <morph/glad/gl_mx.h>
 #endif // GL headers
 
+// A constexpr int that says that we ARE in multicontext mode
+namespace morph { namespace gl { static constexpr int multicontext = 1; } }
+
 #include <morph/VisualResourcesMX.h>
-#include <morph/VisualTextModelMX.h>
+#include <morph/VisualTextModelImplMX.h>
 #include <morph/VisualBase.h>
 
 namespace morph {
@@ -342,7 +345,7 @@ namespace morph {
         {
             this->setContext();
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModelMX<glver>> (tfeatures);
+            auto tmup = std::make_unique<morph::VisualTextModelImpl<1, glver>> (tfeatures);
             this->bindmodel (tmup);
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -352,7 +355,7 @@ namespace morph {
             } else {
                 tmup->setupText (_text, _toffset, tfeatures.colour);
             }
-            morph::VisualTextModelMX<glver>* tm = tmup.get();
+            morph::VisualTextModelImpl<1, glver>* tm = tmup.get();
             this->texts.push_back (std::move(tmup));
             this->releaseContext();
             return tm->getTextGeometry();
@@ -363,12 +366,12 @@ namespace morph {
         //! return value that allows client code to change the text after the label has been added.
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModelMX<glver>*& tm,
+                                      morph::VisualTextModelImpl<1, glver>*& tm,
                                       const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
         {
             this->setContext();
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModelMX<glver>> (tfeatures);
+            auto tmup = std::make_unique<morph::VisualTextModelImpl<1, glver>> (tfeatures);
             this->bindmodel (tmup);
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -464,7 +467,7 @@ namespace morph {
 
             // Set up the title, which may or may not be rendered
             morph::TextFeatures title_tf(0.035f, 64);
-            this->textModel = std::make_unique<morph::VisualTextModelMX<glver>> (title_tf);
+            this->textModel = std::make_unique<morph::VisualTextModelImpl<1, glver>> (title_tf);
             this->bindmodel (this->textModel);
             this->textModel->setSceneTranslation ({0.0f, 0.0f, 0.0f});
             this->textModel->setupText (this->title);
@@ -473,9 +476,9 @@ namespace morph {
         }
 
         //! A VisualTextModel for a title text.
-        std::unique_ptr<morph::VisualTextModelMX<glver>> textModel = nullptr;
+        std::unique_ptr<morph::VisualTextModelImpl<1, glver>> textModel = nullptr;
         //! Text models for labels
-        std::vector<std::unique_ptr<morph::VisualTextModelMX<glver>>> texts;
+        std::vector<std::unique_ptr<morph::VisualTextModelImpl<1, glver>>> texts;
     };
 
 } // namespace morph

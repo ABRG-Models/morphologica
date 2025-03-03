@@ -16,10 +16,8 @@
  */
 #ifdef GLAD_OPTION_GL_MX
 # include <morph/VisualModelImplMX.h>
-namespace morph { static constexpr int glad_type = 1; }
 #else
 # include <morph/VisualModelImpl.h>
-namespace morph { static constexpr int glad_type = 0; }
 #endif
 
 namespace morph {
@@ -41,10 +39,10 @@ namespace morph {
      * make up sphere and cone, respectively.
      */
     template <int glver = morph::gl::version_4_1>
-    struct VisualModel : public morph::VisualModelImpl<morph::glad_type, glver> {
-        VisualModel() : morph::VisualModelImpl<morph::glad_type, glver>::VisualModelImpl() {}
+    struct VisualModel : public morph::VisualModelImpl<morph::gl::multicontext, glver> {
+        VisualModel() : morph::VisualModelImpl<morph::gl::multicontext, glver>::VisualModelImpl() {}
         VisualModel(const morph::vec<float, 3>& _mv_offset)
-            : morph::VisualModelImpl<morph::glad_type, glver>::VisualModelImpl(_mv_offset) {}
+            : morph::VisualModelImpl<morph::gl::multicontext, glver>::VisualModelImpl(_mv_offset) {}
     };
 
 } // namespace morph
