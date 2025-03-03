@@ -21,7 +21,6 @@ namespace morph {
             {
                 GLenum errorCode = 0;
 #ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
-#ifndef GLAD_OPTION_GL_MX // During development. To be removed.
                 unsigned int ecount = 0;
                 std::string error;
 
@@ -73,9 +72,6 @@ namespace morph {
                     ++ecount;
                 }
                 if (ecount) { throw std::runtime_error (error); }
-#else
-                std::cout << "Error at " << file << ":" << line << std::endl;
-#endif
 #endif
                 return errorCode;
             }

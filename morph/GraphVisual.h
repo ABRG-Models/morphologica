@@ -1143,11 +1143,8 @@ namespace morph {
 
             // To determine the legend layout, will need all the text geometries
             std::vector<morph::TextGeometry> geom;
-//#ifdef GLAD_OPTION_GL_MX
-//            std::map<unsigned int, std::unique_ptr<morph::VisualTextModel<glver>>> legtexts;
-//#else
+
             std::map<unsigned int, std::unique_ptr<morph::VisualTextModel<glver>>> legtexts;
-//#endif
 
             morph::vvec<unsigned int> ds_indices; // dataset indices.
 
