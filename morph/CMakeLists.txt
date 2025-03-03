@@ -117,7 +117,7 @@ install(
   Visual.h
   VisualModel.h
   VisualOwnable.h
-  VisualOwnableGladMX.h
+  VisualOwnableMX.h
   VisualResourcesBase.h
   VisualResources.h
   VisualResourcesMX.h

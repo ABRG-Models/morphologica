@@ -63,7 +63,7 @@ namespace morph {
      * A base class for visualising computational models on an OpenGL screen.
      *
      * This contains code that is not OpenGL dependent. OpenGL dependent code is in
-     * VisualOwnable or VisualOwnableGladMX.
+     * VisualOwnable or VisualOwnableMX.
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */

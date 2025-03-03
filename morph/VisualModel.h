@@ -60,7 +60,7 @@ namespace morph {
 
 #ifdef GLAD_OPTION_GL_MX
     template <int>
-    class VisualOwnableGladMX;
+    class VisualOwnableMX;
 #endif
 
     /*!
@@ -103,7 +103,7 @@ namespace morph {
         {
             if (this->vbos != nullptr) {
 #ifdef GLAD_OPTION_GL_MX
-                GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
+                GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
                 _glfn->DeleteBuffers (numVBO, this->vbos.get());
                 _glfn->DeleteVertexArrays (1, &this->vao);
 #else
@@ -127,7 +127,7 @@ namespace morph {
             model->get_gprog = &morph::VisualBase<glver>::get_gprog;
             model->get_tprog = &morph::VisualBase<glver>::get_tprog;
 #ifdef GLAD_OPTION_GL_MX
-            model->get_glfn = &morph::VisualOwnableGladMX<glver>::get_glfn;
+            model->get_glfn = &morph::VisualOwnableMX<glver>::get_glfn;
 #endif
             model->setContext = &morph::VisualBase<glver>::set_context;
             model->releaseContext = &morph::VisualBase<glver>::release_context;
@@ -138,7 +138,7 @@ namespace morph {
         void postVertexInit()
         {
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
 
             // Do gl memory allocation of vertex array once only
             if (this->vbos == nullptr) {
@@ -215,7 +215,7 @@ namespace morph {
         void reinit_buffers()
         {
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
             // Now re-set up the VBOs
@@ -255,7 +255,7 @@ namespace morph {
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
             // Now re-set up the VBOs
             _glfn->BindVertexArray (this->vao);  // carefully unbind and rebind
             this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
@@ -351,7 +351,7 @@ namespace morph {
             GLint prev_shader = 0;
 
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
             _glfn->GetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
             // Ensure the correct program is in play for this VisualModel
             _glfn->UseProgram (this->get_gprog(this->parentVis));
@@ -799,7 +799,7 @@ namespace morph {
         std::function<GLuint(morph::VisualBase<glver>*)> get_tprog;
 #ifdef GLAD_OPTION_GL_MX
         //! Get the GladGLContext function pointer
-        std::function<GladGLContext*(morph::VisualOwnableGladMX<glver>*)> get_glfn;
+        std::function<GladGLContext*(morph::VisualOwnableMX<glver>*)> get_glfn;
 #endif
         //! Set OpenGL context. Should call parentVis->setContext().
         std::function<void(morph::VisualBase<glver>*)> setContext;
@@ -920,7 +920,7 @@ namespace morph {
         {
             std::size_t sz = dat.size() * sizeof(float);
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
             _glfn->BindBuffer (GL_ARRAY_BUFFER, buf);
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
             _glfn->BufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);

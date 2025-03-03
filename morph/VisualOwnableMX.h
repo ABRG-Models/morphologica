@@ -32,7 +32,7 @@
 namespace morph {
 
     /*!
-     * VisualOwnableGladMX - adds GL (multiple context aware) calls to the 'scene' base
+     * VisualOwnableMX - adds GL (multiple context aware) calls to the 'scene' base
      * class, VisualBase
      *
      * A class for visualising computational models on an OpenGL screen.
@@ -47,7 +47,7 @@ namespace morph {
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
     template <int glver = morph::gl::version_4_1>
-    class VisualOwnableGladMX : public morph::VisualBase<glver>
+    class VisualOwnableMX : public morph::VisualBase<glver>
     {
     public:
         /*!
@@ -55,13 +55,13 @@ namespace morph {
          * such as a QWidget.  We have to wait on calling init functions until an OpenGL
          * environment is guaranteed to exist.
          */
-        VisualOwnableGladMX() { }
+        VisualOwnableMX() { }
 
         /*!
          * Construct a new visualiser. The rule is 1 window to one Visual object. So, this creates a
          * new window and a new OpenGL context.
          */
-        VisualOwnableGladMX (const int _width, const int _height, const std::string& _title, const bool _version_stdout = true)
+        VisualOwnableMX (const int _width, const int _height, const std::string& _title, const bool _version_stdout = true)
         {
             this->window_w = _width;
             this->window_h = _height;
@@ -89,7 +89,7 @@ namespace morph {
             morph::VisualResourcesMX<glver>::i().freetype_deinit (this);
         }
 
-        virtual ~VisualOwnableGladMX() { this->deconstructCommon(); }
+        virtual ~VisualOwnableMX() { this->deconstructCommon(); }
 
     protected:
         void freetype_init() final
@@ -290,7 +290,7 @@ namespace morph {
         }
 
         //! Glad MX specific callback
-        static GladGLContext* get_glfn (morph::VisualOwnableGladMX<glver>* _v) { return _v->glfn; };
+        static GladGLContext* get_glfn (morph::VisualOwnableMX<glver>* _v) { return _v->glfn; };
 
     protected:
         // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
@@ -325,7 +325,7 @@ namespace morph {
             model->get_shaderprogs = &morph::VisualBase<glver>::get_shaderprogs;
             model->get_gprog = &morph::VisualBase<glver>::get_gprog;
             model->get_tprog = &morph::VisualBase<glver>::get_tprog;
-            model->get_glfn = &morph::VisualOwnableGladMX<glver>::get_glfn;
+            model->get_glfn = &morph::VisualOwnableMX<glver>::get_glfn;
         }
 
     protected:
