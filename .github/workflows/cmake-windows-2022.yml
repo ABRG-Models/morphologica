@@ -10,7 +10,7 @@ on:
 
 jobs:
   call-workflow-passing-data:
-    uses: ABRG-Models/morphologica/.github/workflows/cmake-windows-template.yml@main
+    uses: rremilian/morphologica/.github/workflows/cmake-windows-template.yml@feat/vcpkg_cache
     with:
       RUNNER_IMAGE: windows-2022
       BUILD_TYPE: Release
