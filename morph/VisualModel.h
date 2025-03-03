@@ -24,9 +24,14 @@
 #include <morph/vec.h>
 #include <morph/range.h>
 #include <morph/mathconst.h>
-#include <morph/gl/util.h>
 #include <morph/VisualCommon.h>
-#include <morph/VisualTextModel.h>
+#ifdef GLAD_OPTION_GL_MX
+# include <morph/gl/util_mx.h>
+# include <morph/VisualTextModelMX.h>
+#else
+# include <morph/gl/util.h>
+# include <morph/VisualTextModel.h>
+#endif
 #include <morph/colour.h>
 #include <morph/base64.h>
 #include <morph/MathAlgo.h>
@@ -103,7 +108,8 @@ namespace morph {
         {
             if (this->vbos != nullptr) {
 #ifdef GLAD_OPTION_GL_MX
-                GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
+                //GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
+                GladGLContext* _glfn = this->get_glfn(this->parentVis);
                 _glfn->DeleteBuffers (numVBO, this->vbos.get());
                 _glfn->DeleteVertexArrays (1, &this->vao);
 #else
@@ -138,7 +144,7 @@ namespace morph {
         void postVertexInit()
         {
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(this->parentVis);
 
             // Do gl memory allocation of vertex array once only
             if (this->vbos == nullptr) {
@@ -215,7 +221,7 @@ namespace morph {
         void reinit_buffers()
         {
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(this->parentVis);
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
             // Now re-set up the VBOs
@@ -255,7 +261,7 @@ namespace morph {
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(this->parentVis);
             // Now re-set up the VBOs
             _glfn->BindVertexArray (this->vao);  // carefully unbind and rebind
             this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
@@ -351,7 +357,7 @@ namespace morph {
             GLint prev_shader = 0;
 
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn (this->parentVis);
             _glfn->GetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
             // Ensure the correct program is in play for this VisualModel
             _glfn->UseProgram (this->get_gprog(this->parentVis));
@@ -431,6 +437,18 @@ namespace morph {
 #endif
         }
 
+        //! Helper to make the right kind of text model
+        auto make_text_model(const morph::TextFeatures& tfeatures)
+        {
+#ifdef GLAD_OPTION_GL_MX
+            auto tmup = std::make_unique<morph::VisualTextModelMX<glver>> (tfeatures);
+#else
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
+#endif
+            this->bindmodel (tmup);
+            return tmup;
+        }
+
         /*!
          * Add a text label to the model at location (within the model coordinates)
          * toffset. Return the text geometry of the added label so caller can place
@@ -447,8 +465,7 @@ namespace morph {
 
             if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
-            this->bindmodel (tmup);
+            auto tmup = this->make_text_model (tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -474,7 +491,11 @@ namespace morph {
          */
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
+#ifdef GLAD_OPTION_GL_MX
+                                      morph::VisualTextModelMX<glver>*& tm,
+#else
                                       morph::VisualTextModel<glver>*& tm,
+#endif
                                       const morph::TextFeatures& tfeatures = morph::TextFeatures())
         {
             if (this->get_shaderprogs(this->parentVis).tprog == 0) {
@@ -483,8 +504,7 @@ namespace morph {
 
             if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
-            this->bindmodel (tmup);
+            auto tmup = this->make_text_model (tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -799,7 +819,7 @@ namespace morph {
         std::function<GLuint(morph::VisualBase<glver>*)> get_tprog;
 #ifdef GLAD_OPTION_GL_MX
         //! Get the GladGLContext function pointer
-        std::function<GladGLContext*(morph::VisualOwnableMX<glver>*)> get_glfn;
+        std::function<GladGLContext*(morph::VisualBase<glver>*)> get_glfn;
 #endif
         //! Set OpenGL context. Should call parentVis->setContext().
         std::function<void(morph::VisualBase<glver>*)> setContext;
@@ -839,7 +859,11 @@ namespace morph {
         quaternion<float> sv_rotation;
 
         //! A vector of pointers to text models that should be rendered.
+#ifdef GLAD_OPTION_GL_MX
+        std::vector<std::unique_ptr<morph::VisualTextModelMX<glver>>> texts;
+#else
         std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
+#endif
 
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
@@ -920,7 +944,7 @@ namespace morph {
         {
             std::size_t sz = dat.size() * sizeof(float);
 #ifdef GLAD_OPTION_GL_MX
-            GladGLContext* _glfn = this->get_glfn(reinterpret_cast<morph::VisualOwnableMX<glver>*>(this->parentVis));
+            GladGLContext* _glfn = this->get_glfn(this->parentVis);
             _glfn->BindBuffer (GL_ARRAY_BUFFER, buf);
             morph::gl::Util::checkError (__FILE__, __LINE__, _glfn);
             _glfn->BufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);

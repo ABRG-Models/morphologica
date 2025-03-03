@@ -5,7 +5,7 @@
 
 struct QOpenGLWidget; // fwd decl
 
-// VisualOwnable is going to be owned by the QOpenGLWidget
+// VisualOwnableMX is going to be owned by the QOpenGLWidget
 // Define morph::win_t before #including morph/VisualOwnableMX.h
 namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/VisualOwnableMX.h> // Glad multi OpenGL context class

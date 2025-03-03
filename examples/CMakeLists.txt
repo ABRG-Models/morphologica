@@ -135,6 +135,9 @@ endif(ARMADILLO_FOUND)
 add_executable(helloworld helloworld.cpp)
 target_link_libraries(helloworld OpenGL::GL glfw Freetype::Freetype)
 
+add_executable(helloworld_mx helloworld_mx.cpp)
+target_link_libraries(helloworld_mx OpenGL::GL glfw Freetype::Freetype)
+
 add_executable(helloversion helloversion.cpp)
 target_link_libraries(helloversion OpenGL::GL glfw Freetype::Freetype)
 
@@ -252,6 +255,9 @@ target_link_libraries(duochrome OpenGL::GL glfw Freetype::Freetype)
 
 add_executable(graph1 graph1.cpp)
 target_link_libraries(graph1 OpenGL::GL glfw Freetype::Freetype)
+
+add_executable(graph1_mx graph1_mx.cpp)
+target_link_libraries(graph1_mx OpenGL::GL glfw Freetype::Freetype)
 
 add_executable(graph_line graph_line.cpp)
 target_link_libraries(graph_line OpenGL::GL glfw Freetype::Freetype)

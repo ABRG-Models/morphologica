@@ -116,12 +116,15 @@ install(
   VisualGlfw.h
   Visual.h
   VisualModel.h
+  VisualMX.h
   VisualOwnable.h
   VisualOwnableMX.h
   VisualResourcesBase.h
   VisualResources.h
   VisualResourcesMX.h
+  VisualTextModelBase.h
   VisualTextModel.h
+  VisualTextModelMX.h
   VoronoiVisual.h
   vvec.h
   Winder.h

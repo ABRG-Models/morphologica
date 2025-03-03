@@ -27,6 +27,7 @@
 #endif // GL headers
 
 #include <morph/VisualResources.h>
+#include <morph/VisualTextModel.h>
 #include <morph/VisualBase.h>
 
 namespace morph {
@@ -85,8 +86,6 @@ namespace morph {
             // Free up the Fonts associated with this morph::Visual
             morph::VisualResources<glver>::i().freetype_deinit (this);
         }
-
-        virtual ~VisualOwnable() { this->deconstructCommon(); }
 
     protected:
         void freetype_init() final
@@ -294,6 +293,56 @@ namespace morph {
         }
 #endif
 
+        //! Add a label _text to the scene at position _toffset. Font features are
+        //! defined by the tfeatures. Return geometry of the text.
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::vec<float, 3>& _toffset,
+                                      const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
+        {
+            this->setContext();
+            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
+            this->bindmodel (tmup);
+            if (tfeatures.centre_horz == true) {
+                morph::TextGeometry tg = tmup->getTextGeometry(_text);
+                morph::vec<float, 3> centred_locn = _toffset;
+                centred_locn[0] = -tg.half_width();
+                tmup->setupText (_text, centred_locn, tfeatures.colour);
+            } else {
+                tmup->setupText (_text, _toffset, tfeatures.colour);
+            }
+            morph::VisualTextModel<glver>* tm = tmup.get();
+            this->texts.push_back (std::move(tmup));
+            this->releaseContext();
+            return tm->getTextGeometry();
+        }
+
+        //! Add a label _text to the scene at position _toffset. Font features are
+        //! defined by the tfeatures. Return geometry of the text. The pointer tm is a
+        //! return value that allows client code to change the text after the label has been added.
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::vec<float, 3>& _toffset,
+                                      morph::VisualTextModel<glver>*& tm,
+                                      const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
+        {
+            this->setContext();
+            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
+            this->bindmodel (tmup);
+            if (tfeatures.centre_horz == true) {
+                morph::TextGeometry tg = tmup->getTextGeometry(_text);
+                morph::vec<float, 3> centred_locn = _toffset;
+                centred_locn[0] = -tg.half_width();
+                tmup->setupText (_text, centred_locn, tfeatures.colour);
+            } else {
+                tmup->setupText (_text, _toffset, tfeatures.colour);
+            }
+            tm = tmup.get();
+            this->texts.push_back (std::move(tmup));
+            this->releaseContext();
+            return tm->getTextGeometry();
+        }
+
     protected:
         // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any external
         // state from json, and set up the coordinate arrows and any VisualTextModels that will be
@@ -381,6 +430,11 @@ namespace morph {
 
             this->releaseContext();
         }
+
+        //! A VisualTextModel for a title text.
+        std::unique_ptr<morph::VisualTextModel<glver>> textModel = nullptr;
+        //! Text models for labels
+        std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
     };
 
 } // namespace morph

@@ -13,7 +13,6 @@
 #include <morph/VisualModel.h>
 #include <morph/TextFeatures.h>
 #include <morph/TextGeometry.h>
-#include <morph/VisualTextModel.h> // includes VisualResources/MX.h
 #include <morph/VisualCommon.h>
 #include <morph/gl/shaders.h> // for ShaderInfo/LoadShaders
 #include <morph/keys.h>
@@ -93,8 +92,6 @@ namespace morph {
 
         //! Deconstruct gl memory/context
         virtual void deconstructCommon() = 0;
-
-        //virtual ~VisualBase() { this->deconstructCommon(); }
 
         // We do not manage OpenGL context, but it is simpler to have a no-op set/releaseContext for some of the GL setup functions
         virtual void setContext() {}       // no op here
@@ -203,56 +200,6 @@ namespace morph {
                 }
             }
             if (found_model == true) { this->vm.erase (this->vm.begin() + modelId); }
-        }
-
-        //! Add a label _text to the scene at position _toffset. Font features are
-        //! defined by the tfeatures. Return geometry of the text.
-        morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::vec<float, 3>& _toffset,
-                                      const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
-        {
-            this->setContext();
-            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
-            this->bindmodel (tmup);
-            if (tfeatures.centre_horz == true) {
-                morph::TextGeometry tg = tmup->getTextGeometry(_text);
-                morph::vec<float, 3> centred_locn = _toffset;
-                centred_locn[0] = -tg.half_width();
-                tmup->setupText (_text, centred_locn, tfeatures.colour);
-            } else {
-                tmup->setupText (_text, _toffset, tfeatures.colour);
-            }
-            morph::VisualTextModel<glver>* tm = tmup.get();
-            this->texts.push_back (std::move(tmup));
-            this->releaseContext();
-            return tm->getTextGeometry();
-        }
-
-        //! Add a label _text to the scene at position _toffset. Font features are
-        //! defined by the tfeatures. Return geometry of the text. The pointer tm is a
-        //! return value that allows client code to change the text after the label has been added.
-        morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModel<glver>*& tm,
-                                      const morph::TextFeatures& tfeatures = morph::TextFeatures(0.01f))
-        {
-            this->setContext();
-            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
-            this->bindmodel (tmup);
-            if (tfeatures.centre_horz == true) {
-                morph::TextGeometry tg = tmup->getTextGeometry(_text);
-                morph::vec<float, 3> centred_locn = _toffset;
-                centred_locn[0] = -tg.half_width();
-                tmup->setupText (_text, centred_locn, tfeatures.colour);
-            } else {
-                tmup->setupText (_text, _toffset, tfeatures.colour);
-            }
-            tm = tmup.get();
-            this->texts.push_back (std::move(tmup));
-            this->releaseContext();
-            return tm->getTextGeometry();
         }
 
         void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
@@ -659,11 +606,6 @@ namespace morph {
         float coordArrowsThickness = 1.0f;
         //! Text size for x,y,z.
         float coordArrowsEm = 0.01f;
-
-        //! A VisualTextModel for a title text.
-        std::unique_ptr<morph::VisualTextModel<glver>> textModel = nullptr;
-        //! Text models for labels
-        std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
 
         /*
          * Variables to manage projection and rotation of the scene
