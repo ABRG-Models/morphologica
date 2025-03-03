@@ -26,16 +26,10 @@
 #  include <morph/glad/gl_mx.h>
 #endif // GL headers
 
+#include <morph/VisualResourcesMX.h>
 #include <morph/VisualBase.h>
 
 namespace morph {
-
-#ifdef __OSX__
-    // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
-    static constexpr double retinaScale = 2; // deals with quadrant issue on osx
-#else
-    static constexpr double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
-#endif
 
     /*!
      * VisualOwnableGladMX - adds GL (multiple context aware) calls to the 'scene' base
@@ -92,7 +86,7 @@ namespace morph {
             this->free_gladgl_context (this->glfn);
 
             // Free up the Fonts associated with this morph::Visual
-            morph::VisualResources<glver>::i().freetype_deinit (this);
+            morph::VisualResourcesMX<glver>::i().freetype_deinit (this);
         }
 
         virtual ~VisualOwnableGladMX() { this->deconstructCommon(); }
@@ -101,17 +95,17 @@ namespace morph {
         void freetype_init() final
         {
             // Now make sure that Freetype is set up (we assume that caller code has set the correct OpenGL context)
-            morph::VisualResources<glver>::i().freetype_init (this, this->glfn);
+            morph::VisualResourcesMX<glver>::i().freetype_init (this, this->glfn);
         }
 
     public:
-        // Do one-time init of the Visual's resources. This gets/creates the VisualResources,
+        // Do one-time init of the Visual's resources. This gets/creates the VisualResourcesMX,
         // registers this visual with resources, calls init_window for any glfw stuff that needs to
         // happen, and lastly initializes the freetype code.
         void init_resources()
         {
             // VisualResources provides font management and GLFW management. Ensure it exists in memory.
-            morph::VisualResources<glver>::i().create();
+            morph::VisualResourcesMX<glver>::i().create();
             this->freetype_init();
         }
 

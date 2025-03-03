@@ -116,7 +116,9 @@ install(
   VisualModel.h
   VisualOwnable.h
   VisualOwnableGladMX.h
+  VisualResourcesBase.h
   VisualResources.h
+  VisualResourcesMX.h
   VisualTextModel.h
   VoronoiVisual.h
   vvec.h

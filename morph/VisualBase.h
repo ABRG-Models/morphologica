@@ -51,6 +51,13 @@ namespace morph {
         cylindrical
     };
 
+#ifdef __OSX__
+    // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
+    static constexpr double retinaScale = 2; // deals with quadrant issue on osx
+#else
+    static constexpr double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
+#endif
+
     /*!
      * morph::Visual 'scene' base class
      *

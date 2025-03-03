@@ -12,7 +12,7 @@
 
 #include <morph/VisualResourcesBase.h>
 
-#include <morph/gl/util.h>
+#include <morph/gl/util_mx.h>
 
 namespace morph {
 
@@ -22,28 +22,17 @@ namespace morph {
 
     //! Singleton resource class for morph::Visual scenes.
     template <int glver>
-    class VisualResources : public VisualResourcesBase<glver>
+    class VisualResourcesMX : public VisualResourcesBase<glver>
     {
     private:
-        VisualResources(){}
-        ~VisualResources(){}
+        VisualResourcesMX(){}
+        ~VisualResourcesMX(){}
 
     public:
-        VisualResources(const VisualResources<glver>&) = delete;
-        VisualResources& operator=(const VisualResources<glver> &) = delete;
-        VisualResources(VisualResources<glver> &&) = delete;
-        VisualResources & operator=(VisualResources<glver> &&) = delete;
-
-        //! The instance public function. Uses the very short name 'i' to keep code tidy.
-        //! This relies on C++11 magic statics (N2660).
-        static auto& i()
-        {
-            static VisualResources<glver> instance;
-            return instance;
-        }
-
-        //! A function to call to simply make sure the singleton instance exists
-        virtual void create() final {}
+        VisualResourcesMX(const VisualResourcesMX<glver>&) = delete;
+        VisualResourcesMX& operator=(const VisualResourcesMX<glver> &) = delete;
+        VisualResourcesMX(VisualResourcesMX<glver> &&) = delete;
+        VisualResourcesMX & operator=(VisualResourcesMX<glver> &&) = delete;
 
         //! Initialize a freetype library instance and add to this->freetypes. I wanted
         //! to have only a single freetype library instance, but this didn't work, so I
@@ -51,24 +40,15 @@ namespace morph {
         //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
         //! but that's a task for the future, as I coded it this way under the false
         //! assumption that I'd only need one FT_Library.
-        void freetype_init (morph::VisualBase<glver>* _vis
-#ifdef GLAD_OPTION_GL_MX
-                            , GladGLContext* glfn = nullptr
-#endif
-            )
+        void freetype_init (morph::VisualBase<glver>* _vis, GladGLContext* glfn = nullptr)
         {
             FT_Library freetype = nullptr;
             try {
                 freetype = this->freetypes.at (_vis);
             } catch (const std::out_of_range&) {
                 // Use of gl calls here may make it neat to set up GL here in VisualResources?
-#ifdef GLAD_OPTION_GL_MX
                 glfn->PixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
                 morph::gl::Util::checkError (__FILE__, __LINE__, glfn);
-#else
-                glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
-                morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
 
                 if (FT_Init_FreeType (&freetype)) {
                     std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
@@ -79,40 +59,38 @@ namespace morph {
             }
         }
 
+        //! The instance public function. Uses the very short name 'i' to keep code tidy.
+        //! This relies on C++11 magic statics (N2660).
+        static auto& i()
+        {
+            static VisualResourcesMX<glver> instance;
+            return instance;
+        }
+
+        //! A function to call to simply make sure the singleton instance exists
+        virtual void create() final {}
+
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::VisualBase<glver>* _vis
-#ifdef GLAD_OPTION_GL_MX
-                                                 , GladGLContext* glfn
-#endif
-            )
+        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
+                                                 morph::VisualBase<glver>* _vis, GladGLContext* glfn)
         {
             morph::visgl::VisualFace* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);
             try {
                 rtn = this->faces.at(key).get();
             } catch (const std::out_of_range&) {
-                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis)
-#ifdef GLAD_OPTION_GL_MX
-                                                                               , glfn
-#endif
-                    );
+                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis), glfn);
                 rtn = this->faces.at(key).get();
             }
             return rtn;
         }
 
-#ifdef GLAD_OPTION_GL_MX
-        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::VisualBase<glver>* _vis, GladGLContext* glfn)
+        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf,
+                                                 morph::VisualBase<glver>* _vis, GladGLContext* glfn)
         {
             return this->getVisualFace (tf.font, tf.fontres, _vis, glfn);
         }
-#else
-        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::VisualBase<glver>* _vis)
-        {
-            return this->getVisualFace (tf.font, tf.fontres, _vis);
-        }
-#endif
     };
 
 } // namespace morph
