@@ -12,6 +12,9 @@ on:
         required: true
         type: string
 
+env:
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg_repo\cache
+
 jobs:
   build:
     runs-on: ${{ inputs.RUNNER_IMAGE }}
@@ -28,10 +31,14 @@ jobs:
         repository: microsoft/vcpkg
         path: vcpkg_repo
 
+    - name: Make a cache directory
+      run: mkdir cache
+      working-directory: vcpkg_repo
+
     - name: Cache vcpkg dependencies
       uses: actions/cache@v4
       with:
-        path: ~/.cache/vcpkg
+        path: ${{ github.workspace }}\vcpkg_repo\cache
         key: ${{ inputs.RUNNER_IMAGE }}-vcpkg
 
     - name: Bootstrap vcpkg
