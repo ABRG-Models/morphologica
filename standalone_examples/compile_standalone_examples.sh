@@ -9,11 +9,7 @@ for example_dir in */; do
     ln -s ../../../morphologica
     mkdir build
     pushd build
-    if [ -z "${VCPKG_TRIPLET}" ]; then
-        cmake ..
-    else
-        cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg_repo/scripts/buildsystems/vcpkg.cmake
-    fi
+    cmake ..
     make
     if [ "$?" -ne '0'  ]; then
         failed_examples+=( "$example_dir" )

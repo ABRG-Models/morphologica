@@ -54,5 +54,5 @@ jobs:
 
     - name: Test standalone examples
       working-directory: ${{github.workspace}}/standalone_examples
-      run: ./compile_standalone_examples.sh
-      shell: bash
+      run: compile_standalone_examples.bat
+      shell: cmd
