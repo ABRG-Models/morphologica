@@ -26,6 +26,7 @@ namespace morph {
     using win_t = GLFWwindow;
 }
 
+#include <morph/gl/version.h>
 #include <morph/VisualOwnable.h>
 #include <morph/VisualGlfw.h>
 
