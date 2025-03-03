@@ -115,6 +115,7 @@ install(
   VisualFont.h
   VisualGlfw.h
   Visual.h
+  VisualModelBase.h
   VisualModel.h
   VisualMX.h
   VisualOwnable.h
