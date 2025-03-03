@@ -28,6 +28,12 @@ jobs:
         repository: microsoft/vcpkg
         path: vcpkg_repo
 
+    - name: Cache vcpkg dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/vcpkg
+        key: ${{ inputs.RUNNER_IMAGE }}-vcpkg
+
     - name: Bootstrap vcpkg
       run: ./bootstrap-vcpkg.bat
       working-directory: vcpkg_repo
