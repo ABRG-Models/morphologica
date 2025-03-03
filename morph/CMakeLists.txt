@@ -128,7 +128,8 @@ install(
   VisualSgl.h
   VisualTextModelBase.h
   VisualTextModel.h
-  VisualTextModelMX.h
+  VisualTextModelImpl.h
+  VisualTextModelImplMX.h
   VoronoiVisual.h
   vvec.h
   Winder.h
