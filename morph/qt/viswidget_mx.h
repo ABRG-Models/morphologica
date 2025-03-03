@@ -83,9 +83,6 @@ namespace morph {
             viswidget_mx (QWidget* parent = 0) : QOpenGLWidget(parent)
             {
                 static_assert (widget_index < morph::qt::max_contexts);
-
-                std::cout << "viswidget_mx\n";
-
                 // You have to set the format in the constructor
                 QSurfaceFormat format;
                 format.setDepthBufferSize (4);
