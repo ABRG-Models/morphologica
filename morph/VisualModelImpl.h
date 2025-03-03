@@ -195,7 +195,7 @@ namespace morph {
         //! Helper to make the right kind of text model
         auto make_text_model(const morph::TextFeatures& tfeatures)
         {
-            auto tmup = std::make_unique<morph::VisualTextModelImpl<glver, mx>> (tfeatures);
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
             this->bindmodel (tmup);
             return tmup;
         }
@@ -242,7 +242,7 @@ namespace morph {
          */
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModelImpl<glver, mx>*& tm,
+                                      morph::VisualTextModel<glver>*& tm,
                                       const morph::TextFeatures& tfeatures = morph::TextFeatures())
         {
             if (this->get_shaderprogs(this->parentVis).tprog == 0) {
@@ -310,7 +310,7 @@ namespace morph {
     protected:
 
         //! A vector of pointers to text models that should be rendered.
-        std::vector<std::unique_ptr<morph::VisualTextModelImpl<glver, mx>>> texts;
+        std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
 
         //! Set up a vertex buffer object - bind, buffer and set vertex array object attribute
         virtual void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition) final

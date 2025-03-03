@@ -67,6 +67,7 @@ namespace morph {
                 // These texts are black by default
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
+                //std::unique_ptr<morph::VisualTextModel<glver>> vtm1 = this->make_text_model (tfca);
                 auto vtm1 = this->make_text_model (tfca);
                 vtm1->setSceneTranslation (toffset);
                 vtm1->setupText (this->x_label);

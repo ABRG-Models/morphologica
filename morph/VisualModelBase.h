@@ -42,8 +42,7 @@ namespace morph {
     };
 
     //! Forward declaration of a Visual class
-    template <int>
-    class VisualBase;
+    template <int> class VisualBase;
 
     /*!
      * OpenGL model base class
