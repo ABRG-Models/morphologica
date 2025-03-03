@@ -10,8 +10,8 @@
 
 #pragma once
 
+#include <morph/VisualFaceMX.h>
 #include <morph/VisualResourcesBase.h>
-
 #include <morph/gl/util_mx.h>
 
 namespace morph {
@@ -26,8 +26,13 @@ namespace morph {
     {
     private:
         VisualResourcesMX(){}
-        ~VisualResourcesMX(){}
+        ~VisualResourcesMX() { this->faces.clear(); }
 
+        //! The collection of VisualFaces generated for this instance of the
+        //! application. Create one VisualFace for each unique combination of VisualFont
+        //! and fontpixels (the texture resolution)
+        std::map<std::tuple<morph::VisualFont, unsigned int, morph::VisualBase<glver>*>,
+                 std::unique_ptr<morph::visgl::VisualFaceMX>> faces;
     public:
         VisualResourcesMX(const VisualResourcesMX<glver>&) = delete;
         VisualResourcesMX& operator=(const VisualResourcesMX<glver> &) = delete;
@@ -72,24 +77,36 @@ namespace morph {
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
-                                                 morph::VisualBase<glver>* _vis, GladGLContext* glfn)
+        morph::visgl::VisualFaceMX* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
+                                                   morph::VisualBase<glver>* _vis, GladGLContext* glfn)
         {
-            morph::visgl::VisualFace* rtn = nullptr;
+            morph::visgl::VisualFaceMX* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);
             try {
                 rtn = this->faces.at(key).get();
             } catch (const std::out_of_range&) {
-                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis), glfn);
+                this->faces[key] = std::make_unique<morph::visgl::VisualFaceMX> (font, fontpixels, this->freetypes.at(_vis), glfn);
                 rtn = this->faces.at(key).get();
             }
             return rtn;
         }
 
-        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf,
-                                                 morph::VisualBase<glver>* _vis, GladGLContext* glfn)
+        morph::visgl::VisualFaceMX* getVisualFace (const morph::TextFeatures& tf,
+                                                   morph::VisualBase<glver>* _vis, GladGLContext* glfn)
         {
             return this->getVisualFace (tf.font, tf.fontres, _vis, glfn);
+        }
+
+        //! Loop through this->faces clearing out those associated with the given morph::Visual
+        virtual void clearVisualFaces (morph::VisualBase<glver>* _vis) final
+        {
+            auto f = this->faces.begin();
+            while (f != this->faces.end()) {
+                // f->first is a key. If its third, Visual<>* element == _vis, then delete and erase
+                if (std::get<morph::VisualBase<glver>*>(f->first) == _vis) {
+                    f = this->faces.erase (f);
+                } else { f++; }
+            }
         }
     };
 

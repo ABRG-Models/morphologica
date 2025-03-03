@@ -16,7 +16,6 @@
 #include <stdexcept>
 #include <memory>
 #include <morph/gl/version.h>
-#include <morph/VisualFace.h>
 #include <morph/VisualFont.h>
 // FreeType for text rendering
 #include <ft2build.h>
@@ -37,24 +36,13 @@ namespace morph {
         VisualResourcesBase() { }
         ~VisualResourcesBase()
         {
-            // Normally, when each morph::Visual goes out of scope, the faces associated with that
-            // Visual get cleaned up (in VisualResources::freetype_deinit). So at this point, faces
-            // should be empty, and the following clear() should do nothing.
-            this->faces.clear();
-
             // As with the case for faces, when each morph::Visual goes out of scope, the FreeType
             // instance gets cleaned up. So at this stage freetypes should also be empy and nothing
             // will happen here either.
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
         }
 
-        //! The collection of VisualFaces generated for this instance of the
-        //! application. Create one VisualFace for each unique combination of VisualFont
-        //! and fontpixels (the texture resolution)
-        std::map<std::tuple<morph::VisualFont, unsigned int, morph::VisualBase<glver>*>,
-                 std::unique_ptr<morph::visgl::VisualFace>> faces;
-
-        //! FreeType library object, public for access by client code?
+        //! FreeType library object
         std::map<morph::VisualBase<glver>*, FT_Library> freetypes;
 
     public:
@@ -83,19 +71,8 @@ namespace morph {
             }
         }
 
-        // Note: getVisualFace functions are in derived classes
-
-        //! Loop through this->faces clearing out those associated with the given morph::Visual
-        void clearVisualFaces (morph::VisualBase<glver>* _vis)
-        {
-            auto f = this->faces.begin();
-            while (f != this->faces.end()) {
-                // f->first is a key. If its third, Visual<>* element == _vis, then delete and erase
-                if (std::get<morph::VisualBase<glver>*>(f->first) == _vis) {
-                    f = this->faces.erase (f);
-                } else { f++; }
-            }
-        }
+        // Note: get/clearVisualFace functions are in derived classes
+        virtual void clearVisualFaces (morph::VisualBase<glver>* _vis) = 0;
     };
 
 } // namespace morph

@@ -109,7 +109,9 @@ install(
   VisualCompoundRay.h
   VisualDataModel.h
   VisualDefaultShaders.h
+  VisualFaceBase.h
   VisualFace.h
+  VisualFaceMX.h
   VisualFont.h
   VisualGlfw.h
   Visual.h

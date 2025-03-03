@@ -26,6 +26,7 @@
 #  include <morph/glad/gl.h>
 #endif // GL headers
 
+#include <morph/VisualResources.h>
 #include <morph/VisualBase.h>
 
 namespace morph {

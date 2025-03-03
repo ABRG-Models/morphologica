@@ -13,13 +13,12 @@
 #include <morph/VisualModel.h>
 #include <morph/TextFeatures.h>
 #include <morph/TextGeometry.h>
-#include <morph/VisualTextModel.h> // includes VisualResources.h
+#include <morph/VisualTextModel.h> // includes VisualResources/MX.h
 #include <morph/VisualCommon.h>
 #include <morph/gl/shaders.h> // for ShaderInfo/LoadShaders
 #include <morph/keys.h>
 #include <morph/version.h>
 
-#include <morph/VisualResources.h>
 #include <nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
 #include <morph/quaternion.h>
@@ -118,22 +117,11 @@ namespace morph {
         }
 
     protected:
-        virtual void freetype_init()
-        {
-            // Now make sure that Freetype is set up (we assume that caller code has set the correct OpenGL context)
-            morph::VisualResources<glver>::i().freetype_init (this);
-        }
+        virtual void freetype_init() = 0; // does this need to be here?
 
     public:
-        // Do one-time init of the Visual's resources. This gets/creates the VisualResources,
-        // registers this visual with resources, calls init_window for any glfw stuff that needs to
-        // happen, and lastly initializes the freetype code.
-        void init_resources()
-        {
-            // VisualResources provides font management and GLFW management. Ensure it exists in memory.
-            morph::VisualResources<glver>::i().create();
-            this->freetype_init();
-        }
+        // Do one-time init of resources (such as freetypes, windowing system etc)
+        virtual void init_resources() = 0;
 
         //! Take a screenshot of the window. Return vec containing width * height or {-1, -1} on
         //! failure. Set transparent_bg to get a transparent background.

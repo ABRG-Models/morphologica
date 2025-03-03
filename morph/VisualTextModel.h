@@ -26,8 +26,13 @@
 #include <morph/unicode.h>
 #include <morph/TextGeometry.h>
 #include <morph/TextFeatures.h>
-#include <morph/VisualFace.h>
-#include <morph/VisualResources.h>
+#ifdef GLAD_OPTION_GL_MX
+# include <morph/VisualFaceMX.h>
+# include <morph/VisualResourcesMX.h>
+#else
+# include <morph/VisualFace.h>
+# include <morph/VisualResources.h>
+#endif
 #include <morph/colour.h>
 #include <vector>
 #include <array>
@@ -250,8 +255,8 @@ namespace morph {
 #ifdef GLAD_OPTION_GL_MX
             if (!this->get_glfn) { return geom; }
             if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
-                                                                        this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
+                this->face = VisualResourcesMX<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
+                                                                          this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
             }
 #else
             if (this->face == nullptr) {
@@ -278,8 +283,8 @@ namespace morph {
 #ifdef GLAD_OPTION_GL_MX
             if (!this->get_glfn) { return geom; }
             if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
-                                                                        this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
+                this->face = VisualResourcesMX<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
+                                                                          this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
             }
 #else
             if (this->face == nullptr) {
@@ -333,8 +338,8 @@ namespace morph {
         {
 #ifdef GLAD_OPTION_GL_MX
             if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
-                                                                        this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
+                this->face = VisualResourcesMX<glver>::i().getVisualFace (this->tfeatures, this->parentVis,
+                                                                          this->get_glfn(reinterpret_cast<morph::VisualOwnableGladMX<glver>*>(this->parentVis)));
             }
 #else
             if (this->face == nullptr) {
@@ -573,7 +578,11 @@ namespace morph {
         // The text features for this VisualTextModel
         morph::TextFeatures tfeatures;
         //! A face for this text. The face is specfied by tfeatures.font
+#ifdef GLAD_OPTION_GL_MX
+        morph::visgl::VisualFaceMX* face = nullptr;
+#else
         morph::visgl::VisualFace* face = nullptr;
+#endif
         //! The colour of the backing quad's vertices. Doesn't have any effect.
         std::array<float, 3> clr_backing = {1.0f, 1.0f, 0.0f};
 
