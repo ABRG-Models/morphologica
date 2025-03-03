@@ -116,6 +116,8 @@ install(
   VisualGlfw.h
   Visual.h
   VisualModelBase.h
+  VisualModelImpl.h
+  VisualModelImplMX.h
   VisualModel.h
   VisualMX.h
   VisualOwnable.h

@@ -25,11 +25,6 @@
 #include <morph/colour.h>
 #include <morph/gl/version.h>
 #include <morph/VisualModel.h>
-#ifdef GLAD_OPTION_GL_MX
-#include <morph/VisualTextModelMX.h>
-#else
-#include <morph/VisualTextModel.h>
-#endif
 #include <morph/graphstyles.h>
 #include <morph/ColourMap.h>
 #include <morph/Grid.h>

@@ -61,12 +61,8 @@ namespace morph {
      * computeCone, which compute the vertices that will make up sphere and cone, respectively.
      */
     template <int glver = morph::gl::version_4_1>
-    class VisualModelBase
+    struct VisualModelBase
     {
-        //! Debug rendering process with cout messages
-        static constexpr bool debug_render = false;
-
-    public:
         VisualModelBase()
         {
             this->mv_offset = { 0.0f, 0.0f, 0.0f };
