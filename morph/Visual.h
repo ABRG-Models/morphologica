@@ -32,7 +32,7 @@ namespace morph {
      *
      * If you want a morph::Visual which loads a single set of OpenGL function aliases
      * such as glClear, glEnable, glDisable and so on, you can use
-     * morph::VisualSgl<>. If you want to be explicit about the fact that you're using
+     * morph::VisualNoMX<>. If you want to be explicit about the fact that you're using
      * the multi-context aware class, use morph::VisualMX<>
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)

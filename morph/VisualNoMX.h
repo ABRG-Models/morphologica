@@ -49,14 +49,14 @@ namespace morph {
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
     template <int glver = morph::gl::version_4_1>
-    class VisualSgl : public morph::VisualOwnable<glver>
+    class VisualNoMX : public morph::VisualOwnable<glver>
     {
     public:
         /*!
          * Construct a new visualiser. The rule is 1 window to one Visual object. So, this creates a
          * new window and a new OpenGL context.
          */
-        VisualSgl (const int _width, const int _height, const std::string& _title, const bool _version_stdout = true)
+        VisualNoMX (const int _width, const int _height, const std::string& _title, const bool _version_stdout = true)
         {
             this->window_w = _width;
             this->window_h = _height;
@@ -68,7 +68,7 @@ namespace morph {
         }
 
         //! Deconstructor destroys GLFW/Qt window and deregisters access to VisualResources
-        virtual ~VisualSgl()
+        virtual ~VisualNoMX()
         {
             this->setContext();
             glfwDestroyWindow (this->window);
@@ -230,38 +230,38 @@ namespace morph {
          */
         static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
-            VisualSgl<glver>* self = static_cast<VisualSgl<glver>*>(glfwGetWindowUserPointer (_window));
+            VisualNoMX<glver>* self = static_cast<VisualNoMX<glver>*>(glfwGetWindowUserPointer (_window));
             if (self->key_callback (key, scancode, action, mods)) {
                 self->render();
             }
         }
         static void mouse_button_callback_dispatch (GLFWwindow* _window, int button, int action, int mods)
         {
-            VisualSgl<glver>* self = static_cast<VisualSgl<glver>*>(glfwGetWindowUserPointer (_window));
+            VisualNoMX<glver>* self = static_cast<VisualNoMX<glver>*>(glfwGetWindowUserPointer (_window));
             self->mouse_button_callback (button, action, mods);
         }
         static void cursor_position_callback_dispatch (GLFWwindow* _window, double x, double y)
         {
-            VisualSgl<glver>* self = static_cast<VisualSgl<glver>*>(glfwGetWindowUserPointer (_window));
+            VisualNoMX<glver>* self = static_cast<VisualNoMX<glver>*>(glfwGetWindowUserPointer (_window));
             if (self->cursor_position_callback (x, y)) {
                 self->render();
             }
         }
         static void window_size_callback_dispatch (GLFWwindow* _window, int width, int height)
         {
-            VisualSgl<glver>* self = static_cast<VisualSgl<glver>*>(glfwGetWindowUserPointer (_window));
+            VisualNoMX<glver>* self = static_cast<VisualNoMX<glver>*>(glfwGetWindowUserPointer (_window));
             if (self->window_size_callback (width, height)) {
                 self->render();
             }
         }
         static void window_close_callback_dispatch (GLFWwindow* _window)
         {
-            VisualSgl<glver>* self = static_cast<VisualSgl<glver>*>(glfwGetWindowUserPointer (_window));
+            VisualNoMX<glver>* self = static_cast<VisualNoMX<glver>*>(glfwGetWindowUserPointer (_window));
             self->window_close_callback();
         }
         static void scroll_callback_dispatch (GLFWwindow* _window, double xoffset, double yoffset)
         {
-            VisualSgl<glver>* self = static_cast<VisualSgl<glver>*>(glfwGetWindowUserPointer (_window));
+            VisualNoMX<glver>* self = static_cast<VisualNoMX<glver>*>(glfwGetWindowUserPointer (_window));
             if (self->scroll_callback (xoffset, yoffset)) {
                 self->render();
             }
