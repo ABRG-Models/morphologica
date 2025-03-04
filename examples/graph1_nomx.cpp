@@ -1,5 +1,5 @@
 // Visualize a graph. Minimal example showing how a default graph appears
-#include <morph/VisualMX.h>
+#include <morph/VisualNoMX.h>
 #include <morph/GraphVisual.h>
 #include <morph/vvec.h>
 
