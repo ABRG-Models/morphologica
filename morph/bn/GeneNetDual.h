@@ -98,7 +98,7 @@ namespace morph {
                                 // Check if we have one or both target states on this limit cycle
                                 lc.insert (state);
                                 lc_len++;
-                                // DBGF ("Limit cycle contains: " << state_str (state));
+                                // ("Limit cycle contains: " << state_str (state));
                                 GeneNet<N,K>::develop (state, genome);
                             }
 

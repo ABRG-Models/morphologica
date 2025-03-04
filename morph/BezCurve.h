@@ -27,7 +27,6 @@
 #include <random>
 
 #include <morph/BezCoord.h>
-#include <morph/MorphDbg.h>
 #include <morph/vvec.h>
 
 namespace morph
@@ -643,7 +642,6 @@ namespace morph
          */
         std::vector<BezCoord<Flt>> computePoints (Flt l, Flt firstl = Flt{0}) const
         {
-            DBG2 ("computePoints (Flt l="<<l<<", Flt firstl="<<firstl<<") called");
             std::vector<BezCoord<Flt>> rtn;
             Flt t = Flt{0};
             bool lastnull = false;
@@ -929,7 +927,6 @@ namespace morph
          */
         BezCoord<Flt> computePointLinear (Flt t) const
         {
-            DBG2 ("computePointLinear (t=" << t << ")");
             this->checkt(t);
             morph::vec<Flt, 2> b;
             b[0] =  ((1-t) * this->C(0,0) + t * this->C(1,0)) * this->scale;
@@ -948,7 +945,6 @@ namespace morph
          */
         BezCoord<Flt> computePointLinear (Flt t, Flt l) const
         {
-            DBG2 ("Called computePointLinear(Flt t="<<t<<", Flt l="<<l<<")");
             BezCoord<Flt> b1 = this->computePoint (t);
             BezCoord<Flt> e1 = this->computePoint (Flt{1});
             Flt toEnd = b1.distanceTo (e1);

@@ -67,18 +67,18 @@ namespace recurrentnet {
             // set elliptical domain boundary and allocate memory
 
             this->hg = std::make_unique<morph::HexGrid>(this->hextohex_d, this->hexspan, 0);
-            DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
+            std::cout << "Initial hexagonal HexGrid has " << this->hg->num() << " hexes\n";
             this->hg->setEllipticalBoundary (ellipseA, ellipseB);
             // Compute the distances from the boundary
             this->hg->computeDistanceToBoundary();
             // std::vector size comes from number of Hexes in the HexGrid
             this->nhex = this->hg->num();
-            DBG ("After setting boundary, HexGrid has " << this->nhex << " hexes");
+            std::cout << "After setting boundary, HexGrid has " << this->nhex << " hexes\n";
             // Spatial d comes from the HexGrid, too.
             this->set_d(this->hg->getd());
-            DBG ("HexGrid says d = " << this->d);
+            std::cout << "HexGrid says d = " << this->d << std::endl;
             this->set_v(this->hg->getv());
-            DBG ("HexGrid says v = " << this->v);
+            std::cout << "HexGrid says v = " << this->v << std::endl;
 
             this->resize_vector_variable (this->X);
             this->resize_vector_variable (this->Y);

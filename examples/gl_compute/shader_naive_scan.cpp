@@ -12,6 +12,7 @@
 #include <morph/gl/compute_manager.h>
 #include <morph/gl/texture.h>
 #include <morph/gl/ssbo.h>
+#include <morph/gl/shaders.h>
 #include <morph/vvec.h>
 #include <morph/loadpng.h>
 

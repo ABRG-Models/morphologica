@@ -8,7 +8,6 @@
  */
 #pragma once
 
-#include <morph/MorphDbg.h>
 #include <string>
 #include <list>
 #include <vector>
@@ -332,7 +331,7 @@ namespace morph
                 throw std::runtime_error ("Found a <path> element without a d attribute");
             }
 
-            DBG ("Path commands for layer " << layerName << ": " << d);
+            // std::cout << "Path commands for layer " << layerName << ": " << d << std::endl;
 
             morph::BezCurvePath<float> curves = this->parseD (d);
             curves.name = layerName;

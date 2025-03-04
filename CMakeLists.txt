@@ -110,15 +110,6 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Additional GL compiler flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
-# We use GLAD headers. A multi-context (I think this for multiple
-# windows with different OpenGL drivers) or single context (everything
-# on the same GPU) header is available. The simpler single context is
-# default, but the multi-context scheme may also be chosen.
-option(USE_GLAD_MX "Use multi-context GLAD header morph/glad/gl_mx.h" OFF)
-if(USE_GLAD_MX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GLAD_MX")
-endif(USE_GLAD_MX)
-
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
 endif()
