@@ -3,8 +3,8 @@
  *
  * Awesome graphics code for high performance graphing and visualisation.
  *
- * This is intermediate class that sets up GL, leaving choice of window system (GLFW3/Qt/wx/etc) to
- * a derived class such as morph::Visual or morph::qt::viswidget.
+ * This is intermediate class that sets up (multicontext aware) GL, leaving choice of window system
+ * (GLFW3/Qt/wx/etc) to a derived class such as morph::VisualMX or morph::qt::viswidget_mx.
  *
  * This class is 'ownable', and can be used in other window drawing system such as Qt and wx, as
  * well as within morph::Visual[NoMx], which marries it with the GLFW3 windowing system.
@@ -21,30 +21,31 @@
 #else
 // Include GLAD header
 # define GLAD_GL_IMPLEMENTATION
-#  include <morph/glad/gl.h>
+#  include <morph/glad/gl_mx.h>
 #endif // GL headers
 
-// By including this header, you take out a contract that you are not using multicontext (MX) GLAD
+// By including this header, you take out a contract that you ARE using multicontext (MX) GLAD
 // headers. This must appear BEFORE the rest of the morph headers.
-namespace morph { namespace gl { static constexpr int multicontext = 0; } }
+namespace morph { namespace gl { static constexpr int multicontext = 1; } }
 
-#include <morph/VisualResources.h>
+#include <morph/VisualResourcesMX.h>
 #include <morph/VisualTextModel.h>
 #include <morph/VisualBase.h>
-#include <morph/gl/loadshaders.h>
+#include <morph/gl/loadshaders_mx.h>
 
 namespace morph {
 
     /*!
-     * VisualOwnable - adds GL calls to the 'scene' base class, VisualBase
+     * VisualOwnableMX - adds multi-context-safe GL calls to the 'scene' base class, VisualBase
      *
-     * This class assumes that GL functions have been loaded as global aliases, such as glClear()
-     * for Clear() and glEnable() for Enable().
+     * This class assumes that GL functions have been loaded by the GLAD header system as a
+     * GladGLContext pointer, which is called glfn here. GL function calls are glfn->Clear for
+     * Clear() and glfn->Enable() for Enable() and so on.
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
     template <int glver = morph::gl::version_4_1>
-    class VisualOwnable : public morph::VisualBase<glver>
+    class VisualOwnableMX : public morph::VisualBase<glver>
     {
     public:
         /*!
@@ -52,13 +53,13 @@ namespace morph {
          * such as a QWidget.  We have to wait on calling init functions until an OpenGL
          * environment is guaranteed to exist.
          */
-        VisualOwnable() {}
+        VisualOwnableMX() { }
 
         /*!
          * Construct a new visualiser. The rule is 1 window to one Visual object. So, this creates a
          * new window and a new OpenGL context.
          */
-        VisualOwnable (const int _width, const int _height, const std::string& _title, const bool _version_stdout = true)
+        VisualOwnableMX (const int _width, const int _height, const std::string& _title, const bool _version_stdout = true)
         {
             this->window_w = _width;
             this->window_h = _height;
@@ -72,35 +73,40 @@ namespace morph {
         void deconstructCommon()
         {
             if (this->shaders.gprog) {
-                glDeleteProgram (this->shaders.gprog);
+                this->glfn->DeleteProgram (this->shaders.gprog);
                 this->shaders.gprog = 0;
                 this->active_gprog = morph::visgl::graphics_shader_type::none;
             }
             if (this->shaders.tprog) {
-                glDeleteProgram (this->shaders.tprog);
+                this->glfn->DeleteProgram (this->shaders.tprog);
                 this->shaders.tprog = 0;
             }
+            this->free_gladgl_context (this->glfn);
+
             // Free up the Fonts associated with this morph::Visual
-            morph::VisualResources<glver>::i().freetype_deinit (this);
+            morph::VisualResourcesMX<glver>::i().freetype_deinit (this);
         }
 
     protected:
         void freetype_init() final
         {
             // Now make sure that Freetype is set up (we assume that caller code has set the correct OpenGL context)
-            morph::VisualResources<glver>::i().freetype_init (this);
+            morph::VisualResourcesMX<glver>::i().freetype_init (this, this->glfn);
         }
 
     public:
-        // Do one-time init of the Visual's resources. This gets/creates the VisualResources,
+        // Do one-time init of the Visual's resources. This gets/creates the VisualResourcesMX,
         // registers this visual with resources, calls init_window for any glfw stuff that needs to
         // happen, and lastly initializes the freetype code.
         void init_resources()
         {
             // VisualResources provides font management and GLFW management. Ensure it exists in memory.
-            morph::VisualResources<glver>::i().create();
+            morph::VisualResourcesMX<glver>::i().create();
             this->freetype_init();
         }
+
+        //! GLAD OpenGL function context pointer
+        GladGLContext* glfn = nullptr;
 
         //! Stores the OpenGL function context version that was loaded
         int glfn_version = 0;
@@ -112,7 +118,7 @@ namespace morph {
             this->setContext();
 
             GLint viewport[4]; // current viewport
-            glGetIntegerv (GL_VIEWPORT, viewport);
+            this->glfn->GetIntegerv (GL_VIEWPORT, viewport);
 
             morph::vec<int, 2> dims;
             dims[0] = viewport[2];
@@ -120,12 +126,12 @@ namespace morph {
             auto bits = std::make_unique<GLubyte[]>(dims.product() * 4);
             auto rbits = std::make_unique<GLubyte[]>(dims.product() * 4);
 
-            glFinish(); // finish all commands of OpenGL
-            glPixelStorei (GL_PACK_ALIGNMENT, 1);
-            glPixelStorei (GL_PACK_ROW_LENGTH, 0);
-            glPixelStorei (GL_PACK_SKIP_ROWS, 0);
-            glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
-            glReadPixels (0, 0, dims[0], dims[1], GL_RGBA, GL_UNSIGNED_BYTE, bits.get());
+            this->glfn->Finish(); // finish all commands of OpenGL
+            this->glfn->PixelStorei (GL_PACK_ALIGNMENT, 1);
+            this->glfn->PixelStorei (GL_PACK_ROW_LENGTH, 0);
+            this->glfn->PixelStorei (GL_PACK_SKIP_ROWS, 0);
+            this->glfn->PixelStorei (GL_PACK_SKIP_PIXELS, 0);
+            this->glfn->ReadPixels (0, 0, dims[0], dims[1], GL_RGBA, GL_UNSIGNED_BYTE, bits.get());
 
             for (int i = 0; i < dims[1]; ++i) {
                 int rev_line = (dims[1] - i - 1) * 4 * dims[0];
@@ -156,20 +162,20 @@ namespace morph {
 
             if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
                 if (this->active_gprog != morph::visgl::graphics_shader_type::projection2d) {
-                    if (this->shaders.gprog) { glDeleteProgram (this->shaders.gprog); }
-                    this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs);
+                    if (this->shaders.gprog) { this->glfn->DeleteProgram (this->shaders.gprog); }
+                    this->shaders.gprog = morph::gl::LoadShadersMX (this->proj2d_shader_progs, this->glfn);
                     this->active_gprog = morph::visgl::graphics_shader_type::projection2d;
                 }
             } else if (this->ptype == perspective_type::cylindrical) {
                 if (this->active_gprog != morph::visgl::graphics_shader_type::cylindrical) {
-                    if (this->shaders.gprog) { glDeleteProgram (this->shaders.gprog); }
-                    this->shaders.gprog = morph::gl::LoadShaders (this->cyl_shader_progs);
+                    if (this->shaders.gprog) { this->glfn->DeleteProgram (this->shaders.gprog); }
+                    this->shaders.gprog = morph::gl::LoadShadersMX (this->cyl_shader_progs, this->glfn);
                     this->active_gprog = morph::visgl::graphics_shader_type::cylindrical;
                 }
             }
 
-            glUseProgram (this->shaders.gprog);
-            glViewport (0, 0, this->window_w * morph::retinaScale, this->window_h * morph::retinaScale);
+            this->glfn->UseProgram (this->shaders.gprog);
+            this->glfn->Viewport (0, 0, this->window_w * morph::retinaScale, this->window_h * morph::retinaScale);
 
             // Set the perspective
             if (this->ptype == perspective_type::orthographic) {
@@ -178,12 +184,12 @@ namespace morph {
                 this->setPerspective();
             } else if (this->ptype == perspective_type::cylindrical) {
                 // Set cylindrical-specific uniforms
-                GLint loc_campos = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_cam_pos"));
-                if (loc_campos != -1) { glUniform4fv (loc_campos, 1, this->cyl_cam_pos.data()); }
-                GLint loc_cyl_radius = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_radius"));
-                if (loc_cyl_radius != -1) { glUniform1f (loc_cyl_radius, this->cyl_radius); }
-                GLint loc_cyl_height = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_height"));
-                if (loc_cyl_height != -1) { glUniform1f (loc_cyl_height, this->cyl_height); }
+                GLint loc_campos = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_cam_pos"));
+                if (loc_campos != -1) { this->glfn->Uniform4fv (loc_campos, 1, this->cyl_cam_pos.data()); }
+                GLint loc_cyl_radius = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_radius"));
+                if (loc_cyl_radius != -1) { this->glfn->Uniform1f (loc_cyl_radius, this->cyl_radius); }
+                GLint loc_cyl_height = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_height"));
+                if (loc_cyl_height != -1) { this->glfn->Uniform1f (loc_cyl_height, this->cyl_height); }
             } else {
                 // unknown projection
                 return;
@@ -199,37 +205,37 @@ namespace morph {
             sceneview.rotate (this->rotation);
 
             // Clear color buffer and **also depth buffer**
-            glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            this->glfn->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Set the background colour:
-            glClearBufferfv (GL_COLOR, 0, this->bgcolour.data());
+            this->glfn->ClearBufferfv (GL_COLOR, 0, this->bgcolour.data());
 
             // Lighting shader variables
             //
             // Ambient light colour
-            GLint loc_lightcol = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("light_colour"));
-            if (loc_lightcol != -1) { glUniform3fv (loc_lightcol, 1, this->light_colour.data()); }
+            GLint loc_lightcol = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("light_colour"));
+            if (loc_lightcol != -1) { this->glfn->Uniform3fv (loc_lightcol, 1, this->light_colour.data()); }
             // Ambient light intensity
-            GLint loc_ai = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("ambient_intensity"));
-            if (loc_ai != -1) { glUniform1f (loc_ai, this->ambient_intensity); }
+            GLint loc_ai = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("ambient_intensity"));
+            if (loc_ai != -1) { this->glfn->Uniform1f (loc_ai, this->ambient_intensity); }
             // Diffuse light position
-            GLint loc_dp = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_position"));
-            if (loc_dp != -1) { glUniform3fv (loc_dp, 1, this->diffuse_position.data()); }
+            GLint loc_dp = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_position"));
+            if (loc_dp != -1) { this->glfn->Uniform3fv (loc_dp, 1, this->diffuse_position.data()); }
             // Diffuse light intensity
-            GLint loc_di = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_intensity"));
-            if (loc_di != -1) { glUniform1f (loc_di, this->diffuse_intensity); }
+            GLint loc_di = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_intensity"));
+            if (loc_di != -1) { this->glfn->Uniform1f (loc_di, this->diffuse_intensity); }
 
             // Switch to text shader program and set the projection matrix
-            glUseProgram (this->shaders.tprog);
-            GLint loc_p = glGetUniformLocation (this->shaders.tprog, static_cast<const GLchar*>("p_matrix"));
-            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+            this->glfn->UseProgram (this->shaders.tprog);
+            GLint loc_p = this->glfn->GetUniformLocation (this->shaders.tprog, static_cast<const GLchar*>("p_matrix"));
+            if (loc_p != -1) { this->glfn->UniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             // Switch back to the regular shader prog and render the VisualModels.
-            glUseProgram (this->shaders.gprog);
+            this->glfn->UseProgram (this->shaders.gprog);
 
             // Set the projection matrix just once
-            loc_p = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("p_matrix"));
-            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+            loc_p = this->glfn->GetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("p_matrix"));
+            if (loc_p != -1) { this->glfn->UniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             if ((this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective)
                 && this->showCoordArrows == true) {
@@ -279,16 +285,51 @@ namespace morph {
             this->swapBuffers();
         }
 
+        //! Glad MX specific callback
+        static GladGLContext* get_glfn (morph::VisualBase<glver>* _v)
+        {
+            return reinterpret_cast<morph::VisualOwnableMX<glver>*>(_v)->glfn;
+        };
+
+    protected:
+        // GLAD specific gl context creation/freeing. GladGLContext is a struct containing
+        GladGLContext* create_gladgl_context (const GLADloadfunc procaddressfn)
+        {
+            GladGLContext* context = (GladGLContext*) calloc(1, sizeof(GladGLContext));
+            if (!context) { return nullptr; }
+            this->glfn_version = gladLoadGLContext (context, procaddressfn);
+            // ...so glfn_version should (more or less) match the version specified in the glver
+            // template arg
+            return context;
+        }
+        void free_gladgl_context (GladGLContext *context)
+        {
+            if (context) { free(context); }
+            context = nullptr;
+        }
+
     public:
 #ifdef GLAD_GL // Only define if GL was included with GLAD
         void init_glad (GLADloadfunc procaddressfn) // need basic version of this in case client code does not use glad
         {
-            this->glfn_version = gladLoadGL (procaddressfn);
-            if (this->glfn_version == 0) {
-                throw std::runtime_error ("Failed to initialize GLAD GL context");
+            // Create the OpenGL function context - a GladGLContext*
+            this->glfn = this->create_gladgl_context (procaddressfn);
+
+            if (!this->glfn) {
+                std::cout << "Failed to initialize GLAD GL context" << std::endl;
+                this->free_gladgl_context (this->glfn);
             }
         }
 #endif
+        template <typename T>
+        void bindmodel (std::unique_ptr<T>& model)
+        {
+            model->set_parent (this);
+            model->get_shaderprogs = &morph::VisualBase<glver>::get_shaderprogs;
+            model->get_gprog = &morph::VisualBase<glver>::get_gprog;
+            model->get_tprog = &morph::VisualBase<glver>::get_tprog;
+            model->get_glfn = &morph::VisualOwnableMX<glver>::get_glfn;
+        }
 
         //! Add a label _text to the scene at position _toffset. Font features are
         //! defined by the tfeatures. Return geometry of the text.
@@ -349,7 +390,7 @@ namespace morph {
             this->setContext(); // if managing context
 
             if (this->version_stdout == true) {
-                unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
+                unsigned char* glv = (unsigned char*)this->glfn->GetString(GL_VERSION);
                 std::cout << "This is version " << morph::version_string()
                           << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)
                           << "> running on OpenGL Version " << glv << std::endl;
@@ -362,7 +403,7 @@ namespace morph {
                 {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::getDefaultVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::getDefaultFragShader(glver), 0 }
             };
-            this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs);
+            this->shaders.gprog = morph::gl::LoadShadersMX (this->proj2d_shader_progs, this->glfn);
             this->active_gprog = morph::visgl::graphics_shader_type::projection2d;
 
             // Alternative cylindrical shader for possible later use. (NB: not loaded immediately)
@@ -376,14 +417,14 @@ namespace morph {
                 {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::getDefaultTextVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::getDefaultTextFragShader(glver), 0 }
             };
-            this->shaders.tprog = morph::gl::LoadShaders (this->text_shader_progs);
+            this->shaders.tprog = morph::gl::LoadShadersMX (this->text_shader_progs, this->glfn);
 
             // OpenGL options
-            glEnable (GL_DEPTH_TEST);
-            glEnable (GL_BLEND);
-            glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glDisable (GL_CULL_FACE);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            this->glfn->Enable (GL_DEPTH_TEST);
+            this->glfn->Enable (GL_BLEND);
+            this->glfn->BlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            this->glfn->Disable (GL_CULL_FACE);
+            morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
 
             // If possible, read in scenetrans and rotation state from a special config file
             try {
@@ -416,7 +457,7 @@ namespace morph {
             this->coordArrows->finalize(); // VisualModel::finalize releases context (normally this is the right thing)...
             this->setContext();            // ...but we've got more work to do, so re-acquire context (if we're managing it)
 
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__, this->glfn);
 
             // Set up the title, which may or may not be rendered
             morph::TextFeatures title_tf(0.035f, 64);

@@ -2,7 +2,7 @@
 # This file controls the installation of the header files.
 #
 
-# Header installation (list from ls *.h* -1)
+# Header installation (list from ls *.h* -1, then re-ordered into functionality groups)
 install(
   FILES
   AllocAndRead.h
@@ -13,48 +13,28 @@ install(
   BezCurvePath.h
   bootstrap.h
   CartGrid.h
-  CartGridVisual.h
-  ColourBarVisual.h
   colour.h
   ColourMap.h
   ColourMap_Lists.h
   colourmaps_cet.h
   colourmaps_crameri.h
-  ConeVisual.h
   Config.h
-  ConfigVisual.h
   constexpr_math.h
-  CoordArrows.h
   crc32.h
-  CurvyTellyVisual.h
-  CyclicColourVisual.h
-  DatasetStyle.h
   debug.h
   DirichDom.h
   DirichVtx.h
   flags.h
-  GeodesicVisualCE.h
-  GeodesicVisual.h
   geometry.h
-  graphstyles.h
-  GraphVisual.h
-  GratingVisual.h
   Gridct.h
-  GridctVisual.h
   GridFeatures.h
   Grid.h
-  GridVisual.h
   HdfData.h
-  HealpixVisual.h
   HexGrid.h
-  HexGridVisual.h
   Hex.h
   hexyhisto.h
   histo.h
-  HSVWheelVisual.h
-  IcosaVisual.h
   keys.h
-  LengthscaleVisual.h
   lenthe_colormap.hpp
   loadpng.h
   lodepng.h
@@ -68,57 +48,102 @@ install(
   Mnist.h
   MorphDbg.h
   NM_Simplex.h
-  PointRowsMeshVisual.h
-  PointRowsVisual.h
-  PolygonVisual.h
   Process.h
-  QuadsMeshVisual.h
-  QuadsVisual.h
   quaternion.h
-  QuiverVisual.h
   Random.h
   range.h
   RD_Base.h
   ReadCurves.h
-  RectangleVisual.h
   Rect.h
-  RhomboVisual.h
-  RingVisual.h
   rngd.h
   rng.h
   rngs.h
-  RodVisual.h
   scale.h
-  ScatterVisual.h
   ShapeAnalysis.h
-  SphereVisual.h
-  TextFeatures.h
-  TextGeometry.h
   tools.h
   trait_tests.h
+  unicode.h
+  vec.h
+  version.h
+  vvec.h
+  Winder.h
+
+  DatasetStyle.h
+  graphstyles.h
+  TextFeatures.h
+  TextGeometry.h
+
+  VisualCommon.h
+  VisualFont.h
+  VisualDefaultShaders.h
+
+  VisualFaceBase.h
+  VisualFace.h
+  VisualFaceMX.h
+
+  VisualResourcesBase.h
+  VisualResources.h
+  VisualResourcesMX.h
+
+  VisualGlfw.h
+
+  VisualBase.h
+  VisualOwnable.h
+  VisualOwnableMX.h
+  VisualNoMX.h
+  VisualMX.h
+  Visual.h
+  VisualCompoundRay.h
+
+  VisualModelBase.h
+  VisualModelImpl.h
+  VisualModelImplMX.h
+  VisualModel.h
+
+  VisualDataModel.h
+
+  VisualTextModelBase.h
+  VisualTextModelImpl.h
+  VisualTextModelImplMX.h
+  VisualTextModel.h
+
+  CartGridVisual.h
+  ColourBarVisual.h
+  ConeVisual.h
+  ConfigVisual.h
+  CoordArrows.h
+  CurvyTellyVisual.h
+  CyclicColourVisual.h
+  GeodesicVisualCE.h
+  GeodesicVisual.h
+  GraphVisual.h
+  GratingVisual.h
+  GridctVisual.h
+  GridVisual.h
+  HealpixVisual.h
+  HexGridVisual.h
+  HSVWheelVisual.h
+  IcosaVisual.h
+  LengthscaleVisual.h
+  PointRowsMeshVisual.h
+  PointRowsVisual.h
+  PolygonVisual.h
+  QuadsMeshVisual.h
+  QuadsVisual.h
+  QuiverVisual.h
+  RectangleVisual.h
+  RhomboVisual.h
+  RingVisual.h
+  RodVisual.h
+  ScatterVisual.h
+  SphereVisual.h
   TriangleVisual.h
   TriaxesVisual.h
   TriFrameVisual.h
   TxtVisual.h
-  unicode.h
-  vec.h
   VectorVisual.h
-  version.h
-  VisualCommon.h
-  VisualCompoundRay.h
-  VisualDataModel.h
-  VisualDefaultShaders.h
-  VisualFace.h
-  VisualFont.h
-  VisualGlfw.h
-  Visual.h
-  VisualModel.h
-  VisualOwnable.h
-  VisualResources.h
-  VisualTextModel.h
   VoronoiVisual.h
-  vvec.h
-  Winder.h
+
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
 )
 

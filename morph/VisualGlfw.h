@@ -35,14 +35,6 @@ namespace morph {
             // Set up error callback
             glfwSetErrorCallback (morph::VisualGlfw<glver>::errorCallback);
 
-#ifdef HAVE_A_USE_FOR_MONITOR_CONTENT_SCALE
-            // See https://www.glfw.org/docs/latest/monitor_guide.html
-            GLFWmonitor* primary = glfwGetPrimaryMonitor(); // glfw 3.0+
-            if (primary == nullptr) { throw std::runtime_error ("Primary was null"); }
-            float xscale, yscale;
-            glfwGetMonitorContentScale (primary, &xscale, &yscale); // glfw 3.3+
-#endif
-
             // The rest of this function may be right to call with each window?
             if constexpr (morph::gl::version::gles (glver) == true) {
                 glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
