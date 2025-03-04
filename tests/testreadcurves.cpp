@@ -1,7 +1,4 @@
 #include <iostream>
-#define DEBUG 1
-#define DBGSTREAM std::cout
-#include "morph/MorphDbg.h"
 
 #include "morph/ReadCurves.h"
 #include <utility>

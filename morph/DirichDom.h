@@ -19,8 +19,6 @@
 #include <morph/HdfData.h>
 #include <morph/Hex.h>
 #include <morph/HexGrid.h>
-#define DEBUG 1
-#include <morph/MorphDbg.h>
 
 namespace morph {
 
@@ -32,6 +30,8 @@ namespace morph {
     template <typename Flt>
     class DirichDom {
     public:
+        static constexpr bool dbg = false;
+
         //! The ordered list of vertices that make up this Dirichlet domain.
         std::list<DirichVtx<Flt>> vertices;
 
@@ -92,7 +92,7 @@ namespace morph {
 
             Flt d2mean = d2sum / dcount;
             this->edge_deviation = sqrt (d2mean);
-            DBG2 ("Edge deviation is " << this->edge_deviation);
+            if constexpr (dbg) { std::cout << "Edge deviation is " << this->edge_deviation; }
         }
 
         /*!
@@ -165,18 +165,18 @@ namespace morph {
 
             // Now bhi_prev and bhi are set, should be able while through all the hexes on the
             // boundary of this domain, using the f ID to guide us...
-            DBG2 ("while loop to find boundary...");
+            if constexpr (dbg) { std::cout << "while loop to find boundary...\n"; }
             bool gotnext = false;
             while (bhi->getUserFlag(1) == false && bhi != hg->hexen.end()) {
-                DBG2 ("gotnext set to false, now do stuff");
+                if constexpr (dbg) { std::cout << "gotnext set to false, now do stuff\n"; }
                 gotnext = false;
                 for (unsigned int i = 0; i<6; ++i) {
                     if (bhi->has_neighbour(i)) {
-                        DBG2 ("neighbour in " << Hex::neighbour_pos(i) << " dirn");
+                        if constexpr (dbg) { std::cout << "neighbour in " << Hex::neighbour_pos(i) << " dirn\n"; }
                         // Might be a boundary hex:
                         nhi = bhi->get_neighbour(i);
                         if (f[nhi->vi] == this->f) {
-                            DBG2 ("this neighbour matches ID");
+                            if constexpr (dbg) { std::cout << "this neighbour matches ID\n"; }
                             // nhi is also a boundary hex if some of its neighbours have id != f.
                             std::set<Flt> neighbid;
                             neighbid.insert(f[nhi->vi]);
@@ -185,16 +185,16 @@ namespace morph {
                                     neighbid.insert (f[nhi->get_neighbour(j)->vi]);
                                 }
                             }
-                            DBG2 ("number of IDs next to this neighbour is " << neighbid.size());
+                            if constexpr (dbg) { std::cout << "number of IDs next to this neighbour is " << neighbid.size(); }
                             if (neighbid.size() > 1 && nhi != bhi_prev && nhi->getUserFlag(1) == false) {
-                                DBG2 ("Setting flags on bhi " << bhi->outputRG());
+                                if constexpr (dbg) { std::cout << "Setting flags on bhi " << bhi->outputRG(); }
                                 // FLAG_1 Marks the hex as being 'just inside' the domain boundary
                                 // FLAG_0 Marks the hex as being inside the domain boundary
                                 bhi->setUserFlags(HEX_USER_FLAG_0 | HEX_USER_FLAG_1);
                                 domBoundary.push_back (bhi);
                                 bhi_prev = bhi;
                                 bhi = nhi;
-                                DBG2 ("Next hex is " << bhi->outputRG());
+                                if constexpr (dbg) { std::cout << "Next hex is " << bhi->outputRG(); }
                                 gotnext = true;
                                 break; // out of for, but not while
                             }
@@ -207,7 +207,7 @@ namespace morph {
             }
 
             // Mark the last one...
-            DBG2 ("Mark last hex on boundary " << bhi->outputRG());
+            if constexpr (dbg) { std::cout << "Mark last hex on boundary " << bhi->outputRG(); }
             bhi->setUserFlags (HEX_USER_FLAG_0 | HEX_USER_FLAG_1);
             domBoundary.push_back (bhi);
 
@@ -227,12 +227,12 @@ namespace morph {
                 }
             }
 
-            DBG2 ("foreach hex in domBoundary");
+            if constexpr (dbg) { std::cout << "foreach hex in domBoundary\n"; }
             // Now the domain boundary should have been found.
             std::list<Hex>::iterator innerhex = hg->hexen.end();
             for (std::list<Hex>::iterator hi : domBoundary) {
 
-                DBG2 ("boundary hex " << hi->outputRG());
+                if constexpr (dbg) { std::cout << "boundary hex " << hi->outputRG(); }
                 // Mark inwards in all possible directions from nh.
                 unsigned short firsti = 0;
                 for (unsigned short i = 0; i < 6; ++i) {
@@ -250,7 +250,7 @@ namespace morph {
                 // to the next hex on the boundary.
                 if (innerhex == hg->hexen.end()) { continue; }
 
-                DBG2 ("firsti is " << firsti);
+                if constexpr (dbg) { std::cout << "firsti is " << firsti; }
                 // mark in a straight line in direction firsti
                 while (innerhex->has_neighbour(firsti)
                        && f[innerhex->get_neighbour(firsti)->vi] == this->f
@@ -303,9 +303,9 @@ namespace morph {
                 hcount += (h.getUserFlag(0) == true) ? 1 : 0;
                 h.resetUserFlags();
             }
-            DBG2 ("hcount = " << hcount);
+            if constexpr (dbg) { std::cout << "hcount = " << hcount; }
             this->area = hg->getHexArea() * hcount;
-            DBG2 ("Area = " << this->area);
+            if constexpr (dbg) { std::cout << "Area = " << this->area; }
         }
 
         //! This is the objective function for the gradient descent. Put it in DirichDom
@@ -404,7 +404,8 @@ namespace morph {
             }
             std::vector<Flt> vP = simp.best_vertex();
             Flt min_sos = simp.best_value();
-            DBG2 ("FINISHED! Best approximation: (" << vP[0] << "," << vP[1] << ") has value " << min_sos);
+            if constexpr (dbg) { std::cout << "FINISHED! Best approximation: ("
+                                           << vP[0] << "," << vP[1] << ") has value " << min_sos << std::endl; }
             // We now have a P and a metric
 
             // Write P into the ref in the arg

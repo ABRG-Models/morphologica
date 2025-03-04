@@ -1,5 +1,4 @@
 #include "morph/Process.h"
-#include "morph/MorphDbg.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -56,7 +55,7 @@ int main()
         if (!p.waitForStarted()) {
             throw runtime_error ("Process failed to start");
         } else {
-            DBG ("Process started successfully");
+            std::cout << "Process started successfully" << std::endl;
         }
         while (p.running() == true) {
             p.probeProcess();
