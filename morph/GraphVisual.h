@@ -29,8 +29,6 @@
 #include <morph/ColourMap.h>
 #include <morph/Grid.h>
 #include <morph/DatasetStyle.h>
-
-#define HACKHACK 1
 #include <morph/VisualTextModel.h>
 
 namespace morph {
