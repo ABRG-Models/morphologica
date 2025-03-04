@@ -8,7 +8,6 @@
  */
 
 #include <morph/Mnist.h>
-#include <morph/Random.h>
 #include <morph/nn/FeedForwardNet.h>
 #include <morph/vvec.h>
 #include <fstream>

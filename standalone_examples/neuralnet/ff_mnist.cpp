@@ -23,8 +23,11 @@ int main()
     morph::nn::FeedForwardNet<float> ff1({784,30,10});
 
     // Create a random number generator
+#ifdef __WIN__
+    morph::RandUniform<unsigned short> rng((unsigned short)0, (unsigned short)9);
+#else
     morph::RandUniform<unsigned char> rng((unsigned char)0, (unsigned char)9);
-
+#endif
     // main loop parameters are number of epochs, the size of a mini-batch and the
     // learning rate eta
     unsigned int epochs = 30;
@@ -68,7 +71,7 @@ int main()
             for (unsigned int mb = 0; mb < mini_batch_size; ++mb) {
 
                 // Set up input
-                auto t_iter = training_f.find (rng.get());
+                auto t_iter = training_f.find (static_cast<unsigned char>(rng.get() & 0xff));
                 // Might have run out of that kind of image, so need this:
                 if (t_iter == training_f.end()) {
                     while (t_iter == training_f.end()) {
