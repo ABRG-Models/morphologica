@@ -33,6 +33,8 @@ set(FLAGS_COMMON "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g")
 # Add different optimizing flags depending on OS/Compiler
 if (APPLE)
   set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -O3")
+elseif (WIN32)
+  set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -DNOMINMAX /EHsc")
 else()
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -O3 -D__ICC__")
