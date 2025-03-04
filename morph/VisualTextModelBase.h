@@ -1,11 +1,10 @@
 /*!
  * \file
  *
- * Declares a class to hold vertices of the quads that are the backing for a sequence of
- * text characters.
+ * Declares a base class for VisualTextModels.
  *
  * \author Seb James
- * \date Oct 2020
+ * \date March 2025
  */
 
 #pragma once
@@ -29,13 +28,10 @@
 namespace morph {
 
     //! Forward declaration of a VisualBase class
-    template <int>
-    class VisualBase;
+    template <int> class VisualBase;
 
     /*!
-     * A separate data-containing model which is used to render text. It is intended
-     * that this could comprise part of a morph::Visual or a morph::VisualModel. It has
-     * its own render call.
+     * This is the base class for VisualTextModel containing common code, but no GL function calls.
      */
     template <int glver = morph::gl::version_4_1>
     struct VisualTextModelBase

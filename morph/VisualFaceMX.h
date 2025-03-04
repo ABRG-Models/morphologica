@@ -1,8 +1,11 @@
 /*!
  * \file
  *
- * Declares a VisualFace class to hold the information about a (Freetype-managed) font
- * face and the GL-textures that will reproduce it.
+ * Declares a VisualFace class to hold the information about a (Freetype-managed) font face and the
+ * GL-textures that will reproduce it.
+ *
+ * This class is derived from VisualFaceBase and adds multi-context-safe GLAD-arranged GL function
+ * calls.
  *
  * \author Seb James
  * \date November 2020

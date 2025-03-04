@@ -1,15 +1,13 @@
 /*!
  * \file
  *
- * Awesome graphics code for high performance graphing and visualisation. This is the
- * base class that sets up GL, leaving choice of window system (GLFW3/Qt/wx/etc) to a
- * derived class such as morph::Visual or morph::qt::viswidget.
+ * Awesome graphics code for high performance graphing and visualisation.
  *
- * Normally, a morph::Visual is the *owner* of a GLFW window in which it does its
- * rendering.
+ * This is intermediate class that sets up (multicontext aware) GL, leaving choice of window system
+ * (GLFW3/Qt/wx/etc) to a derived class such as morph::VisualMX or morph::qt::viswidget_mx.
  *
- * This is a base class that is ownable, and can be used in other window drawing system
- * such as Qt and wx.
+ * This class is 'ownable', and can be used in other window drawing system such as Qt and wx, as
+ * well as within morph::Visual[NoMx], which marries it with the GLFW3 windowing system.
  *
  * Created by Seb James on 2025/03/01, from morph::Visual.h
  *
@@ -38,17 +36,11 @@ namespace morph { namespace gl { static constexpr int multicontext = 1; } }
 namespace morph {
 
     /*!
-     * VisualOwnableMX - adds GL (multiple context aware) calls to the 'scene' base
-     * class, VisualBase
+     * VisualOwnableMX - adds multi-context-safe GL calls to the 'scene' base class, VisualBase
      *
-     * A class for visualising computational models on an OpenGL screen.
-     *
-     * Each VisualOwnable provides a "scene" containing a number of objects. One object
-     * might be the visualisation of some data expressed over a HexGrid. Another could
-     * be a GraphVisual object. The class can pass through mouse events to allow the
-     * user to rotate and translate the scene, as well as use keys to generate
-     * particular effects/views (though particular implementations will live in derived
-     * classes).
+     * This class assumes that GL functions have been loaded by the GLAD header system as a
+     * GladGLContext pointer, which is called glfn here. GL function calls are glfn->Clear for
+     * Clear() and glfn->Enable() for Enable() and so on.
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */

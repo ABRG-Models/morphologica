@@ -1,11 +1,13 @@
 /*!
  * \file
  *
- * Declares a VisualModel class to hold the vertices that make up some individual
- * model object that can be part of an OpenGL scene.
+ * Declares a VisualModel base class to hold the vertices that make up some individual model object
+ * that can be part of an OpenGL scene.
+ *
+ * GL function calls are added in VisualModelImpl.h and VisualModelImplMX.h
  *
  * \author Seb James
- * \date May 2019
+ * \date March 2025
  */
 
 #pragma once
@@ -50,14 +52,11 @@ namespace morph {
      * This class is a base 'OpenGL model' class. It has the common code to create the vertices for
      * some individual OpengGL model which is to be rendered in a 3-D scene.
      *
-     * Some OpenGL models are derived directly from VisualModel; see for example morph::CoordArrows.
-     *
-     * Other models in morphologica are derived via morph::VisualDataModel, which adds a common
-     * mechanism for managing the data which is to be visualised by the final 'Visual' object (such
-     * as morph::HexGridVisual or morph::ScatterVisual)
-     *
      * This class contains some common 'object primitives' code, such as computeSphere and
      * computeCone, which compute the vertices that will make up sphere and cone, respectively.
+     *
+     * It contains no GL function calls, these are added in the derived classes VisualModelImpl and
+     * VisualModelImplMX.
      */
     template <int glver = morph::gl::version_4_1>
     struct VisualModelBase

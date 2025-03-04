@@ -43,7 +43,7 @@ namespace morph {
         {
             if (this->label.empty()) { return; }
             morph::vec<float> bar_centre = end_coord / 2.0f;
-            auto lbl = this->make_text_model (this->text_features);
+            auto lbl = this->makeVisualTextModel (this->text_features);
             morph::TextGeometry geom = lbl->getTextGeometry (this->label);
             morph::vec<float> lblpos = { 0.0f };
 

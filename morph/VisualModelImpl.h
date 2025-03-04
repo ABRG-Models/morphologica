@@ -1,11 +1,10 @@
 /*!
  * \file
  *
- * Declares a VisualModel class to hold the vertices that make up some individual
- * model object that can be part of an OpenGL scene.
+ * Declares a VisualModel implementation class, adding globally aliases GL function calls.
  *
  * \author Seb James
- * \date May 2019
+ * \date March 2025
  */
 
 #pragma once
@@ -30,7 +29,7 @@ namespace morph {
     template <int> class VisualBase;
 
     /*!
-     * Single context safe implementation (multicontext 0)
+     * Single context safe implementation (morph::gl::multicontext == 0)
      */
     template <int glver = morph::gl::version_4_1, int mx = morph::gl::multicontext, std::enable_if_t<mx==0, bool> = true >
     struct VisualModelImpl : public morph::VisualModelBase<glver>
@@ -192,8 +191,20 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
-        //! Helper to make the right kind of text model
-        auto make_text_model(const morph::TextFeatures& tfeatures)
+        /*!
+         * Helper to make a VisualTextModel and bind it ready for use.
+         *
+         * You could write it out explicitly as:
+         *
+         * std::unique_ptr<morph::VisualTextModel<glver>> vtm1 = this->makeVisualTextModel (tfca);
+         *
+         * Or use auto to help:
+         *
+         * auto vtm1 = this->makeVisualTextModel (tfca);
+         *
+         * See GraphVisual.h for examples.
+         */
+        std::unique_ptr<morph::VisualTextModel<glver>> makeVisualTextModel (const morph::TextFeatures& tfeatures)
         {
             auto tmup = std::make_unique<morph::VisualTextModel<glver>> (tfeatures);
             this->bindmodel (tmup);
@@ -216,7 +227,7 @@ namespace morph {
 
             if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
-            auto tmup = this->make_text_model (tfeatures);
+            auto tmup = this->makeVisualTextModel (tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -251,7 +262,7 @@ namespace morph {
 
             if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
-            auto tmup = this->make_text_model (tfeatures);
+            auto tmup = this->makeVisualTextModel (tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);

@@ -3,10 +3,12 @@
  *
  * Awesome graphics code for high performance graphing and visualisation.
  *
- * This is the main visual scene class in morphologica and derives from
- * morph::VisualOwnable, adding window handling with GLFW3.
+ * This is the main visual scene class in morphologica and derives from morph::VisualOwnable, adding
+ * window handling with GLFW3.
  *
- * This is the multiple context-safe version.
+ * This is the multiple context-safe version of VisualNoMX.
+ *
+ * It is further aliased to morph::Visual in morph/Visual.h.
  *
  * Created by Seb James on 2025/03/03
  *
@@ -38,14 +40,15 @@ namespace morph {
      *
      * A class for visualising computational models on an OpenGL screen.
      *
-     * Each Visual will have its own GLFW window and is essentially a "scene" containing a number of
-     * objects. One object might be the visualisation of some data expressed over a HexGrid. Another
-     * could be a GraphVisual object. The class handles mouse events to allow the user to rotate and
-     * translate the scene, as well as use keys to generate particular effects/views.
+     * Each VisualMX will have its own GLFW window and is essentially a "scene" containing a number
+     * of objects. One object might be the visualisation of some data expressed over a
+     * HexGrid. Another could be a GraphVisual object. The class handles mouse events to allow the
+     * user to rotate and translate the scene, as well as use keys to generate particular
+     * effects/views.
      *
-     * It's possible to set the background colour of the scene (Visual::bgcolour), the location of
-     * the objects in the scene (Visual::setSceneTransZ and friends) and the position and field of
-     * view of the 'camera' (Visual::zNear, Visual::zFar and Visual::fov).
+     * It's possible to set the background colour of the scene (VisualMX::bgcolour), the location of
+     * the objects in the scene (VisualMX::setSceneTransZ and friends) and the position and field of
+     * view of the 'camera' (VisualMX::zNear, VisualMX::zFar and VisualMX::fov).
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */

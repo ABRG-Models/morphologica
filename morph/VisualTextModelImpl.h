@@ -1,11 +1,11 @@
 /*!
  * \file
  *
- * Declares a class to hold vertices of the quads that are the backing for a sequence of
- * text characters.
+ * Implementation class for VisualTextModel. This one assumes GL functions have been loaded as
+ * global aliases.
  *
  * \author Seb James
- * \date Oct 2020
+ * \date March 2025
  */
 
 #pragma once
@@ -28,11 +28,11 @@ namespace morph {
     template <int> class VisualBase;
 
     /*!
-     * A separate data-containing model which is used to render text. It is intended
-     * that this could comprise part of a morph::Visual or a morph::VisualModel. It has
-     * its own render call.
+     * Implementation of a separate data-containing model which is used to render text. It is
+     * intended that this could comprise part of a morph::Visual or a morph::VisualModel. It has its
+     * own render call. Global GL function alias version.
      */
-    template <int glad_type = 0, int glver = morph::gl::version_4_1>
+    template <int glver = morph::gl::version_4_1, int mx = morph::gl::multicontext, std::enable_if_t<mx==0, bool> = true >
     struct VisualTextModelImpl : public morph::VisualTextModelBase<glver>
     {
         VisualTextModelImpl (morph::TextFeatures _tfeatures)

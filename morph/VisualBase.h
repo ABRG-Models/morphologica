@@ -1,8 +1,8 @@
 /*!
  * \file
  *
- * Awesome graphics code for high performance graphing and visualisation. This is the
- * abstract base class that contains no GL
+ * Awesome graphics code for high performance graphing and visualisation. This is the abstract base
+ * class for the Visual scene classes (it contains common functionality, but no GL)
  *
  * \author Seb James
  * \date March 2025
@@ -57,12 +57,24 @@ namespace morph {
 #endif
 
     /*!
-     * morph::Visual 'scene' base class
+     * VisualBase, the morph::Visual 'scene' base class
      *
      * A base class for visualising computational models on an OpenGL screen.
      *
      * This contains code that is not OpenGL dependent. OpenGL dependent code is in
      * VisualOwnable or VisualOwnableMX.
+     *
+     * For morphologica program using GLFW windows, Inheritance chain will either be:
+     *
+     *   VisualBase -> VisualOwnable -> VisualNoMX            for single context GL, global fn aliases
+     *
+     *   VisualBase -> VisualOwnableMX -> VisualMX -> Visual  for multi context, GL fn pointers (GLAD only)
+     *
+     * morphologica based widgets, such as the Qt compatible morph::qt::viswidget have this:
+     *
+     *   VisualBase -> VisualOwnable -> viswidget             for single context GL, global fn aliases
+     *
+     *   VisualBase -> VisualOwnableMX -> viswidget_mx        for single context GL, global fn aliases
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
