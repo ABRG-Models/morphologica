@@ -28,14 +28,16 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 
 # Common cflags
-set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -Wno-sign-compare -g")
+set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION}")
 
 # OS dependent cflags
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wfatal-errors -Wno-sign-compare -g -O3")
+elseif (WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX /EHsc")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-result -Wno-unknown-pragmas -O3")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wfatal-errors -Wno-sign-compare -g -Wno-unused-result -Wno-unknown-pragmas -O3")
 endif()
 
 # Correct way to determine if OpenMP is available

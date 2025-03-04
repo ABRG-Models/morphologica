@@ -23,13 +23,13 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3")
+  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-sign-compare")
+elseif (WIN32)
+  set(CMAKE_CXX_FLAGS "${OS_FLAG} -DNOMINMAX /EHsc")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas")
+  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas -Wno-sign-compare")
 endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
 
 # Add OpenMP flags here, if necessary
 find_package(OpenMP)
