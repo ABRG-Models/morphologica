@@ -452,6 +452,22 @@ If you want to keep the default morphologica key bindings (which are all *Ctrl-*
 
 You can see how this works in the [myvisual.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/myvisual.cpp) example code.
 
+# Underlying classes
+
+`morph::Visual` is implemented by an underlying base class structure. If you use morph::Visual to provide your scene, then you will be using this inheritance chain:
+
+```
+namespace morph {
+//                          VisualGlfw ----v
+//    VisualBase ---> VisualOwnableMX ---> VisualMX ---> Visual
+}
+```
+
+The functionality for `Visual` is provided by `VisualMX`, which is a multi-context-save class whose GL functions are loaded with the [GLAD 2](https://github.com/Dav1dde/glad) header system. You can use `VisualMX` in place of `Visual` if you want to be explicit about the fact that you are using multi-context-safe code.
+
+If you need to work with libraries that expect GL functions to be aliased in the global namespace (and called glClear, glEnable, glEtc) then you can use the class `VisualNoMX`, which has exactly the same interface as `morph::Visual`.
+
+
 # Working with multiple windows
 
 You can create more than one `morph::Visual` in your program. Each `Visual` will be related to a separate OpenGL context. morphologica will handle the switching of the context automatically (by calling `Visual::setContext()` as needed, for example if you call `Visual::render()`).
@@ -460,6 +476,9 @@ You can create more than one `morph::Visual` in your program. Each `Visual` will
 
 *This is the [twowindows.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/twowindows.cpp) example program, which displays two windows with two `morph::Visual` instances. The `GraphVisual` on window 2 shows what the preceding code example would generate. Window 1 shows another kind of `morph::VisualModel` (a `QuiverVisual`)*
 
+Because morphologica defaults to using multicontext-safe GL function calls, there is no problem working with multiple windows.
+
+In practice, you can also create multiple windows with `morph::VisualNoMX`. Although in this case the GL function names are global, separate contexts are still maintained correctly.
 
 # Multi-threading
 
@@ -499,6 +518,10 @@ especially the comment from [elmindreda](https://discourse.glfw.org/t/multithrea
 There are no issues if you want to multi-thread the rest of your
 program - the parts that compute the values that will be visualized
 with `morph::Visual`.
+
+## Update March 2025
+
+I think that it is intended to be possible to execute each OpenGL context on its own thread and that these can run in parallel by design. With the recent multicontext-safe approach, this should work without any issues.
 
 # OpenGL context, version and `OWNED_MODE`
 
@@ -551,16 +574,22 @@ Note that the OpenGL version integer is also used as a template parameter in the
 
 ## OpenGL header inclusion
 
-How you include OpenGL headers and link to OpenGL driver code can be complex, and can differ between Linux, Apple and Windows platforms. On Linux, morphologica will `#include` GL headers from its own code base, and on Apple, it will include them from the system. If you are integrating morphologica code into an existing program that *already* has a scheme for including OpenGL headers, then it should detect this gracefully.
+How you include OpenGL headers and link to OpenGL driver code can be complex, and can differ between Linux, Apple and Windows platforms.
+
+In morphologica we use GLAD for the GL headers (the headers are morph/glad/gl.h for the single context schemme and morph/glad/gl_mx.h for the multicontext-safe scheme).
+
+GLAD ensures that all the OpenGL functions are correctly loaded from the OpenGL driver.
+
+It is also possible to include GL externally, but in this case  you should use `morph::VisualNoMX` instead of `morph::Visual`.
 
 Linking should be determined by the CMake system.
 
-## `OWNED_MODE`
+## VisualOwnable
 
-One more concept to be aware of when reading **morph/Visual.h** is the 'operating mode'. When `Visual` was first developed, it was designed to own its desktop window, which would always be provided by the [GLFW library](https://www.glfw.org/). The Visual class would manage GLFW setup and window creation/destruction. Window pointers (aliased as `morph::win_t`) were always of type `GLFWwindow`.
+When `Visual` was first developed, it was designed to own its desktop window, which would always be provided by the [GLFW library](https://www.glfw.org/). The Visual class would manage GLFW setup and window creation/destruction. Window pointers (aliased as `morph::win_t`) were always of type `GLFWwindow`.
 
-Later on, I wanted to add support for the Qt windowing system so that a `morph::Visual` could provide OpenGL graphics for a `QtWidget`. Qt manages OpenGL contexts and windows, so I had to create a new operating mode for `morph::Visual` in which it would use an externally managed context. To do this I defined `OWNED_MODE`. `OWNED_MODE` is enabled by writing `#define OWNED_MODE 1` in a relevant location (for example locations of this line, see [viswidget.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/qt/viswidget.h) for Qt and [viswx.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/wx/viswx.h) for wx windows). Essentially, it has to come *before* `#include <morph/Visual.h>`.
+Later on, I wanted to add support for the Qt windowing system so that a `morph::Visual` could provide OpenGL graphics for a `QtWidget`. Qt manages OpenGL contexts and windows, so I had to create a new operating mode for `morph::Visual` in which it would use an externally managed context. To do this I defined `OWNED_MODE` enabled by `#define` lines.
 
-In `OWNED_MODE`, an alternative windowing system can be used and `morph::win_t` is mapped to the appropriate window/widget type. Any `Visual` code that is involved in setting up the windowing system is disabled in `OWNED_MODE`.
+In March 2025, I redesigned the code so that Visual-with-OWNED_MODE became a class called `VisualOwnable`.
 
-However, unless you are integrating morphologica into Qt or WxWidgets, you will leave `OWNED_MODE` undefined.
+However, unless you are integrating morphologica into Qt or WxWidgets, you won't have to learn about `VisualOwnable`.
