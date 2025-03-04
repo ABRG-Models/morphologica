@@ -135,8 +135,8 @@ endif(ARMADILLO_FOUND)
 add_executable(helloworld helloworld.cpp)
 target_link_libraries(helloworld OpenGL::GL glfw Freetype::Freetype)
 
-add_executable(helloworld_mx helloworld_mx.cpp)
-target_link_libraries(helloworld_mx OpenGL::GL glfw Freetype::Freetype)
+add_executable(helloworld_nomx helloworld_nomx.cpp)
+target_link_libraries(helloworld_nomx OpenGL::GL glfw Freetype::Freetype)
 
 add_executable(helloversion helloversion.cpp)
 target_link_libraries(helloversion OpenGL::GL glfw Freetype::Freetype)
