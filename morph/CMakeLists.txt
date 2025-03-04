@@ -46,7 +46,6 @@ install(
   math.h
   MathImpl.h
   Mnist.h
-  MorphDbg.h
   NM_Simplex.h
   Process.h
   quaternion.h

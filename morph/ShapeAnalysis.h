@@ -16,7 +16,6 @@
 #include <morph/HexGrid.h>
 #include <morph/DirichDom.h>
 #include <morph/DirichVtx.h>
-#include <morph/MorphDbg.h>
 
 namespace morph {
 
@@ -36,6 +35,7 @@ namespace morph {
     class ShapeAnalysis
     {
     public:
+        static constexpr bool dbg = false;
 
         /*!
          * Obtain the contours (as a vector of list<Hex>) in the scalar fields f, where threshold is
@@ -324,16 +324,17 @@ namespace morph {
 
             // n_ids is WRONG. Need to test for n_ids that are adjoining each vertex. This number
             // will be 1, 2 or 3.
-            DBG2 (h->outputRG() << ": boundaryHex:" << h->boundaryHex() << ", n_ids.size():" << n_ids_sz);
+            if constexpr (dbg) { std::cout << h->outputRG() << ": boundaryHex:"
+                                           << h->boundaryHex() << ", n_ids.size():" << n_ids_sz << std::endl; }
 
             if (n_ids_sz >= 2) {
 
                 // Then there's the possibility of a vertex on this hex.
-                DBG2 (h->outputRG() << ": Possibility of boundary or internal vertex...");
+                if constexpr (dbg) { std::cout << h->outputRG() << ": Possibility of boundary or internal vertex...\n"; }
 
                 if (h->boundaryHex() == true) { // 1. Test for boundary vertices. n_ids size >= 2.
 
-                    DBG2 (h->outputRG() << ": Possibility of boundary vertex...");
+                    if constexpr (dbg) { std::cout << h->outputRG() << ": Possibility of boundary vertex...\n"; }
 
                     // Here, I need to set a vertex where two hexes join and we're on the
                     // boundary. This provides information to set the angles to discover the best
@@ -350,7 +351,7 @@ namespace morph {
                             int nii = (ni+1)%6;
                             if (!h->has_neighbour(nii)) {
                                 // Then vertex direction is "vertex direction ni"
-                                DBG2 ("vtx bh 1");
+                                if constexpr (dbg) { std::cout << "vtx bh 1\n"; }
                                 DirichVtx<Flt> a(
                                     h->get_vertex_coord(ni),
                                     hg->getd(),
@@ -364,7 +365,7 @@ namespace morph {
                                 nii = ni>0?ni-1:5;
                                 if (!h->has_neighbour(nii)) {
                                     // Then vertex dirn is "vertex direction (ni-1) or 5", i.e. nii.
-                                    DBG2 ("vtx bh 2");
+                                    if constexpr (dbg) { std::cout << "vtx bh 2\n"; }
                                     DirichVtx<Flt> a (
                                         h->get_vertex_coord(nii),
                                         hg->getd(),
@@ -384,7 +385,7 @@ namespace morph {
                 // the domain. Note that an internal vertex CAN appear on a boundaryHex as long as
                 // n_ids is >= 3.
                 if (n_ids_sz >= 3) {
-                    DBG2 (h->outputRG() << ": Possibility of internal vertex...");
+                    if constexpr (dbg) { std::cout << h->outputRG() << ": Possibility of internal vertex...\n"; }
                     for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
 
                         // If there's a neighbour in direction ni and that neighbour has different ID:
@@ -400,7 +401,7 @@ namespace morph {
                                 && f[h->get_neighbour(nii)->vi] != f1 // f1 already tested != f[h->vi]
                                 ) {
                                 // Then vertex is "vertex ni"
-                                DBG2 ("vtx ih 1");
+                                if constexpr (dbg) { std::cout << "vtx ih 1\n"; }
                                 vertices.push_back (
                                     DirichVtx<Flt>(
                                         h->get_vertex_coord(ni),
@@ -416,18 +417,6 @@ namespace morph {
             }
         }
 
-//#define DEBUG_WALK 1
-#ifdef DEBUG_WALK
-# define WALK(s)  DBGSTREAM << "WLK: " << __FUNCTION__ << ": " << s << std::endl;
-#else
-# define WALK(s)
-#endif
-//#define DEBUG_WALK2 1
-#ifdef DEBUG_WALK2
-# define WLK2(s)  DBGSTREAM << "WLK: " << __FUNCTION__ << ": " << s << std::endl;
-#else
-# define WLK2(s)
-#endif
         /*!
          * Walk an edge between two domains. Common code used by walk_to_neighbour and walk_to_next.
          *
@@ -449,7 +438,7 @@ namespace morph {
                      morph::vec<Flt, 2>& edgedoms,
                      Flt& next_neighb_dom) {
 
-            WALK ("** Called to walk from " << v.v << " or " << v.hi->outputRG() << ". edgedoms: "<< edgedoms);
+            //WALK ("** Called to walk from " << v.v << " or " << v.hi->outputRG() << ". edgedoms: "<< edgedoms);
 
             // Really, we only have coordinates to return.
             morph::vec<Flt, 2> next_one = { std::numeric_limits<Flt>::max(), std::numeric_limits<Flt>::max() };
@@ -486,7 +475,7 @@ namespace morph {
             // hacky, but I do have to find out which hex to start from when walking along the edge
             // and so some sort of code like this has to go somewhere.
             if (f[hexit_first->vi] == edgedoms[0]) {
-                WLK2 ("Hex AT " << hexit_first->outputRG() << " has f=" << f[hexit_first->vi]);
+                //WLK2 ("Hex AT " << hexit_first->outputRG() << " has f=" << f[hexit_first->vi]);
                 // Then I need to find out which of the other hexes should swap to hexit_first.
                 for (i = 0; i<6; ++i) {
                     if (hexit_first->has_neighbour(i)) {
@@ -495,13 +484,13 @@ namespace morph {
                         Flt x_ = hexit_first->get_neighbour(i)->x - v_init[0];
                         Flt y_ = hexit_first->get_neighbour(i)->y - v_init[1];
                         Flt distance = sqrt (x_*x_ + y_*y_);
-                        DBG2 ("vertex to hex-centre distance: " << distance);
-                        DBG2 ("HexGrid long radius distance: " << hexit_first->getLR());
+                        if constexpr (dbg) { std::cout << "vertex to hex-centre distance: " << distance << std::endl; }
+                        if constexpr (dbg) { std::cout << "HexGrid long radius distance: " << hexit_first->getLR() << std::endl; }
                         bool correct_distance = distance-hexit_first->getLR() < 0.001 ? true : false;
                         if (correct_distance) {
                             if (f[hexit_first->get_neighbour(i)->vi] != edgedoms[1]
                                 && f[hexit_first->get_neighbour(i)->vi] != edgedoms[0]) {
-                                WLK2 ("Found the true hexit_first");
+                                //WLK2 ("Found the true hexit_first");
                                 hexit = hexit_first;
                                 hexit_first = hexit_first->get_neighbour(i);
                                 break;
@@ -519,13 +508,13 @@ namespace morph {
             while (!partner_found) {
 
                 if (loopcount++ > 1000) {
-                    WALK ("UH OH: Breaking out of while loop after " << loopcount << " iterations");
+                    //WALK ("UH OH: Breaking out of while loop after " << loopcount << " iterations");
                     next_one = v_init;
                     partner_found = true;
                     break;
                 }
 
-                WLK2 ("===== while loop. partner_found==false ======");
+                //WLK2 ("===== while loop. partner_found==false ======");
 
                 /*
                  * B Find the iterator hexit.
@@ -534,21 +523,22 @@ namespace morph {
                 // Find the initial direction of the edge and the hex containing edgedoms[0]:
                 int hexit_first_dirn = std::numeric_limits<int>::max();
                 for (i = 0; i<6; ++i) {
-                    DBG2 ("i=" << i << ", Comparing coordinates: " << hexit_first->get_vertex_coord(i)
-                          << " and v_init = " << v_init);
+                    if constexpr (dbg) { std::cout << "i=" << i << ", Comparing coordinates: "
+                                                   << hexit_first->get_vertex_coord(i)
+                                                   << " and v_init = " << v_init << std::endl; }
 
                     if (hexit_first->compare_vertex_coord(i, v_init) == true) {
 
                         // Then the neighbours are either side of vertex direction i.
-                        WLK2 ("initial *vertex* in direction " << i << "/"
-                              << Hex::vertex_name(i) << " wrt current hexit_first: "
-                              << hexit_first->outputRG());
+                        //WLK2 ("initial *vertex* in direction " << i << "/"
+                        //      << Hex::vertex_name(i) << " wrt current hexit_first: "
+                        //      << hexit_first->outputRG());
 
                         if (hexit_first->has_neighbour ((i+1)%6)) {
-                            WLK2 ("Hex adjoining " << hexit_first->outputRG()
-                                  << " to " << Hex::neighbour_pos((i+1)%6)
-                                  << " has f=" << f[hexit_first->get_neighbour ((i+1)%6)->vi] << ", "
-                                  << hexit_first->get_neighbour ((i+1)%6)->outputRG());
+                            //WLK2 ("Hex adjoining " << hexit_first->outputRG()
+                            //      << " to " << Hex::neighbour_pos((i+1)%6)
+                            //      << " has f=" << f[hexit_first->get_neighbour ((i+1)%6)->vi] << ", "
+                            //      << hexit_first->get_neighbour ((i+1)%6)->outputRG());
 
                             // The next hex to be pointed to by hexit is the one with
                             // f==edgedoms[0]
@@ -556,22 +546,23 @@ namespace morph {
 
                             if (f[hexit->vi] == edgedoms[0]) {
                                 hexit_first_dirn = (i+1)%6;
-                                WLK2 ("Good, hex in direction "
-                                      << Hex::neighbour_pos(hexit_first_dirn) << ", which is "
-                                      << hexit->outputRG()
-                                      << ", has ID = edgedoms[0] = " << edgedoms[0]);
+                                //WLK2 ("Good, hex in direction "
+                                //      << Hex::neighbour_pos(hexit_first_dirn) << ", which is "
+                                //      << hexit->outputRG()
+                                //      << ", has ID = edgedoms[0] = " << edgedoms[0]);
                                 break;
-                            } else {
-                                WLK2 ("Hex in direction " << Hex::neighbour_pos((i+1)%6)
-                                      << " has ID!=edgedoms[0] = " << edgedoms[0]);
                             }
+                            //else {
+                            //    WLK2 ("Hex in direction " << Hex::neighbour_pos((i+1)%6)
+                            //          << " has ID!=edgedoms[0] = " << edgedoms[0]);
+                            //}
                         } // else No neighbour in direction " << ((i+1)%6) << " of a vertex hex.
 
                         if (hexit_first->has_neighbour ((i>0)?(i-1):5)) {
-                            WLK2 ("Hex adjoining " << hexit_first->outputRG()
-                                  << " to " << Hex::neighbour_pos((i>0)?(i-1):5)
-                                  << " has f=" << f[hexit_first->get_neighbour ((i>0)?(i-1):5)->vi]
-                                  << ", " << hexit_first->get_neighbour ((i>0)?(i-1):5)->outputRG());
+                            //WLK2 ("Hex adjoining " << hexit_first->outputRG()
+                            //      << " to " << Hex::neighbour_pos((i>0)?(i-1):5)
+                            //      << " has f=" << f[hexit_first->get_neighbour ((i>0)?(i-1):5)->vi]
+                            //      << ", " << hexit_first->get_neighbour ((i>0)?(i-1):5)->outputRG());
 
                             // The next hex to be pointed to by hexit is the one with
                             // f==edgedoms[0]
@@ -579,33 +570,33 @@ namespace morph {
 
                             if (f[hexit->vi] == edgedoms[0]) {
                                 hexit_first_dirn = i>0?i-1:5;
-                                WLK2 ("Good, hex in direction "
-                                      << Hex::neighbour_pos(hexit_first_dirn) << ", which is "
-                                      << hexit->outputRG()
-                                      << ", has ID = edgedoms[0] = " << edgedoms[0]
-                                      << " (edgedoms[1]=" << edgedoms[1] << ")");
+                                //WLK2 ("Good, hex in direction "
+                                //      << Hex::neighbour_pos(hexit_first_dirn) << ", which is "
+                                //      << hexit->outputRG()
+                                //      << ", has ID = edgedoms[0] = " << edgedoms[0]
+                                //      << " (edgedoms[1]=" << edgedoms[1] << ")");
                                 break;
                             } else {
-                                WLK2 ("Hex in direction " << Hex::neighbour_pos((i>0)?(i-1):5)
-                                      << " has ID!=edgedoms[0] = " << edgedoms[0]);
+                                //WLK2 ("Hex in direction " << Hex::neighbour_pos((i>0)?(i-1):5)
+                                //      << " has ID!=edgedoms[0] = " << edgedoms[0]);
                             }
                         } else {
                             // If we get here, then neither hex to each side of the initial hexes
                             // were on the edge. That means that the edge has length 2 vertices
                             // only.
                             hexit_first_dirn = (i>0)?(i-1):5;
-                            WLK2 ("Okay, hex in direction "
-                                  << Hex::neighbour_pos(hexit_first_dirn) << ", which is "
-                                  << hexit->outputRG()
-                                  << ", has neither ID. Only 2 vertices in the edge.");
+                            //WLK2 ("Okay, hex in direction "
+                            //      << Hex::neighbour_pos(hexit_first_dirn) << ", which is "
+                            //      << hexit->outputRG()
+                            //      << ", has neither ID. Only 2 vertices in the edge.");
                             break;
                         }
                     }
                 }
-                WLK2 ("After determining initial direction of edge, i=" << i
-                      << " or vertex dirn: " << Hex::vertex_name(i));
-                WLK2 ("...and direction to edgedoms[0] Hex is " << hexit_first_dirn
-                      << " or hex dirn: " << Hex::neighbour_pos(hexit_first_dirn));
+                //WLK2 ("After determining initial direction of edge, i=" << i
+                //      << " or vertex dirn: " << Hex::vertex_name(i));
+                //WLK2 ("...and direction to edgedoms[0] Hex is " << hexit_first_dirn
+                //      << " or hex dirn: " << Hex::neighbour_pos(hexit_first_dirn));
 
                 /*
                  * C Find the iterator hexit_neighb.
@@ -625,9 +616,9 @@ namespace morph {
                     // i.e. that the initial vertex v.v lies between the neighbour
                     // hexit->get_neighbour(j) and hexit.
                     hexit_neighb = hexit_first->get_neighbour(j);
-                    WLK2 ("hexit_neighb in j+1 dirn, which should be over the edge has f="
-                          << f[hexit_neighb->vi] << ", " << hexit_neighb->outputRG()
-                          << ". Comparing with edgedoms[1]=" << edgedoms[1]);
+                    //WLK2 ("hexit_neighb in j+1 dirn, which should be over the edge has f="
+                    //      << f[hexit_neighb->vi] << ", " << hexit_neighb->outputRG()
+                    //      << ". Comparing with edgedoms[1]=" << edgedoms[1]);
                     // Ok, there IS a neighbour in this direction.
 
                     // Distance to vertex
@@ -636,7 +627,7 @@ namespace morph {
                     bool oneLR = abs(d_to_v - hexit_neighb->getLR()) < (hexit_neighb->d/100);
 
                     if (f[hexit_neighb->vi] == edgedoms[1] && oneLR) {
-                        WLK2 ("1 hexit_neighb found in 'j+1' dirn based on identity.");
+                        //WLK2 ("1 hexit_neighb found in 'j+1' dirn based on identity.");
                         found_second = true;
                         hexit_second_dirn = j;
                     }
@@ -645,13 +636,13 @@ namespace morph {
                     j = (hexit_first_dirn>0)?(hexit_first_dirn-1):5;
                     if (hexit_first->has_neighbour (j)) {
                         hexit_neighb = hexit_first->get_neighbour(j);
-                        WLK2 ("hexit_neighb in j-1 dirn, which should be over the edge has f="
-                              << f[hexit_neighb->vi] << ", " << hexit_neighb->outputRG());
+                        //WLK2 ("hexit_neighb in j-1 dirn, which should be over the edge has f="
+                        //      << f[hexit_neighb->vi] << ", " << hexit_neighb->outputRG());
                         // Is distance to vertex nearly equal to one long hex radius?
                         float d_to_v = hexit_neighb->distanceFrom (v_init);
                         bool oneLR = abs(d_to_v - hexit_neighb->getLR()) < (hexit_neighb->d/100);
                         if (f[hexit_neighb->vi] == edgedoms[1] && oneLR) {
-                            WLK2 ("2 hexit_neighb found in 'j-1' dirn based on identity.");
+                            //WLK2 ("2 hexit_neighb found in 'j-1' dirn based on identity.");
                             found_second = true;
                             hexit_second_dirn = j;
                         }
@@ -663,9 +654,9 @@ namespace morph {
                     return v_init;
                 }
 
-                WALK ("hexit_first: "<< hexit_first->outputRG()
-                      << ", hexit: " << hexit->outputRG()
-                      << ", hexit_neighb: " << hexit_neighb->outputRG());
+                //WALK ("hexit_first: "<< hexit_first->outputRG()
+                //      << ", hexit: " << hexit->outputRG()
+                //      << ", hexit_neighb: " << hexit_neighb->outputRG());
 
                 /*
                  * D Determine rotations around the iterator hexit to make.
@@ -681,7 +672,7 @@ namespace morph {
                     hex_hex_neighb_dirn = (((hexit_first_dirn+3)%6)+1)%6;
 
                     // Rotation from hexit_first to hexit_neighb is therefore ANTI-clockwise.
-                    WLK2 ("Rotate anticlockwise around hexit");
+                    //WLK2 ("Rotate anticlockwise around hexit");
                     rot = Rotn::Anticlock;
 
                 } else if (hexit_second_dirn  == (hexit_first_dirn+1)%6) {
@@ -693,7 +684,7 @@ namespace morph {
                     hex_hex_neighb_dirn = hex_hex_neighb_dirn>0?(hex_hex_neighb_dirn-1):5;
 
                     // Rotation from hexit_first to hexit_neighb is therefore CLOCKWISE.
-                    WLK2 ("Rotate clockwise around hexit");
+                    //WLK2 ("Rotate clockwise around hexit");
                     rot = Rotn::Clock;
 
                 } // else rot == Rotn::Unknown
@@ -706,7 +697,7 @@ namespace morph {
                 // hexit->get_neighbour(hex_hex_neighb_dirn);
                 if (hexit_neighb != hexit->get_neighbour(hex_hex_neighb_dirn)) {
                     // Return?
-                    DBG ("hexit_neighb is in the WRONG direction, return v_init now");
+                    if constexpr (dbg) { std::cout << "hexit_neighb is in the WRONG direction, return v_init now\n"; }
                     next_one = v_init;
                     return next_one;
                 }
@@ -729,15 +720,15 @@ namespace morph {
                      j != last_j;
                      j  = (rot == Rotn::Anticlock)?((j+1)%6):(j>0?j-1:5) ) {
 
-                    WLK2 ("Inner hex loop, j=" << j << ", last_j=" << last_j);
+                    //WLK2 ("Inner hex loop, j=" << j << ", last_j=" << last_j);
 
                     if (!hexit->has_neighbour (j)) {
-                        WLK2 ("No neighbour in direction " << Hex::neighbour_pos(j));
+                        //WLK2 ("No neighbour in direction " << Hex::neighbour_pos(j));
                         // so edge ends
                         v_init = hexit->get_vertex_coord (j>0?j-1:5);
-                        WALK ("Edge ends; push_back very last vertex coordinate "
-                              << (j>0?j-1:5) << " for the path: ("
-                              << v_init[0] << "," << v_init[1] << ")");
+                        //WALK ("Edge ends; push_back very last vertex coordinate "
+                        //      << (j>0?j-1:5) << " for the path: ("
+                        //      << v_init[0] << "," << v_init[1] << ")");
                         path.push_back (v_init);
                         next_neighb_dom = -1.0;
                         partner_found = true;
@@ -747,59 +738,59 @@ namespace morph {
                         // If we have a neighbour, then check if it's on the other side of the edge.
                         hexit_next = hexit->get_neighbour (j);
 
-                        DBG2 ("hexit_next, " << hexit_next->outputRG()
-                              << ", which should be over the edge has f=" << f[hexit_next->vi]);
+                        if constexpr (dbg) { std::cout << "hexit_next, " << hexit_next->outputRG()
+                                                       << ", which should be over the edge has f=" << f[hexit_next->vi] << std::endl; }
                         if (f[hexit_next->vi] == edgedoms[1]) {
                             // hexit_next has identity edgedoms[1], so add vertex j
                             v_init = hexit->get_vertex_coord (j>0?j-1:5);
-                            WALK ("push_back vertex coordinate " << (j>0?j-1:5) << " for the path: ("
-                                  << v_init[0] << "," << v_init[1] << ")");
+                            //WALK ("push_back vertex coordinate " << (j>0?j-1:5) << " for the path: ("
+                            //      << v_init[0] << "," << v_init[1] << ")");
                             path.push_back (v_init);
                             // Update hexit_last
                             hexit_last = hexit_next;
 
                         } else {
-                            WLK2 ("This neighbour does not have identity = edgedoms[1] = "
-                                  << edgedoms[1]);
+                            //WLK2 ("This neighbour does not have identity = edgedoms[1] = "
+                            //             << edgedoms[1]);
                             if (f[hexit_next->vi] == edgedoms[0]) {
-                                WLK2 ("This neighbour DOES have identity = edgedoms[0] = "
-                                      << edgedoms[0]);
+                                //WLK2 ("This neighbour DOES have identity = edgedoms[0] = "
+                                //      << edgedoms[0]);
 
                                 v_init = hexit->get_vertex_coord (j>0?j-1:5);
 
                                 // This is the time to cycle around the hexes
-                                WALK ("Step to next hex");
-                                WLK2 ("Set hexit_first to " << hexit->outputRG());
+                                //WALK ("Step to next hex");
+                                //WLK2 ("Set hexit_first to " << hexit->outputRG());
                                 hexit_first = hexit;
-                                WLK2 ("Set hexit to " << hexit_next->outputRG());
+                                //WLK2 ("Set hexit to " << hexit_next->outputRG());
                                 hexit = hexit_next;
-                                WLK2 ("Set hexit_neighb to hexit_last: " << hexit_last->outputRG());
+                                //WLK2 ("Set hexit_neighb to hexit_last: " << hexit_last->outputRG());
                                 // hexit_last is the last neighbour with identity edgedoms[1]
                                 hexit_neighb = hexit_last;
-                                WLK2 ("break out of loop as hexits updated.");
+                                //WLK2 ("break out of loop as hexits updated.");
                                 break;
                             } else {
-                                WLK2 ("Neither of the edgedom identities, must be end of the edge");
+                                //WLK2 ("Neither of the edgedom identities, must be end of the edge");
                                 v_init = hexit->get_vertex_coord (j>0?j-1:5);
-                                WALK ("Edge ends; push_back final vertex coordinate " << (j>0?j-1:5)
-                                      << " for the path: ("
-                                      << v_init[0] << "," << v_init[1] << ")");
+                                //WALK ("Edge ends; push_back final vertex coordinate " << (j>0?j-1:5)
+                                //      << " for the path: ("
+                                //      << v_init[0] << "," << v_init[1] << ")");
                                 path.push_back (v_init);
                                 next_one = v_init;
                                 next_neighb_dom = f[hexit_next->vi];
-                                WLK2 ("Set next_neighb_dom to " << next_neighb_dom
-                                      << " with edgedoms "
-                                      << edgedoms[0] << "," << edgedoms[1]);
+                                //WLK2 ("Set next_neighb_dom to " << next_neighb_dom
+                                //      << " with edgedoms "
+                                //      << edgedoms[0] << "," << edgedoms[1]);
                                 partner_found = true;
                                 break;
                             }
                         }
                     }
                 }
-                WLK2 ("Finished loop around inner hex");
+            //WLK2 ("Finished loop around inner hex");
             } // end while !partner_found
 
-            WALK ("*** returning. loopcount is " << loopcount);
+            //WALK ("*** returning. loopcount is " << loopcount);
             return next_one;
         }
 
@@ -870,9 +861,9 @@ namespace morph {
             // On the first call, first_vtx should have been set to vertices.end()
             if (first_vtx.unset()) {
                 // Mark the first vertex in our domain
-                DBG2 ("Mark first vertex at " << v);
+                if constexpr (dbg) { std::cout << "Mark first vertex at " << v << std::endl; }
                 first_vtx = v;
-            } // else DBG ("Don't update first_vtx as it was already set.");
+            } // else "Don't update first_vtx as it was already set."
 
             // Find the neighbour of this vertex, if possible. Can't
             // do this if it's a boundary vertex, but nothing happens
@@ -880,15 +871,15 @@ namespace morph {
             Flt next_neighb_dom = std::numeric_limits<Flt>::max();
 
             morph::vec<Flt, 2> neighb_vtx = walk_to_neighbour (f, v, next_neighb_dom);
-            DBG2 ("walk_to_neighbour returned with vertex " << neighb_vtx);
+            if constexpr (dbg) { std::cout << "walk_to_neighbour returned with vertex " << neighb_vtx << std::endl; }
             v.vn = neighb_vtx;
 
             // Walk to the next vertex
             next_neighb_dom = std::numeric_limits<Flt>::max();
             morph::vec<Flt, 2> next_vtx = walk_to_next (f, v, next_neighb_dom);
-            DBG2 ("starting from " << v.v << ", walk_to_next returned with vertex " << next_vtx);
+            if constexpr (dbg) { std::cout << "starting from " << v.v << ", walk_to_next returned with vertex " << next_vtx << std::endl; }
 
-            DBG2 ("Closing dv at " << dv->v << " with f=" << dv->f << " [" << dv->neighb << "]");
+            if constexpr (dbg) { std::cout << "Closing dv at " << dv->v << " with f=" << dv->f << " [" << dv->neighb << "]\n"; }
             dv->closed = true;
             domain.vertices.push_back (v);
 
@@ -896,22 +887,24 @@ namespace morph {
             if (first_vtx.compare (next_vtx) == false) {
                 // Find a dv which matches next_vtx.
                 bool matched_next_vertex = false;
-                DBG2 ("Search vertices for " << next_vtx);
+                if constexpr (dbg) { std::cout << "Search vertices for " << next_vtx << std::endl; }
                 while (dv2 != vertices.end()) {
                     // Instead of: dv2 = next_vtx;, do:
                     if (dv2->closed == false && dv2->compare (next_vtx) == true) {
                         // vertex has correct coordinate. Check it has correct neighbours.
-                        DBG2 ("Coordinate match. Is dv2->f == v.f? " << dv2->f <<" == "<< v.f << "?");
-                        DBG2 ("Is dv2->neighb[0] == next_neighb_dom? " << dv2->neighb[0]
-                              << " == " << next_neighb_dom << "?");
-                        DBG2 ("Is dv2->neighb[1] == v.neighb[0]? " << dv2->neighb[1]
-                              << " == " << v.neighb[0] << "?");
-                        DBG2 ("(v.neighb[1] = " << v.neighb[1] << ")");
+                        if constexpr (dbg) {
+                            std::cout << "Coordinate match. Is dv2->f == v.f? " << dv2->f <<" == "<< v.f << "?\n";
+                            std::cout << "Is dv2->neighb[0] == next_neighb_dom? " << dv2->neighb[0]
+                                      << " == " << next_neighb_dom << "?\n";
+                            std::cout << "Is dv2->neighb[1] == v.neighb[0]? " << dv2->neighb[1]
+                                      << " == " << v.neighb[0] << "?\n";
+                            std::cout << "(v.neighb[1] = " << v.neighb[1] << ")\n";
+                        }
                         if (dv2->f == v.f
                             && dv2->neighb[1] == v.neighb[0]
                             && dv2->neighb[0] == next_neighb_dom) {
                             // Match for current dv2
-                            DBG2 ("Match");
+                            if constexpr (dbg) { std::cout << "Match\n"; }
                             matched_next_vertex = true;
                             dv = dv2;
                             break;
@@ -920,12 +913,12 @@ namespace morph {
                     ++dv2;
                 }
                 if (!matched_next_vertex) {
-                    DBG2 ("Failed to find a match for the next_vtx which walk_to_next found. Return false.");
+                    if constexpr (dbg) { std::cout << "Failed to find a match for the next_vtx which walk_to_next found. Return false.\n"; }
                     return false;
                 }
 
             } else {
-                DBG2 ("walk_to_next() arrived back at the first vertex. Return true");
+                if constexpr (dbg) { std::cout << "walk_to_next() arrived back at the first vertex. Return true\n"; }
                 return true;
             }
 
@@ -933,11 +926,11 @@ namespace morph {
             // recursively, or exiting if we got to the start of the domain perimeter. We
             // shouldn't get anywhere close to the recursion limit in this system.
             if (dv->onBoundary == false) {
-                DBG2 ("Recursively call process_domain...");
+                if constexpr (dbg) { std::cout << "Recursively call process_domain...\n"; }
                 return process_domain (hg, f, dv, vertices, domain, first_vtx);
             }
 
-            DBG2 ("Arrived at a boundary vertex. Return false (because we didn't find a full domain");
+            if constexpr (dbg) { std::cout << "Arrived at a boundary vertex. Return false (because we didn't find a full domain\n"; }
             return false;
         }
 
@@ -973,7 +966,7 @@ namespace morph {
                 DirichDom<Flt> one_domain;
                 DirichVtx<Flt> first_vtx;
                 if (dv->hi->boundaryHex() == true) {
-                    DBG2 ("Don't process hexes on the boundary");
+                    if constexpr (dbg) { std::cout << "Don't process hexes on the boundary\n"; }
                     dv->closed = true;
                     dv++;
                 } else {
@@ -982,7 +975,7 @@ namespace morph {
                     if (success) {
                         // Set the identity, f of the domain
                         one_domain.f = one_domain.vertices.front().f;
-                        DBG2 ("Found outline of a domain (ID " << one_domain.f << ")");
+                        if constexpr (dbg) { std::cout << "Found outline of a domain (ID " << one_domain.f << ")\n"; }
 
                         // Calculate the area of the domain.
                         one_domain.compute_area (hg, f);

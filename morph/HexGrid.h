@@ -325,7 +325,7 @@ namespace morph {
             // After creating hexen list, need to set neighbour relations in each Hex, as loaded in d_ne,
             // etc.
             for (morph::Hex& _h : this->hexen) {
-                DBG ("Set neighbours for Hex " << _h.outputRG());
+                // Set neighbours for Hex " << _h.outputRG()
                 // For each Hex, six loops through hexen:
                 if (_h.has_ne() == true) {
                     bool matched = false;
@@ -2889,7 +2889,7 @@ namespace morph {
             float halfX = this->x_span/2.0f;
             unsigned int maxRing = std::abs(std::ceil(halfX/this->d));
 
-            DBG ("Creating hexagonal hex grid with maxRing: " << maxRing);
+            // "Creating hexagonal hex grid with maxRing: " << maxRing
 
             // The "vector iterator" - this is an identity iterator that is added to each Hex in the grid.
             unsigned int vi = 0;
@@ -3246,7 +3246,7 @@ namespace morph {
                 prevRing = nextPrevRing;
                 nextPrevRing = tmp;
             }
-            DBG ("Finished creating " << this->hexen.size() << " hexes in " << maxRing << " rings.");
+            // "Finished creating " << this->hexen.size() << " hexes in " << maxRing << " rings."
         }
 
         /*!

@@ -13,7 +13,6 @@
 #include <iomanip>
 #include <cmath>
 #include <hdf5.h>
-#include <morph/MorphDbg.h>
 
 /*
  * Macros for testing neighbours. The step along for neighbours on the
@@ -375,7 +374,6 @@ namespace morph {
             // Create a HexGrid. 3 is the 'x span' which determines how
             // many hexes are initially created. 0 is the z co-ordinate for the HexGrid.
             this->hg = std::make_unique<HexGrid>(this->hextohex_d, this->hexspan, 0);
-            DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
 
             // Either set a boundary using the svgpath, or set it as an ellipse
             if (this->svgpath != "") {
@@ -390,12 +388,9 @@ namespace morph {
             this->hg->computeDistanceToBoundary();
             // Vector size comes from number of Hexes in the HexGrid
             this->nhex = this->hg->num();
-            DBG ("After setting boundary, HexGrid has " << this->nhex << " hexes");
             // Spatial d comes from the HexGrid, too.
             this->set_d(this->hg->getd());
-            DBG ("HexGrid says d = " << this->d);
             this->set_v(this->hg->getv());
-            DBG ("HexGrid says v = " << this->v);
         }
 
         /*!

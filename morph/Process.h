@@ -27,7 +27,6 @@ extern "C" {
 #include <sys/poll.h>
 #include <signal.h>
 }
-#include <morph/MorphDbg.h>
 
 #define PROCESS_MAIN_APP 0
 #define PROCESS_FAILURE -1
@@ -114,59 +113,63 @@ namespace morph {
         }
 
     private:
+
+        static constexpr bool dbg = false;
+        static constexpr bool dbg2 = false;
+
         //! Close any open file descriptors.
         void closeAllFileDescriptors()
         {
             if (this->parentToChild[PROCESS_WRITING_END] > 0) {
-                DBG ("close parentToChild[PROCESS_WRITING_END]...");
+                if constexpr (dbg) { std::cout << "close parentToChild[PROCESS_WRITING_END]...\n"; }
                 if (close (this->parentToChild[PROCESS_WRITING_END])) {
                     // Normally succeeds
-                    DBG ("Failed to close parentToChild[PROCESS_WRITING_END]");
+                    if constexpr (dbg) { std::cout << "Failed to close parentToChild[PROCESS_WRITING_END]\n"; }
                 }
                 this->parentToChild[PROCESS_WRITING_END] = 0;
             }
 
             if (this->parentToChild[PROCESS_READING_END] > 0) {
-                DBG ("Unexpectedly closing parentToChild[PROCESS_READING_END]...");
+                if constexpr (dbg) { std::cout << "Unexpectedly closing parentToChild[PROCESS_READING_END]...\n"; }
                 if (close (this->parentToChild[PROCESS_READING_END])) {
                     // Normally already closed in Process::start
-                    DBG ("Failed to close parentToChild[PROCESS_READING_END]");
+                    if constexpr (dbg) { std::cout << "Failed to close parentToChild[PROCESS_READING_END]\n"; }
                 }
                 this->parentToChild[PROCESS_READING_END] = 0;
             }
 
             if (this->childToParent[PROCESS_READING_END] > 0) {
-                DBG ("close childToParent[PROCESS_READING_END]...");
+                if constexpr (dbg) { std::cout << "close childToParent[PROCESS_READING_END]...\n"; }
                 if (close (this->childToParent[PROCESS_READING_END])) {
                     // Normally succeeds
-                    DBG ("Failed to close childToParent[PROCESS_READING_END]");
+                    if constexpr (dbg) { std::cout << "Failed to close childToParent[PROCESS_READING_END]\n"; }
                 }
                 this->childToParent[PROCESS_READING_END] = 0;
             }
 
             if (this->childToParent[PROCESS_WRITING_END] > 0) {
-                DBG ("Unexpectedly closing childToParent[PROCESS_WRITING_END]...");
+                if constexpr (dbg) { std::cout << "Unexpectedly closing childToParent[PROCESS_WRITING_END]...\n"; }
                 if (close (this->childToParent[PROCESS_WRITING_END])) {
                     // Normally already closed in Process::start
-                    DBG ("Failed to close childToParent[PROCESS_WRITING_END]");
+                    if constexpr (dbg) { std::cout << "Failed to close childToParent[PROCESS_WRITING_END]\n"; }
                 }
                 this->childToParent[PROCESS_WRITING_END] = 0;
             }
 
             if (this->childErrToParent[PROCESS_READING_END] > 0) {
-                DBG ("close childErrToParent[PROCESS_READING_END]...");
+                if constexpr (dbg) { std::cout << "close childErrToParent[PROCESS_READING_END]...\n"; }
                 if (close (this->childErrToParent[PROCESS_READING_END])) {
                     // Normally succeeds
-                    DBG ("Failed to close childErrToParent[PROCESS_READING_END]");
+                    if constexpr (dbg) { std::cout << "Failed to close childErrToParent[PROCESS_READING_END]\n"; }
                 }
                 this->childErrToParent[PROCESS_READING_END] = 0;
             }
 
             if (this->childErrToParent[PROCESS_WRITING_END] > 0) {
-                DBG ("Unexpectedly closing childErrToParent[PROCESS_READING_END]...");
+                if constexpr (dbg) { std::cout << "Unexpectedly closing childErrToParent[PROCESS_READING_END]...\n"; }
                 if (!close (this->childErrToParent[PROCESS_WRITING_END])) {
                     // Normally already closed in Process::start
-                    DBG ("Failed to close childErrToParent[PROCESS_READING_END]");
+                    if constexpr (dbg) { std::cout << "Failed to close childErrToParent[PROCESS_READING_END]\n"; }
                 }
                 this->childErrToParent[PROCESS_WRITING_END] = 0;
             }
@@ -185,7 +188,7 @@ namespace morph {
         {
             if (this->running()) { return false; }
             if (!keepCallbacks && this->callbacks != nullptr) {
-                DBG ("Resetting callbacks pointer");
+                if constexpr (dbg) { std::cout << "Resetting callbacks pointer\n"; }
                 this->callbacks = nullptr;
             }
             this->signalledStart = false;
@@ -232,7 +235,7 @@ namespace morph {
             if (pipe(this->parentToChild) == -1
                 || pipe(this->childToParent) == -1
                 || pipe(this->childErrToParent) == -1) {
-                DBG ("Failed to set up pipes, return PROCESS_FAILURE" << std::flush);
+                if constexpr (dbg) { std::cout << "Failed to set up pipes, return PROCESS_FAILURE" << std::endl; }
                 this->error = PROCESSNOMOREPIPES;
                 return PROCESS_FAILURE;
             }
@@ -240,7 +243,7 @@ namespace morph {
             this->pid = fork();
             switch (this->pid) {
             case -1:
-                DBG ("fork() returned -1, return PROCESS_FAILURE" << std::flush);
+                if constexpr (dbg) { std::cout << "fork() returned -1, return PROCESS_FAILURE" << std::endl; }
                 this->error = PROCESSFORKFAILED;
                 return PROCESS_FAILURE;
             case 0:
@@ -271,7 +274,6 @@ namespace morph {
                 for (i=myargs.begin(); i!=myargs.end(); i++) {
                     argarray[j] = static_cast<char*>(malloc ( (1+(*i).size()) * sizeof (char) ));
                     snprintf (argarray[j++], 1+(*i).size(), "%s", (*i).c_str());
-                    DBG (*i);
                 }
                 argarray[j] = NULL;
 
@@ -280,7 +282,7 @@ namespace morph {
                     usleep (this->pauseBeforeStart);
                 }
 
-                DBG ("About to execute '" + program + "' with those arguments..");
+                if constexpr (dbg) { std::cout << "About to execute '" + program + "' with those arguments..\n"; }
 
                 execv (program.c_str(), argarray);
 
@@ -349,7 +351,7 @@ namespace morph {
                         this->callbacks->startedSignal (this->progName);
                     }
                     this->signalledStart = true;
-                    DBG ("Process::probeProcess set signalledStart and signalled the start...");
+                    if constexpr (dbg) { std::cout << "Process::probeProcess set signalledStart and signalled the start...\n"; }
                 }
             }
 
@@ -358,7 +360,7 @@ namespace morph {
                 if (this->callbacks != nullptr) {
                     this->callbacks->errorSignal (this->error);
                 }
-                DBG ("have error in probeProcess, returning");
+                if constexpr (dbg) { std::cout << "have error in probeProcess, returning\n"; }
                 return;
             }
 
@@ -378,15 +380,15 @@ namespace morph {
             // Poll for data
             int prtn = poll (this->p, 2, 0);
             if (prtn > 0) {
-                DBG2 ("poll returned " << prtn);
+                if constexpr (dbg2) { std::cout << "poll returned " << prtn << "\n"; }
             } else if (prtn == 0) {
                 // No revents from poll
             } else {
-                DBG ("error from poll() call");
+                if constexpr (dbg) { std::cout << "error from poll() call\n"; }
             }
 
             if (this->p[0].revents & POLLNVAL || this->p[1].revents & POLLNVAL) {
-                DBG ("Process::probeProcess: pipes closed, process must have crashed");
+                if constexpr (dbg) { std::cout << "Process::probeProcess: pipes closed, process must have crashed\n"; }
                 this->error = PROCESSCRASHED;
                 if (this->callbacks != nullptr) {
                     this->callbacks->errorSignal (this->error);
@@ -416,7 +418,7 @@ namespace morph {
                         this->callbacks->processFinishedSignal (this->progName);
                     }
                     this->pid = 0;
-                    DBG ("Process finished, returning");
+                    if constexpr (dbg) { std::cout << "Process finished, returning\n"; }
                     return;
                 } else if (rtn == -1) {
                     theError = errno;
@@ -443,7 +445,7 @@ namespace morph {
         // Read stdout pipe, without blocking.
         std::string readAllStandardOutput() const
         {
-            DBG ("Called");
+            if constexpr (dbg) { std::cout << "Called\n"; }
             std::string s;
             int bytes = 0;
             char c;
@@ -503,7 +505,7 @@ namespace morph {
                 i++;
             }
             if (this->pid>0) {
-                DBG ("The process started!");
+                if constexpr (dbg) { std::cout << "The process started!\n"; }
                 if (this->callbacks != nullptr) {
                     this->callbacks->startedSignal (this->progName);
                 }

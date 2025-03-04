@@ -199,7 +199,7 @@ namespace morph {
                     unsigned int j = *i;
                     // Find out which genome sect j is in.
                     unsigned int gi = j / genosect_w;
-                    //DBG ("Genome section gi= " << gi << " which is an offset of " << (gi*genosect_w));
+                    // ("Genome section gi= " << gi << " which is an offset of " << (gi*genosect_w));
                     genosect_t gsect = (*this)[gi];
 
                     j -= (gi*genosect_w);
@@ -342,11 +342,11 @@ namespace morph {
                 for (unsigned int i = 0; i < K; ++i) {
                     if (acanal_set.test(i) == true) {
                         canal++;
-                        //DBG2 ("Bit " << i << "=1 produces a consistent output value");
+                        // ("Bit " << i << "=1 produces a consistent output value");
                     }
                     if (acanal_unset.test(i) == true) {
                         canal++;
-                        //DBG2 ("Bit " << i << "=0 produces a consistent output value");
+                        // ("Bit " << i << "=0 produces a consistent output value");
                     }
                 }
 
