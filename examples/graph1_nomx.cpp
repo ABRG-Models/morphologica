@@ -6,7 +6,7 @@
 int main()
 {
     // Set up a morph::Visual 'scene environment'.
-    morph::VisualMX v(1024, 768, "Made with morph::GraphVisual");
+    morph::VisualNoMX v(1024, 768, "Made with morph::GraphVisual"); // global GL function aliases with VisualNoMX
     // Create a GraphVisual object (obtaining a unique_ptr to the object) with a spatial offset within the scene of 0,0,0
     auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
     // This mandatory line of boilerplate code sets the parent pointer in GraphVisual and binds some functions
