@@ -281,7 +281,7 @@ namespace morph {
 
     public:
 #ifdef GLAD_GL // Only define if GL was included with GLAD
-        void init_glad (GLADloadfunc procaddressfn) // need basic version of this in case client code does not use glad
+        void init_glad (GLADloadfunc procaddressfn)
         {
             this->glfn_version = gladLoadGL (procaddressfn);
             if (this->glfn_version == 0) {

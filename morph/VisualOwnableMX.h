@@ -309,8 +309,7 @@ namespace morph {
         }
 
     public:
-#ifdef GLAD_GL // Only define if GL was included with GLAD
-        void init_glad (GLADloadfunc procaddressfn) // need basic version of this in case client code does not use glad
+        void init_glad (GLADloadfunc procaddressfn)
         {
             // Create the OpenGL function context - a GladGLContext*
             this->glfn = this->create_gladgl_context (procaddressfn);
@@ -320,7 +319,7 @@ namespace morph {
                 this->free_gladgl_context (this->glfn);
             }
         }
-#endif
+
         template <typename T>
         void bindmodel (std::unique_ptr<T>& model)
         {
@@ -453,7 +452,7 @@ namespace morph {
             // have to set the get_shaderprogs function here:
             this->bindmodel (this->coordArrows);
             // And NOW we can proceed to init:
-            this->coordArrows->init (this->coordArrowsLength, this->coordArrowsThickness, this->coordArrowsEm); // sets up text
+            this->coordArrows->init (this->coordArrowsLength, this->coordArrowsThickness, this->coordArrowsEm);
             this->coordArrows->finalize(); // VisualModel::finalize releases context (normally this is the right thing)...
             this->setContext();            // ...but we've got more work to do, so re-acquire context (if we're managing it)
 
