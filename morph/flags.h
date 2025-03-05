@@ -35,15 +35,6 @@
  *
  * fl.flip (myflags::flag_one);
  *
- * The (more readable) C++20 equivalent to the C++17 compatible template declaration:
- * template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
- * is:
- * template <typename E>
- * requires std::is_enum_v<E>
- *
- * One or two other C++20 improvements could be made if and when morphologica goes C++20
- * by default.
- *
  * This code was adapted from an idea in the Vulkan code base via
  * https://gist.github.com/fschoenberger/54c5342f220af510e1f78308a8994a45
  *
@@ -58,7 +49,7 @@
 
 namespace morph {
 
-    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    template <typename E> requires std::is_enum_v<E>
     struct flags
     {
         using I = std::underlying_type_t<E>;
@@ -66,7 +57,7 @@ namespace morph {
         // constructors
         constexpr flags() noexcept : bits(I{0}) {}
         constexpr flags(E flag) noexcept : bits( I{1} << static_cast<I>(flag) ) {}
-        constexpr flags(flags<E> const& rhs) noexcept : bits(rhs.bits) {} // can default in C++20
+        constexpr flags(flags<E> const& rhs) noexcept = default;
         constexpr explicit flags(I _bits) noexcept : bits(_bits) {}
 
         // logical operator
@@ -79,11 +70,7 @@ namespace morph {
         constexpr flags<E> operator~() const noexcept { return flags<E>(bits ^ I{-1}); }
 
         // assignment operators
-        constexpr flags<E>& operator=(flags<E> const& rhs) noexcept
-        {
-            this->bits = rhs.bits;
-            return *this;
-        }; // can default this function in C++20
+        constexpr flags<E>& operator=(flags<E> const& rhs) noexcept = default;
 
         constexpr flags<E>& operator|=(flags<E> const& rhs) noexcept
         {
@@ -178,44 +165,44 @@ namespace morph {
     };
 
     // bitwise operators
-    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    template <typename E> requires std::is_enum_v<E>
     constexpr flags<E> operator&(E flag, flags<E> const& flags) noexcept
     {
         return flags.operator&(flag);
     }
 
-    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    template <typename E> requires std::is_enum_v<E>
     constexpr flags<E> operator|(E flag, flags<E> const& flags) noexcept
     {
         return flags.operator|(flag);
     }
 
-    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    template <typename E> requires std::is_enum_v<E>
     constexpr flags<E> operator^(E flag, flags<E> const& flags) noexcept
     {
         return flags.operator^(flag);
     }
 
     // bitwise operators on E
-    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    template <typename E> requires std::is_enum_v<E>
     inline constexpr flags<E> operator&(E lhs, E rhs) noexcept
     {
         return flags<E>(lhs) & rhs;
     }
 
-    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    template <typename E> requires std::is_enum_v<E>
     inline constexpr flags<E> operator|(E lhs, E rhs) noexcept
     {
         return flags<E>(lhs) | rhs;
     }
 
-    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    template <typename E> requires std::is_enum_v<E>
     inline constexpr flags<E> operator^(E lhs, E rhs) noexcept
     {
         return flags<E>(lhs) ^ rhs;
     }
 
-    template <typename E, typename std::enable_if<std::is_enum<E>{}, bool>::type = true>
+    template <typename E> requires std::is_enum_v<E>
     inline constexpr flags<E> operator~(E flag) noexcept
     {
         return ~(flags<E>(flag));
