@@ -68,6 +68,10 @@ namespace morph {
 
             this->init_resources();
             this->init_gl();
+
+            // Special tasks: re-bind coordArrows and title text
+            this->bindextra (this->coordArrows);
+            this->bindextra (this->textModel);
         }
 
         //! Deconstructor destroys GLFW/Qt window and deregisters access to VisualResources
@@ -156,6 +160,13 @@ namespace morph {
         void bindmodel (std::unique_ptr<T>& model)
         {
             morph::VisualBase<glver>::template bindmodel<T> (model);
+            model->setContext = &morph::VisualBase<glver>::set_context;
+            model->releaseContext = &morph::VisualBase<glver>::release_context;
+        }
+
+        template <typename T>
+        void bindextra (std::unique_ptr<T>& model)
+        {
             model->setContext = &morph::VisualBase<glver>::set_context;
             model->releaseContext = &morph::VisualBase<glver>::release_context;
         }
