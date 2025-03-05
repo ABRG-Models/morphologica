@@ -41,6 +41,8 @@ namespace morph {
         //! destroy gl buffers in the deconstructor
         virtual ~VisualModelImpl()
         {
+            // Explicitly clear owned VisualTextModels
+            this->texts.clear();
             if (this->vbos != nullptr) {
                 GladGLContext* _glfn = this->get_glfn(this->parentVis);
                 _glfn->DeleteBuffers (this->numVBO, this->vbos.get());
