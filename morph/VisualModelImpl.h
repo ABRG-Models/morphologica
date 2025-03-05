@@ -40,6 +40,8 @@ namespace morph {
         //! destroy gl buffers in the deconstructor
         virtual ~VisualModelImpl()
         {
+            // Explicitly clear owned VisualTextModels
+            this->texts.clear();
             if (this->vbos != nullptr) {
                 glDeleteBuffers (this->numVBO, this->vbos.get());
                 glDeleteVertexArrays (1, &this->vao);

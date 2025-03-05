@@ -71,6 +71,13 @@ namespace morph {
         //! Deconstruct gl memory/context
         void deconstructCommon()
         {
+            // Explicitly deconstruct any owned VisualModels
+            this->vm.clear();
+            // Explicitly deconstruct coordArrows, textModel and texts here
+            this->coordArrows.reset(nullptr);
+            this->textModel.reset(nullptr);
+            for (auto& t : this->texts) { t.reset(nullptr); }
+
             if (this->shaders.gprog) {
                 glDeleteProgram (this->shaders.gprog);
                 this->shaders.gprog = 0;
