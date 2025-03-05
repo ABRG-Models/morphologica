@@ -478,11 +478,11 @@ namespace morph {
     protected:
 
         //! The model-specific view matrix.
-        mat44<float> viewmatrix;
+        mat44<float> viewmatrix = {};
         //! The model-specific scene view matrix.
-        mat44<float> scenematrix;
+        mat44<float> scenematrix = {};
         //! An additional scaling applied to viewmatrix to scale the size of the model [see render()]
-        mat44<float> model_scaling;
+        mat44<float> model_scaling = {};
 
         /*!
          * The spatial offset of this VisualModel within the morph::Visual 'scene
@@ -491,14 +491,14 @@ namespace morph {
          * model->world transformation - it's applied as a translation in
          * VisualModel::viewmatrix.
          */
-        vec<float> mv_offset;
+        vec<float> mv_offset = { 0.0f, 0.0f, 0.0f };
         //! Model view rotation
-        quaternion<float> mv_rotation;
+        quaternion<float> mv_rotation = {};
 
         //! Scene view offset
-        vec<float> sv_offset;
+        vec<float> sv_offset = { 0.0f, 0.0f, 0.0f };
         //! Scene view rotation
-        quaternion<float> sv_rotation;
+        quaternion<float> sv_rotation = {};
 
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
@@ -516,19 +516,19 @@ namespace morph {
          */
 
         //! The OpenGL Vertex Array Object
-        GLuint vao;
+        GLuint vao = 0;
 
         //! Vertex Buffer Objects stored in an array
         std::unique_ptr<GLuint[]> vbos;
 
         //! CPU-side data for indices
-        std::vector<GLuint> indices;
+        std::vector<GLuint> indices = {};
         //! CPU-side data for vertex positions
-        std::vector<float> vertexPositions;
+        std::vector<float> vertexPositions = {};
         //! CPU-side data for vertex normals
-        std::vector<float> vertexNormals;
+        std::vector<float> vertexNormals = {};
         //! CPU-side data for vertex colours
-        std::vector<float> vertexColors;
+        std::vector<float> vertexColors = {};
 
         static constexpr float _max = std::numeric_limits<float>::max();
         static constexpr float _low = std::numeric_limits<float>::lowest();

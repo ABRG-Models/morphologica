@@ -19,6 +19,8 @@
 #include <morph/TextGeometry.h>
 #include <morph/TextFeatures.h>
 #include <morph/colour.h>
+#include <string>
+#include <sstream>
 #include <vector>
 #include <array>
 #include <map>
@@ -139,6 +141,30 @@ namespace morph {
         float width() const { return this->extents[1] - this->extents[0]; }
         float height() const { return this->extents[3] - this->extents[2]; }
 
+        std::string getText() const
+        {
+            std::string s = {};
+            for (auto c : txt) { s += unicode::toUtf8 (c); }
+            return s;
+        }
+
+        std::string debugText() const
+        {
+            std::stringstream ss;
+            for (auto c : txt) { ss << unicode::toUtf8 (c); }
+            ss << "--->\n";
+            ss << "mv_offset=       " << this->mv_offset << "\n"
+               << "mv_rotation=     " << this->mv_rotation << "\n"
+               << "parent_rotation= " << this->parent_rotation << "\n"
+               << "sv_offset=       " << this->sv_offset << "\n"
+               << "sv_rotation=     " << this->sv_rotation << "\n"
+               << "viewmatrix=\n" << this->viewmatrix << "\n"
+               << "scenematrix=\n" << this->scenematrix << "\n"
+               << "----------------------\n";
+
+            return ss.str();
+        }
+
     protected:
         static constexpr bool debug_textquads = false;
 
@@ -244,55 +270,55 @@ namespace morph {
         //! VisualTextModel is the letter 'x' within a CoordArrows VisualModel, then the
         //! model-view offset here should be the CoordArrows model-view offset PLUS the
         //! length of the CoordArrow x axis length.
-        vec<float> mv_offset;
+        vec<float> mv_offset = { 0.0f };
         //! The model-view rotation of this text object. mv_offset and mv_rotation are
         //! together used to compute viewmatrix. Keep a copy so that it is easy to reset
         //! the viewmatrix and recompute it with either a new offset or a new rotation.
-        quaternion<float> mv_rotation;
+        quaternion<float> mv_rotation = {};
 
         //! A rotation of the parent model
-        quaternion<float> parent_rotation;
+        quaternion<float> parent_rotation = {};
 
         //! Scene view offset
-        vec<float> sv_offset;
+        vec<float> sv_offset = { 0.0f };
         //! Scene view rotation
-        quaternion<float> sv_rotation;
+        quaternion<float> sv_rotation = {};
         //! The text-model-specific view matrix and a scene matrix
-        mat44<float> viewmatrix;
+        mat44<float> viewmatrix = {};
         //! Before, I wrote: We protect the scene matrix as updating it with the parent
         //! model's scene matrix likely involves also adding an additional
         //! translation. Now, I'm still slightly confused as to whether I *need* to have a
         //! copy of the scenematrix *here*.
-        mat44<float> scenematrix;
+        mat44<float> scenematrix = {};
 
         //! The text string stored for debugging
         std::basic_string<char32_t> txt;
         //! The Quads that form the 'medium' for the text textures. 12 float = 4 corners
-        std::vector<std::array<float,12>> quads;
+        std::vector<std::array<float,12>> quads = {};
         //! left, right, top and bottom extents of the text for this
         //! VisualTextModel. setupText should modify these as it sets up quads. Order of
         //! numbers is left, right, bottom, top
         vec<float, 4> extents = { 1e7, -1e7, 1e7, -1e7 };
         //! The texture ID for each quad - so that we draw the right texture image over each quad.
-        std::vector<unsigned int> quad_ids;
+        std::vector<unsigned int> quad_ids = {};
         //! Position within vertex buffer object (if I use an array of VBO)
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, textureVBO, numVBO };
         //! The OpenGL Vertex Array Object
-        GLuint vao;
+        GLuint vao = 0;
         //! Single vbo to use as in example
-        GLuint vbo;
+        GLuint vbo = 0;
         //! Vertex Buffer Objects stored in an array
         std::unique_ptr<GLuint[]> vbos;
         //! CPU-side data for indices
-        std::vector<GLuint> indices;
+        std::vector<GLuint> indices = {};
         //! CPU-side data for quad vertex positions
-        std::vector<float> vertexPositions;
+        std::vector<float> vertexPositions = {};
         //! CPU-side data for quad vertex normals
-        std::vector<float> vertexNormals;
+        std::vector<float> vertexNormals = {};
         //! CPU-side data for vertex colours
-        std::vector<float> vertexColors;
+        std::vector<float> vertexColors = {};
         //! data for textures
-        std::vector<float> vertexTextures;
+        std::vector<float> vertexTextures = {};
         //! A model-wide alpha value for the shader
         float alpha = 1.0f;
         //! If true, then calls to VisualModel::render should return
