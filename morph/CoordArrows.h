@@ -33,7 +33,6 @@ namespace morph {
             this->lengths = _lengths;
             this->thickness = _thickness;
             this->em = _em;
-            this->initAxisLabels();
         }
 
         //! Make sure coord arrow colours are ok on the given background colour. Call this *after* finalize.
@@ -68,22 +67,19 @@ namespace morph {
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
                 auto vtm1 = this->makeVisualTextModel (tfca);
-                vtm1->setSceneTranslation (toffset);
-                vtm1->setupText (this->x_label);
+                vtm1->setupText (this->x_label, toffset);
                 this->texts.push_back (std::move(vtm1));
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
                 auto vtm2 = this->makeVisualTextModel (tfca);
-                vtm2->setSceneTranslation (toffset);
-                vtm2->setupText (this->y_label);
+                vtm2->setupText (this->y_label, toffset);
                 this->texts.push_back (std::move(vtm2));
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
                 auto vtm3 = this->makeVisualTextModel (tfca);
-                vtm3->setSceneTranslation (toffset);
-                vtm3->setupText (this->z_label);
+                vtm3->setupText (this->z_label, toffset);
                 this->texts.push_back (std::move(vtm3));
 
                 if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
@@ -121,6 +117,8 @@ namespace morph {
             reloffset[2] += this->lengths[2];
             this->computeSphere (reloffset, z_axis_col, this->thickness*this->lengths[0]/40.0);
             this->computeTube (zerocoord, reloffset, z_axis_col, z_axis_col, this->thickness*this->lengths[0]/80.0);
+
+            this->initAxisLabels();
         }
 
         //! The lengths of the x, y and z arrows.
