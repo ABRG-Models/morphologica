@@ -161,43 +161,43 @@ namespace morph {
 
             std::list<morph::Hex>::iterator hi = this->hexen.begin();
             while (hi != this->hexen.end()) {
+                if (hi->erased() == false) {
+                    if (hi->has_ne() == true) {
+                        this->d_ne[hi->di] = hi->ne->di;
+                    } else {
+                        this->d_ne[hi->di] = -1;
+                    }
 
-                if (hi->has_ne() == true) {
-                    this->d_ne[hi->di] = hi->ne->di;
-                } else {
-                    this->d_ne[hi->di] = -1;
+                    if (hi->has_nne() == true) {
+                        this->d_nne[hi->di] = hi->nne->di;
+                    } else {
+                        this->d_nne[hi->di] = -1;
+                    }
+
+                    if (hi->has_nnw() == true) {
+                        this->d_nnw[hi->di] = hi->nnw->di;
+                    } else {
+                        this->d_nnw[hi->di] = -1;
+                    }
+
+                    if (hi->has_nw() == true) {
+                        this->d_nw[hi->di] = hi->nw->di;
+                    } else {
+                        this->d_nw[hi->di] = -1;
+                    }
+
+                    if (hi->has_nsw() == true) {
+                        this->d_nsw[hi->di] = hi->nsw->di;
+                    } else {
+                        this->d_nsw[hi->di] = -1;
+                    }
+
+                    if (hi->has_nse() == true) {
+                        this->d_nse[hi->di] = hi->nse->di;
+                    } else {
+                        this->d_nse[hi->di] = -1;
+                    }
                 }
-
-                if (hi->has_nne() == true) {
-                    this->d_nne[hi->di] = hi->nne->di;
-                } else {
-                    this->d_nne[hi->di] = -1;
-                }
-
-                if (hi->has_nnw() == true) {
-                    this->d_nnw[hi->di] = hi->nnw->di;
-                } else {
-                    this->d_nnw[hi->di] = -1;
-                }
-
-                if (hi->has_nw() == true) {
-                    this->d_nw[hi->di] = hi->nw->di;
-                } else {
-                    this->d_nw[hi->di] = -1;
-                }
-
-                if (hi->has_nsw() == true) {
-                    this->d_nsw[hi->di] = hi->nsw->di;
-                } else {
-                    this->d_nsw[hi->di] = -1;
-                }
-
-                if (hi->has_nse() == true) {
-                    this->d_nse[hi->di] = hi->nse->di;
-                } else {
-                    this->d_nse[hi->di] = -1;
-                }
-
                 ++hi;
             }
         }
@@ -996,7 +996,12 @@ namespace morph {
          *
          * return The number of hexes in the grid.
          */
-        unsigned int num() const { return this->hexen.size(); }
+        unsigned int num() const
+        {
+            unsigned int _num = 0;
+            for (auto h : this->hexen) { _num += h.erased() ? 0 : 1; }
+            return _num;
+        }
 
         /*!
          * \brief Obtain the vector index of the last Hex in hexen.
@@ -1191,7 +1196,7 @@ namespace morph {
             this->d_clear();
             // Now raster through the hexes, building the d_ vectors.
             while (hi != this->hexen.end()) {
-                this->d_push_back (hi);
+                if (hi->erased() == false) { this->d_push_back (hi); }
                 hi++;
             }
             // Set up the neighbour relations
@@ -3864,11 +3869,9 @@ namespace morph {
                 if (hi->testFlags(HEX_INSIDE_BOUNDARY) == false) {
                     // When erasing a Hex, I need to update the neighbours of its neighbours.
                     hi->disconnectNeighbours();
-                    // Having disconnected the neighbours, erase the Hex.
-                    hi = this->hexen.erase (hi);
-                } else {
-                    ++hi;
+                    hi->setErased();
                 }
+                ++hi;
             }
             // The Hex::vi indices need to be re-numbered.
             this->renumberVectorIndices();
@@ -3887,10 +3890,9 @@ namespace morph {
             while (hi != this->hexen.end()) {
                 if (hi->insideDomain() == false) {
                     hi->disconnectNeighbours();
-                    hi = this->hexen.erase (hi);
-                } else {
-                    ++hi;
+                    hi->setErased();
                 }
+                ++hi;
             }
             this->renumberVectorIndices();
             this->gridReduced = true;
@@ -3977,8 +3979,10 @@ namespace morph {
             this->vhexen.clear();
             auto hi = this->hexen.begin();
             while (hi != this->hexen.end()) {
-                hi->vi = vi++;
-                this->vhexen.push_back (&(*hi));
+                if (!hi->erased()) {
+                    hi->vi = vi++;
+                    this->vhexen.push_back (&(*hi));
+                }
                 ++hi;
             }
         }

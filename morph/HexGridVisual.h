@@ -322,6 +322,12 @@ namespace morph {
 
             unsigned int nhex = this->hg->num();
 
+            if (nhex != this->hg->vhexen.size()) {
+                std::cout << "Compare this->hg->num() = "
+                          << nhex << " and this->hg->vhexen.size(): "
+                          << this->hg->vhexen.size() << ", as they differ\n";
+            }
+
             this->setupScaling();
 
             // x and y coords on the HexGrid. May be replaced if dataCoords has been set.

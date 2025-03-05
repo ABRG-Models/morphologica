@@ -59,6 +59,8 @@
 #define HEX_IS_REGION_BOUNDARY  0x200
 //! Hex is inside the region
 #define HEX_INSIDE_REGION       0x400
+//! If true, then 'I have been erased'
+#define HEX_ERASED              0x800
 
 //! Four flags for client code to use for its own devices. For an example of use, see DirichDom.h
 #define HEX_USER_FLAG_0    0x10000000
@@ -539,6 +541,9 @@ namespace morph {
         void setInsideDomain() { this->flags |= HEX_INSIDE_DOMAIN; }
         //! Unset flag that says this Hex is known to be inside domain.
         void unsetInsideDomain() { this->flags &= ~HEX_INSIDE_DOMAIN; }
+
+        void setErased() { this->flags |= HEX_ERASED; }
+        bool erased() const { return this->flags & HEX_ERASED ? true : false; }
 
         /*!
          * Set the HEX_USER_FLAG_0/1/2/3 from the passed in unsigned int.
