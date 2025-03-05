@@ -163,19 +163,20 @@ int main()
     size_t graph_cycles = 12;
 
     // Create 2 more truly random binary strings for testing/debug
-    morph::RandUniform<unsigned char> brng(0,1);
+    morph::RandUniform<unsigned short> brng(0,1);
+
     // Random string 1
     morph::vvec<float> rs1;
     rs1.resize(eval_elements);
     for (auto& r : rs1) {
-        unsigned char rn = brng.get();
+        unsigned short rn = brng.get();
         r = rn > 0 ? 1.0f : 0.0f;
     }
     // Random string 2
     morph::vvec<float> rs2;
     rs2.resize(eval_elements);
     for (auto& r : rs2) {
-        unsigned char rn = brng.get();
+        unsigned short rn = brng.get();
         r = rn > 0 ? 1.0f : 0.0f;
     }
 
