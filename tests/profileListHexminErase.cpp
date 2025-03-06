@@ -5,17 +5,12 @@
 
 // Flags
 #define HEX_HAS_NE                0x1
-#define HEX_HAS_NNE               0x2
-#define HEX_HAS_NNW               0x4
 #define HEX_HAS_NW                0x8
-#define HEX_HAS_NSW              0x10
-#define HEX_HAS_NSE              0x20
-#define HEX_HAS_NEIGHB_ALL       0x3f
 
 class Hexmin
 {
 public:
-    // Member attributes consume 100 bytes of data (on a 64 bit machine):
+    // Member attributes
     unsigned int vi;
     unsigned int di = 0;
     float x = 0.0f;
@@ -29,11 +24,8 @@ public:
     int bi = 0;
     float distToBoundary = -1.0f;
     std::list<Hexmin>::iterator ne;
-    std::list<Hexmin>::iterator nne;
-    std::list<Hexmin>::iterator nnw;
     std::list<Hexmin>::iterator nw;
-    std::list<Hexmin>::iterator nsw;
-    std::list<Hexmin>::iterator nse;
+
 private:
     unsigned int flags = 0x0;
 
@@ -59,41 +51,21 @@ public:
     //! The vertical distance between hex centres on adjacent rows.
     float getV() const { return (this->d * 0.866025403f); }
     //! Set that \a it is the Neighbour to the East
-    void set_ne (std::list<Hexmin>::iterator it)
-    { this->ne = it; this->flags |= HEX_HAS_NE; }
-    void set_nne (std::list<Hexmin>::iterator it)
-    { this->nne = it; this->flags |= HEX_HAS_NNE; }
-    void set_nnw (std::list<Hexmin>::iterator it)
-    { this->nnw = it; this->flags |= HEX_HAS_NNW; }
-    void set_nw (std::list<Hexmin>::iterator it)
-    { this->nw = it; this->flags |= HEX_HAS_NW; }
-    void set_nsw (std::list<Hexmin>::iterator it)
-    { this->nsw = it; this->flags |= HEX_HAS_NSW; }
-    void set_nse (std::list<Hexmin>::iterator it)
-    { this->nse = it; this->flags |= HEX_HAS_NSE; }
+    void set_ne (std::list<Hexmin>::iterator it) { this->ne = it; this->flags |= HEX_HAS_NE; }
+    void set_nw (std::list<Hexmin>::iterator it) { this->nw = it; this->flags |= HEX_HAS_NW; }
+
     //! Return true if this Hex has a Neighbour to the East
     bool has_ne() const { return ((this->flags & HEX_HAS_NE) == HEX_HAS_NE); }
-    bool has_nne() const { return ((this->flags & HEX_HAS_NNE) == HEX_HAS_NNE); }
-    bool has_nnw() const { return ((this->flags & HEX_HAS_NNW) == HEX_HAS_NNW); }
     bool has_nw() const { return ((this->flags & HEX_HAS_NW) == HEX_HAS_NW); }
-    bool has_nsw() const { return ((this->flags & HEX_HAS_NSW) == HEX_HAS_NSW); }
-    bool has_nse() const { return ((this->flags & HEX_HAS_NSE) == HEX_HAS_NSE); }
     //! Set flags to say that this Hex has NO neighbour to East
     void unset_ne() { this->flags ^= HEX_HAS_NE; }
-    void unset_nne() { this->flags ^= HEX_HAS_NNE; }
-    void unset_nnw() { this->flags ^= HEX_HAS_NNW; }
     void unset_nw() { this->flags ^= HEX_HAS_NW; }
-    void unset_nsw() { this->flags ^= HEX_HAS_NSW; }
-    void unset_nse() { this->flags ^= HEX_HAS_NSE; }
+
     //! Un-set the pointers on all my neighbours so that THEY no longer point to ME.
     void disconnectNeighbours()
     {
         if (this->has_ne()) { if (this->ne->has_nw()) { this->ne->unset_nw(); } }
-        if (this->has_nne()) { if (this->nne->has_nsw()) { this->nne->unset_nsw(); } }
-        if (this->has_nnw()) { if (this->nnw->has_nse()) { this->nnw->unset_nse(); } }
         if (this->has_nw()) { if (this->nw->has_ne()) { this->nw->unset_ne(); } }
-        if (this->has_nsw()) { if (this->nsw->has_nne()) { this->nsw->unset_nne(); } }
-        if (this->has_nse()) { if (this->nse->has_nnw()) { this->nse->unset_nnw(); } }
     }
 };
 
@@ -102,33 +74,25 @@ int main()
     // Make a list of Hexes
     std::list<Hexmin> hexen;
     static constexpr unsigned int n_hex = 100000; // 100000 makes about a 10MB list
-    std::list<Hexmin>::iterator m1;
-    std::list<Hexmin>::iterator m2;
-    std::list<Hexmin>::iterator m3;
-    std::list<Hexmin>::iterator m4;
-    std::list<Hexmin>::iterator m5;
-    std::list<Hexmin>::iterator m6;
+    std::list<Hexmin>::iterator neighbour; // Iterator to a neighbour
 
     for (unsigned int i = 0; i < n_hex; ++i) {
-        Hexmin h (i, 0.1f, static_cast<int>(i), 0);
+        Hexmin h(i, 0.1f, static_cast<int>(i), 0);
         // Neighbour setup to ensure disconnect neighbours has work to do
-        if (i == 5) {
-            m6 = hexen.end();
-            m1 = --m6;
-            m2 = --m6;
-            m3 = --m6;
-            m4 = --m6;
-            m5 = --m6;
-        } else if (i > 5 && i < (n_hex-6)) {
-            ++m1; ++m2; ++m3; ++m4; ++m5; ++m6;
-            h.set_ne (m1);
-            h.set_nne (m2);
-            h.set_nnw (m3);
-            h.set_nw (m4);
-            h.set_nsw (m5);
-            h.set_nse (m6);
+        if (i == 6) {
+            neighbour = hexen.end();
+            --neighbour;
+            std::cout << " neighbour index: " << neighbour->vi << " self at i==6: " << h.vi << std::endl;
+        } else if (i > 6 && i < n_hex - 7) {
+            h.set_nw(neighbour);
+            hexen.emplace(hexen.end(), h);
+            std::list<Hexmin>::iterator inserted = hexen.end();
+            --inserted;
+            neighbour->set_ne(inserted); // The reciprocal neighbour relationship
+            ++neighbour;
+        } else {
+            hexen.emplace(hexen.end(), h);
         }
-        hexen.emplace (hexen.end(), h);
     }
 
     using namespace std::chrono;
