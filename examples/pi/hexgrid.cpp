@@ -39,11 +39,7 @@ int main()
 
     // Create a HexGrid to show in the scene. Hexes outside the circular boundary will
     // all be discarded.
-#ifdef __WIN__ // HexGrid performance is bad on Windows
-    morph::HexGrid hg(0.03f, 3.0f, 0.0f);
-#else
     morph::HexGrid hg(0.01f, 3.0f, 0.0f);
-#endif
     hg.setCircularBoundary (0.6f);
     std::cout << "Number of pixels in grid:" << hg.num() << std::endl;
 

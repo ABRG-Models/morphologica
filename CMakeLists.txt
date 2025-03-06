@@ -77,6 +77,11 @@ else()
   endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
 
+# In Visual Studio, if CMAKE_BUILD_TYPE is "Debug", some programs will run very slowly
+if(WIN32)
+  set(CMAKE_BUILD_TYPE "Release")
+endif(WIN32)
+
 # Some programs require the ability to define literal template args of
 # type std::array (a C++-20 feature). Clang versions less than 18 can't.
 set(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK 0)

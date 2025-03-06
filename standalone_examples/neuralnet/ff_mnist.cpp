@@ -75,7 +75,7 @@ int main()
                 // Might have run out of that kind of image, so need this:
                 if (t_iter == training_f.end()) {
                     while (t_iter == training_f.end()) {
-                        t_iter = training_f.find (rng.get());
+                        t_iter = training_f.find (static_cast<unsigned char>(rng.get() & 0xff));
                     }
                 }
                 unsigned int key = static_cast<unsigned int>(t_iter->first);
