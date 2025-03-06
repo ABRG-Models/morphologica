@@ -40,6 +40,11 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wfatal-errors -Wno-sign-compare -g -Wno-unused-result -Wno-unknown-pragmas -O3")
 endif()
 
+# In Visual Studio, if CMAKE_BUILD_TYPE is "Debug", some programs will run very slowly
+if(WIN32)
+  set(CMAKE_BUILD_TYPE "Release")
+endif(WIN32)
+
 # Correct way to determine if OpenMP is available
 find_package(OpenMP 3)
 if(OpenMP_FOUND)
