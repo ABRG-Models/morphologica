@@ -337,6 +337,9 @@ add_test(testHexVertexPos testHexVertexPos)
 add_executable(testHexUserFlags testHexUserFlags.cpp)
 add_test(testHexUserFlags testHexUserFlags)
 
+add_executable(profileListHexErase profileListHexErase.cpp)
+add_test(profileListHexErase profileListHexErase)
+
 # Test MathAlgo code
 add_executable(testMathAlgo testMathAlgo.cpp)
 add_test(testMathAlgo testMathAlgo)

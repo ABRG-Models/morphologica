@@ -6,11 +6,13 @@
 #include <vector>
 #include <cmath>
 
+#define PROFILE_HEXGRID_HEX_ERASE 1 // get some cout profiling
+
 #include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
-#include <morph/HexGridVisual.h>
 #include <morph/HexGrid.h>
+#include <morph/HexGridVisual.h>
 
 int main()
 {
