@@ -101,12 +101,33 @@ int main()
 {
     // Make a list of Hexes
     std::list<morph::Hexmin> hexen;
-
     static constexpr unsigned int n_hex = 100000;
-
-    // Place a row of 100000 hexes in the list
+    std::list<morph::Hexmin>::iterator m1;
+    std::list<morph::Hexmin>::iterator m2;
+    std::list<morph::Hexmin>::iterator m3;
+    std::list<morph::Hexmin>::iterator m4;
+    std::list<morph::Hexmin>::iterator m5;
+    std::list<morph::Hexmin>::iterator m6;
     for (unsigned int i = 0; i < n_hex; ++i) {
-        hexen.emplace (hexen.end(), morph::Hexmin(i, 0.1f, static_cast<int>(i), 0));
+        morph::Hexmin h (i, 0.1f, static_cast<int>(i), 0);
+        // Neighbour setup to ensure disconnect neighbours has work to do
+        if (i == 5) {
+            m6 = hexen.end();
+            m1 = --m6;
+            m2 = --m6;
+            m3 = --m6;
+            m4 = --m6;
+            m5 = --m6;
+        } else if (i > 5 && i < (n_hex-6)) {
+            ++m1; ++m2; ++m3; ++m4; ++m5; ++m6;
+            h.set_ne (m1);
+            h.set_nne (m2);
+            h.set_nnw (m3);
+            h.set_nw (m4);
+            h.set_nsw (m5);
+            h.set_nse (m6);
+        }
+        hexen.emplace (hexen.end(), h);
     }
 
     using namespace std::chrono;
