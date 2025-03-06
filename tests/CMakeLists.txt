@@ -340,6 +340,9 @@ add_test(testHexUserFlags testHexUserFlags)
 add_executable(profileListHexErase profileListHexErase.cpp)
 add_test(profileListHexErase profileListHexErase)
 
+add_executable(profileListHexminErase profileListHexminErase.cpp)
+add_test(profileListHexminErase profileListHexminErase)
+
 # Test MathAlgo code
 add_executable(testMathAlgo testMathAlgo.cpp)
 add_test(testMathAlgo testMathAlgo)
