@@ -14,7 +14,7 @@ struct Hex
     bool has_nw() const { return ((this->flags & HEX_HAS_NW) == HEX_HAS_NW); }
     void unset_ne() { this->flags ^= HEX_HAS_NE; } // unset eastern neighbour
     void unset_nw() { this->flags ^= HEX_HAS_NW; }
-    void disconnectNeighbours() // Unset all neighbours so they no longer point to ME.
+    void disconnect() // Unset all neighbours so they no longer point to ME.
     {
         if (this->has_ne()) { if (this->ne->has_nw()) { this->ne->unset_nw(); } }
         if (this->has_nw()) { if (this->nw->has_ne()) { this->nw->unset_ne(); } }
@@ -50,7 +50,7 @@ int main()
     auto hi = hexen.begin();
     while (hi != hexen.end()) {
         if (hi->vi % 2 == 0) {
-            hi->disconnectNeighbours();
+            hi->disconnect();
             hi = hexen.erase (hi);
         } else {
             ++hi;
