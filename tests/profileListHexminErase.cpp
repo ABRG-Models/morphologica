@@ -1,104 +1,52 @@
 #include <iostream>
 #include <chrono>
 #include <list>
-#include <cmath>
 
-// Flags
-#define HEX_HAS_NE                0x1
-#define HEX_HAS_NW                0x8
+#define HEX_HAS_NE 0x1
+#define HEX_HAS_NW 0x2
 
-class Hexmin
+struct Hex
 {
-public:
-    // Member attributes
-    unsigned int vi;
-    unsigned int di = 0;
-    float x = 0.0f;
-    float y = 0.0f;
-    float r = 0.0f;
-    float phi = 0.0f;
-    float z = 0.0f;
-    float d = 1.0f;
-    int ri = 0;
-    int gi = 0;
-    int bi = 0;
-    float distToBoundary = -1.0f;
-    std::list<Hexmin>::iterator ne;
-    std::list<Hexmin>::iterator nw;
-
-private:
-    unsigned int flags = 0x0;
-
-public:
-    Hexmin (const unsigned int& idx, const float& d_, const int& r_, const int& g_)
-    {
-        this->vi = idx;
-        this->d = d_;
-        this->ri = r_;
-        this->gi = g_;
-        this->computeLocation();
-    }
-    void computeLocation()
-    {
-        // Compute Cartesian location
-        this->x = this->d * this->ri + (this->d / 2.0f) * this->gi - (this->d / 2.0f) * this->bi;
-        float v = this->getV();
-        this->y = v * this->gi + v * this->bi;
-        // And location in the Polar coordinate system
-        this->r = std::sqrt (x*x + y*y);
-        this->phi = std::atan2 (y, x);
-    }
-    //! The vertical distance between hex centres on adjacent rows.
-    float getV() const { return (this->d * 0.866025403f); }
-    //! Set that \a it is the Neighbour to the East
-    void set_ne (std::list<Hexmin>::iterator it) { this->ne = it; this->flags |= HEX_HAS_NE; }
-    void set_nw (std::list<Hexmin>::iterator it) { this->nw = it; this->flags |= HEX_HAS_NW; }
-
-    //! Return true if this Hex has a Neighbour to the East
-    bool has_ne() const { return ((this->flags & HEX_HAS_NE) == HEX_HAS_NE); }
+    Hex(const unsigned int& idx, const int& r_) : vi(idx), ri(r_) {}
+    void set_ne (std::list<Hex>::iterator it) { this->ne = it; this->flags |= HEX_HAS_NE; } // Set eastern neighbour
+    void set_nw (std::list<Hex>::iterator it) { this->nw = it; this->flags |= HEX_HAS_NW; }
+    bool has_ne() const { return ((this->flags & HEX_HAS_NE) == HEX_HAS_NE); } // test for eastern neighbour
     bool has_nw() const { return ((this->flags & HEX_HAS_NW) == HEX_HAS_NW); }
-    //! Set flags to say that this Hex has NO neighbour to East
-    void unset_ne() { this->flags ^= HEX_HAS_NE; }
+    void unset_ne() { this->flags ^= HEX_HAS_NE; } // unset eastern neighbour
     void unset_nw() { this->flags ^= HEX_HAS_NW; }
-
-    //! Un-set the pointers on all my neighbours so that THEY no longer point to ME.
-    void disconnectNeighbours()
+    void disconnectNeighbours() // Unset all neighbours so they no longer point to ME.
     {
         if (this->has_ne()) { if (this->ne->has_nw()) { this->ne->unset_nw(); } }
         if (this->has_nw()) { if (this->nw->has_ne()) { this->nw->unset_ne(); } }
     }
+    unsigned int vi; // an 'index'
+    int ri = 0;      // a position
+    std::list<Hex>::iterator ne; // iterator to the neighbour to the east
+    std::list<Hex>::iterator nw; // iterator to the western neighbour
+private:
+    unsigned int flags = 0x0;
 };
 
 int main()
 {
-    // Make a list of Hexes
-    std::list<Hexmin> hexen;
-    static constexpr unsigned int n_hex = 100000; // 100000 makes about a 10MB list
-    std::list<Hexmin>::iterator neighbour; // Iterator to a neighbour
-
-    for (unsigned int i = 0; i < n_hex; ++i) {
-        Hexmin h(i, 0.1f, static_cast<int>(i), 0);
-        // Neighbour setup to ensure disconnect neighbours has work to do
-        if (i == 6) {
-            neighbour = hexen.end();
-            --neighbour;
-            std::cout << " neighbour index: " << neighbour->vi << " self at i==6: " << h.vi << std::endl;
-        } else if (i > 6 && i < n_hex - 7) {
-            h.set_nw(neighbour);
-            hexen.emplace(hexen.end(), h);
-            std::list<Hexmin>::iterator inserted = hexen.end();
-            --inserted;
-            neighbour->set_ne(inserted); // The reciprocal neighbour relationship
-            ++neighbour;
-        } else {
-            hexen.emplace(hexen.end(), h);
-        }
+    static constexpr unsigned int n_hex = 100000;
+    // Make a list of Hexes initialized with the first hex (index 0u, position (ri) 0)
+    std::list<Hex> hexen = { Hex(0u, 0) };
+    std::list<Hex>::iterator neighbour = hexen.begin(); // Iterator used to point to the 'west' neighbour
+    for (unsigned int i = 1u; i < n_hex; ++i) {
+        Hex h(i, static_cast<int>(i));
+        h.set_nw(neighbour); // Make one neighbour releationship before emplacing into hexen
+        hexen.emplace(hexen.end(), h);
+        std::list<Hex>::iterator inserted = hexen.end();
+        neighbour->set_ne(--inserted); // Make the reciprocal neighbour relationship
+        ++neighbour;
     }
 
     using namespace std::chrono;
     using sc = std::chrono::steady_clock;
-    auto t0 = sc::now();
 
+    std::cout << "std::list<Hex> created. Now erase Hexes from list...\n";
+    auto t0 = sc::now(); // timing the erase process
     auto hi = hexen.begin();
     while (hi != hexen.end()) {
         if (hi->vi % 2 == 0) {
@@ -108,9 +56,6 @@ int main()
             ++hi;
         }
     }
-    auto t1 = sc::now();
-
-    unsigned int n_deleted = n_hex - hexen.size();
-    sc::duration t_d = t1 - t0;
-    std::cout << "Took " << duration_cast<microseconds>(t_d).count() << " us to delete " << n_deleted << " hexes from the std::list\n";
+    std::cout << "It took " << duration_cast<microseconds>(sc::duration{sc::now() - t0}).count()
+              << " us to delete " << (n_hex - hexen.size()) << " hexes from the std::list\n";
 }
