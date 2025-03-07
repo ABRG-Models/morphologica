@@ -12,9 +12,7 @@
 #include <list>
 #include <array>
 #include <cmath>
-#ifndef OMIT_BEZCOORD_FROM_HEX
 #include <morph/BezCoord.h>
-#endif
 // If the HexGrid::save and HexGrid::load methods are required, define
 // HEXGRID_COMPILE_LOAD_AND_SAVE. A link to libhdf5 will be required in your program.
 #ifdef HEXGRID_COMPILE_LOAD_AND_SAVE
@@ -374,7 +372,7 @@ namespace morph {
             float dy = cartesianPoint[1] - y;
             return std::sqrt (dx*dx + dy*dy);
         }
-#ifndef OMIT_BEZCOORD_FROM_HEX
+
         /*!
          * Compute the distance from the point given (in two-dimensions only; x and y) by the
          * BezCoord @a cartesianPoint to the centre of this Hex.
@@ -385,7 +383,7 @@ namespace morph {
             float dy = cartesianPoint.y() - y;
             return std::sqrt (dx*dx + dy*dy);
         }
-#endif
+
         //! Compute the distance from another hex to this one.
         float distanceFrom (const Hex& otherHex) const
         {
