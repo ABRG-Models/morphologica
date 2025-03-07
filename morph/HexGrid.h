@@ -36,15 +36,8 @@
 #include <vector>
 #include <stdexcept>
 #include <limits>
-#include <chrono>
 
 namespace morph {
-
-#ifdef PROFILE_HEXGRID_HEX_ERASE
-    static constexpr bool profile_hex_erase = true;
-#else
-    static constexpr bool profile_hex_erase = false;
-#endif
 
     /*!
      * This class is used to build an hexagonal grid of hexagons. The member hexagons
@@ -3862,15 +3855,10 @@ namespace morph {
          */
         void discardOutsideBoundary()
         {
-            using namespace std::chrono;
-            using sc = std::chrono::steady_clock;
-
             // Mark those hexes inside the boundary
             std::list<morph::Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
             this->markHexesInside (centroidHex);
             // Run through and discard those hexes outside the boundary:
-            auto t0 = sc::now();
-            const unsigned int n_hex_before = this->hexen.size();
             auto hi = this->hexen.begin();
             while (hi != this->hexen.end()) {
                 if (hi->testFlags(HEX_INSIDE_BOUNDARY) == false) {
@@ -3882,14 +3870,6 @@ namespace morph {
                     ++hi;
                 }
             }
-            if constexpr (profile_hex_erase) {
-                auto t1 = sc::now();
-                unsigned int n_deleted = n_hex_before - hexen.size();
-                sc::duration t_d = t1 - t0;
-                std::cout << "HexGrid::discardOutsideBoundary: Took " << duration_cast<microseconds>(t_d).count()
-                          << " us to delete " << n_deleted << " Hexes from the std::list\n";
-            }
-
             // The Hex::vi indices need to be re-numbered.
             this->renumberVectorIndices();
             // Finally, do something about the hexagonal grid vertices; set this to true to mark that the
@@ -3902,12 +3882,7 @@ namespace morph {
          */
         void discardOutsideDomain()
         {
-            using namespace std::chrono;
-            using sc = std::chrono::steady_clock;
-
             // Similar to discardOutsideBoundary:
-            auto t0 = sc::now();
-            const unsigned int n_hex_before = this->hexen.size();
             auto hi = this->hexen.begin();
             while (hi != this->hexen.end()) {
                 if (hi->insideDomain() == false) {
@@ -3916,13 +3891,6 @@ namespace morph {
                 } else {
                     ++hi;
                 }
-            }
-            if constexpr (profile_hex_erase) {
-                auto t1 = sc::now();
-                unsigned int n_deleted = n_hex_before - hexen.size();
-                sc::duration t_d = t1 - t0;
-                std::cout << "HexGrid::discardOutsideDomain: Took " << duration_cast<microseconds>(t_d).count()
-                          << " us to delete " << n_deleted << " Hexes from the std::list\n";
             }
             this->renumberVectorIndices();
             this->gridReduced = true;
