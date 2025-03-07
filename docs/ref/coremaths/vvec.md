@@ -272,9 +272,16 @@ void linspace (const _S start, const _S2 stop, const size_t num=0);
 void arange (const _S start, const _S2 stop, const _S2 increment);
 ```
 
-Python Numpy-like functions to fill the `morph::vvec` with sequences of
-numbers.  `linspace` fills the `vvec` with `num` values in a sequence
-from `start` to `stop`. `arange` resizes the `vvec` and fills it with elements starting
+Python Numpy-like functions to fill the `morph::vvec` with sequences
+of numbers.  `linspace` fills the `vvec` with `num` values in a
+sequence from `start` to `stop`. If `num` is 0, then the vvec's size
+is not changed and it is filled with an evenly spaced sequence of
+values from `start` to `stop`. This behaviour differs from Python,
+which would return an empty array for `num = 0`. However, the result
+of `linspace (start, stop, 1)` matches Python: a single-element `vvec`
+containing only the start value.
+
+`arange` resizes the `vvec` and fills it with elements starting
 with `start` and ending with `stop` incrementing by `increment`.
 
 ### Random numbers

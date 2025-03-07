@@ -215,11 +215,11 @@ namespace morph {
          * rounding errors.
          */
         template <typename _S=S, typename _S2=S>
-        void linspace (const _S start, const _S2 stop, const std::size_t num=0)
+        void linspace (const _S start, const _S2 stop, const std::size_t num = 0u)
         {
-            if (num > 0) { this->resize (num); }
-            S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (this->size()-1);
-            for (std::size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
+            if (num > 0u) { this->resize (num); }
+            S increment = (this->size() == 1u) ? S{0} : (static_cast<S>(stop) - static_cast<S>(start)) / (this->size() - 1u);
+            for (std::size_t i = 0u; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
         }
 
         /*!
