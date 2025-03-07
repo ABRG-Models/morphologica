@@ -2080,27 +2080,29 @@ namespace morph {
     // e.g. vvec<float> result = float(1) / vvec<float>({1,2,3});
 
     //! Scalar * vvec<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
-    template <typename S> vvec<S> operator* (S lhs, const vvec<S>& rhs) { return rhs * lhs; }
+    template <typename T, typename S> requires std::is_arithmetic_v<T>
+    vvec<S> operator* (T lhs, const vvec<S>& rhs) { return rhs * lhs; }
 
     //! Scalar / vvec<>
-    template <typename S>
-    vvec<S> operator/ (S lhs, const vvec<S>& rhs)
+    template <typename T, typename S> requires std::is_arithmetic_v<T>
+    vvec<S> operator/ (T lhs, const vvec<S>& rhs)
     {
         vvec<S> division(rhs.size(), S{0});
-        auto lhs_div_by_vec = [lhs](S elmnt) { return lhs / elmnt; };
+        auto lhs_div_by_vec = [lhs](S elmnt) { return static_cast<S>(lhs / elmnt); };
         std::transform (rhs.begin(), rhs.end(), division.begin(), lhs_div_by_vec);
         return division;
     }
 
     //! Scalar + vvec<> (commutative)
-    template <typename S> vvec<S> operator+ (S lhs, const vvec<S>& rhs) { return rhs + lhs; }
+    template <typename T, typename S> requires std::is_arithmetic_v<T>
+    vvec<S> operator+ (T lhs, const vvec<S>& rhs) { return rhs + lhs; }
 
     //! Scalar - vvec<>
-    template <typename S>
-    vvec<S> operator- (S lhs, const vvec<S>& rhs)
+    template <typename T, typename S> requires std::is_arithmetic_v<T>
+    vvec<S> operator- (T lhs, const vvec<S>& rhs)
     {
         vvec<S> subtraction(rhs.size(), S{0});
-        auto lhs_minus_vec = [lhs](S elmnt) { return lhs - elmnt; };
+        auto lhs_minus_vec = [lhs](S elmnt) { return static_cast<S>(lhs - elmnt); };
         std::transform (rhs.begin(), rhs.end(), subtraction.begin(), lhs_minus_vec);
         return subtraction;
     }
