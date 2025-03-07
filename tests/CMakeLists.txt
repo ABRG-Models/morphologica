@@ -337,9 +337,7 @@ add_test(testHexVertexPos testHexVertexPos)
 add_executable(testHexUserFlags testHexUserFlags.cpp)
 add_test(testHexUserFlags testHexUserFlags)
 
-add_executable(profileListHexErase profileListHexErase.cpp)
-add_test(profileListHexErase profileListHexErase)
-
+# An example program which is slow compiled on Visual Studio with the /MDd "Debug build" flag
 add_executable(profileListHexminErase profileListHexminErase.cpp)
 add_test(profileListHexminErase profileListHexminErase)
 
