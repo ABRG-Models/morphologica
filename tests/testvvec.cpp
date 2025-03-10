@@ -537,6 +537,29 @@ int main() {
     std::cout << uv2f << " mean: " << uv2f.mean() << std::endl;
     std::cout << uv2f << " variance: " << uv2f.variance() << std::endl;
 
+    // Test int * vvec<double> etc
+    morph::vvec<double> vvd = {1.0, 2.0, 3.0};
+    morph::vvec<double> vvd1 = 5 * vvd;
+    if (vvd1[0] != 5.0) { --rtn; }
+
+    morph::vvec<double> vvd2 = 1 / vvd;
+    if (vvd2[1] != 0.5) { --rtn; }
+
+    morph::vvec<double> vvd3 = 5 + vvd;
+    if (vvd3[0] != 6.0) { --rtn; }
+
+    morph::vvec<double> vvd4 = 5 - vvd;
+    if (vvd4[0] != 4.0) { --rtn; }
+
+    morph::vvec<int> vvi = { 2, 3 };
+    morph::vvec<int> vvi1 = 1.0f / vvi;
+    std::cout << vvi1 << std::endl; // result is { int(1.0f / (int)2) , int(1.0f / int(3)) }  = { 0, 0 }
+    // Doesn't compile:
+    //morph::vvec<float> vvif1 = 1.0f / vvi;
+
+    morph::vvec<double> vvd5 = 1.0f / vvd;
+    if (vvd5[1] != 0.5) { --rtn; }
+
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;
 }

@@ -1422,29 +1422,29 @@ namespace morph {
     // e.g. vec<float> denom = {1,2,3}; vec<float> result = float(1) / denom;
 
     //! Scalar * vec<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
-    template <typename S, std::size_t N>
-    constexpr vec<S, N> operator* (S lhs, const vec<S, N>& rhs) { return rhs * lhs; }
+    template <typename T, typename S, std::size_t N> requires std::is_arithmetic_v<T>
+    constexpr vec<S, N> operator* (T lhs, const vec<S, N>& rhs) { return rhs * lhs; }
 
     //! Scalar / vec<>
-    template <typename S, std::size_t N>
-    constexpr vec<S, N> operator/ (S lhs, const vec<S, N>& rhs)
+    template <typename T, typename S, std::size_t N> requires std::is_arithmetic_v<T>
+    constexpr vec<S, N> operator/ (T lhs, const vec<S, N>& rhs)
     {
         vec<S, N> division;
-        auto lhs_div_by_vec = [lhs](S elmnt) { return lhs / elmnt; };
+        auto lhs_div_by_vec = [lhs](S elmnt) { return static_cast<S>(lhs / elmnt); };
         std::transform (rhs.begin(), rhs.end(), division.begin(), lhs_div_by_vec);
         return division;
     }
 
     //! Scalar + vec<> (commutative)
-    template <typename S, std::size_t N>
-    constexpr vec<S, N> operator+ (S lhs, const vec<S, N>& rhs) { return rhs + lhs; }
+    template <typename T, typename S, std::size_t N> requires std::is_arithmetic_v<T>
+    constexpr vec<S, N> operator+ (T lhs, const vec<S, N>& rhs) { return rhs + lhs; }
 
     //! Scalar - vec<>
-    template <typename S, std::size_t N>
-    constexpr vec<S, N> operator- (S lhs, const vec<S, N>& rhs)
+    template <typename T, typename S, std::size_t N> requires std::is_arithmetic_v<T>
+    constexpr vec<S, N> operator- (T lhs, const vec<S, N>& rhs)
     {
         vec<S, N> subtraction;
-        auto lhs_minus_vec = [lhs](S elmnt) { return lhs - elmnt; };
+        auto lhs_minus_vec = [lhs](S elmnt) { return static_cast<S>(lhs - elmnt); };
         std::transform (rhs.begin(), rhs.end(), subtraction.begin(), lhs_minus_vec);
         return subtraction;
     }
