@@ -117,7 +117,7 @@ constexpr int do_test()
     // Test 3x3 determinant
     morph::mat44<float> td;
     std::array<float, 9> threethree = { 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 3.5f, 3.0f, 2.0f, 120.0f };
-    float det_td = td.determinant (threethree);
+    float det_td = td.determinant3x3 (threethree);
     if (det_td != 111.0f) {
         ++rtn;
     }
