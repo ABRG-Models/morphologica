@@ -341,6 +341,12 @@ add_test(testHexUserFlags testHexUserFlags)
 add_executable(profileListHexminErase profileListHexminErase.cpp)
 add_test(profileListHexminErase profileListHexminErase)
 
+# Compile with stdc++ lib debug mode (but don't run as a test, as it's
+# very slow) This is equivalent to the default debug compilation that
+# Visual Studio uses (/MDd or /MTd).
+add_executable(profileListHexminEraseDbg profileListHexminErase.cpp)
+target_compile_definitions(profileListHexminEraseDbg PUBLIC _GLIBCXX_DEBUG)
+
 # Test MathAlgo code
 add_executable(testMathAlgo testMathAlgo.cpp)
 add_test(testMathAlgo testMathAlgo)
