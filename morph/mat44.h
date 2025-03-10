@@ -16,6 +16,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <type_traits>
 
 namespace morph {
 
@@ -48,9 +49,9 @@ namespace morph {
             return *this;
         }
         //! Explicitly defaulted  move constructor
-        mat44(mat44<F>&& other) = default;
+        mat44 (mat44<F>&& other) = default;
         //! Explicitly defaulted move assignment constructor
-        mat44<F>& operator=(mat44<F>&& other) = default;
+        mat44<F>& operator= (mat44<F>&& other) = default;
 
         /*!
          * The transformation matrix data, arranged in column major format to be OpenGL
@@ -134,15 +135,17 @@ namespace morph {
         }
 #endif
         //! Apply translation specified by vector @dv
-        constexpr void translate (const vec<F>& dv)
+        template<typename T> requires std::is_arithmetic_v<T>
+        constexpr void translate (const vec<T, 3>& dv)
         {
-            this->mat[12] += dv.x();
-            this->mat[13] += dv.y();
-            this->mat[14] += dv.z();
+            this->mat[12] += dv[0];
+            this->mat[13] += dv[1];
+            this->mat[14] += dv[2];
         }
 
         //! Apply translation specified by vector @dv provided as array of three coordinates
-        constexpr void translate (const std::array<F, 3>& dv)
+        template<typename T> requires std::is_arithmetic_v<T>
+        constexpr void translate (const std::array<T, 3>& dv)
         {
             this->mat[12] += dv[0];
             this->mat[13] += dv[1];
@@ -150,15 +153,50 @@ namespace morph {
         }
 
         //! Apply translation specified by coordinates @dx, @dy and @dz.
-        constexpr void translate (const F& dx, const F& dy, const F& dz)
+        template<typename T> requires std::is_arithmetic_v<T>
+        constexpr void translate (const T& dx, const T& dy, const T& dz)
         {
             this->mat[12] += dx;
             this->mat[13] += dy;
             this->mat[14] += dz;
         }
 
+        //! Scaling transformation by individual dims
+        template<typename T> requires std::is_arithmetic_v<T>
+        constexpr void scale (const T& scl_x, const T& scl_y, const T& scl_z)
+        {
+            this->mat[0] *= scl_x;
+            this->mat[5] *= scl_y;
+            this->mat[10] *= scl_z;
+        }
+
+        //! Scaling transformation by vector
+        template<typename T> requires std::is_arithmetic_v<T>
+        constexpr void scale (const vec<T, 3>& scl)
+        {
+            this->mat[0] *= scl[0];
+            this->mat[5] *= scl[1];
+            this->mat[10] *= scl[2];
+        }
+
+        template<typename T> requires std::is_arithmetic_v<T>
+        constexpr void scale (const std::array<T, 3>& scl)
+        {
+            this->mat[0] *= scl[0];
+            this->mat[5] *= scl[1];
+            this->mat[10] *= scl[2];
+        }
+
+        template<typename T> requires std::is_arithmetic_v<T>
+        constexpr void scale (const T& scl)
+        {
+            this->mat[0] *= scl;
+            this->mat[5] *= scl;
+            this->mat[10] *= scl;
+        }
+
         //! Compute determinant for 3x3 matrix @cm
-        constexpr F determinant (std::array<F, 9> cm) const
+        constexpr F determinant3x3 (std::array<F, 9> cm) const
         {
             F det = (cm[0]*cm[4]*cm[8])
                 + (cm[3]*cm[7]*cm[2])
@@ -217,10 +255,10 @@ namespace morph {
             cm03[7] = cm[10];
             cm03[8] = cm[11];
 
-            F det = cm[0] * this->determinant (cm00)
-                - cm[4] * this->determinant (cm01)
-                + cm[8] * this->determinant (cm02)
-                - cm[12] * this->determinant (cm03);
+            F det = cm[0] * this->determinant3x3 (cm00)
+                - cm[4] * this->determinant3x3 (cm01)
+                + cm[8] * this->determinant3x3 (cm02)
+                - cm[12] * this->determinant3x3 (cm03);
 
             return det;
         }
@@ -273,10 +311,10 @@ namespace morph {
             cm03[7] = this->mat[10];
             cm03[8] = this->mat[11];
 
-            F det = this->mat[0] * this->determinant (cm00)
-                - this->mat[4] * this->determinant (cm01)
-                + this->mat[8] * this->determinant (cm02)
-                - this->mat[12] * this->determinant (cm03);
+            F det = this->mat[0] * this->determinant3x3 (cm00)
+                - this->mat[4] * this->determinant3x3 (cm01)
+                + this->mat[8] * this->determinant3x3 (cm02)
+                - this->mat[12] * this->determinant3x3 (cm03);
 
             return det;
         }
@@ -319,25 +357,25 @@ namespace morph {
             minorElem[5] = this->mat[11];
             minorElem[8] = this->mat[15];
 
-            cofac[0] = this->determinant (minorElem);
+            cofac[0] = this->determinant3x3 (minorElem);
 
             // 1. Next minor elem matrix has only 3 elements changed
             minorElem[0] = this->mat[4];
             minorElem[3] = this->mat[8];
             minorElem[6] = this->mat[12];
-            cofac[1] = -this->determinant (minorElem);
+            cofac[1] = -this->determinant3x3 (minorElem);
 
             // 2
             minorElem[1] = this->mat[5];
             minorElem[4] = this->mat[9];
             minorElem[7] = this->mat[13];
-            cofac[2] = this->determinant (minorElem);
+            cofac[2] = this->determinant3x3 (minorElem);
 
             // 3
             minorElem[2] = this->mat[6];
             minorElem[5] = this->mat[10];
             minorElem[8] = this->mat[14];
-            cofac[3] = -this->determinant (minorElem);
+            cofac[3] = -this->determinant3x3 (minorElem);
 
             // 4.
             minorElem[0] = this->mat[1];
@@ -352,25 +390,25 @@ namespace morph {
             minorElem[5] = this->mat[11];
             minorElem[8] = this->mat[15];
 
-            cofac[4] = -this->determinant (minorElem);
+            cofac[4] = -this->determinant3x3 (minorElem);
 
             // 5.
             minorElem[0] = this->mat[0];
             minorElem[3] = this->mat[8];
             minorElem[6] = this->mat[12];
-            cofac[5] = this->determinant (minorElem);
+            cofac[5] = this->determinant3x3 (minorElem);
 
             // 6.
             minorElem[1] = this->mat[1];
             minorElem[4] = this->mat[9];
             minorElem[7] = this->mat[13];
-            cofac[6] = -this->determinant (minorElem);
+            cofac[6] = -this->determinant3x3 (minorElem);
 
             // 7.
             minorElem[2] = this->mat[2];
             minorElem[5] = this->mat[10];
             minorElem[8] = this->mat[14];
-            cofac[7] = this->determinant (minorElem);
+            cofac[7] = this->determinant3x3 (minorElem);
 
             // 8.
             minorElem[0] = this->mat[1];
@@ -385,25 +423,25 @@ namespace morph {
             minorElem[5] = this->mat[7];
             minorElem[8] = this->mat[15];
 
-            cofac[8] = this->determinant (minorElem);
+            cofac[8] = this->determinant3x3 (minorElem);
 
             // 9.
             minorElem[0] = this->mat[0];
             minorElem[3] = this->mat[4];
             minorElem[6] = this->mat[12];
-            cofac[9] = -this->determinant (minorElem);
+            cofac[9] = -this->determinant3x3 (minorElem);
 
             // 10.
             minorElem[1] = this->mat[1];
             minorElem[4] = this->mat[5];
             minorElem[7] = this->mat[13];
-            cofac[10] = this->determinant (minorElem);
+            cofac[10] = this->determinant3x3 (minorElem);
 
             // 11.
             minorElem[2] = this->mat[2];
             minorElem[5] = this->mat[6];
             minorElem[8] = this->mat[14];
-            cofac[11] = -this->determinant (minorElem);
+            cofac[11] = -this->determinant3x3 (minorElem);
 
             // 12.
             minorElem[0] = this->mat[1];
@@ -418,25 +456,25 @@ namespace morph {
             minorElem[5] = this->mat[7];
             minorElem[8] = this->mat[11];
 
-            cofac[12] = -this->determinant (minorElem);
+            cofac[12] = -this->determinant3x3 (minorElem);
 
             // 13.
             minorElem[0] = this->mat[0];
             minorElem[3] = this->mat[4];
             minorElem[6] = this->mat[8];
-            cofac[13] = this->determinant (minorElem);
+            cofac[13] = this->determinant3x3 (minorElem);
 
             // 14.
             minorElem[1] = this->mat[1];
             minorElem[4] = this->mat[5];
             minorElem[7] = this->mat[9];
-            cofac[14] = -this->determinant (minorElem);
+            cofac[14] = -this->determinant3x3 (minorElem);
 
             // 15.
             minorElem[2] = this->mat[2];
             minorElem[5] = this->mat[6];
             minorElem[8] = this->mat[10];
-            cofac[15] = this->determinant (minorElem);
+            cofac[15] = this->determinant3x3 (minorElem);
 
             return cofac;
         }
@@ -469,7 +507,7 @@ namespace morph {
          * seems so. See also https://www.songho.ca/opengl/gl_quaternion.html#overview
          * and https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html)
          */
-        template <typename T = float>
+        template <typename T = float> requires std::is_arithmetic_v<T>
         constexpr void rotate (const quaternion<T>& q)
         {
             std::array<F, 16> m;
@@ -508,18 +546,20 @@ namespace morph {
         }
 
         //! Rotate an angle theta radians about axis
-        constexpr void rotate (const std::array<F, 3>& axis, const F& theta)
+        template <typename T> requires std::is_arithmetic_v<T>
+        constexpr void rotate (const std::array<T, 3>& axis, const T& theta)
         {
-            quaternion<F> q;
+            quaternion<T> q;
             q.rotate (axis, theta);
-            this->rotate<F> (q);
+            this->rotate<T> (q);
         }
 
-        constexpr void rotate (const morph::vec<F, 3>& axis, const F& theta)
+        template <typename T> requires std::is_arithmetic_v<T>
+        constexpr void rotate (const morph::vec<T, 3>& axis, const T& theta)
         {
-            quaternion<F> q;
+            quaternion<T> q;
             q.rotate (axis, theta);
-            this->rotate<F> (q);
+            this->rotate<T> (q);
         }
 
         //! Right-multiply this->mat with m2.
@@ -907,14 +947,14 @@ namespace morph {
         }
 
         //! *= operator for a scalar value.
-        template <typename T=F>
+        template <typename T=F> requires std::is_arithmetic_v<T>
         constexpr void operator*= (const T& f)
         {
             for (unsigned int i = 0; i<16; ++i) { this->mat[i] *= f; }
         }
 
         //! Equality operator. True if all elements match
-        constexpr bool operator==(const mat44<F>& rhs) const
+        constexpr bool operator== (const mat44<F>& rhs) const
         {
             unsigned int ndiff = 0;
             for (unsigned int i = 0; i < 16 && ndiff == 0; ++i) {
@@ -924,7 +964,7 @@ namespace morph {
         }
 
         //! Not equals
-        constexpr bool operator!=(const mat44<F>& rhs) const
+        constexpr bool operator!= (const mat44<F>& rhs) const
         {
             unsigned int ndiff = 0;
             for (unsigned int i = 0; i < 16 && ndiff == 0; ++i) {
