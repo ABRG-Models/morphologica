@@ -2,12 +2,9 @@
 #include <chrono>
 #include <list>
 
-#define HEX_HAS_NE 0x1
-#define HEX_HAS_NW 0x2
-
 struct Hex
 {
-    Hex(const unsigned int& idx, const int& r_) : vi(idx), ri(r_) {}
+    Hex (const unsigned int& idx, const int& r_) : vi(idx), ri(r_) {}
     void set_ne (std::list<Hex>::iterator it) { this->ne = it; this->flags |= HEX_HAS_NE; } // Set eastern neighbour
     void set_nw (std::list<Hex>::iterator it) { this->nw = it; this->flags |= HEX_HAS_NW; }
     bool has_ne() const { return ((this->flags & HEX_HAS_NE) == HEX_HAS_NE); } // test for eastern neighbour
@@ -25,6 +22,8 @@ struct Hex
     std::list<Hex>::iterator nw; // iterator to the western neighbour
 private:
     unsigned int flags = 0x0;
+    static constexpr unsigned int HEX_HAS_NE = 0x1;
+    static constexpr unsigned int HEX_HAS_NW = 0x2;
 };
 
 int main()
