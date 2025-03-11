@@ -22,7 +22,7 @@ Morphologica is compatible with **Linux** (including **Raspberry Pi**), **Mac OS
 
 Morphologica has **OpenGL Compute Shader managers** . See [**examples/gl_compute**](https://github.com/ABRG-Models/morphologica/tree/main/examples/gl_compute) for details.
 
-You'll find all of the **library code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory and you can find [**example code and screenshots** here](https://github.com/ABRG-Models/morphologica/tree/main/examples).
+You'll find all of the **library code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory and you can find **example code and screenshots** [here](https://github.com/ABRG-Models/morphologica/tree/main/examples). There is also a **template project** [that uses morphologica](https://github.com/ABRG-Models/morphologica_template) to help you incorporate the library into your own work.
 
 morphologica has a **documentation and reference** website at https://abrg-models.github.io/morphologica/.
 
