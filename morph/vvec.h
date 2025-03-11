@@ -495,32 +495,33 @@ namespace morph {
         }
 
         /*!
+         * constexpr function to return a type-suitable value for the 'unit threshold'. A perfect
+         * unit vector has length==1. abs(1 - length(any vector)) gives an error value. If this
+         * error value is smaller than the unit threshold, we call the vector a unit vector to
+         * within the tolerances that we can compute.
+         */
+        static constexpr S unitThresh() noexcept
+        {
+            // Note: std::float16_t comes with C++23
+            if constexpr (std::is_same<S, float>::value) {
+                return S{1e-6};
+            } else if constexpr (std::is_same<S, double>::value) {
+                return S{1e-14};
+            } else {
+                return S{0};
+            }
+        }
+
+        /*!
          * Test to see if this vector is a unit vector (it doesn't *have* to be).
          *
          * \return true if the length of the vector is 1.
          */
         bool checkunit() const
         {
-            /*!
-             * \brief Unit vector threshold
-             *
-             * The threshold outside of which the vector is no longer considered to be a
-             * unit vector. Note this is hard coded as a constexpr, to avoid messing with
-             * the initialization of the vvec with curly brace initialization.
-             *
-             * Clearly, this will be the wrong threshold for some cases. Possibly, a
-             * template parameter could set this; so std::size_t U could indicate the threshold;
-             * 0.001 could be U=-3 (10^-3).
-             *
-             * Another idea would be to change unitThresh based on the type S. Or use
-             * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
-             * sense.
-             */
-            static constexpr S unitThresh = 0.001;
-
             auto subtract_squared = [](S a, S b) { return a - b * b; };
             const S metric = std::accumulate (this->begin(), this->end(), S{1}, subtract_squared);
-            if (std::abs(metric) > unitThresh) {
+            if (std::abs(metric) > morph::vvec<S>::unitThresh()) {
                 return false;
             }
             return true;
