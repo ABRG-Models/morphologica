@@ -84,9 +84,9 @@ namespace morph {
         {
             // Note: std::float16_t comes with C++23
             if constexpr (std::is_same<F, float>::value) {
-                return F{0.0001}; // figure out right value
+                return F{1e-6};
             } else { // double
-                return F{0.000000001}; // figure out right value
+                return F{1e-14};
             }
         }
 
