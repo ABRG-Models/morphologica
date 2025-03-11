@@ -96,48 +96,48 @@ namespace morph {
         std::uniform_real_distribution<T> dist;
     public:
         //! Default constructor gives RN generator which works in range [0,1)
-        RandUniform ()
+        RandUniform () noexcept
         {
             typename std::uniform_real_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
         //! This constructor gives RN generator which works in range [0,1) and sets a
         //! fixed seed
-        RandUniform (unsigned int _seed)
+        RandUniform (unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::uniform_real_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
         //! This constructor gives RN generator which works in range [a,b)
-        RandUniform (T a, T b)
+        RandUniform (T a, T b) noexcept
         {
             typename std::uniform_real_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
         //! This constructor gives RN generator which works in range [a,b)
-        RandUniform (T a, T b, unsigned int _seed)
+        RandUniform (T a, T b, unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::uniform_real_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
         //! Copy constructor copies the parameters of the distribution
-        RandUniform (const RandUniform<T>& rng) { this->param (rng.param()); }
+        RandUniform (const RandUniform<T>& rng) noexcept { this->param (rng.param()); }
         //! Copy assignment operator needs to be explicitly defined
-        RandUniform& operator= (const RandUniform<T>& rng)
+        RandUniform& operator= (const RandUniform<T>& rng) noexcept
         {
             if (&rng == static_cast<const RandUniform<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
         //! Reveal the distribution param methods
-        typename std::uniform_real_distribution<T>::param_type param() const { return dist.param(); }
-        void param (const typename std::uniform_real_distribution<T>::param_type& prms) { this->dist.param(prms); }
+        typename std::uniform_real_distribution<T>::param_type param() const noexcept { return dist.param(); }
+        void param (const typename std::uniform_real_distribution<T>::param_type& prms) noexcept { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get() { return this->dist (this->generator); }
+        T get() noexcept { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (std::size_t n)
+        std::vector<T> get (std::size_t n) noexcept
         {
             std::vector<T> rtn (n, T{0});
             for (std::size_t i = 0; i < n; ++i) {
@@ -147,14 +147,14 @@ namespace morph {
         }
         //! Place n random numbers in the array rtn
         template<std::size_t n>
-        void get (std::array<T, n>& rtn)
+        void get (std::array<T, n>& rtn) noexcept
         {
             for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
-        T min() { return this->dist.min(); }
-        T max() { return this->dist.max(); }
+        T min() noexcept { return this->dist.min(); }
+        T max() noexcept { return this->dist.max(); }
         //! Change the max/min of the distribution to be in range [a,b)
-        void setparams (T a, T b)
+        void setparams (T a, T b) noexcept
         {
             typename std::uniform_real_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
@@ -178,7 +178,7 @@ namespace morph {
     public:
         //! Default constructor gives an integer random number generator which works
         //! in range [(type min),(type max)]
-        RandUniform ()
+        RandUniform () noexcept
         {
             typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
                                                                         std::numeric_limits<T>::max());
@@ -186,7 +186,7 @@ namespace morph {
         }
         //! This constructor gives an integer random number generator which works
         //! in range [(type min),(type max)] with fixed seed \a _seed.
-        RandUniform (unsigned int _seed)
+        RandUniform (unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
@@ -194,36 +194,36 @@ namespace morph {
             this->dist.param (prms);
         }
         //! This constructor gives RN generator which works in range [a,b]
-        RandUniform (T a, T b)
+        RandUniform (T a, T b) noexcept
         {
             typename std::uniform_int_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
         //! This constructor gives RN generator which works in range [a,b] and sets a
         //! fixed seed.
-        RandUniform (T a, T b, unsigned int _seed)
+        RandUniform (T a, T b, unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::uniform_int_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
         //! Copy constructor copies the distribution parameters
-        RandUniform (const RandUniform<T>& rng) { this->param (rng.param()); }
+        RandUniform (const RandUniform<T>& rng) noexcept { this->param (rng.param()); }
         //! Copy assignment operator needs to be explicitly defined
-        RandUniform& operator= (const RandUniform<T>& rng)
+        RandUniform& operator= (const RandUniform<T>& rng) noexcept
         {
             if (&rng == static_cast<const RandUniform<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
         //! Reveal the distribution's param getter
-        typename std::uniform_int_distribution<T>::param_type param() const { return dist.param(); }
+        typename std::uniform_int_distribution<T>::param_type param() const noexcept { return dist.param(); }
         //! Reveal the distribution's param setter
-        void param (const typename std::uniform_int_distribution<T>::param_type& prms) { this->dist.param(prms); }
+        void param (const typename std::uniform_int_distribution<T>::param_type& prms) noexcept { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get() { return this->dist (this->generator); }
+        T get() noexcept { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (std::size_t n)
+        std::vector<T> get (std::size_t n) noexcept
         {
             std::vector<T> rtn (n, T{0});
             for (std::size_t i = 0; i < n; ++i) {
@@ -233,16 +233,16 @@ namespace morph {
         }
         //! Place n random numbers in the array rtn
         template<std::size_t n>
-        void get (std::array<T, n>& rtn)
+        void get (std::array<T, n>& rtn) noexcept
         {
             for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         //! min wrapper
-        T min() { return this->dist.min(); }
+        T min() noexcept { return this->dist.min(); }
         //! max wrapper
-        T max() { return this->dist.max(); }
+        T max() noexcept { return this->dist.max(); }
         //! Change the max/min of the distribution to range [a,b]
-        void setparams (T a, T b)
+        void setparams (T a, T b) noexcept
         {
             typename std::uniform_int_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
@@ -268,49 +268,49 @@ namespace morph {
         std::normal_distribution<T> dist;
     public:
         //! Default constructor gives RN generator with mean 0 and standard deviation 1
-        RandNormal()
+        RandNormal() noexcept
         {
             typename std::normal_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
         //! This constructor gives RN generator with mean 0 and standard deviation 1
         //! and set a fixed seed.
-        RandNormal (unsigned int _seed)
+        RandNormal (unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::normal_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
         //! This constructor gives RN generator with mean \a mean and standard deviation \a sigma
-        RandNormal (T mean, T sigma)
+        RandNormal (T mean, T sigma) noexcept
         {
             typename std::normal_distribution<T>::param_type prms (mean, sigma);
             this->dist.param (prms);
         }
         //! This constructor gives RN generator with mean \a mean and standard deviation \a sigma
-        RandNormal (T mean, T sigma, unsigned int _seed)
+        RandNormal (T mean, T sigma, unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::normal_distribution<T>::param_type prms (mean, sigma);
             this->dist.param (prms);
         }
         //! Copy constructor copies the distribution parameters
-        RandNormal (const RandNormal<T>& rng) { this->param (rng.param()); }
+        RandNormal (const RandNormal<T>& rng) noexcept { this->param (rng.param()); }
         //! Copy assignment operator needs to be explicitly defined
-        RandNormal& operator= (const RandNormal<T>& rng)
+        RandNormal& operator= (const RandNormal<T>& rng) noexcept
         {
             if (&rng == static_cast<const RandNormal<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
         //! Reveal the distribution's param getter
-        typename std::normal_distribution<T>::param_type param() const { return dist.param(); }
+        typename std::normal_distribution<T>::param_type param() const noexcept { return dist.param(); }
         //! Reveal the distribution's param setter
-        void param (const typename std::normal_distribution<T>::param_type& prms) { this->dist.param(prms); }
+        void param (const typename std::normal_distribution<T>::param_type& prms) noexcept { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get() { return this->dist (this->generator); }
+        T get() noexcept { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (std::size_t n)
+        std::vector<T> get (std::size_t n) noexcept
         {
             std::vector<T> rtn (n, T{0});
             for (std::size_t i = 0; i < n; ++i) {
@@ -320,12 +320,12 @@ namespace morph {
         }
         //! Place n random numbers in the array rtn
         template<std::size_t n>
-        void get (std::array<T, n>& rtn)
+        void get (std::array<T, n>& rtn) noexcept
         {
             for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
-        T min() { return this->dist.min(); }
-        T max() { return this->dist.max(); }
+        T min() noexcept { return this->dist.min(); }
+        T max() noexcept { return this->dist.max(); }
     };
 
     /*!
@@ -348,14 +348,14 @@ namespace morph {
     public:
         //! Default constructor gives RN generator with mean-of-the-log 0 and standard
         //! deviation-of-the-log 1
-        RandLogNormal()
+        RandLogNormal() noexcept
         {
             typename std::lognormal_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
         //! This constructor gives RN generator with mean-of-the-log 0 and standard
         //! deviation-of-the-log 1. Sets a fixed seed.
-        RandLogNormal (unsigned int _seed)
+        RandLogNormal (unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::lognormal_distribution<T>::param_type prms (T{0}, T{1});
@@ -363,36 +363,36 @@ namespace morph {
         }
         //! This constructor gives RN generator with mean-of-the-log \a mean and
         //! standard deviation \a sigma
-        RandLogNormal (T mean, T sigma)
+        RandLogNormal (T mean, T sigma) noexcept
         {
             typename std::lognormal_distribution<T>::param_type prms (mean, sigma);
             this->dist.param (prms);
         }
         //! This constructor gives RN generator with mean-of-the-log \a mean and
         //! standard deviation \a sigma and sets a seed.
-        RandLogNormal (T mean, T sigma, unsigned int _seed)
+        RandLogNormal (T mean, T sigma, unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::lognormal_distribution<T>::param_type prms (mean, sigma);
             this->dist.param (prms);
         }
         //! Copy constructor copies the distribution parameters
-        RandLogNormal (const RandLogNormal<T>& rng) { this->param (rng.param()); }
+        RandLogNormal (const RandLogNormal<T>& rng) noexcept { this->param (rng.param()); }
         //! Copy assignment operator needs to be explicitly defined
-        RandLogNormal& operator= (const RandLogNormal<T>& rng)
+        RandLogNormal& operator= (const RandLogNormal<T>& rng) noexcept
         {
             if (&rng == static_cast<const RandLogNormal<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
         //! Reveal the distribution's param getter
-        typename std::lognormal_distribution<T>::param_type param() const { return dist.param(); }
+        typename std::lognormal_distribution<T>::param_type param() const noexcept { return dist.param(); }
         //! Reveal the distribution's param setter
-        void param (const typename std::lognormal_distribution<T>::param_type& prms) { this->dist.param(prms); }
+        void param (const typename std::lognormal_distribution<T>::param_type& prms) noexcept { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get() { return this->dist (this->generator); }
+        T get() noexcept { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (std::size_t n)
+        std::vector<T> get (std::size_t n) noexcept
         {
             std::vector<T> rtn (n, T{0});
             for (std::size_t i = 0; i < n; ++i) {
@@ -402,12 +402,12 @@ namespace morph {
         }
         //! Place n random numbers in the array rtn
         template<std::size_t n>
-        void get (std::array<T, n>& rtn)
+        void get (std::array<T, n>& rtn) noexcept
         {
             for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
-        T min() { return this->dist.min(); }
-        T max() { return this->dist.max(); }
+        T min() noexcept { return this->dist.min(); }
+        T max() noexcept { return this->dist.max(); }
     };
 
     /*!
@@ -431,49 +431,49 @@ namespace morph {
         std::poisson_distribution<T> dist;
     public:
         //! Default constructor gives a Poisson random number generator with mean 0.
-        RandPoisson()
+        RandPoisson() noexcept
         {
             typename std::poisson_distribution<T>::param_type prms (T{0});
             this->dist.param (prms);
         }
         //! Default constructor gives a Poisson random number generator with mean
         //! 0. Sets fixed seed \a _seed.
-        RandPoisson (unsigned int _seed)
+        RandPoisson (unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::poisson_distribution<T>::param_type prms (T{0});
             this->dist.param (prms);
         }
         //! This constructor gives RN generator with mean \a mean.
-        RandPoisson (T mean)
+        RandPoisson (T mean) noexcept
         {
             typename std::poisson_distribution<T>::param_type prms (mean);
             this->dist.param (prms);
         }
         //! This constructor gives RN generator with mean \a mean.
-        RandPoisson (T mean, unsigned int _seed)
+        RandPoisson (T mean, unsigned int _seed) noexcept
         {
             this->generator.seed (_seed);
             typename std::poisson_distribution<T>::param_type prms (mean);
             this->dist.param (prms);
         }
         //! Copy constructor copies the distribution parameters
-        RandPoisson (const RandPoisson<T>& rng) { this->param (rng.param()); }
+        RandPoisson (const RandPoisson<T>& rng) noexcept { this->param (rng.param()); }
         //! Copy assignment operator needs to be explicitly defined
-        RandPoisson& operator= (const RandPoisson<T>& rng)
+        RandPoisson& operator= (const RandPoisson<T>& rng) noexcept
         {
             if (&rng == static_cast<const RandPoisson<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
         //! Reveal the distribution's param getter
-        typename std::poisson_distribution<T>::param_type param() const { return dist.param(); }
+        typename std::poisson_distribution<T>::param_type param() const noexcept { return dist.param(); }
         //! Reveal the distribution's param setter
-        void param (const typename std::poisson_distribution<T>::param_type& prms) { this->dist.param(prms); }
+        void param (const typename std::poisson_distribution<T>::param_type& prms) noexcept { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get() { return this->dist (this->generator); }
+        T get() noexcept { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (std::size_t n)
+        std::vector<T> get (std::size_t n) noexcept
         {
             std::vector<T> rtn (n, T{0});
             for (std::size_t i = 0; i < n; ++i) {
@@ -483,14 +483,14 @@ namespace morph {
         }
         //! Place n random numbers in the array rtn
         template<std::size_t n>
-        void get (std::array<T, n>& rtn)
+        void get (std::array<T, n>& rtn) noexcept
         {
             for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         //! min wrapper
-        T min() { return this->dist.min(); }
+        T min() noexcept { return this->dist.min(); }
         //! max wrapper
-        T max() { return this->dist.max(); }
+        T max() noexcept { return this->dist.max(); }
     };
 
     //! Enumerated class defining groups of characters, such as AlphaNumericUpperCase,
@@ -515,15 +515,15 @@ namespace morph {
     {
     public:
         //! Default constructor gives a string generator that generates 8 HexLowerCase characters
-        RandString() : length(8) { this->setupRNG(); }
+        RandString() noexcept : length(8) { this->setupRNG(); }
         //! Construct to generate a string of a particular length \a l, in default HexLowerCase format
-        RandString(const unsigned int l) : length(l) { this->setupRNG(); }
+        RandString (const unsigned int l) noexcept : length(l) { this->setupRNG(); }
         //! Construct with given length \a l and character group \a _cg.
-        RandString(const unsigned int l, const CharGroup& _cg) : length(l), cg(_cg) { this->setupRNG(); }
+        RandString (const unsigned int l, const CharGroup& _cg) noexcept : length(l), cg(_cg) { this->setupRNG(); }
 
         //! Get a random string of RandString::length characters chosen from the given
         //! CharGroup RandString::cg
-        std::string get() const
+        std::string get() const noexcept
         {
             // Initialise a string of the correct length
             std::string s(this->length, ' ');
@@ -606,14 +606,14 @@ namespace morph {
         }
 
         //! Get a particular length of string - updates RandString::length first
-        std::string get (const unsigned int l)
+        std::string get (const unsigned int l) noexcept
         {
             this->length = l;
             return this->get();
         }
 
         //! Set a new CharGroup
-        void setCharGroup (const CharGroup& _cg)
+        void setCharGroup (const CharGroup& _cg) noexcept
         {
             this->cg = _cg;
             this->setupRNG();
@@ -622,14 +622,14 @@ namespace morph {
     private:
 
         //! When CharGroup changes, the rng has to be re-set up.
-        void setupRNG()
+        void setupRNG() noexcept
         {
             // Set rng to generate random numbers in correct range
             this->rng = std::make_unique<RandUniform<unsigned short>>(0, this->numChars()-1);
         }
 
         //! Return the number of characters total in each CharGroup
-        unsigned short numChars() const
+        unsigned short numChars() const noexcept
         {
             unsigned short n = 0;
             switch (this->cg) {
