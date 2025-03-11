@@ -20,14 +20,14 @@ namespace morph {
 
     // Forward declare the class and stream operator
     template <typename T> struct range;
-    template <typename T> std::ostream& operator<< (std::ostream&, const range<T>&);
+    template <typename T> std::ostream& operator<< (std::ostream&, const range<T>&) noexcept;
 
     // range is a constexpr-friendly literal type
     template <typename T>
     struct range
     {
-        constexpr range() {}
-        constexpr range (const T& _min, const T& _max) : min(_min), max(_max) {}
+        constexpr range() noexcept {}
+        constexpr range (const T& _min, const T& _max) noexcept : min(_min), max(_max) {}
 
         // The minimum
         T min = T{0};
@@ -35,14 +35,14 @@ namespace morph {
         T max = T{0};
 
         // Set the range to _min, _max
-        constexpr void set (const T& _min, const T& _max)
+        constexpr void set (const T& _min, const T& _max) noexcept
         {
             this->min = _min;
             this->max = _max;
         }
 
         // Output a string representation of the min and max. Rewrite with <format> at some point.
-        std::string str() const
+        std::string str() const noexcept
         {
             std::stringstream ss;
             ss << "[" << this->min << ", " << this->max << "]";
@@ -59,7 +59,7 @@ namespace morph {
         // r.search_init();
         // for (auto d : data) { r.update (d); }
         // std::cout << "The range of values in data was: " << r << std::endl;
-        constexpr void search_init()
+        constexpr void search_init() noexcept
         {
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
                 this->min = { std::numeric_limits<typename T::value_type>::max(), std::numeric_limits<typename T::value_type>::max() };
@@ -73,7 +73,7 @@ namespace morph {
         }
 
         // Extend the range to include the given datum. Return true if the range changed.
-        constexpr bool update (const T& d)
+        constexpr bool update (const T& d) noexcept
         {
             bool changed = false;
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
@@ -90,7 +90,7 @@ namespace morph {
         }
 
         // Does the range include the value v?
-        constexpr bool includes (const T& v) const
+        constexpr bool includes (const T& v) const noexcept
         {
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
                 // Is v inside the rectangle in the complex plane made by min and max?
@@ -104,7 +104,7 @@ namespace morph {
         }
 
         // If the range other 'fits inside' this range, then this range contains (or encompasses) the range other.
-        constexpr bool contains (const morph::range<T>& other) const
+        constexpr bool contains (const morph::range<T>& other) const noexcept
         {
             if constexpr (morph::number_type<T>::value == 2) { // range is complex
                 // Does other define a rectangle in the complex plane that fits inside the one made by this->min and max?
@@ -121,15 +121,15 @@ namespace morph {
         }
 
         // What's the 'span of the range'? Whether scalar or complex (or vector), it's max - min
-        constexpr T span() const { return this->max - this->min; }
+        constexpr T span() const noexcept { return this->max - this->min; }
 
         // Overload the stream output operator
-        friend std::ostream& operator<< <T> (std::ostream& os, const range<T>& r);
+        friend std::ostream& operator<< <T> (std::ostream& os, const range<T>& r) noexcept;
     };
 
     // Output a string with notation "[min, max]" to indicate a closed interval
     template <typename T>
-    std::ostream& operator<< (std::ostream& os, const range<T>& r)
+    std::ostream& operator<< (std::ostream& os, const range<T>& r) noexcept
     {
         os << "[" << r.min << ", " << r.max << "]";
         return os;
