@@ -72,8 +72,12 @@ else()
       endif()
     endif()
   else() # Windows
-    # Set flags for Windows. /EHsc required for use of exceptions
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc /constexpr:steps500000000")
+    # Set flags for Windows.
+    # -DNOMINMAX to prefer std::min and std::max
+    # /EHsc required for use of exceptions
+    # /Zc:__cplusplus ensures __cplusplus define does not lie
+    # /constexpr:steps is equivalent to -fconstexpr-steps or -fconstexpr-ops-limit
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc /Zc:__cplusplus /constexpr:steps500000000")
   endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
 

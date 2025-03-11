@@ -715,11 +715,7 @@ namespace morph {
     template<typename T, typename S>
     class scale_impl<3, T, S> : public scale_impl_base<T, S> {
         void compute_scaling_linear ([[maybe_unused]] T input_min, [[maybe_unused]] T input_max) {
-#if __cplusplus >= 202002L
             []<bool flag = false>() { static_assert(flag, "morph::scale does not support scaling vectors of complex numbers"); }();
-#else
-            throw std::runtime_error ("morph::scale does not support scaling vectors of complex numbers");
-#endif
         }
     };
 
@@ -727,11 +723,7 @@ namespace morph {
     template<typename T, typename S>
     class scale_impl<-1, T, S> : public scale_impl_base<T, S> {
         void compute_scaling_linear ([[maybe_unused]] T input_min, [[maybe_unused]] T input_max) {
-#if __cplusplus >= 202002L
             []<bool flag = false>() { static_assert(flag, "morph::scale does not support scaling non-number types"); }();
-#else
-            throw std::runtime_error ("morph::scale does not support scaling non-number types");
-#endif
         }
     };
 
