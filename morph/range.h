@@ -68,11 +68,7 @@ namespace morph {
                 this->min = std::numeric_limits<T>::max();
                 this->max = std::numeric_limits<T>::lowest();
             } else {
-#if __cplusplus >= 202002L
                 []<bool flag = false>() { static_assert(flag, "morph::range::search_init does not support this type"); }();
-#else
-                throw std::runtime_error ("morph::range::search_init does not support this type");
-#endif
             }
         }
 
@@ -88,11 +84,7 @@ namespace morph {
                 this->min = d < this->min ? changed = true, d : this->min;
                 this->max = d > this->max ? changed = true, d : this->max;
             } else {
-#if __cplusplus >= 202002L
                 []<bool flag = false>() { static_assert(flag, "morph::range::update does not support this type"); }();
-#else
-                throw std::runtime_error ("morph::range::update does not support this type");
-#endif
             }
             return changed;
         }
@@ -107,11 +99,7 @@ namespace morph {
             } else if constexpr (morph::number_type<T>::value == 1) { // range is scalar
                 return (v <= this->max && v >= this->min);
             } else {
-#if __cplusplus >= 202002L
                 []<bool flag = false>() { static_assert(flag, "morph::range::includes does not support this type"); }();
-#else
-                throw std::runtime_error ("morph::range::includes does not support this type");
-#endif
             }
         }
 
@@ -128,11 +116,7 @@ namespace morph {
             } else if constexpr (morph::number_type<T>::value == 1) { // range is scalar
                 return (this->min <= other.min && this->max >= other.max);
             } else {
-#if __cplusplus >= 202002L
                 []<bool flag = false>() { static_assert(flag, "morph::range::contains does not support this type"); }();
-#else
-                throw std::runtime_error ("morph::range::contains does not support this type");
-#endif
             }
         }
 

@@ -87,10 +87,8 @@ namespace morph {
         template <typename _S=S>
         void set_from (const std::vector<_S>& vec)
         {
-            if (vec.size() != N) {
-                throw std::runtime_error ("vec::set_from(): Ensure vector sizes match");
-            }
-            std::copy (vec.begin(), vec.end(), this->begin());
+            std::size_t n = std::min (N, vec.size());
+            for (std::size_t i = 0; i < n; ++i) { (*this)[i] = vec[i]; }
         }
 
         //! Set data members from an array the of same size and type.
@@ -533,11 +531,7 @@ namespace morph {
                     _sos = this->sos<_S>();
                 } else {
                     // Return type is a vector. Too weird.
-#if __cplusplus >= 202002L
                     []<bool flag = false>() { static_assert(flag, "Won't compute sum of squared scalar elements into a vector type"); }();
-#else
-                    throw std::runtime_error ("Won't compute sum of squared scalar elements into a vector type");
-#endif
                 }
             } else {
                 // S is a vector so i is a vector.
@@ -546,11 +540,7 @@ namespace morph {
                     for (auto& i : *this) { _sos += i.template sos<_S>(); }
                 } else {
                     // Return type _S is also a vector, place result in 0th element? No, can now use vvec<vec<float>>::sos<float>()
-#if __cplusplus >= 202002L
                     []<bool flag = false>() { static_assert(flag, "Won't compute sum of squared vector length elements into a vector type"); }();
-#else
-                    throw std::runtime_error ("Won't compute sum of squared vector lengths into a vector type");
-#endif
                 }
             }
             return _sos;
