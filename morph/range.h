@@ -20,7 +20,7 @@ namespace morph {
 
     // Forward declare the class and stream operator
     template <typename T> struct range;
-    template <typename T> std::ostream& operator<< (std::ostream&, const range<T>&) noexcept;
+    template <typename T> std::ostream& operator<< (std::ostream&, const range<T>&);
 
     // range is a constexpr-friendly literal type
     template <typename T>
@@ -42,7 +42,7 @@ namespace morph {
         }
 
         // Output a string representation of the min and max. Rewrite with <format> at some point.
-        std::string str() const noexcept
+        std::string str() const
         {
             std::stringstream ss;
             ss << "[" << this->min << ", " << this->max << "]";
@@ -124,12 +124,12 @@ namespace morph {
         constexpr T span() const noexcept { return this->max - this->min; }
 
         // Overload the stream output operator
-        friend std::ostream& operator<< <T> (std::ostream& os, const range<T>& r) noexcept;
+        friend std::ostream& operator<< <T> (std::ostream& os, const range<T>& r);
     };
 
     // Output a string with notation "[min, max]" to indicate a closed interval
     template <typename T>
-    std::ostream& operator<< (std::ostream& os, const range<T>& r) noexcept
+    std::ostream& operator<< (std::ostream& os, const range<T>& r)
     {
         os << "[" << r.min << ", " << r.max << "]";
         return os;

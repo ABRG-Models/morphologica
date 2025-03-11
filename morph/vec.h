@@ -12,7 +12,6 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <stdexcept>
 #include <type_traits>
 #include <numeric>
 #include <limits>
@@ -65,7 +64,7 @@ namespace morph {
      * stream operator overloading. Example adapted from
      * https://stackoverflow.com/questions/4660123
      */
-    template <typename S, std::size_t N> std::ostream& operator<< (std::ostream&, const vec<S, N>&) noexcept;
+    template <typename S, std::size_t N> std::ostream& operator<< (std::ostream&, const vec<S, N>&);
 
     template <typename S=float, std::size_t N=3>
     struct vec : public std::array<S, N>
@@ -225,7 +224,7 @@ namespace morph {
         constexpr vec<unsigned int, N> as_uint() const noexcept { return this->as<unsigned int>(); }
 
         //! Stream the elements of the vector into \a ss as a comma separated list.
-        void str_comma_separated (std::stringstream& ss, const char sep = ',') const noexcept
+        void str_comma_separated (std::stringstream& ss, const char sep = ',') const
         {
             ss << std::setprecision (std::numeric_limits<S>::max_digits10);
             bool first = true;
@@ -241,7 +240,7 @@ namespace morph {
             }
         }
 
-        std::string str_comma_separated (const char sep = ',') const noexcept
+        std::string str_comma_separated (const char sep = ',') const
         {
             std::stringstream ss;
             this->str_comma_separated (ss, sep);
@@ -254,7 +253,7 @@ namespace morph {
          * \return A 'coordinate format' string such as "(1,1,2)", "(0.2,0.4)" or
          * "(5,4,5,5,40)".
          */
-        std::string str() const noexcept
+        std::string str() const
         {
             std::stringstream ss;
             ss << "(";
@@ -264,7 +263,7 @@ namespace morph {
         }
 
         //! Output the vector in a form suitable to paste into MATLAB or Octave
-        std::string str_mat() const noexcept
+        std::string str_mat() const
         {
             std::stringstream ss;
             ss << "[";
@@ -275,7 +274,7 @@ namespace morph {
 
         //! Output the vector in a form suitable to paste into Python, as a numpy
         //! vector, assuming you imported numpy as np
-        std::string str_numpy() const noexcept
+        std::string str_numpy() const
         {
             std::stringstream ss;
             ss << "np.array((";
@@ -285,7 +284,7 @@ namespace morph {
         }
 
         //! Output in a form that can be used as an initializer list in C++
-        std::string str_initializer() const noexcept
+        std::string str_initializer() const
         {
             std::stringstream ss;
             ss << "{";
@@ -1399,11 +1398,11 @@ namespace morph {
         }
 
         //! Overload the stream output operator
-        friend std::ostream& operator<< <S, N> (std::ostream& os, const vec<S, N>& v) noexcept;
+        friend std::ostream& operator<< <S, N> (std::ostream& os, const vec<S, N>& v);
     };
 
     template <typename S=float, std::size_t N=3>
-    std::ostream& operator<< (std::ostream& os, const vec<S, N>& v) noexcept
+    std::ostream& operator<< (std::ostream& os, const vec<S, N>& v)
     {
         os << v.str();
         return os;
