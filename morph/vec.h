@@ -94,7 +94,7 @@ namespace morph {
         template <typename _S=S>
         constexpr void set_from (const std::array<_S, N>& ar) noexcept
         {
-            std::copy (ar.begin(), ar.end(), this->begin());
+            for (std::size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
         }
 
         /*!
@@ -105,7 +105,6 @@ namespace morph {
         template <typename _S=S>
         constexpr void set_from (const std::array<_S, (N+1)>& ar) noexcept
         {
-            // Don't use std::copy here, because ar has more elements than *this.
             for (std::size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
         }
 
@@ -118,7 +117,6 @@ namespace morph {
         template <typename _S=S>
         constexpr void set_from (const std::array<_S, (N-1)>& ar) noexcept
         {
-            // Don't use std::copy here, because ar has more elements than *this.
             for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = ar[i]; }
             (*this)[N-1] = S{0};
         }
