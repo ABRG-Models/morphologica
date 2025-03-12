@@ -159,7 +159,7 @@ namespace morph {
         }
 
         //! \return a vector with one less dimension - losing the last one.
-        vvec<S> less_one_dim () const noexcept
+        vvec<S> less_one_dim () const
         {
             std::size_t N = this->size();
             vvec<S> rtn(N-1);
@@ -168,7 +168,7 @@ namespace morph {
         }
 
         //! \return a vector with one additional dimension - setting it to 0.
-        vvec<S> plus_one_dim () const noexcept
+        vvec<S> plus_one_dim () const
         {
             std::size_t N = this->size();
             vvec<S> rtn(N+1);
@@ -178,7 +178,7 @@ namespace morph {
         }
 
         //! Return a vector with one additional dimension - setting it to val.
-        vvec<S> plus_one_dim (const S val) const noexcept
+        vvec<S> plus_one_dim (const S val) const
         {
             std::size_t N = this->size();
             vvec<S> rtn(N+1);
