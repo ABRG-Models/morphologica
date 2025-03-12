@@ -34,5 +34,30 @@ int main()
     morph::vvec<float> _proportions = h.proportions;
     std::cout << "Proportions are: " << _proportions << std::endl;
 
+    std::cout << "Below 1: " << h.proportion_below (1.0f) << std::endl;
+    std::cout << "Below 2: " << h.proportion_below (2.0f) << std::endl;
+    std::cout << "Below 2.5: " << h.proportion_below (2.5f) << std::endl;
+    std::cout << "Below 3: " << h.proportion_below (3.0f) << std::endl;
+    std::cout << "Below 4: " << h.proportion_below (4.0f) << std::endl;
+    std::cout << "Below 5: " << h.proportion_below (5.0f) << std::endl;
+
+    std::cout << "Above 5: " << h.proportion_above (5.0f) << std::endl;
+    std::cout << "Above 4: " << h.proportion_above (4.0f) << std::endl;
+    std::cout << "Above 3: " << h.proportion_above (3.0f) << std::endl;
+    std::cout << "Above 2.5: " << h.proportion_above (2.5f) << std::endl;
+    std::cout << "Above 2: " << h.proportion_above (2.0f) << std::endl;
+    std::cout << "Above 0: " << h.proportion_above (0.0f) << std::endl;
+    std::cout << "Above -1000: " << h.proportion_above (-1000.0f) << std::endl;
+
+    if (std::abs(h.proportion_below(2.0f) - (2.0f/7.0f)) > std::numeric_limits<float>::epsilon()) { --rtn; }
+    if (std::abs(h.proportion_below(3.0f) - (3.0f/7.0f)) > std::numeric_limits<float>::epsilon()) { --rtn; }
+    if (std::abs(h.proportion_below(4.0f) - (7.0f/7.0f)) > std::numeric_limits<float>::epsilon()) { --rtn; }
+    if (std::abs(h.proportion_below(3.5f) - (5.0f/7.0f)) > std::numeric_limits<float>::epsilon()) { --rtn; }
+
+    if (std::abs(h.proportion_above(3.5f) - (2.0f/7.0f)) > std::numeric_limits<float>::epsilon()) { --rtn; }
+    std::cout << "Above 3.5: " << h.proportion_above (3.5f) << " delta: "  << (h.proportion_above(3.5f) - (2.0f/7.0f)) << std::endl;
+
+    if (rtn == 0) { std::cout << "Test SUCCESS\n"; } else { std::cout << "Test FAIL\n"; }
+
     return rtn;
 }
