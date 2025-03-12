@@ -70,13 +70,13 @@ namespace morph {
         enum class wrapdata { none, wrap };
 
         //! \return the first component of the vector
-        S x() const { return (*this)[0]; }
+        S x() const noexcept { return (*this)[0]; }
         //! \return the second component of the vector
-        S y() const { return (*this)[1]; }
+        S y() const noexcept { return (*this)[1]; }
         //! \return the third component of the vector
-        S z() const { return (*this)[2]; }
+        S z() const noexcept { return (*this)[2]; }
         //! \return the fourth component of the vector
-        S w() const { return (*this)[3]; }
+        S w() const noexcept { return (*this)[3]; }
 
         /*!
          * An array access operator that accepts negative indices, using these to access from the
@@ -132,12 +132,12 @@ namespace morph {
         //! container. In that case, enable this function.
         template <typename C>
         std::enable_if_t<morph::is_copyable_container<C>::value && std::is_same<std::decay_t<C>, S>::value, void>
-        set_from (const C& v) { std::fill (this->begin(), this->end(), v); }
+        set_from (const C& v) noexcept { std::fill (this->begin(), this->end(), v); }
 
         //! Set all elements from the value type v.
         template <typename _S=S>
         std::enable_if_t<!morph::is_copyable_container<_S>::value, void>
-        set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
+        set_from (const _S& v) noexcept { std::fill (this->begin(), this->end(), v); }
 
         /*!
          * Set the data members of this vvec from the passed in, larger dynamically resizable
@@ -149,7 +149,7 @@ namespace morph {
          */
         template <typename C>
         std::enable_if_t<morph::is_copyable_container<C>::value, void>
-        set_from_onelonger (const C& v)
+        set_from_onelonger (const C& v) noexcept
         {
             if (v.size() == (this->size() + 1)) {
                 for (std::size_t i = 0; i < this->size(); ++i) {
@@ -159,7 +159,7 @@ namespace morph {
         }
 
         //! \return a vector with one less dimension - losing the last one.
-        vvec<S> less_one_dim () const
+        vvec<S> less_one_dim () const noexcept
         {
             std::size_t N = this->size();
             vvec<S> rtn(N-1);
@@ -168,7 +168,7 @@ namespace morph {
         }
 
         //! \return a vector with one additional dimension - setting it to 0.
-        vvec<S> plus_one_dim () const
+        vvec<S> plus_one_dim () const noexcept
         {
             std::size_t N = this->size();
             vvec<S> rtn(N+1);
@@ -178,7 +178,7 @@ namespace morph {
         }
 
         //! Return a vector with one additional dimension - setting it to val.
-        vvec<S> plus_one_dim (const S val) const
+        vvec<S> plus_one_dim (const S val) const noexcept
         {
             std::size_t N = this->size();
             vvec<S> rtn(N+1);
@@ -324,7 +324,7 @@ namespace morph {
 
         //! Renormalize the vector to length 1.0. Only for S types that are floating point.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void renormalize()
+        void renormalize() noexcept
         {
             auto add_squared = [](_S a, _S b) { return a + b * b; };
             const _S denom = std::sqrt (std::accumulate (this->begin(), this->end(), _S{0}, add_squared));
@@ -337,7 +337,7 @@ namespace morph {
 
         //! Rescale the vector elements so that they all lie in the range 0-1. NOT the same as renormalize.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale()
+        void rescale() noexcept
         {
             morph::range<_S> r = this->minmax();
             _S m = r.max - r.min;
@@ -348,7 +348,7 @@ namespace morph {
 
         //! Rescale the vector elements so that they all lie in the range -1 to 0.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale_neg()
+        void rescale_neg() noexcept
         {
             morph::range<_S> r = this->minmax();
             _S m = r.max - r.min;
@@ -359,7 +359,7 @@ namespace morph {
 
         //! Rescale the vector elements symetrically about 0 so that they all lie in the range -1 to 1.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
-        void rescale_sym()
+        void rescale_sym() noexcept
         {
             morph::range<_S> r = this->minmax();
             _S m = (r.max - r.min) / _S{2};
@@ -369,11 +369,11 @@ namespace morph {
         }
 
         //! Zero the vector. Set all elements to 0
-        void zero() { std::fill (this->begin(), this->end(), S{0}); }
+        void zero() noexcept { std::fill (this->begin(), this->end(), S{0}); }
         //! Set all elements of the vector to the maximum possible value given type S
-        void set_max() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::max()); }
+        void set_max() noexcept { std::fill (this->begin(), this->end(), std::numeric_limits<S>::max()); }
         //! Set all elements of the vector to the lowest (i.e. most negative) possible value given type S
-        void set_lowest() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::lowest()); }
+        void set_lowest() noexcept { std::fill (this->begin(), this->end(), std::numeric_limits<S>::lowest()); }
 
         /*!
          * Randomize the vector
@@ -446,7 +446,7 @@ namespace morph {
          * N element vvec: 0->N-1, 1->0, 2->1, etc. Useful for swapping x and y in a 2D
          * vector.
          */
-        void rotate()
+        void rotate() noexcept
         {
             if (this->size() > 1) {
                 S z_el = (*this)[0];
@@ -517,7 +517,7 @@ namespace morph {
          *
          * \return true if the length of the vector is 1.
          */
-        bool checkunit() const
+        bool checkunit() const noexcept
         {
             auto subtract_squared = [](S a, S b) { return a - b * b; };
             const S metric = std::accumulate (this->begin(), this->end(), S{1}, subtract_squared);
@@ -533,7 +533,7 @@ namespace morph {
          * \return the length
          */
         template <typename _S=S>
-        _S length() const
+        _S length() const noexcept
         {
             auto add_squared = [](_S a, S b) { return a + b * b; };
             // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of std::sqrt()
@@ -588,7 +588,7 @@ namespace morph {
          * a scalar.
          */
         template <typename _S=S>
-        _S length_sq() const
+        _S length_sq() const noexcept
         {
             _S _sos = _S{0};
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
@@ -623,7 +623,7 @@ namespace morph {
          * \return the length squared
          */
         template <typename _S=S>
-        _S sos() const
+        _S sos() const noexcept
         {
             auto add_squared = [](_S a, S b) { return a + b * b; };
             return std::accumulate (this->begin(), this->end(), _S{0}, add_squared);
@@ -631,7 +631,7 @@ namespace morph {
 
         //! \return the value of the longest component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        S longest() const
+        S longest() const noexcept
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
             auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -641,11 +641,11 @@ namespace morph {
 
         // For a vvec of vecs, longest() should return the same as max()
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        S longest() const { return this->max(); }
+        S longest() const noexcept { return this->max(); }
 
         //! \return the index of the longest component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        std::size_t arglongest() const
+        std::size_t arglongest() const noexcept
         {
             std::size_t idx = 0;
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
@@ -662,11 +662,11 @@ namespace morph {
 
         // For a vvec of vecs, arglongest() should return then same as argmax()
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        std::size_t arglongest() const { return this->argmax(); }
+        std::size_t arglongest() const noexcept { return this->argmax(); }
 
         //! \return the value of the shortest component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        S shortest() const
+        S shortest() const noexcept
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
             auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -676,7 +676,7 @@ namespace morph {
 
         //! A version of shortest for vvec of vecs
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        S shortest() const
+        S shortest() const noexcept
         {
             auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_gtrthan(b);});
             return theshortest == this->end() ? S{0} : *theshortest;
@@ -689,7 +689,7 @@ namespace morph {
          * return S{0}
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        S shortest_nonzero() const
+        S shortest_nonzero() const noexcept
         {
             // We need to find the first non-zero element in *this, else max_element will wrongly
             // return 0 with our abs_compare_nonz function
@@ -713,12 +713,11 @@ namespace morph {
          * in this vvec, return S{0}
          */
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        S shortest_nonzero() const
+        S shortest_nonzero() const noexcept
         {
             // Move to first non-zero length vector in *this
             auto nonzero_start = this->begin();
             while (nonzero_start != this->end() && nonzero_start->length() == typename S::value_type{0}) {
-                std::cout << "Skip " << *nonzero_start << std::endl;
                 ++nonzero_start;
             }
             // If NO non-zero length vectors in *this, return a zero length vector
@@ -734,7 +733,7 @@ namespace morph {
          * of vectors, then return the index of the shortest vector.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        std::size_t argshortest() const
+        std::size_t argshortest() const noexcept
         {
             std::size_t idx = 0;
             // Check on the type S. If S is a vector thing, then abs_compare needs to be different.
@@ -752,7 +751,7 @@ namespace morph {
 
         //! vvec of vecs version of argshortest
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        std::size_t argshortest() const
+        std::size_t argshortest() const noexcept
         {
             auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_gtrthan(b);});
             std::size_t idx = (theshortest - this->begin());
@@ -761,7 +760,7 @@ namespace morph {
 
         //! \return the value of the maximum (most positive) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        S max() const
+        S max() const noexcept
         {
             auto themax = std::max_element (this->begin(), this->end());
             return themax == this->end() ? S{0} : *themax;
@@ -771,7 +770,7 @@ namespace morph {
         //! (morph::vvec<morph::vec<T, N>>). Note that the enclosed non-scalar thing must have
         //! function length_lessthan (as morph::vec does).
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        S max() const
+        S max() const noexcept
         {
             auto themax = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_lessthan(b);});
             return themax == this->end() ? S{0} : *themax;
@@ -779,7 +778,7 @@ namespace morph {
 
         //! \return the index of the maximum (most positive) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        std::size_t argmax() const
+        std::size_t argmax() const noexcept
         {
             auto themax = std::max_element (this->begin(), this->end());
             std::size_t idx = (themax - this->begin());
@@ -788,7 +787,7 @@ namespace morph {
 
         //! vvec of vecs version of argmax returns the index of the maximum length morph::vec
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        std::size_t argmax() const
+        std::size_t argmax() const noexcept
         {
             auto themax = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_lessthan(b);});
             std::size_t idx = (themax - this->begin());
@@ -797,7 +796,7 @@ namespace morph {
 
         //! \return the value of the minimum (smallest or most negative) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        S min() const
+        S min() const noexcept
         {
             auto themin = std::min_element (this->begin(), this->end());
             return themin == this->end() ? S{0} : *themin;
@@ -805,11 +804,11 @@ namespace morph {
 
         //! For a vvec of vecs, min() is shortest()
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        S min() const { return this->shortest(); }
+        S min() const noexcept { return this->shortest(); }
 
         //! \return the index of the minimum (smallest or most negative) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        std::size_t argmin() const
+        std::size_t argmin() const noexcept
         {
             auto themin = std::min_element (this->begin(), this->end());
             std::size_t idx = (themin - this->begin());
@@ -818,7 +817,7 @@ namespace morph {
 
         //! For a vvec of vecs, argmin() is argshortest()
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        std::size_t argmin() const { return this->argshortest(); }
+        std::size_t argmin() const noexcept { return this->argshortest(); }
 
         //! \return the min and max values of the vvec, ignoring any not-a-number elements. If you
         //! pass 'true' as the template arg, then you can test for nans, and return the min/max of
@@ -881,7 +880,7 @@ namespace morph {
          * (morph::is_copyable_fixedsize).
          */
         template <typename _S=S, std::enable_if_t<morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        morph::range<S> extent() const
+        morph::range<S> extent() const noexcept
         {
             constexpr S s = {};                  // A dummy variable whose size is stored as sz
             constexpr std::size_t sz = s.size(); // Should work for S=std::array or morph::vec
@@ -983,15 +982,15 @@ namespace morph {
 
         //! Perform element-wise max. For each element, if val is the maximum, the element becomes val.
         template <typename _S=S>
-        void max_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::max (i, val); } }
+        void max_elementwise_inplace (const _S& val) noexcept { for (auto& i : *this) { i = std::max (i, val); } }
 
         //! Perform element-wise min. For each element, if val is the minimum, the element becomes val.
         template <typename _S=S>
-        void min_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::min (i, val); } }
+        void min_elementwise_inplace (const _S& val) noexcept { for (auto& i : *this) { i = std::min (i, val); } }
 
         //! Find first element matching argument
         template <typename _S=S>
-        std::size_t find_first_of (const _S& val) const
+        std::size_t find_first_of (const _S& val) const noexcept
         {
             std::size_t i = 0;
             for (i = 0; i < this->size(); i++) {
@@ -1002,7 +1001,7 @@ namespace morph {
 
         //! Find last element matching argument
         template <typename _S=S>
-        std::size_t find_last_of (const _S& val) const
+        std::size_t find_last_of (const _S& val) const noexcept
         {
             std::size_t i = 0;
             for (i = this->size()-1; i >= 0; i--) {
@@ -1024,13 +1023,13 @@ namespace morph {
         }
 
         //! \return true if any element is zero
-        bool has_zero() const
+        bool has_zero() const noexcept
         {
             return std::any_of (this->cbegin(), this->cend(), [](S i){ return i == S{0}; });
         }
 
         //! \return true if any element is infinity
-        bool has_inf() const
+        bool has_inf() const noexcept
         {
             if constexpr (std::numeric_limits<S>::has_infinity) {
                 return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isinf(i);});
@@ -1040,10 +1039,9 @@ namespace morph {
         }
 
         //! \return true if any element is NaN
-        bool has_nan() const
+        bool has_nan() const noexcept
         {
-            if constexpr (std::numeric_limits<S>::has_quiet_NaN
-                          || std::numeric_limits<S>::has_signaling_NaN) {
+            if constexpr (std::numeric_limits<S>::has_quiet_NaN || std::numeric_limits<S>::has_signaling_NaN) {
                 return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isnan(i);});
             } else {
                 return false;
@@ -1051,7 +1049,7 @@ namespace morph {
         }
 
         //! \return true if any element is NaN or infinity
-        bool has_nan_or_inf() const
+        bool has_nan_or_inf() const noexcept
         {
             bool has_nan_or_inf = false;
             has_nan_or_inf = this->has_nan();
@@ -1060,7 +1058,7 @@ namespace morph {
 
         //! \return the arithmetic mean of the elements
         template<typename _S=S>
-        _S mean() const
+        _S mean() const noexcept
         {
             const _S sum = std::accumulate (this->begin(), this->end(), _S{0});
             return sum / this->size();
@@ -1068,7 +1066,7 @@ namespace morph {
 
         //! \return the variance of the elements
         template<typename _S=S>
-        _S variance() const
+        _S variance() const noexcept
         {
             if (this->empty()) { return S{0}; }
             _S _mean = this->mean<_S>();
@@ -1082,7 +1080,7 @@ namespace morph {
 
         //! \return the standard deviation of the elements
         template<typename _S=S>
-        _S std() const
+        _S std() const noexcept
         {
             if (this->empty()) { return _S{0}; }
             return std::sqrt (this->variance<_S>());
@@ -1092,7 +1090,7 @@ namespace morph {
         //! vvec<uint8_t> uv (256, 10);
         //! unsigned int thesum = uv.sum<unsigned int>();
         template<typename _S=S>
-        _S sum() const
+        _S sum() const noexcept
         {
             return std::accumulate (this->begin(), this->end(), _S{0});
         }
@@ -1102,7 +1100,7 @@ namespace morph {
         //! vvec<uint8_t> uv (256, 10);
         //! unsigned int theproduct = uv.product<unsigned int>();
         template<typename _S=S>
-        _S product() const
+        _S product() const noexcept
         {
             auto _product = [](_S a, S b) mutable { return a ? a * b : b; };
             return std::accumulate (this->begin(), this->end(), _S{0}, _product);
@@ -1114,7 +1112,7 @@ namespace morph {
          * \return a vvec whose elements have been raised to the power p
          */
         template<typename _S=S>
-        vvec<_S> pow (const S& p) const
+        vvec<_S> pow (const S& p) const noexcept
         {
             vvec<_S> rtn(this->size());
             auto raise_to_p = [p](S elmnt) { return std::pow(elmnt, p); };
@@ -1122,7 +1120,7 @@ namespace morph {
             return rtn;
         }
         //! Raise each element to the power p
-        void pow_inplace (const S& p) { for (auto& i : *this) { i = std::pow (i, p); } }
+        void pow_inplace (const S& p) noexcept { for (auto& i : *this) { i = std::pow (i, p); } }
 
         //! Element-wise power
         template<typename _S=S>
@@ -1149,14 +1147,14 @@ namespace morph {
         }
 
         //! \return the signum of the vvec, with signum(0)==0
-        vvec<S> signum() const
+        vvec<S> signum() const noexcept
         {
             vvec<S> rtn(this->size());
             auto _signum = [](S elmnt) { return (elmnt > S{0} ? S{1} : (elmnt == S{0} ? S{0} : S{-1})); };
             std::transform (this->begin(), this->end(), rtn.begin(), _signum);
             return rtn;
         }
-        void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
+        void signum_inplace() noexcept { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
         //! \return a vvec which is a copy of *this for which positive, non-zero elements have been removed
         vvec<S> prune_positive() const
@@ -1217,20 +1215,20 @@ namespace morph {
             this->swap (pruned);
         }
 
-        void replace_nan_with (const S replacement)
+        void replace_nan_with (const S replacement) noexcept
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
             for (auto& i : *this) { if (std::isnan(i)) { i = replacement; } }
         }
 
-        void replace_nan_or_inf_with (const S replacement)
+        void replace_nan_or_inf_with (const S replacement) noexcept
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
             static_assert (std::numeric_limits<S>::has_infinity, "S does not have infinities");
             for (auto& i : *this) { if (std::isnan(i) || std::isinf(i)) { i = replacement; } }
         }
 
-        void search_replace (const S searchee, const S replacement)
+        void search_replace (const S searchee, const S replacement) noexcept
         {
             for (auto& i : *this) { if (i == searchee) { i = replacement; } }
         }
@@ -1247,7 +1245,7 @@ namespace morph {
         }
 
         // Replace any value that's above upper with upper and any below lower with lower
-        void threshold_inplace (const S lower, const S upper)
+        void threshold_inplace (const S lower, const S upper) noexcept
         {
             for (auto& i : *this) { i = (i <= lower ? lower : (i >= upper ? upper : i)); }
         }
@@ -1265,7 +1263,7 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own square root
-        void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
+        void sqrt_inplace() noexcept { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
 
         /*!
          * Compute the element-wise square of the vector
@@ -1280,7 +1278,7 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its own square
-        void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
+        void sq_inplace() noexcept { for (auto& i : *this) { i = (i*i); } }
 
         /*!
          * Compute the element-wise natural logarithm of the vector
@@ -1362,7 +1360,7 @@ namespace morph {
             return rtn;
         }
         //! Replace each element with its absolute value
-        void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
+        void abs_inplace() noexcept { for (auto& i : *this) { i = std::abs(i); } }
 
         //! Compute the symmetric Gaussian function
         vvec<S> gauss (const S sigma) const
@@ -1570,28 +1568,28 @@ namespace morph {
         }
 
         //! Less than a scalar. \return true if every element is less than the scalar
-        bool operator<(const S rhs) const
+        bool operator<(const S rhs) const noexcept
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b < rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! <= a scalar. \return true if every element is less than the scalar
-        bool operator<=(const S rhs) const
+        bool operator<=(const S rhs) const noexcept
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b <= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! Greater than a scalar. \return true if every element is gtr than the scalar
-        bool operator>(const S rhs) const
+        bool operator>(const S rhs) const noexcept
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b > rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! >= a scalar. \return true if every element is gtr than the scalar
-        bool operator>=(const S rhs) const
+        bool operator>=(const S rhs) const noexcept
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b >= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
@@ -1755,7 +1753,7 @@ namespace morph {
          *
          * \return true if the vector length is 0, otherwise it returns false.
          */
-        bool operator!() const { return (this->length() == S{0}) ? true : false; }
+        bool operator!() const noexcept { return (this->length() == S{0}) ? true : false; }
 
         /*!
          * \brief Scalar (dot) product of two vvecs
@@ -1844,7 +1842,7 @@ namespace morph {
          * scalar type or a fixed size vec. Multiplies this vvec<S> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        void operator*= (const _S& s)
+        void operator*= (const _S& s) noexcept
         {
             auto mult_by_s = [s](S elmnt) -> S { return elmnt * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
@@ -1870,7 +1868,7 @@ namespace morph {
 
         //! Scalar/fixed size vec divide by s
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        vvec<S> operator/ (const _S& s) const
+        vvec<S> operator/ (const _S& s) const noexcept
         {
             vvec<S> rtn(this->size());
             auto div_by_s = [s](S elmnt) -> S { return elmnt / s; };
@@ -1961,7 +1959,7 @@ namespace morph {
 
         //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        void operator+= (const _S& s)
+        void operator+= (const _S& s) noexcept
         {
             auto add_s = [s](S elmnt) -> S { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
@@ -1981,7 +1979,7 @@ namespace morph {
         }
 
         //! Addition += operator for any type same as the enclosed type that implements + op
-        void operator+= (const S& s) const
+        void operator+= (const S& s) const noexcept
         {
             auto add_s = [s](S elmnt) -> S { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
@@ -2022,7 +2020,7 @@ namespace morph {
 
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value || morph::is_copyable_fixedsize<std::decay_t<_S>>::value, int> = 0 >
-        void operator-= (const _S& s)
+        void operator-= (const _S& s) noexcept
         {
             auto subtract_s = [s](S elmnt) -> S { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
@@ -2042,7 +2040,7 @@ namespace morph {
         }
 
         //! Subtraction -= operator for any time same as the enclosed type that implements - op
-        void operator-= (const S& s) const
+        void operator-= (const S& s) const noexcept
         {
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
