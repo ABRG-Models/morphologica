@@ -20,7 +20,7 @@ namespace morph {
 
     // Forward declare class and stream operator
     template <typename F>  requires std::is_floating_point_v<F> class quaternion;
-    template <typename F> std::ostream& operator<< (std::ostream&, const quaternion<F>&) noexcept;
+    template <typename F> std::ostream& operator<< (std::ostream&, const quaternion<F>&);
 
     /*!
      * Quaternion computations
@@ -428,11 +428,11 @@ namespace morph {
         }
 
         //! Overload the stream output operator
-        friend std::ostream& operator<< <F> (std::ostream& os, const quaternion<F>& q) noexcept;
+        friend std::ostream& operator<< <F> (std::ostream& os, const quaternion<F>& q);
     };
 
     template <typename F>
-    std::ostream& operator<< (std::ostream& os, const quaternion<F>& q) noexcept
+    std::ostream& operator<< (std::ostream& os, const quaternion<F>& q)
     {
         os << "quaternion[wxyz]=(" << q.w << "," << q.x << "," << q.y << "," << q.z << ")";
         return os;

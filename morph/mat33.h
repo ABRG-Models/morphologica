@@ -19,7 +19,7 @@ namespace morph {
 
     // Forward declare class and stream operator
     template <typename F> class mat33;
-    template <typename F> std::ostream& operator<< (std::ostream&, const mat33<F>&) noexcept;
+    template <typename F> std::ostream& operator<< (std::ostream&, const mat33<F>&);
 
     /*!
      * This implements a general purpose 3x3 matrix, for use in 2D applications. The
@@ -483,11 +483,11 @@ namespace morph {
 
 
         //! Overload the stream output operator
-        friend std::ostream& operator<< <F> (std::ostream& os, const mat33<F>& tm) noexcept;
+        friend std::ostream& operator<< <F> (std::ostream& os, const mat33<F>& tm);
     };
 
     template <typename F>
-    std::ostream& operator<< (std::ostream& os, const mat33<F>& tm) noexcept
+    std::ostream& operator<< (std::ostream& os, const mat33<F>& tm)
     {
         os << tm.str();
         return os;

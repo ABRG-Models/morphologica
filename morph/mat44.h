@@ -22,7 +22,7 @@ namespace morph {
 
     // Forward declare class and stream operator
     template <typename F> class mat44;
-    template <typename F> std::ostream& operator<< (std::ostream&, const mat44<F>&) noexcept;
+    template <typename F> std::ostream& operator<< (std::ostream&, const mat44<F>&);
 
     /*!
      * This implements a 4x4 transformation matrix, for use in computer graphics
@@ -1096,11 +1096,11 @@ namespace morph {
         }
 
         //! Overload the stream output operator
-        friend std::ostream& operator<< <F> (std::ostream& os, const mat44<F>& tm) noexcept;
+        friend std::ostream& operator<< <F> (std::ostream& os, const mat44<F>& tm);
     };
 
     template <typename F>
-    std::ostream& operator<< (std::ostream& os, const mat44<F>& tm) noexcept
+    std::ostream& operator<< (std::ostream& os, const mat44<F>& tm)
     {
         os << tm.str();
         return os;
