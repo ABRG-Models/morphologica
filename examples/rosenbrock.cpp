@@ -170,9 +170,10 @@ int main()
         } else {
             rtn = -1;
         }
-    }
 
-    v.keepOpen();
+        std::cout << "Pausing (Press Ctrl-v to re-run gradient descent)...\n";
+        v.pauseOpen();
+    }
 
     return rtn;
 }

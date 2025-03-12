@@ -303,6 +303,9 @@ namespace morph {
         //! Set to true when the program should end
         bool readyToFinish = false;
 
+        //! paused can be set true so that pauseOpen() can be used to display the window mid-simulation
+        bool paused = false;
+
         //! Set true to disable the 'X' button on the Window from exiting the program
         bool preventWindowCloseWithButton = false;
 
@@ -703,36 +706,44 @@ namespace morph {
 
             if (_key == key::h && (mods & keymod::control) && action == keyaction::press) {
                 // Help to stdout:
-                std::cout << "Ctrl-h: Output this help to stdout\n";
-                std::cout << "Mouse-primary: rotate mode (use Ctrl to change axis)\n";
-                std::cout << "Mouse-secondary: translate mode\n";
+                std::cout << "Ctrl-h: Output this help to stdout\n"
+                          << "Mouse-primary: rotate mode (use Ctrl to change axis)\n"
+                          << "Mouse-secondary: translate mode\n";
                 if constexpr (owned == true) { // If Visual is 'owned' then the owning system deals with program exit
                     std::cout << "Ctrl-q: Request exit\n";
                 }
-                std::cout << "Ctrl-l: Toggle the scene lock\n";
-                std::cout << "Ctrl-c: Toggle coordinate arrows\n";
-                std::cout << "Ctrl-s: Take a snapshot\n";
-                std::cout << "Ctrl-m: Save 3D models in .gltf format (open in e.g. blender)\n";
-                std::cout << "Ctrl-a: Reset default view\n";
-                std::cout << "Ctrl-o: Reduce field of view\n";
-                std::cout << "Ctrl-p: Increase field of view\n";
-                std::cout << "Ctrl-y: Cycle perspective\n";
-                std::cout << "Ctrl-z: Show the current scenetrans/rotation and save to /tmp/Visual.json\n";
-                std::cout << "Ctrl-u: Reduce zNear cutoff plane\n";
-                std::cout << "Ctrl-i: Increase zNear cutoff plane\n";
-                std::cout << "F1-F10: Select model index (with shift: toggle hide)\n";
-                std::cout << "Shift-Left: Decrease opacity of selected model\n";
-                std::cout << "Shift-Right: Increase opacity of selected model\n";
-                std::cout << "Shift-Up: Double cyl proj radius\n";
-                std::cout << "Shift-Down: Halve cyl proj radius\n";
-                std::cout << "Ctrl-Up: Double cyl proj height\n";
-                std::cout << "Ctrl-Down: Halve cyl proj height\n";
-                std::cout << std::flush;
+                std::cout << "Ctrl-v: Un-pause\n"
+                          << "Ctrl-l: Toggle the scene lock\n"
+                          << "Ctrl-c: Toggle coordinate arrows\n"
+                          << "Ctrl-s: Take a snapshot\n"
+                          << "Ctrl-m: Save 3D models in .gltf format (open in e.g. blender)\n"
+                          << "Ctrl-a: Reset default view\n"
+                          << "Ctrl-o: Reduce field of view\n"
+                          << "Ctrl-p: Increase field of view\n"
+                          << "Ctrl-y: Cycle perspective\n"
+                          << "Ctrl-z: Show the current scenetrans/rotation and save to /tmp/Visual.json\n"
+                          << "Ctrl-u: Reduce zNear cutoff plane\n"
+                          << "Ctrl-i: Increase zNear cutoff plane\n"
+                          << "F1-F10: Select model index (with shift: toggle hide)\n"
+                          << "Shift-Left: Decrease opacity of selected model\n"
+                          << "Shift-Right: Increase opacity of selected model\n"
+                          << "Shift-Up: Double cyl proj radius\n"
+                          << "Shift-Down: Halve cyl proj radius\n"
+                          << "Ctrl-Up: Double cyl proj height\n"
+                          << "Ctrl-Down: Halve cyl proj height\n"
+                          << std::flush;
             }
 
             if (_key == key::l && (mods & keymod::control) && action == keyaction::press) {
                 this->sceneLocked = this->sceneLocked ? false : true;
                 std::cout << "Scene is now " << (this->sceneLocked ? "" : "un-") << "locked\n";
+            }
+
+            if (_key == key::v && (mods & keymod::control) && action == keyaction::press) {
+                if (this->paused == true) {
+                    this->paused = false;
+                    std::cout << "Scene un-paused\n";
+                } // else no-op
             }
 
             if (_key == key::s && (mods & keymod::control) && action == keyaction::press) {
@@ -1118,6 +1129,9 @@ namespace morph {
             // 2. Call any external callback that's been set by client code
             if (this->external_quit_callback) { this->external_quit_callback(); }
         }
+
+        //! Unpause, allowing pauseOpen() to return
+        void unpause() { this->paused = false; }
     };
 
 } // namespace morph

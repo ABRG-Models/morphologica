@@ -193,6 +193,18 @@ namespace morph {
             }
         }
 
+        /*!
+         * Like keepOpen, but renders until paused is set false, then returns
+         */
+        void pauseOpen()
+        {
+            this->paused = true;
+            while (this->paused == true) {
+                glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
+                this->render();
+            }
+        }
+
         //! Wrapper around the glfw polling function
         void poll() { glfwPollEvents(); }
         //! A wait-for-events with a timeout wrapper
