@@ -146,7 +146,7 @@ namespace morph {
                    typename T,
                    typename Allocator=std::allocator<T> >
         static morph::vec<T, 2> linregr (const Container<T, Allocator>& x,
-                                       const Container<T, Allocator>& y)
+                                         const Container<T, Allocator>& y)
         {
             morph::vec<T, 2> ms_x = MathAlgo::meansos<Container, T, Allocator> (x);
             morph::vec<T, 2> ms_y = MathAlgo::meansos<Container, T, Allocator> (y);
