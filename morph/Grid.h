@@ -137,7 +137,8 @@ namespace morph {
 
             if (!factors.empty()) {
                 morph::vvec<C> factors_minus_sqrt = factors.template as<C>() - std::sqrt(static_cast<C>(num_elements));
-                size_t j = factors_minus_sqrt.abs().argmin();
+                factors_minus_sqrt.abs_inplace();
+                size_t j = factors_minus_sqrt.argmin();
                 if (j < factors.size()) {
                     I f_other = num_elements / factors[j];
                     w_h[1] = std::min (factors[j], f_other);
