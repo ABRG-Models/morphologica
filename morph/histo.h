@@ -3,6 +3,7 @@
  */
 #pragma once
 
+#include <type_traits>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/range.h>
@@ -19,7 +20,7 @@ namespace morph {
      *
      * \tparam T The floating point type for proportions, etc. Must be a floating point type.
      */
-    template <typename H=float, typename T=float>
+    template <typename H=float, typename T=float> requires std::is_floating_point_v<T>
     struct histo
     {
         /*!
@@ -98,7 +99,7 @@ namespace morph {
         void init (const Container<H, Allocator>& data, std::size_t n, const morph::range<H>& manual_datarange)
         {
             this->bins.resize (n, T{0});
-            this->binedges.resize (n + 1U, T{0});
+            this->binedges.resize (n + 1u, T{0});
             this->counts.resize (n, 0u);
             this->proportions.resize (n, T{0});
             this->datacount = static_cast<T>(data.size());
@@ -122,7 +123,7 @@ namespace morph {
             for (std::size_t i = 0; i < n; ++i) {
                 // bins[i] = min + i*bw + bw/2 but do the additions after the loop
                 this->bins[i] = i * this->binwidth;
-                this->binedges[i + 1U] = (i + 1U) * this->binwidth;
+                this->binedges[i + 1u] = (i + 1u) * this->binwidth;
             }
             this->bins += (this->datarange.min + (this->binwidth/T{2}));
             this->binedges += this->datarange.min;
@@ -142,8 +143,34 @@ namespace morph {
                     this->counts[idx] += 1u;
                 }
             }
-            this->proportions = counts.as<T>()/this->datacount;
+            this->proportions = counts.as<T>() / this->datacount;
         }
+
+        /*!
+         * Return the proportion of counts that are below the position. If position is not one of
+         * bin edges, then allocate a portion of the bin towards the proportion below.
+         */
+        T proportion_below (const T& position) const noexcept
+        {
+            if (this->datacount == 0u) { return T{0}; }
+            if (this->binwidth == T{0}) { return T{0}; }
+            if (this->bins.empty()) { return T{0}; }
+            if (this->binedges.size() < 2) { return T{0}; }
+            if (this->counts.size() != this->bins.size()) { return T{0}; }
+
+            T belowcount = T{0};
+            for (std::size_t i = 1u; i < this->binedges.size(); ++i) {
+                if (this->binedges[i] <= position) {
+                    belowcount += static_cast<T>(this->counts[i - 1u]);
+                } else if (this->binedges[i - 1u] < position) {
+                    T part = static_cast<T>(this->counts[i - 1u]) * (position - this->binedges[i - 1u]) / this->binwidth;
+                    belowcount += part;
+                } // else do nothing
+            }
+            return belowcount / static_cast<T>(this->datacount);
+        }
+
+        T proportion_above (const T& position) const noexcept { return T{1} - this->proportion_below (position); }
 
         //! The max and min of the histogram data. Computed in constructor.
         morph::range<H> datarange;
