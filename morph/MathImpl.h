@@ -48,7 +48,7 @@ namespace morph {
     {
         //! Resizable and Fixed size vector maxmin implementations are common
         template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
-        static morph::range<typename Container::value_type> maxmin (const Container& values)
+        static morph::range<typename Container::value_type> maxmin (const Container& values) noexcept
         {
             using T = typename Container::value_type;
             // Example to get the type of the container T.
@@ -233,7 +233,7 @@ namespace morph {
     {
         //! Scalar maxmin implementation
         template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
-        static morph::range<typename Container::value_type> maxmin (const Container& values)
+        static morph::range<typename Container::value_type> maxmin (const Container& values) noexcept
         {
             using T = typename Container::value_type;
             morph::range<T> r (std::numeric_limits<T>::max(), std::numeric_limits<T>::lowest());
@@ -278,7 +278,7 @@ namespace morph {
     {
         //! Complex scalar maxmin implementation
         template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
-        static morph::range<typename Container::value_type> maxmin (const Container& values)
+        static morph::range<typename Container::value_type> maxmin (const Container& values) noexcept
         {
             using T = typename Container::value_type;
             using T_el = typename T::value_type; // If T is std::complex<float>, T_el will be float
