@@ -42,3 +42,4 @@ CMakeSettings.json
 Debug
 docs/Gemfile.lock
 docs/_site
+standalone_examples/*/morphologica

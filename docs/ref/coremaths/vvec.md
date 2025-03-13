@@ -321,6 +321,26 @@ For example:
 morph::vvec<int> vi = {1,2,3};
 morph::vvec<float> vf = vi.as_float(); // Note: new memory is used for the new object
 ```
+### Get first and last elements in the vvec
+
+Get first (`0`th) and last (`size()-1` th) elements in the vvec. If vvec is of zero size, returns a 2 element vvec containing zeros.
+```c++
+morph::vvec<int> vv3 = { 1, 2, 3 };
+morph::vvec<int> fl3 = vv3.firstlast();
+std::cout << fl3; // (1, 3)
+
+morph::vvec<int> vv2 = { 1, 2 };
+morph::vvec<int> fl2 = vv2.firstlast();
+std::cout << fl2; // (1, 2)
+
+morph::vvec<int> vv1 = { 2 };
+morph::vvec<int> fl1 = vv1.firstlast();
+std::cout << fl1; // (2, 2)
+
+morph::vvec<int> vv0 = {};
+morph::vvec<int> fl0 = vv1.firstlast();
+std::cout << fl0; // (0, 0)
+```
 
 ### String output
 

@@ -208,6 +208,15 @@ namespace morph {
         //! \return this vvec in single precision, unsigned int format
         vvec<unsigned int> as_uint() const { return this->as<unsigned int>(); }
 
+        //! \return the first and last elements in the vvec as a two element vector. If *this is
+        //! empty, return a 2 element vvec containing zeros.
+        vvec<S> firstlast() const noexcept
+        {
+            vvec<S> rtn = { S{0}, S{0} }; // if we can't allocate 2 S sized things we are going to crash!
+            if (!this->empty()) { rtn = { (*this)[0], (*this)[this->size() - 1] }; }
+            return rtn;
+        }
+
         /*!
          * Set a linear sequence into the vector from value start to value stop. If
          * num>0 then resize the vector first, otherwise use the vvec's current
