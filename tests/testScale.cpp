@@ -253,6 +253,36 @@ int main ()
     std::cout << "input 8(int) transforms to float: " << sif.transform_one (8) << std::endl;
     if (sif.transform_one (8) != 4.5f) { --rtn; }
 
+    morph::scale<double, float> idsc1;
+    idsc1.identity_scaling();
+
+    std::cout << "(identity scaling) 2.0 transforms to " << idsc1.transform_one (2.0) << std::endl;
+    std::cout << "(identity scaling) -2.0 transforms to " << idsc1.transform_one (-2.0) << std::endl;
+    std::cout << "(identity scaling) -0.0 transforms to " << idsc1.transform_one (-0.0) << std::endl;
+
+    std::cout << "(identity scaling) 2.1 inv transforms to " << idsc1.inverse_one (2.1f) << std::endl;
+    std::cout << "(identity scaling) -2.2 inv transforms to " << idsc1.inverse_one (-2.2f) << std::endl;
+    std::cout << "(identity scaling) -0.3 inv transforms to " << idsc1.inverse_one (-0.3f) << std::endl;
+
+    morph::scale<float, double> idsc2;
+    idsc2.identity_scaling();
+
+    std::cout << "(identity scaling) 2.0 transforms to " << idsc2.transform_one (2.0f) << std::endl;
+    std::cout << "(identity scaling) -2.0 transforms to " << idsc2.transform_one (-2.0f) << std::endl;
+    std::cout << "(identity scaling) -0.0 transforms to " << idsc2.transform_one (-0.0f) << std::endl;
+
+    std::cout << "(identity scaling) 2.1 inv transforms to " << idsc2.inverse_one (2.1) << std::endl;
+    std::cout << "(identity scaling) -2.2 inv transforms to " << idsc2.inverse_one (-2.2) << std::endl;
+    std::cout << "(identity scaling) -0.3 inv transforms to " << idsc2.inverse_one (-0.3) << std::endl;
+
+    if (idsc1.transform_one (10.0) != 10.0f) { --rtn; }
+    if (idsc1.inverse_one (3.475) != 3.475f) { --rtn; }
+    std::cout << std::abs(idsc2.transform_one (-10.4f) - -10.4) << std::endl;
+    std::cout << std::numeric_limits<float>::epsilon() << std::endl;
+    // Have to allow a few epsilons here:
+    if (std::abs(idsc2.transform_one (-10.4f) - -10.4) > 5 * std::numeric_limits<float>::epsilon()) { --rtn; }
+    if (std::abs(idsc2.inverse_one (3.475f) - 3.475) > 5 * std::numeric_limits<float>::epsilon()) { --rtn; }
+
     std::cout << "testScale " << (rtn == 0 ? "Passed" : "Failed") << std::endl;
     return rtn;
 }
