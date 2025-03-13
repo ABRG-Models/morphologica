@@ -335,6 +335,23 @@ morph::vec<int, 3> vi = {1,2,3};
 morph::vec<float, 3> vf = vi.as_float(); // Note: new memory is used for the new object
 ```
 
+### Get first and last elements in the vec
+
+Get first (0th) and last (N-1 th) elements in the vec. If vec is of zero size, returns a 2 element vec containing zeros.
+```c++
+morph::vec<int, 3> vi3 = { 1, 2, 3 };
+morph::vec<int, 2> fl3 = vi3.firstlast();
+std::cout << fl3; // (1, 3)
+
+morph::vec<int, 2> vi2 = { 1, 2 };
+morph::vec<int, 2> fl2 = vi2.firstlast();
+std::cout << fl2; // (1, 2)
+
+morph::vec<int, 1> vi1 = { 2 };
+morph::vec<int, 2> fl1 = vi1.firstlast();
+std::cout << fl1; // (2, 2)
+```
+
 ### String output
 
 ```c++

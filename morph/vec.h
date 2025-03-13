@@ -221,6 +221,15 @@ namespace morph {
         //! Return this vec in single precision, unsigned int format
         constexpr vec<unsigned int, N> as_uint() const noexcept { return this->as<unsigned int>(); }
 
+        //! \return the first and last elements in the vec as a two element vec. If *this is
+        //! empty, return a 2 element vec containing zeros.
+        constexpr vec<S, 2> firstlast() const noexcept
+        {
+            vec<S, 2> rtn = { S{0}, S{0} };
+            if (N > 0) { rtn = { (*this)[0], (*this)[N - 1] }; }
+            return rtn;
+        }
+
         //! Stream the elements of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss, const char sep = ',') const
         {
