@@ -586,7 +586,7 @@ namespace morph {
          * This method does not draw a horizontal line on the graph at y_value.
          */
         template <typename Ctnr1, typename Ctnr2> requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
-        void add_y_crossing_lines (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt y_value, const morph::DatasetStyle& ds_data)
+        morph::vvec<Flt> add_y_crossing_lines (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt y_value, const morph::DatasetStyle& ds_data)
         {
             morph::vvec<Flt> xvals = morph::GraphVisual<Flt>::x_at_y_value (_abscissae, _data, y_value);
             morph::range<Flt> yy (morph::range_init::for_search);
@@ -603,6 +603,7 @@ namespace morph {
                 morph::range<Flt> xx = { xv, xv };
                 this->setdata (xx, yy, dsv);
             }
+            return xvals;
         }
 
         /*!
@@ -623,7 +624,7 @@ namespace morph {
             for (auto a : _abscissae) { xx.update (a); }
             this->setdata (xx, yy, ds_hline);
             // And the vertical y crossings
-            this->add_y_crossing_lines (_abscissae, _data, y_value, ds_data);
+            return this->add_y_crossing_lines (_abscissae, _data, y_value, ds_data);
         }
 
         // Static function to find the crossings in the right money. Requires data to be passed in.
