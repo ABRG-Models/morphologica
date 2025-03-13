@@ -573,7 +573,7 @@ namespace morph {
         virtual void identity_scaling()
         {
             this->do_autoscale = false;
-            this->compute_scaling (this->output_range);
+            this->compute_scaling (this->output_range.min, this->output_range.max);
         }
 
         //! Set params for a two parameter scaling
