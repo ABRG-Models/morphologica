@@ -18,6 +18,9 @@
 
 namespace morph {
 
+    // Different values to use to initialize a range object with
+    enum class range_init { zeros, for_search };
+
     // Forward declare the class and stream operator
     template <typename T> struct range;
     template <typename T> std::ostream& operator<< (std::ostream&, const range<T>&);
@@ -26,7 +29,14 @@ namespace morph {
     template <typename T>
     struct range
     {
+        // In the default constructor, min == max == T{0}
         constexpr range() noexcept {}
+        // Range constructor in which you can specify that the range should be initialized for search
+        constexpr range (const morph::range_init _range_init) noexcept
+        {
+            if (_range_init == morph::range_init::for_search) { this->search_init(); }
+        }
+        // Range constructor taking the min and max for a ready-to-go range
         constexpr range (const T& _min, const T& _max) noexcept : min(_min), max(_max) {}
 
         // The minimum
