@@ -272,9 +272,16 @@ void linspace (const _S start, const _S2 stop, const size_t num=0);
 void arange (const _S start, const _S2 stop, const _S2 increment);
 ```
 
-Python Numpy-like functions to fill the `morph::vvec` with sequences of
-numbers.  `linspace` fills the `vvec` with `num` values in a sequence
-from `start` to `stop`. `arange` resizes the `vvec` and fills it with elements starting
+Python Numpy-like functions to fill the `morph::vvec` with sequences
+of numbers.  `linspace` fills the `vvec` with `num` values in a
+sequence from `start` to `stop`. If `num` is 0, then the vvec's size
+is not changed and it is filled with an evenly spaced sequence of
+values from `start` to `stop`. This behaviour differs from Python,
+which would return an empty array for `num = 0`. However, the result
+of `linspace (start, stop, 1)` matches Python: a single-element `vvec`
+containing only the start value.
+
+`arange` resizes the `vvec` and fills it with elements starting
 with `start` and ending with `stop` incrementing by `increment`.
 
 ### Random numbers
@@ -313,6 +320,26 @@ For example:
 ```c++
 morph::vvec<int> vi = {1,2,3};
 morph::vvec<float> vf = vi.as_float(); // Note: new memory is used for the new object
+```
+### Get first and last elements in the vvec
+
+Get first (`0`th) and last (`size()-1` th) elements in the vvec. If vvec is of zero size, returns a 2 element vvec containing zeros.
+```c++
+morph::vvec<int> vv3 = { 1, 2, 3 };
+morph::vvec<int> fl3 = vv3.firstlast();
+std::cout << fl3; // (1, 3)
+
+morph::vvec<int> vv2 = { 1, 2 };
+morph::vvec<int> fl2 = vv2.firstlast();
+std::cout << fl2; // (1, 2)
+
+morph::vvec<int> vv1 = { 2 };
+morph::vvec<int> fl1 = vv1.firstlast();
+std::cout << fl1; // (2, 2)
+
+morph::vvec<int> vv0 = {};
+morph::vvec<int> fl0 = vv1.firstlast();
+std::cout << fl0; // (0, 0)
 ```
 
 ### String output
@@ -353,6 +380,15 @@ morph::vvec<float> v = { 1, 2, 3 };
 morph::range<float> r = v.range();
 std::cout << "vvec max: " << r.max << " and min: " << r.min << std::endl;
 ```
+If the contained type is itself a vector, then `vvec::range()` returns the shortest vector as min and the longest as max.
+
+```c++
+morph::vvec<morph::vec<int, 2>> v = { {-1, -3},   {-2, 4},  {3, 5} };
+morph::range<morph::vec<int, 2>> r = v.range();
+std::cout << "r.min: " << r.min; // {-1, -3}
+std::cout << "r.max: " << r.max; // {3, 5}
+```
+
 To re-scale or renormalize the values in the `vvec`:
 ```c++
 void renormalize();  // make vector length 1
@@ -378,6 +414,18 @@ Check whether your renormalized vector is a unit vector:
 
 ```c++
 bool checkunit() const; // return true if length is 1 (to within vvec::unitThresh = 0.001)
+```
+### Extent
+
+The 'extent' of a vvec of scalar values is the same as its range (and `vvec<S>::extent()` simply sub-calls `vvec<S>::range()` for scalar `S`).
+However, for a vvec of vector values, the extent returns a range of two vectors which define a volume that will enclose all the vectors contained in the vvec.
+The vectors values must be given in some fixed size type, such as `std::array<>` or `morph::vec<>` (otherwise the function will not compile).
+
+```c++
+morph::vvec<morph::vec<int, 2>> v = { {-1, -3},   {-2, 4},  {3, 5} };
+morph::range<morph::vec<int, 2>> r = v.extent();
+std::cout << "r.min: " << r.min; // {-2, -3}
+std::cout << "r.max: " << r.max; // {3, 5}
 ```
 
 ### Finding elements

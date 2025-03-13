@@ -3,6 +3,7 @@
  */
 #pragma once
 
+#include <type_traits>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/range.h>
@@ -19,14 +20,17 @@ namespace morph {
      *
      * \tparam T The floating point type for proportions, etc. Must be a floating point type.
      */
-    template <typename H=float, typename T=float>
+    template <typename H=float, typename T=float> requires std::is_floating_point_v<T>
     struct histo
     {
         /*!
          * Histogram constructor
          *
-         * The constructor does all of the computation of the histogram. The workflow is Construct
-         * -> access results in histo::bins histo::binwidth histo::proportions and histo::counts
+         * This constructor does all of the computation of the histogram (via a call to init). The
+         * workflow is Construct -> access results in histo::bins histo::binwidth histo::proportions
+         * and histo::counts.
+         *
+         * The histogram is computed based on the range of data values in data.
          *
          * \param data The histogram data
          *
@@ -38,17 +42,79 @@ namespace morph {
          * \tparam Allocator The memory allocator for the container. You don't usually need to
          * specify this.
          */
-        template < template <typename, typename> typename Container,
-                   typename Allocator=std::allocator<H> >
+        template < template <typename, typename> typename Container, typename Allocator=std::allocator<H> >
         histo (const Container<H, Allocator>& data, std::size_t n)
         {
+            morph::range<H> r { std::numeric_limits<H>::max(), std::numeric_limits<H>::max() };
+            this->init (data, n, r);
+        }
+
+        /*!
+         * Histogram constructor for a manual data range
+         *
+         * This constructor does almost all of the computation of the histogram (via a call to
+         * init). The workflow is Construct -> access results in histo::bins histo::binwidth
+         * histo::proportions and histo::counts.
+         *
+         * The histogram is computed based on the range of data values provided by the user in
+         * manual_datarange. manual_datarange should encompass the actual range of the data.
+         *
+         * \param data The histogram data
+         *
+         * \param n The number of bins to sort the data values into
+         *
+         * \param manual_datarange The user-provided data range.
+         *
+         * \tparam Container A container (std::vector, std::array, morph::vvec, etc) of data values
+         * of type H
+         *
+         * \tparam Allocator The memory allocator for the container. You don't usually need to
+         * specify this.
+         */
+        template < template <typename, typename> typename Container, typename Allocator=std::allocator<H> >
+        histo (const Container<H, Allocator>& data, std::size_t n, const morph::range<H>& manual_datarange)
+        {
+            this->init (data, n, manual_datarange);
+        }
+
+        /*!
+         * Histogram computation common to both constructors
+         *
+         * This function computes the histogram.
+         *
+         * \param data The histogram data
+         *
+         * \param n The number of bins to sort the data values into
+         *
+         * \param manual_datarange The user-provided data range or a dummy datarange containing the
+         * value std::numeric_limits<H>::max() for both min and max.
+         *
+         * \tparam Container A container (std::vector, std::array, morph::vvec, etc) of data values
+         * of type H
+         *
+         * \tparam Allocator The memory allocator for the container. You don't usually need to
+         * specify this.
+         */
+        template < template <typename, typename> typename Container, typename Allocator=std::allocator<H> >
+        void init (const Container<H, Allocator>& data, std::size_t n, const morph::range<H>& manual_datarange)
+        {
             this->bins.resize (n, T{0});
-            this->binedges.resize (n + 1U, T{0});
+            this->binedges.resize (n + 1u, T{0});
             this->counts.resize (n, 0u);
             this->proportions.resize (n, T{0});
             this->datacount = static_cast<T>(data.size());
             // Compute bin widths from range of data and n.
-            this->datarange = morph::MathAlgo::maxmin (data);
+            if (manual_datarange.min == std::numeric_limits<H>::max()
+                && manual_datarange.max == std::numeric_limits<H>::max()) {
+                this->datarange = morph::MathAlgo::maxmin (data);
+            } else {
+                // Check manual_datarange
+                morph::range<H> actual_datarange = morph::MathAlgo::maxmin (data);
+                if (!manual_datarange.contains (actual_datarange)) {
+                    throw std::runtime_error ("morph::histo: Make sure the manual_datarange is *larger* than the data's own datarange");
+                }
+                this->datarange = manual_datarange;
+            }
             if (this->datarange.span() == H{0}) {
                 throw std::runtime_error ("morph::histo: range span is 0, can't make a histogram");
             }
@@ -57,7 +123,7 @@ namespace morph {
             for (std::size_t i = 0; i < n; ++i) {
                 // bins[i] = min + i*bw + bw/2 but do the additions after the loop
                 this->bins[i] = i * this->binwidth;
-                this->binedges[i + 1U] = (i + 1U) * this->binwidth;
+                this->binedges[i + 1u] = (i + 1u) * this->binwidth;
             }
             this->bins += (this->datarange.min + (this->binwidth/T{2}));
             this->binedges += this->datarange.min;
@@ -77,8 +143,34 @@ namespace morph {
                     this->counts[idx] += 1u;
                 }
             }
-            this->proportions = counts.as<T>()/this->datacount;
+            this->proportions = counts.as<T>() / this->datacount;
         }
+
+        /*!
+         * Return the proportion of counts that are below the position. If position is not one of
+         * bin edges, then allocate a portion of the bin towards the proportion below.
+         */
+        T proportion_below (const T& position) const noexcept
+        {
+            if (this->datacount == 0u) { return T{0}; }
+            if (this->binwidth == T{0}) { return T{0}; }
+            if (this->bins.empty()) { return T{0}; }
+            if (this->binedges.size() < 2) { return T{0}; }
+            if (this->counts.size() != this->bins.size()) { return T{0}; }
+
+            T belowcount = T{0};
+            for (std::size_t i = 1u; i < this->binedges.size(); ++i) {
+                if (this->binedges[i] <= position) {
+                    belowcount += static_cast<T>(this->counts[i - 1u]);
+                } else if (this->binedges[i - 1u] < position) {
+                    T part = static_cast<T>(this->counts[i - 1u]) * (position - this->binedges[i - 1u]) / this->binwidth;
+                    belowcount += part;
+                } // else do nothing
+            }
+            return belowcount / static_cast<T>(this->datacount);
+        }
+
+        T proportion_above (const T& position) const noexcept { return T{1} - this->proportion_below (position); }
 
         //! The max and min of the histogram data. Computed in constructor.
         morph::range<H> datarange;

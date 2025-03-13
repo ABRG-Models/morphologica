@@ -11,9 +11,6 @@
  */
 
 #include <iostream>
-//#define DEBUG 1
-#define DBGSTREAM std::cout
-#include <morph/MorphDbg.h>
 
 #include <morph/ReadCurves.h>
 #include <morph/tools.h>
@@ -22,7 +19,7 @@
 #include <utility>
 #include <vector>
 #include <fstream>
-#include <math.h>
+#include <cstdlib>
 #include <morph/BezCoord.h>
 
 #include <morph/Visual.h>
@@ -44,12 +41,12 @@ int main(int argc, char** argv)
     }
     float gridspan = 3.0f;
     if (argc > 2) {
-        gridspan = atof (argv[2]);
+        gridspan = std::atof (argv[2]);
         cout << "User supplied grid width: " << gridspan << " mm" << endl;
     }
     float hexdia = 0.01f;
     if (argc > 3) {
-        hexdia = atof (argv[3]);
+        hexdia = std::atof (argv[3]);
         cout << "User supplied hex size: " << hexdia << " mm" << endl;
         if (hexdia < 0.003f) {
             cerr << "Very small hex dia - memory use may be large." << endl;

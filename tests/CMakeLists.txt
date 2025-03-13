@@ -51,31 +51,14 @@ if(ARMADILLO_FOUND)
   target_link_libraries(${TARGETTEST1_5} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
   add_test(testbezsplit ${TARGETTEST1_5})
 
-  if(${OpenCV_FOUND})
-    # Testing Bezier derivatives (though really testing curve joining)
-    set(TARGETTEST1_6 testbezderiv)
-    set(SOURCETEST1_6 testbezderiv.cpp)
-    add_executable(${TARGETTEST1_6} ${SOURCETEST1_6})
-    target_compile_definitions(${TARGETTEST1_6} PUBLIC FLT=double)
-    target_link_libraries(${TARGETTEST1_6} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
-    add_test(testbezderiv ${TARGETTEST1_6})
-
-    # Testing Bezier derivatives
-    set(TARGETTEST1_7 testbezderiv2)
-    set(SOURCETEST1_7 testbezderiv2.cpp)
-    add_executable(${TARGETTEST1_7} ${SOURCETEST1_7})
-    target_compile_definitions(${TARGETTEST1_7} PUBLIC FLT=double)
-    target_link_libraries(${TARGETTEST1_7} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
-    add_test(testbezderiv2 ${TARGETTEST1_7})
-
-    # Testing Bezier derivatives
+  # Testing Bezier derivatives
+  if(${glfw3_FOUND})
     set(TARGETTEST1_8 testbezderiv3)
     set(SOURCETEST1_8 testbezderiv3.cpp)
     add_executable(${TARGETTEST1_8} ${SOURCETEST1_8})
     target_compile_definitions(${TARGETTEST1_8} PUBLIC FLT=double)
-    target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
+    target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
     add_test(testbezderiv3 ${TARGETTEST1_8})
-
   endif()
 
   # Test two curves connected together
@@ -114,7 +97,7 @@ if(ARMADILLO_FOUND)
   add_executable(testhexbounddist testhexbounddist.cpp)
   target_link_libraries(testhexbounddist ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
   add_test(testhexbounddist testhexbounddist)
-endif()
+endif(ARMADILLO_FOUND)
 
 if(HDF5_FOUND)
   # Test HDF file access
@@ -143,12 +126,6 @@ if(HDF5_FOUND)
   target_link_libraries(testhdfdata4f ${HDF5_C_LIBRARIES})
   add_test(testhdfdata4f testhdfdata4f)
 
-  if(${OpenCV_FOUND})
-    add_executable(testhdfdata5f testhdfdata5.cpp)
-    target_compile_definitions(testhdfdata5f PUBLIC FLT=float )
-    target_link_libraries(testhdfdata5f ${HDF5_C_LIBRARIES} ${OpenCV_LIBS})
-    add_test(testhdfdata5f testhdfdata5f)
-  endif(${OpenCV_FOUND})
 endif(HDF5_FOUND)
 
 if(${glfw3_FOUND})
@@ -156,78 +133,45 @@ if(${glfw3_FOUND})
     # Test hexgrid3 (hexgrid2 with visualisation)
     add_executable(testhexgrid3 testhexgrid3.cpp)
     target_link_libraries(testhexgrid3 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testhexgrid3 GLEW::GLEW)
-    endif()
 
     if(HDF5_FOUND)
       # Test hexgridsave (HexGrid's save feature)
       add_executable(testhexgridsave testhexgridsave.cpp)
       target_link_libraries(testhexgridsave ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-      if(USE_GLEW)
-        target_link_libraries(testhexgridsave GLEW::GLEW)
-      endif()
     endif(HDF5_FOUND)
 
     add_executable(testbighexgrid testbighexgrid.cpp)
     target_link_libraries(testbighexgrid OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testbighexgrid GLEW::GLEW)
-    endif()
   endif(ARMADILLO_FOUND)
 
   add_executable(testVisCoordArrows testVisCoordArrows.cpp)
   target_link_libraries(testVisCoordArrows OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(testVisCoordArrows GLEW::GLEW)
-  endif()
 
   add_executable(testVisRemoveModel testVisRemoveModel.cpp)
   target_link_libraries(testVisRemoveModel OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(testVisRemoveModel GLEW::GLEW)
-  endif()
 
   if(ARMADILLO_FOUND)
     # Test elliptical HexGrid code (visualized with morph::Visual)
     add_executable(test_ellipseboundary test_ellipseboundary.cpp)
     target_link_libraries(test_ellipseboundary OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(test_ellipseboundary GLEW::GLEW)
-    endif()
 
     # Test circular HexGrid code
     add_executable(test_circleboundary test_circleboundary.cpp)
     target_link_libraries(test_circleboundary OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(test_circleboundary GLEW::GLEW)
-    endif()
 
     if(HDF5_FOUND)
       # Test Dirichlet code
       add_executable(testDirichlet testDirichlet.cpp)
       target_link_libraries(testDirichlet OpenGL::GL glfw Freetype::Freetype)
-      if(USE_GLEW)
-        target_link_libraries(testDirichlet GLEW::GLEW)
-      endif()
 
       add_executable(testDirichlet2 testDirichlet2.cpp)
       target_link_libraries(testDirichlet2 OpenGL::GL glfw Freetype::Freetype)
-      if(USE_GLEW)
-        target_link_libraries(testDirichlet2 GLEW::GLEW)
-      endif()
 
       add_executable(testDirichlet4 testDirichlet4.cpp)
       target_link_libraries(testDirichlet4 OpenGL::GL glfw Freetype::Freetype)
-      if(USE_GLEW)
-        target_link_libraries(testDirichlet4 GLEW::GLEW)
-      endif()
 
       add_executable(testDirichlet5 testDirichlet5.cpp)
       target_link_libraries(testDirichlet5 OpenGL::GL glfw Freetype::Freetype)
-      if(USE_GLEW)
-        target_link_libraries(testDirichlet5 GLEW::GLEW)
-      endif()
     endif(HDF5_FOUND)
   endif(ARMADILLO_FOUND)
 
@@ -268,11 +212,8 @@ add_executable(testRotationsQuat_double testRotationsQuat.cpp)
 target_compile_definitions(testRotationsQuat_double PUBLIC FLT=double)
 add_test(testRotationsQuat_double testRotationsQuat_double)
 
-# Note that we only compile the constexpr tests if compiler is not Clang. Clang doesn't like std::abs,
-# std::sin (etc) within a constexpr function.
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if(NOT APPLE)
   add_executable(testQuat_constexpr testQuat_constexpr.cpp)
-  set_property(TARGET testQuat_constexpr PROPERTY CXX_STANDARD 20)
   add_test(testQuat_constexpr testQuat_constexpr)
 endif()
 
@@ -280,13 +221,12 @@ endif()
 add_executable(testvec testvec.cpp)
 add_test(testvec testvec)
 
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if(NOT APPLE)
   # constexpr functionality in morph::vec
   # Need C++20 for the way I use constexpr here so that it is legal to
   # have "a definition of a variable for which no initialization is
   # performed".
   add_executable(testvec_constexpr testvec_constexpr.cpp)
-  set_property(TARGET testvec_constexpr PROPERTY CXX_STANDARD 20)
   add_test(testvec_constexpr testvec_constexpr)
 endif()
 
@@ -312,6 +252,15 @@ add_test(testvvec testvvec)
 
 add_executable(testvvecofvecs testvvecofvecs.cpp)
 add_test(testvvecofvecs testvvecofvecs)
+
+add_executable(testvvec_operatormult testvvec_operatormult.cpp)
+add_test(testvvec_operatormult testvvec_operatormult)
+
+add_executable(testvvec_operatordiv testvvec_operatordiv.cpp)
+add_test(testvvec_operatordiv testvvec_operatordiv)
+
+add_executable(testvvec_operatoradd testvvec_operatoradd.cpp)
+add_test(testvvec_operatoradd testvvec_operatoradd)
 
 add_executable(testvvec_convolutions testvvec_convolutions.cpp)
 add_test(testvvec_convolutions testvvec_convolutions)
@@ -366,10 +315,9 @@ add_test(testScale_complex testScale_complex)
 add_executable(testTransformMatrix testTransformMatrix.cpp)
 add_test(testTransformMatrix testTransformMatrix)
 
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if(NOT APPLE)
   # constexpr TransformMatrix
   add_executable(testTransMat_constexpr testTransMat_constexpr.cpp)
-  set_property(TARGET testTransMat_constexpr PROPERTY CXX_STANDARD 20)
   add_test(testTransMat_constexpr testTransMat_constexpr)
 endif()
 
@@ -388,6 +336,16 @@ add_test(testHexVertexPos testHexVertexPos)
 # Test Hex user flags code
 add_executable(testHexUserFlags testHexUserFlags.cpp)
 add_test(testHexUserFlags testHexUserFlags)
+
+# An example program which is slow compiled on Visual Studio with the /MDd "Debug build" flag
+add_executable(profileListHexminErase profileListHexminErase.cpp)
+add_test(profileListHexminErase profileListHexminErase)
+
+# Compile with stdc++ lib debug mode (but don't run as a test, as it's
+# very slow) This is equivalent to the default debug compilation that
+# Visual Studio uses (/MDd or /MTd).
+add_executable(profileListHexminEraseDbg profileListHexminErase.cpp)
+target_compile_definitions(profileListHexminEraseDbg PUBLIC _GLIBCXX_DEBUG)
 
 # Test MathAlgo code
 add_executable(testMathAlgo testMathAlgo.cpp)
@@ -527,21 +485,16 @@ add_test(testTools testTools)
 add_executable(testboxfilter testboxfilter.cpp)
 add_test(testboxfilter testboxfilter)
 
-# morph::Gridct requires C++-20
-if(CXX_20_AVAILABLE)
+if(ARRAY_LITERAL_TEMPL_ARGS_ARE_OK)
   add_executable(testGridct testGridct.cpp)
-  set_property(TARGET testGridct PROPERTY CXX_STANDARD 20)
   add_test(testGridct testGridct)
 
   add_executable(profileGrid profileGrid.cpp)
-  set_property(TARGET profileGrid PROPERTY CXX_STANDARD 20)
 
   add_executable(testGridctRowCol testGridctRowCol.cpp)
-  set_property(TARGET testGridctRowCol PROPERTY CXX_STANDARD 20)
   add_test(testGridctRowCol testGridctRowCol)
 
   add_executable(testGridctNeighbours testGridctNeighbours.cpp)
-  set_property(TARGET testGridctNeighbours PROPERTY CXX_STANDARD 20)
   add_test(testGridctNeighbours testGridctNeighbours)
 endif()
 
@@ -580,3 +533,8 @@ add_test(test_number_type test_number_type)
 
 add_executable(test_flags test_flags.cpp)
 add_test(test_flags test_flags)
+
+if(NOT APPLE)
+add_executable(testcmath testcmath.cpp)
+add_test(testcmath testcmath)
+endif()

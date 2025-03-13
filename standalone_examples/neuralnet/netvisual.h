@@ -8,11 +8,6 @@
  */
 #pragma once
 
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
-#endif
 #include <morph/VisualModel.h>
 #include <morph/vec.h>
 #include <morph/scale.h>
@@ -84,8 +79,12 @@ public:
                 }
 
                 // Text label for activation
-                this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                                             nloc+toffset, ss.str(), morph::TextFeatures(em)) ));
+                {
+                    auto vtm = std::make_unique<morph::VisualTextModel<>> (morph::TextFeatures(em));
+                    this->bindmodel (vtm);
+                    vtm->setupText (ss.str(), nloc+toffset);
+                    this->texts.push_back (std::move(vtm));
+                }
                 nloc[0] += this->radiusFixed * 4.0f;
             }
 
@@ -128,18 +127,24 @@ public:
                     ss << std::setprecision(3) << w;
                     morph::vec<float,3> nloccross = nloc.cross (nloc2);
                     toffset = (nloccross[2] > 0) ? toffset1 : toffset2;
-
-                    this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                                                 ((nloc+nloc2)/2.0f)+toffset, ss.str(), morph::TextFeatures(em))));
-
+                    {
+                        auto vtm = std::make_unique<morph::VisualTextModel<>> (morph::TextFeatures(em));
+                        this->bindmodel (vtm);
+                        vtm->setupText (ss.str(), ((nloc+nloc2)/2.0f) + toffset);
+                        this->texts.push_back (std::move(vtm));
+                    }
                     // When reset is needed:
                     size_t M = population.size() / cl.N;
                     if (++counter >= M) {
                         // Draw bias text
                         std::stringstream bb1;
                         bb1 << "bias " << std::setprecision(3) << cl.b[bidx++];
-                        this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                                                     (nloc2+toffsetbias), bb1.str(), morph::TextFeatures(em/2))));
+                        {
+                            auto vtm = std::make_unique<morph::VisualTextModel<>> (morph::TextFeatures(em/2));
+                            this->bindmodel (vtm);
+                            vtm->setupText (bb1.str(), (nloc2+toffsetbias));
+                            this->texts.push_back (std::move(vtm));
+                        }
                         nloc = *sl; // reset nloc
                         nloc2[0] += this->radiusFixed * 4.0f; // increment nloc2
                         counter = 0;

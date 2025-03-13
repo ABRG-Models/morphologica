@@ -12,7 +12,6 @@
 #include <morph/vec.h>
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
-#include <morph/VisualTextModel.h>
 #include <morph/colour.h>
 #include <array>
 
@@ -34,7 +33,6 @@ namespace morph {
             this->lengths = _lengths;
             this->thickness = _thickness;
             this->em = _em;
-            this->initAxisLabels();
         }
 
         //! Make sure coord arrow colours are ok on the given background colour. Call this *after* finalize.
@@ -63,29 +61,25 @@ namespace morph {
 
                 if (this->setContext != nullptr) { this->setContext (this->parentVis); } // For VisualTextModel
 
+                morph::TextFeatures tfca(this->em, 48, false, morph::colour::black, morph::VisualFont::DVSansItalic);
+
                 // These texts are black by default
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
-                auto vtm1 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                      morph::VisualFont::DVSansItalic,
-                                                                      this->em, 48, toffset,
-                                                                      this->x_label);
+                auto vtm1 = this->makeVisualTextModel (tfca);
+                vtm1->setupText (this->x_label, toffset);
                 this->texts.push_back (std::move(vtm1));
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
-                auto vtm2 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                      morph::VisualFont::DVSansItalic,
-                                                                      this->em, 48, toffset,
-                                                                      this->y_label);
+                auto vtm2 = this->makeVisualTextModel (tfca);
+                vtm2->setupText (this->y_label, toffset);
                 this->texts.push_back (std::move(vtm2));
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
-                auto vtm3 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                      morph::VisualFont::DVSansItalic,
-                                                                      this->em, 48, toffset,
-                                                                      this->z_label);
+                auto vtm3 = this->makeVisualTextModel (tfca);
+                vtm3->setupText (this->z_label, toffset);
                 this->texts.push_back (std::move(vtm3));
 
                 if (this->releaseContext != nullptr) { this->releaseContext (this->parentVis); }
@@ -123,6 +117,8 @@ namespace morph {
             reloffset[2] += this->lengths[2];
             this->computeSphere (reloffset, z_axis_col, this->thickness*this->lengths[0]/40.0);
             this->computeTube (zerocoord, reloffset, z_axis_col, z_axis_col, this->thickness*this->lengths[0]/80.0);
+
+            this->initAxisLabels();
         }
 
         //! The lengths of the x, y and z arrows.

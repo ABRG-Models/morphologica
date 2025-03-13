@@ -1,0 +1,20 @@
+{
+    "name": "morphologica",
+    "dependencies": [
+        "armadillo",
+        {
+          "name": "egl",
+          "platform": "linux"
+        },
+        {
+          "name": "freeglut",
+          "platform": "linux"
+        },
+        "freetype",
+        "glfw3",
+        "hdf5",
+        "nlohmann-json",
+        "opengl",
+        "rapidxml"
+    ]
+}

@@ -14,12 +14,11 @@
 
 
 // You have to include the GL headers manually so that you will be sure you have the
-// right ones. THis is because for OpenGL version 4.3, you would include GL3/gl3.h and
+// right ones. This is because for OpenGL version 4.3, you would include GL3/gl3.h and
 // GL/glext.h whereas if you are targeting OpenGL 3.1 ES, you want to include
 // GLES3/gl3[12].h (and maybe GLES3/gl3ext.h). These includes are required before
-// including gl_compute.h.
-#include <GL3/gl3.h>
-#include <GL/glext.h>
+// including gl_compute.h. Update: I think on Desktop, it's ok to just #include <GL/gl.h>
+#include <GL/gl.h>
 
 #include <morph/gl/compute_manager.h>
 #include <morph/gl/texture.h>

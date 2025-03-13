@@ -94,17 +94,6 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
     };
 
-#if 0 // haven't figured out how to make this work.
-    template<typename T>
-    class has_find_method
-    {
-	template<typename U> static auto test(int) -> decltype(std::declval<U>().find(std::declval<U>().end()), std::true_type());
-	template<typename> static std::false_type test(...);
-    public:
-	static constexpr bool value = std::is_same< decltype(test<T>(0)), std::true_type >::value;
-    };
-#endif
-
     // Does T have a const_iterator which satisfies the requirements of LegacyInputIterator?
     // Note this is NOT yet complete - I don't test std::iterator_traits.
     // The tests here more or less tell me if I have a copyable container
@@ -119,27 +108,70 @@ namespace morph {
                                                                && std::declval<typename C::const_iterator> == std::declval<typename C::const_iterator>
                                                                , std::true_type());
 
-        template<typename C> static int test(...);
+        template<typename C> static std::false_type test(...);
 
     public:
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
+    };
+
+    // Test for constexpr constructible class adapted from
+    // https://stackoverflow.com/questions/71954780/how-to-check-a-type-has-constexpr-constructor
+    template <typename T, int = (T{}, 0)> constexpr bool is_constexpr_constructible (int) { return true; }
+    template <typename>                   constexpr bool is_constexpr_constructible (long) { return false; }
+
+#if __cplusplus >= 202002L
+    // C++20 is required to incorporate the lambda into test() for has_size_method. This
+    // feeds through into is_copyable_fixedsize, so that's C++20 for now, too. Also,
+    // this approach fails if we try has_size_method<int> or similar built-in type.
+    template<typename T>
+    class has_size_method
+    {
+	template<typename U> static auto test(int _sz) -> decltype([](){ [[maybe_unused]] auto sz = U{}.size(); }, std::true_type());
+	template<typename> static std::false_type test(...);
+    public:
+	static constexpr bool value = std::is_same< decltype(test<T>(1)), std::true_type >::value;
+    };
+#endif
+
+    //! morph::has_size_const_method<T> tests whether a type T has a const size() method that returns size_t
+    template <typename T> int call_size_const (std::size_t (T::*)() const); // Function signature must exactly match what you're looking for
+    template <typename C> std::true_type has_size_const_method_ (decltype(call_size_const<C>(&C::size)));
+    template <typename C> std::false_type has_size_const_method_ (...);
+    template <typename T> using has_size_const_method = decltype(has_size_const_method_<T>(0));
+
+    /*
+     * The intention of this compile-time test is: Distinguish between
+     * std::array/morph::vec and other std containers, so it can be determined at
+     * compile time if a container is able to hold an N-dimensional vector with a
+     * guarantee that N is fixed.
+     *
+     * We ask: Is T a copyable container AND has a const size() method. We then
+     * stipulate that it must NOT have a resize method.
+     *
+     * If that passes, it's probably std::array or morph::vec.
+     */
+    template <typename T>
+    struct is_copyable_fixedsize
+    {
+        static constexpr bool value = is_copyable_container<std::remove_reference_t<T>>::value
+                                      && has_size_const_method<std::remove_reference_t<T>>::value
+                                      && has_resize_method<std::remove_reference_t<T>>::value == false;
     };
 
     // Test for std::complex by looking for real() and imag() methods
     template<typename T>
     class is_complex
     {
-        // See the right arrow?                 v--- there it is. It's a different function declaration syntax
 	template<typename U> static auto test(int) -> decltype(std::declval<U>().real() == 1
-                                                            && std::declval<U>().imag() == 1, std::true_type());
+                                                               && std::declval<U>().imag() == 1, std::true_type());
 	template<typename> static std::false_type test(...); // This uses the more typical syntax for fn declaration
     public:
 	static constexpr bool value = std::is_same<decltype(test<T>(1)), std::true_type>::value;
     };
 
     // morph::value_type to allow us to write code that will accept float::value_type and std::vector<float>::value_type
-    template <class T, class = void> struct value_type { using type = T; };
-    template <class T> struct value_type<T, std::void_t<typename T::value_type>> { using type = typename T::value_type; };
+    template <typename T, typename = void> struct value_type { using type = T; };
+    template <typename T>                  struct value_type<T, std::void_t<typename T::value_type>> { using type = typename T::value_type; };
 
     // This gets the value_type of a class that has value_type or the type of itself for a class
     // that doesn't have value_type. For example morph::value_type_t<float> is float and

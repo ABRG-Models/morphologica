@@ -1,6 +1,7 @@
 #include "morph/quaternion.h"
 #include "morph/vec.h"
 #include "morph/mathconst.h"
+#include "morph/Random.h"
 
 int main()
 {
@@ -121,6 +122,66 @@ int main()
     std::cout << "unitRotationMatrix: " << vmatBB << std::endl;
 
 
+    morph::vec<float> myaxis = { 1, 2, 3 };
+    float myangle = 0.12f;
+    myaxis.renormalize();
+    morph::quaternion<float> qaa (myaxis, myangle);
+    morph::vec<float, 4> aa = qaa.axis_angle();
+
+    std::cout << "\nquaternion " << qaa << "\n"
+              << "was set from rotn " << myangle << " about axis " << myaxis << "\n"
+              << "and its axis_angle method returns " << aa << "\n"
+              << "which is a rotation of " << aa[3] << " rads about axis " << aa.less_one_dim() << std::endl << std::endl;
+
+    float eps = 0.00001; // A fair amount of precision is lost extracting axis angle if type is float
+    if (std::abs(aa[0] - myaxis[0]) > eps
+        || std::abs(aa[1] - myaxis[1]) > eps
+        || std::abs(aa[2] - myaxis[2]) > eps
+        || std::abs(aa[3] - myangle) > eps) {
+        --rtn;
+    }
+
+    morph::quaternion<float> q_unitf (1.0f, 2.0f, -3.0f, 4.0f); // NOT unit.
+    q_unitf.renormalize();
+    morph::RandUniform<float> rngf;
+    morph::vec<float> vecf;
+    float amountf;
+    morph::range<float> metric_rangef (0.0f, 0.0f);
+    for (unsigned int i = 0; i < 1000000; ++i) {
+        rngf.get(vecf);
+        vecf.renormalize();
+        amountf = rngf.get();
+        q_unitf.rotate (vecf, amountf);
+        float metricf = morph::math::abs(float{1} - (q_unitf.w*q_unitf.w + q_unitf.x*q_unitf.x + q_unitf.y*q_unitf.y + q_unitf.z*q_unitf.z));
+        // how big is metric? Should be about 0.
+        metric_rangef.update (metricf);
+    }
+    std::cout << "metric_range (float): " << metric_rangef << std::endl;
+    // metric_range should be smaller than unitThresh
+    if (metric_rangef.max > morph::quaternion<float>::unitThresh()) {
+        --rtn;
+    }
+
+    morph::quaternion<double> q_unitd (1.0, 2.0, -3.0, 4.0); // NOT unit.
+    q_unitd.renormalize();
+    morph::RandUniform<double> rngd;
+    morph::vec<double> vecd;
+    double amountd;
+    morph::range<double> metric_ranged (0.0f, 0.0f);
+    for (unsigned int i = 0; i < 1000000; ++i) {
+        rngd.get(vecd);
+        vecd.renormalize();
+        amountd = rngd.get();
+        q_unitd.rotate (vecd, amountd);
+        double metricd = morph::math::abs(double{1} - (q_unitd.w*q_unitd.w + q_unitd.x*q_unitd.x + q_unitd.y*q_unitd.y + q_unitd.z*q_unitd.z));
+        // how big is metric? Should be about 0.
+        metric_ranged.update (metricd);
+    }
+    std::cout << "metric_range (double): " << metric_ranged << std::endl;
+    // metric_range should be smaller than unitThresh
+    if (metric_ranged.max > morph::quaternion<double>::unitThresh()) {
+        --rtn;
+    }
 
     if (rtn == 0) {
         std::cout << "quaternion tests PASSED\n";

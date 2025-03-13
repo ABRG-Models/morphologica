@@ -33,21 +33,21 @@ namespace morph {
     {
     public:
         //! Default constructor
-        mat33() { this->setToIdentity(); }
+        mat33() noexcept { this->setToIdentity(); }
         //! User-declared destructor
-        ~mat33() {}
+        ~mat33() noexcept {}
         //! User-declared copy constructor
-        mat33 (const mat33<F>& other) : mat(other.mat) {}
+        mat33 (const mat33<F>& other) noexcept : mat(other.mat) {}
         //! User-declared copy assignment constructor
-        mat33<F>& operator= (mat33<F>& other)
+        mat33<F>& operator= (mat33<F>& other) noexcept
         {
             std::copy (other.mat.begin(), other.mat.end(), mat.begin());
             return *this;
         }
         //! Explicitly defaulted  move constructor
-        mat33(mat33<F>&& other) = default;
+        mat33 (mat33<F>&& other) noexcept = default;
         //! Explicitly defaulted move assignment constructor
-        mat33<F>& operator=(mat33<F>&& other) = default;
+        mat33<F>& operator= (mat33<F>&& other) noexcept = default;
 
         /*!
          * The matrix data, arranged in column major format to be similar to
@@ -56,7 +56,7 @@ namespace morph {
         alignas(std::array<F, 9>) std::array<F, 9> mat;
 
         //! Return a string representation of the matrix
-        std::string str() const
+        std::string str() const noexcept
         {
             std::stringstream ss;
             ss <<"[ "<< mat[0]<<" , "<<mat[3]<<" , "<<mat[6]<<" ;\n";
@@ -66,7 +66,7 @@ namespace morph {
         }
 
         //! Return a string representation of the passed-in column-major array
-        static std::string str (const std::array<F, 9>& arr)
+        static std::string str (const std::array<F, 9>& arr) noexcept
         {
             std::stringstream ss;
             ss <<"[ "<< arr[0]<<" , "<<arr[3]<<" , "<<arr[6]<<" ;\n";
@@ -75,7 +75,7 @@ namespace morph {
             return ss.str();
         }
 
-        void setToIdentity()
+        void setToIdentity() noexcept
         {
             this->mat.fill (F{0});
             this->mat[0] = F{1};
@@ -84,12 +84,12 @@ namespace morph {
         }
 
         //! Access elements of the matrix
-        F& operator[] (unsigned int idx) { return this->mat[idx]; }
+        F& operator[] (unsigned int idx) noexcept { return this->mat[idx]; }
         // note: assume F is a built-in type here (safe - F will be float or double)
-        const F operator[] (unsigned int idx) const  { return this->mat[idx]; }
+        const F operator[] (unsigned int idx) const noexcept { return this->mat[idx]; }
 
         //! Access a given row of the matrix
-        morph::vec<F, 3> row (unsigned int idx) const
+        morph::vec<F, 3> row (unsigned int idx) const noexcept
         {
             morph::vec<F, 3> r = {F{0}, F{0}, F{0}};
             if (idx > 2U) { return r; }
@@ -100,7 +100,7 @@ namespace morph {
         }
 
         //! Access a given column of the matrix
-        morph::vec<F, 3> col (unsigned int idx) const
+        morph::vec<F, 3> col (unsigned int idx) const noexcept
         {
             morph::vec<F, 3> c = {F{0}, F{0}, F{0}};
             if (idx > 2U) { return c; }
@@ -112,7 +112,7 @@ namespace morph {
         }
 
         //! Transpose this matrix
-        void transpose()
+        void transpose() noexcept
         {
             std::array<F, 3> a;
             a[0] = this->mat[1];
@@ -129,7 +129,7 @@ namespace morph {
         }
 
         //! Transpose the matrix @matrx, returning the transposed version.
-        std::array<F, 9> transpose (const std::array<F, 9>& matrx) const
+        std::array<F, 9> transpose (const std::array<F, 9>& matrx) const noexcept
         {
             std::array<F, 9> tposed;
             tposed[0] = matrx[0];
@@ -145,13 +145,13 @@ namespace morph {
         }
 
         //! Compute determinant for column-major 2x2 matrix @cm
-        static F determinant (std::array<F, 4> cm)
+        static F determinant (std::array<F, 4> cm) noexcept
         {
             return ((cm[0]*cm[3]) - (cm[1]*cm[2]));
         }
 
         //! Compute determinant for 3x3 matrix @cm
-        static F determinant (std::array<F, 9> cm)
+        static F determinant (std::array<F, 9> cm) noexcept
         {
             F det = (cm[0]*cm[4]*cm[8])
                 + (cm[3]*cm[7]*cm[2])
@@ -162,7 +162,7 @@ namespace morph {
             return det;
         }
 
-        F determinant() const
+        F determinant() const noexcept
         {
             F det = (mat[0]*mat[4]*mat[8])
                 + (mat[3]*mat[7]*mat[2])
@@ -173,13 +173,13 @@ namespace morph {
             return det;
         }
 
-        std::array<F, 9> adjugate() const
+        std::array<F, 9> adjugate() const noexcept
         {
             return this->transpose (this->cofactor());
         }
 
         static constexpr bool debug_cofactors = false;
-        std::array<F, 9> cofactor() const
+        std::array<F, 9> cofactor() const noexcept
         {
             std::array<F, 9> cofac;
 
@@ -248,7 +248,7 @@ namespace morph {
             return cofac;
         }
 
-        mat33<F> invert()
+        mat33<F> invert() noexcept
         {
             F det = this->determinant();
             mat33<F> rtn;
@@ -264,13 +264,13 @@ namespace morph {
 
         //! *= operator for a scalar value.
         template <typename T=F>
-        void operator*= (const T& f)
+        void operator*= (const T& f) noexcept
         {
             for (unsigned int i = 0; i<9; ++i) { this->mat[i] *= f; }
         }
 
         //! Right-multiply this->mat with m2.
-        void operator*= (const std::array<F, 9>& m2)
+        void operator*= (const std::array<F, 9>& m2) noexcept
         {
             std::array<F, 9> result;
             // Top row
@@ -310,7 +310,7 @@ namespace morph {
         }
 
         //! Right-multiply this->mat with m2.
-        void operator*= (const mat33<F>& m2)
+        void operator*= (const mat33<F>& m2) noexcept
         {
             std::array<F, 9> result;
             // Top row
@@ -350,7 +350,7 @@ namespace morph {
         }
 
         //! Return this-> mat * m2
-        mat33<F> operator* (const std::array<F, 9>& m2) const
+        mat33<F> operator* (const std::array<F, 9>& m2) const noexcept
         {
             mat33<F> result;
             // Top row
@@ -390,7 +390,7 @@ namespace morph {
         }
 
         //! Return this-> mat * m2
-        mat33<F> operator* (const mat33<F>& m2) const
+        mat33<F> operator* (const mat33<F>& m2) const noexcept
         {
             mat33<F> result;
             // Top row
@@ -430,7 +430,7 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        std::array<F, 3> operator* (const std::array<F, 3>& v1) const
+        std::array<F, 3> operator* (const std::array<F, 3>& v1) const noexcept
         {
             std::array<F, 3> v;
             v[0] = this->mat[0] * v1[0]
@@ -446,7 +446,7 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        vec<F, 3> operator* (const vec<F, 3>& v1) const
+        vec<F, 3> operator* (const vec<F, 3>& v1) const noexcept
         {
             vec<F, 3> v;
             v[0] = this->mat[0] * v1[0]
@@ -462,7 +462,7 @@ namespace morph {
         }
 
         //! Equality operator. True if all elements match
-        bool operator==(const mat33<F>& rhs) const
+        bool operator== (const mat33<F>& rhs) const noexcept
         {
             unsigned int ndiff = 0;
             for (unsigned int i = 0; i < 9 && ndiff == 0; ++i) {
@@ -472,7 +472,7 @@ namespace morph {
         }
 
         //! Not equals
-        bool operator!=(const mat33<F>& rhs) const
+        bool operator!= (const mat33<F>& rhs) const noexcept
         {
             unsigned int ndiff = 0;
             for (unsigned int i = 0; i < 9 && ndiff == 0; ++i) {

@@ -25,7 +25,7 @@ namespace morph {
         LengthscaleVisual(const vec<float, 3> _offset) : morph::VisualModel<glver>(_offset)
         {
             this->scene_to_units_scale.compute_scaling (0.0f, 1.0f);
-            this->text_features.colour = this->colr;            
+            this->text_features.colour = this->colr;
         }
 
         void initializeVertices()
@@ -43,7 +43,7 @@ namespace morph {
         {
             if (this->label.empty()) { return; }
             morph::vec<float> bar_centre = end_coord / 2.0f;
-            auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->text_features);
+            auto lbl = this->makeVisualTextModel (this->text_features);
             morph::TextGeometry geom = lbl->getTextGeometry (this->label);
             morph::vec<float> lblpos = { 0.0f };
 
@@ -53,7 +53,7 @@ namespace morph {
                 lblpos = bar_centre + morph::vec<float>{ -geom.half_width(), -this->width * 0.5f - 3.0f * geom.half_height(), 0.0f  };
 
             } else if (this->axis == this->uy) {
-                // Rotated label 
+                // Rotated label
                 lblpos = bar_centre + morph::vec<float>{ this->width * 0.5f + 3.0f * geom.half_height(), -geom.half_width(), 0.0f  };
                 // Set rotation
                 text_rotn.rotate (this->upaxis, morph::mathconst<float>::pi_over_2);
@@ -65,7 +65,7 @@ namespace morph {
             lbl->setupText (this->label, text_rotn, lblpos + this->mv_offset, this->text_features.colour);
             this->texts.push_back (std::move(lbl));
         }
-        
+
 
         //! A width for the length scale line
         float width = 0.025f;

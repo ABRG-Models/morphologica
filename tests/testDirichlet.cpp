@@ -3,9 +3,6 @@
 //
 
 #include <iostream>
-#define DBGSTREAM std::cout
-#define DEBUG 1
-#include <morph/MorphDbg.h>
 
 #include <morph/HexGrid.h>
 #include <morph/ReadCurves.h>
@@ -76,10 +73,7 @@ int main()
 
         // There should be 19 vertices, precisely.
         unsigned int reqd = 19;
-        if (vertices.size() != reqd) {
-            DBG ("Not correct number of vertices; " << vertices.size() << " instead of " << reqd);
-            rtn -= 1;
-        }
+        if (vertices.size() != reqd) { rtn -= 1; }
 
         // Expecting one domain
         if (domains.size() != 1) { rtn -= 1; }

@@ -7,7 +7,6 @@
  */
 
 #include <morph/Mnist.h>
-#include <morph/Random.h>
 #include <fstream>
 #include <morph/vvec.h>
 #include <morph/nn/FeedForwardNet.h>

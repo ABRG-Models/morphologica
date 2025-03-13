@@ -1,6 +1,7 @@
 #include "morph/mat44.h"
 #include <iostream>
 #include <array>
+#include <cmath>
 #include <morph/vec.h>
 
 void setMatrixSequence (morph::mat44<float>& tm)
@@ -115,7 +116,7 @@ int main()
     // Test 3x3 determinant
     morph::mat44<float> td;
     std::array<float, 9> threethree = { 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 3.5f, 3.0f, 2.0f, 120.0f };
-    float det_td = td.determinant (threethree);
+    float det_td = td.determinant3x3 (threethree);
     std::cout << "Determinant = " << det_td << " (expect 111)" << std::endl;
     if (det_td != 111.0f) {
         ++rtn;
@@ -171,15 +172,15 @@ int main()
               << "," << v3[2]
               << "," << v3[3] << ") (should be equal to v1)" << std::endl;
 
-    std::cout << "v1-v3 errors: " << abs(v1[0]-v3[0]) << ", "
-              << abs(v1[1]-v3[1]) << ", "
-              << abs(v1[2]-v3[2]) << ", "
-              << abs(v1[3]-v3[3]) << std::endl;
+    std::cout << "v1-v3 errors: " << std::abs(v1[0]-v3[0]) << ", "
+              << std::abs(v1[1]-v3[1]) << ", "
+              << std::abs(v1[2]-v3[2]) << ", "
+              << std::abs(v1[3]-v3[3]) << std::endl;
 
-    float esum = abs(v1[0]-v3[0])
-        + abs(v1[1]-v3[1])
-        + abs(v1[2]-v3[2])
-        + abs(v1[3]-v3[3]);
+    float esum = std::abs(v1[0]-v3[0])
+        + std::abs(v1[1]-v3[1])
+        + std::abs(v1[2]-v3[2])
+        + std::abs(v1[3]-v3[3]);
 
     if (esum > 1e-5) {
         std::cout << "Inverse failed to re-create the vector" << std::endl;
@@ -197,5 +198,22 @@ int main()
     morph::mat44<float> mult4inv_copy = mult4inv;
     if (mult4inv_copy != mult4inv) { ++rtn; }
 
+    // Test scaling
+    morph::mat44<double> scaler;
+    morph::vec<double, 4> v4d = { 2.0, 3.0, 4.0, 1.0 };
+    morph::vec<float, 3> scale_vec = { 2.0f, 2.0f, 2.0f };
+    scaler.scale (scale_vec);
+    std::cout << v4d << " scaled by " << scale_vec << " = " << (scaler * v4d) << std::endl;
+
+    constexpr float second_scale = 2.0f;
+    scaler.scale (second_scale);
+    std::cout << v4d << " scaled by " << scale_vec << " and then in all dims by " << second_scale  << "  = " << (scaler * v4d) << std::endl;
+
+    morph::vec<double, 4> v4dres = scaler * v4d;
+    std::cout << "v4dres: " << v4dres << std::endl;
+    if (v4dres[0] != 8.0 || v4dres[1] != 12.0 || v4dres[2] != 16.0) { ++rtn; }
+
+    scaler.scale (0.025, 0.025, 0.025);
+    std::cout << v4d << " scaled by " << scale_vec << " and then in all dims by " << second_scale << " and then by 0.025f, 0.025f, 0.025f = " << (scaler * v4d) << std::endl;
     return rtn;
 }

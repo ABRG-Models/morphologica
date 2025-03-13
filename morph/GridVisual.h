@@ -606,11 +606,10 @@ namespace morph {
             for (I ri = 0; ri < this->grid->n(); ++ri) {
 
                 if (this->options.test (gridvisual_flags::showselectedpixborder) == true) {
-                    try { // Is ri in selected_pix?
-                        this->selected_pix.at (ri);
+                    if (this->selected_pix.contains(ri)) {
                         sx = selth_x;
                         sy = selth_y;
-                    } catch (const std::out_of_range& e) { // ri is not in selected_pix
+                    } else { // ri is not in selected_pix
                         sx = 0.0f;
                         sy = 0.0f;
                     }
@@ -941,11 +940,10 @@ namespace morph {
             for (I ri = 0; ri < this->grid->n(); ++ri) {
 
                 if (this->options.test (gridvisual_flags::showselectedpixborder) == true) {
-                    try { // Is ri in selected_pix?
-                        this->selected_pix.at (ri);
+                    if (this->selected_pix.contains (ri)) {
                         sx = selth_x;
                         sy = selth_y;
-                    } catch (const std::out_of_range& e) { // ri is not in selected_pix
+                    } else { // ri is not in selected_pix
                         sx = 0.0f;
                         sy = 0.0f;
                     }

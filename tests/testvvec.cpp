@@ -125,6 +125,29 @@ int main() {
     cout << "d1 should be 5,6,7: " << d1 << endl;
     array<double, 4> a2 = { 5,6,8,8 };
     d1.set_from_onelonger(a2);
+    std::cout << "d1.set_from_onelonger(a2) gives d1: " << d1 << std::endl;
+    if (!(d1[0] == 5 && d1[1] == 6 && d1[2] == 8)) {
+        std::cout << "fail this one\n"; --rtn;
+    }
+
+    vvec<double> d1cpy = d1;
+    std::vector<float> a2longer = { 7, 8, 9, 9 };
+    d1cpy.set_from_onelonger (a2longer);
+    std::cout << "d1cpy.set_from_onelonger(a2longer) gives d1cpy: " << d1cpy << std::endl;
+    if (d1cpy[2] != 9) { std::cout << "and fail this one\n"; --rtn; }
+
+    vvec<int> v2longer = { 10, 100, 1000, 1000 };
+    d1cpy.set_from_onelonger (v2longer);
+    std::cout << "d1cpy.set_from_onelonger(v2longer) gives d1cpy: " << d1cpy << std::endl;
+    if (d1cpy[2] != 1000) { std::cout << "and fail this one\n"; --rtn; }
+
+    std::array<int, 4> aa2longer = { 100, 1000, 10000, 10000 };
+    d1cpy.set_from_onelonger (aa2longer);
+    std::cout << "d1cpy.set_from_onelonger(aa2longer) gives d1cpy: " << d1cpy << std::endl;
+    if (d1cpy[2] != 10000) { std::cout << "and fail this one\n"; --rtn; }
+
+
+
     cout << "d1 should be 5,6,8: " << d1 << endl;
     d1.set_from (88.3);
     cout << "d1 should be 88.3 in all elements: " << d1 << endl;
@@ -277,6 +300,38 @@ int main() {
          << ", min: " << maxlongest.min() << " (at index "<< maxlongest.argmin()
          << "), shortest component: " << maxlongest.shortest() << " (at index "
          << maxlongest.argshortest() << ")\n";
+
+    vvec<double> forshortest = { 2.9, 0, -1.1, 3.9 };
+    cout << "For vector " << forshortest << std::endl;
+    cout << "  Shortest: " << forshortest.shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
+    if (forshortest.shortest_nonzero() != -1.1) { --rtn; }
+
+    // Ensure it works if 0 comes first
+    forshortest = { 0, 2.9, -1.1, 3.9 };
+    cout << "For vector " << forshortest << std::endl;
+    cout << "  Shortest: " << forshortest.shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
+    if (forshortest.shortest_nonzero() != -1.1) { --rtn; }
+
+    // Ensure it works if 0 comes last
+    forshortest = { 2.9, -1.1, 3.9, 0 };
+    cout << "For vector " << forshortest << std::endl;
+    cout << "  Shortest: " << forshortest.shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortest.shortest_nonzero() << std::endl;
+    if (forshortest.shortest_nonzero() != -1.1) { --rtn; }
+
+    vvec<morph::vec<float, 2>> forshortestvec = { {0, 0}, {0, 0}, {1, 1}, {1, 2} };
+    cout << "For vector " << forshortestvec  << std::endl;
+    cout << "  Shortest: " << forshortestvec .shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortestvec .shortest_nonzero() << std::endl;
+    if (forshortestvec .shortest_nonzero() != morph::vec<float, 2>{1, 1}) { --rtn; }
+
+    forshortestvec = { {1, 1}, {0, 0}, {0, 0}, {1, 1}, {1, 2} };
+    cout << "For vector " << forshortestvec  << std::endl;
+    cout << "  Shortest: " << forshortestvec .shortest() << std::endl;
+    cout << "  Shortest non-zero: " << forshortestvec .shortest_nonzero() << std::endl;
+    if (forshortestvec .shortest_nonzero() != morph::vec<float, 2>{1, 1}) { --rtn; }
 
     vvec<float> cc = { 1.0f, 2.0f };
     float D = 2.0f;
@@ -454,12 +509,17 @@ int main() {
     std::cout << sos1.as_uint() << " uint8_t to power 3: sos1.pow<unsigned int>(4) = " << sos1.pow<unsigned int>(4) << std::endl;
 
     // Correctly fails to compile/errors (will fail to compile when morph moves to C++-20)
+#if __cplusplus >= 202002L
+    // This line:
+    // std::cout << sos1.as_uint() << " uint8_t sum of squares: length_sq.sos<vec<>>(): " << sos1.length_sq<morph::vec<float, 2>>() << std::endl;
+    // should fail to compile
+#else
     try {
         std::cout << sos1.as_uint() << " uint8_t sum of squares: length_sq.sos<vec<>>(): " << sos1.length_sq<morph::vec<float, 2>>() << std::endl;
     } catch (const std::exception& e) {
         std::cout << "Expected error: " << e.what() << std::endl;
     }
-
+#endif
     vvec<morph::vec<int, 2>> sosv1 = {{1,2}, {3,2}, {2,4}};
     //std::cout << sosv1 << " sum of squares: " << sosv1.sos() << std::endl; // won't compile or will runtime error
     std::cout << sosv1 << " is a vector of vectors, so sosv1.length_sq<int>() returns a sum of squared lengths: " << sosv1.length_sq<int>() << std::endl;
@@ -476,6 +536,29 @@ int main() {
     morph::vvec<float> uv2f = {1, 2, 10, 3, 11, 23};
     std::cout << uv2f << " mean: " << uv2f.mean() << std::endl;
     std::cout << uv2f << " variance: " << uv2f.variance() << std::endl;
+
+    // Test int * vvec<double> etc
+    morph::vvec<double> vvd = {1.0, 2.0, 3.0};
+    morph::vvec<double> vvd1 = 5 * vvd;
+    if (vvd1[0] != 5.0) { --rtn; }
+
+    morph::vvec<double> vvd2 = 1 / vvd;
+    if (vvd2[1] != 0.5) { --rtn; }
+
+    morph::vvec<double> vvd3 = 5 + vvd;
+    if (vvd3[0] != 6.0) { --rtn; }
+
+    morph::vvec<double> vvd4 = 5 - vvd;
+    if (vvd4[0] != 4.0) { --rtn; }
+
+    morph::vvec<int> vvi = { 2, 3 };
+    morph::vvec<int> vvi1 = 1.0f / vvi;
+    std::cout << vvi1 << std::endl; // result is { int(1.0f / (int)2) , int(1.0f / int(3)) }  = { 0, 0 }
+    // Doesn't compile:
+    //morph::vvec<float> vvif1 = 1.0f / vvi;
+
+    morph::vvec<double> vvd5 = 1.0f / vvd;
+    if (vvd5[1] != 0.5) { --rtn; }
 
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;

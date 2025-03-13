@@ -119,7 +119,9 @@ The `Visual::addLabel` function is similar to `VisualModel::addLabel`. Other way
 
 Other than labels, the main constituents of your scenes will be `morph::VisualModel` objects. Each `VisualModel` contains a set of OpenGL vertex buffer objects that define an 'OpenGL model' comprised mostly of triangles and also of a few textures (for text). `VisualModel` is designed as a base class; you won't actually add VisualModels to the `morph::Visual`. Instead, you'll add objects of derived classes such as `morph::GraphVisual`, `morph::ScatterVisual` or `morph::GridVisual`.
 
-`morph::Visual` takes ownership of the memory associated with each `VisualModel`. It keeps an `std::vector` of `std::unique_ptr` objects to VisualModels in the member attribute `Visual::vm`; here's an excerpt from Visual.h:
+## Memory management of `VisualModels`
+
+`morph::Visual` takes ownership of the memory associated with each `VisualModel`. It keeps an `std::vector` of `std::unique_ptr` objects to VisualModels in the member attribute `Visual::vm`. Here's the relevant excerpt from Visual.h:
 
 ```c++
  protected:
@@ -128,7 +130,11 @@ Other than labels, the main constituents of your scenes will be `morph::VisualMo
     std::vector<std::unique_ptr<morph::VisualModel<glver>>> vm;
 ```
 
-When `Visual` needs to `render()`, it will iterate through this vector, calling `VisualModel::render()` for each model.
+This means that you don't need to worry about deallocating your VisualModels. You simply create them (with `std::make_unique<>`) and add them to the `Visual` scene. Once your `Visual` owns each `unique_ptr`, it is responsible for deallocing the memory.
+
+When `Visual` needs to `render()`, it will iterate through the vector `vm`, calling `VisualModel::render()` for each model.
+
+## Adding a `VisualModel`
 
 To guarantee the ownership of the model will reside in the `morph::Visual` instance, you have to 'pass in' each VisualModel. The workflow is (using `GraphVisual` as the example and assuming the `Visual` object is called `v`):
 
@@ -157,7 +163,76 @@ Once it has been finalized, you call `addVisualModel()`, passing in the `GraphVi
 auto gv_pointer = v.addVisualModel (gv);
 ```
 
-**Don't try to use `gv` after you have added it!** Your local `unique_ptr gv` *no longer owns the memory*. However, you *can* re-use `gv` if you want to, setting it with another call to `std::make_unique` for a new model.
+**Don't try to use the `unique_ptr` object `gv` after you have added it to the scene!** Your local `unique_ptr gv` *no longer owns the memory*.
+
+However, you **can** *re-use* `gv` if you want to, setting it with another call to `std::make_unique` for a new model.
+
+## Using the `VisualModel*` pointer
+
+The returned pointer allows you to make changes to the VisualModel during your program's runtime. An example can be found in [graph_dynamic_sine.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph_dynamic_sine.cpp#L28). In this snippet, `x` is a `vvec` of double precision floats, and the pointer, `gvp` is used to call the `update` method of a `GraphVisual` to change the sinusoid that is being displayed.
+
+```c++
+// ...code leading up to adding a GraphVisual gv to the Visual v:
+auto gv_pointer = v.addVisualModel (gv);
+
+while (v.readyToFinish == false) {
+    dx += 0.01;
+    v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
+    gv_pointer->update (x, (x+dx).sin(), 0); // <-- Update via the non-owning pointer
+    v.render();
+}
+```
+
+## Removing a `VisualModel` from the scene
+
+If you need to remove a model from the scene so that it no longer exists in the program, you can do so with `Visual::removeVisualModel`. You pass in the pointer as an identifier for the model.
+
+```c++
+// ...
+auto gv_pointer = v.addVisualModel (gv);
+
+int counter = 0;
+// Render the VisualModel gv until counter exceeds 1000000:
+while (v.readyToFinish == false) {
+    v.render();
+    v.waitevents (0.017);
+    if (++counter > 1000000) {
+        v.removeVisualModel (gv_pointer); // Model will vanish on next v.render()
+        gv_pointer = nullptr; // you could reassign a value later with addVisualModel
+    }
+}
+```
+
+The `VisualModel` that was pointed to by `gv_pointer` is *deconstructed* as a result of `removeVisualModel` and will no longer exist in your program. Its `unique_ptr` is removed from the vector `Visual::vm`, goes out of scope and arranges the deallocation of the VisualModel.
+
+## Pointer safety
+
+The non-owning pointer (`gv_pointer` in the examples) returned by `addVisualModel()` will be valid until:
+
+* either the owning `morph::Visual` is deconstructed
+* or you remove the associated VisualModel with `Visual::removeVisualModel()`
+
+### Don't mess with the memory
+
+Do not de-allocate the memory pointed to by `gv_pointer` yourself! Remember that `unique_ptr` objects should manage the memory of each VisualModel in your program. You use the non-owning pointer only to access functions from your `VisualModel` or as an identifier when you want to remove your `VisualModel` from the scene.
+
+### Testing that a `VisualModel` for your pointer exists
+
+As well as heeding the warning not to free or deallocate the pointer, you should take care that the pointer is valid for use when you dereference it to make a function call. If you are keeping track of a lot of pointers to Visual-owned VisualModels, you might need to test a pointer before dereferencing it. To do this you can use `validVisualModel(gv_pointer)`, which returns a copy of `gv_pointer` if it is associated with an existing model in your `morph::Visual`. If there is no existing `VisualModel` the function returns `nullptr`.
+
+Here is an update to the previous example, with a pointer check:
+
+```c++
+while (v.readyToFinish == false) {
+    dx += 0.01;
+    v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
+    if (v.validVisualModel(gv_pointer) != nullptr) {
+        gv_pointer->update (x, (x+dx).sin(), 0); // safe dereference of gv_pointer
+    } else { /* Don't use gv_pointer */ }
+    v.render();
+}
+```
+
 
 # Setting `Visual` features
 
@@ -298,7 +373,7 @@ you [derive a custom morph::Visual](#extending-morphvisual-to-add-custom-key-act
 
 # Working with Visuals in a loop
 
-If you have a static scene, you can simply call `Visual::keepOpen()`, which allows the user to rotate the view and observe the scene.
+If you have a static scene, you can simply call `Visual::keepOpen()`, which allows the user to rotate the view and observe the scene until quitting the program.
 
 If you have a dynamic scene, where the scene is updated as a model is computed, or on the basis of some sort of input data, you'll need to under stand the `render`, `poll`, `wait` and `waitevents` function calls and also how to access the VisualModels in your scene, so they can be updated.
 
@@ -307,11 +382,11 @@ A good example program is [graph4.cpp](https://github.com/ABRG-Models/morphologi
 In this program, we set up a `Visual` then add a `GraphVisual`:
 
 ```c++
-    auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
-    v.bindmodel (gv);
-    gv->setsize (1.33, 1); // etc; other setup calls are hidden in this example
-    gv->finalize();
-    auto gvp = v.addVisualModel (gv);
+auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
+v.bindmodel (gv);
+gv->setsize (1.33, 1); // etc; other setup calls are hidden in this example
+gv->finalize();
+auto gv_pointer = v.addVisualModel (gv);
 ```
 
 When we call `addVisualModel`, ownership of the `GraphVisual` object
@@ -320,27 +395,63 @@ now-defunct `std::unique_ptr<>` `gv`. We therefore hold the return
 value of `addVisualModel` which is a non-owning pointer to the
 `GraphVisual` we just added - it has type `GraphVisual<float>*`.
 
-In the example, we can then see the use of `gvp` in a while loop:
+In the example, we can then see the use of `gv_pointer` in a while loop:
 
 ```c++
-    while (v.readyToFinish == false) {
-        v.waitevents (0.018);
-        // Slowly update the content of the graph
-        if (rcount++ % 20 == 0 && idx < absc.size()) {
-            // Append to dataset 0
-            gvp->append (absc[idx], data[idx], 0);
-            // Append to dataset 1
-            gvp->append (absc[idx], data2[idx], 1);
-            ++idx;
-        }
-        v.render();
+while (v.readyToFinish == false) {
+    v.waitevents (0.018);
+    // Slowly update the content of the graph
+    if (rcount++ % 20 == 0 && idx < absc.size()) {
+        // Append to dataset 0
+        gv_pointer->append (absc[idx], data[idx], 0);
+        // Append to dataset 1
+        gv_pointer->append (absc[idx], data2[idx], 1);
+        ++idx;
     }
+    v.render();
+}
 ```
-`Visual` has a flag called `readyToFinish`, which gets set to true when the user presses **Ctrl-q**. As long as this is false, the loop first calls `Visual::waitevents()` which waits for up to 0.018 seconds for a keyboard or mouse event. When this returns, there's a test to see if the graph should be updated with `GraphVisual::append`, accessed via the pointer `gvp`. Whether or not the graph was updated, `Visual::render()` is called to render the scene.
+`Visual` has a flag called `readyToFinish`, which gets set to true when the user presses **Ctrl-q**. As long as this is false, the loop first calls `Visual::waitevents()` which waits for up to 0.018 seconds for a keyboard or mouse event. When this returns, there's a test to see if the graph should be updated with `GraphVisual::append`, accessed via the pointer `gv_pointer`. Whether or not the graph was updated, `Visual::render()` is called to render the scene.
 
 Use of `waitevents` prevents the frame rate becoming too high. If you need the maximum possible framerate, then you can instead call `Visual::poll()` in place of `waitevents`.
 
 If you want to guarantee the 0.018 s pause, you can instead call `v.wait (0.018)`.
+
+## Pausing within a simulation
+
+You may have a program which computes a set of numbers which you wish
+to plot and observe in order to make a decision about whether to quit
+the program, or continue on to a second stage of computation. You
+can't use `keepOpen()` for this, because you can only exit keepOpen by
+signaling that the program is ready to finish.
+
+Instead, you can use `Visual::pauseOpen()`. This sets a 'paused' flag,
+and goes into a render loop. This loop is exited when the user signals
+`readyToFinish` or causes the protected function `Visual::unpause()`
+to be called (this is bound to the key Ctrl-v).
+
+```c++
+MySim sim;
+// Simulation part one
+for (int i = 0; i < 1000; ++i) {
+    sim.step();
+    v.waitevents (0.018);
+    // Observe graph change during simulation
+    gv_pointer->append (sim.x(), sim.y(), 0);
+    v.render();
+}
+
+// After 1000 steps, pause to observe the graph until user continues
+// with Ctrl-v or quits with Ctrl-q
+v.pauseOpen();
+
+// Simulation part two only executes if readyToFinish is false
+for (int i = 0; i < 1000 && v.readyToFinish == false; ++i) {
+    // ...
+}
+
+v.keepOpen(); // View final result until user quits
+```
 
 # Saving an image to make a movie
 
@@ -377,6 +488,22 @@ If you want to keep the default morphologica key bindings (which are all *Ctrl-*
 
 You can see how this works in the [myvisual.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/myvisual.cpp) example code.
 
+# Underlying classes
+
+`morph::Visual` is implemented by an underlying base class structure. If you use morph::Visual to provide your scene, then you will be using this inheritance chain:
+
+```
+namespace morph {
+//                          VisualGlfw ----v
+//    VisualBase ---> VisualOwnableMX ---> VisualMX ---> Visual
+}
+```
+
+The functionality for `Visual` is provided by `VisualMX`, which is a multi-context-save class whose GL functions are loaded with the [GLAD 2](https://github.com/Dav1dde/glad) header system. You can use `VisualMX` in place of `Visual` if you want to be explicit about the fact that you are using multi-context-safe code.
+
+If you need to work with libraries that expect GL functions to be aliased in the global namespace (and called glClear, glEnable, glEtc) then you can use the class `VisualNoMX`, which has exactly the same interface as `morph::Visual`.
+
+
 # Working with multiple windows
 
 You can create more than one `morph::Visual` in your program. Each `Visual` will be related to a separate OpenGL context. morphologica will handle the switching of the context automatically (by calling `Visual::setContext()` as needed, for example if you call `Visual::render()`).
@@ -385,6 +512,9 @@ You can create more than one `morph::Visual` in your program. Each `Visual` will
 
 *This is the [twowindows.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/twowindows.cpp) example program, which displays two windows with two `morph::Visual` instances. The `GraphVisual` on window 2 shows what the preceding code example would generate. Window 1 shows another kind of `morph::VisualModel` (a `QuiverVisual`)*
 
+Because morphologica defaults to using multicontext-safe GL function calls, there is no problem working with multiple windows.
+
+In practice, you can also create multiple windows with `morph::VisualNoMX`. Although in this case the GL function names are global, separate contexts are still maintained correctly.
 
 # Multi-threading
 
@@ -424,6 +554,10 @@ especially the comment from [elmindreda](https://discourse.glfw.org/t/multithrea
 There are no issues if you want to multi-thread the rest of your
 program - the parts that compute the values that will be visualized
 with `morph::Visual`.
+
+## Update March 2025
+
+I think that it is intended to be possible to execute each OpenGL context on its own thread and that these can run in parallel by design. With the recent multicontext-safe approach, this should work without any issues.
 
 # OpenGL context, version and `OWNED_MODE`
 
@@ -476,16 +610,22 @@ Note that the OpenGL version integer is also used as a template parameter in the
 
 ## OpenGL header inclusion
 
-How you include OpenGL headers and link to OpenGL driver code can be complex, and can differ between Linux, Apple and Windows platforms. On Linux, morphologica will `#include` GL headers from its own code base, and on Apple, it will include them from the system. If you are integrating morphologica code into an existing program that *already* has a scheme for including OpenGL headers, then it should detect this gracefully.
+How you include OpenGL headers and link to OpenGL driver code can be complex, and can differ between Linux, Apple and Windows platforms.
+
+In morphologica we use GLAD for the GL headers (the headers are morph/glad/gl.h for the single context schemme and morph/glad/gl_mx.h for the multicontext-safe scheme).
+
+GLAD ensures that all the OpenGL functions are correctly loaded from the OpenGL driver.
+
+It is also possible to include GL externally, but in this case  you should use `morph::VisualNoMX` instead of `morph::Visual`.
 
 Linking should be determined by the CMake system.
 
-## `OWNED_MODE`
+## VisualOwnable
 
-One more concept to be aware of when reading **morph/Visual.h** is the 'operating mode'. When `Visual` was first developed, it was designed to own its desktop window, which would always be provided by the [GLFW library](https://www.glfw.org/). The Visual class would manage GLFW setup and window creation/destruction. Window pointers (aliased as `morph::win_t`) were always of type `GLFWwindow`.
+When `Visual` was first developed, it was designed to own its desktop window, which would always be provided by the [GLFW library](https://www.glfw.org/). The Visual class would manage GLFW setup and window creation/destruction. Window pointers (aliased as `morph::win_t`) were always of type `GLFWwindow`.
 
-Later on, I wanted to add support for the Qt windowing system so that a `morph::Visual` could provide OpenGL graphics for a `QtWidget`. Qt manages OpenGL contexts and windows, so I had to create a new operating mode for `morph::Visual` in which it would use an externally managed context. To do this I defined `OWNED_MODE`. `OWNED_MODE` is enabled by writing `#define OWNED_MODE 1` in a relevant location (for example locations of this line, see [viswidget.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/qt/viswidget.h) for Qt and [viswx.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/wx/viswx.h) for wx windows). Essentially, it has to come *before* `#include <morph/Visual.h>`.
+Later on, I wanted to add support for the Qt windowing system so that a `morph::Visual` could provide OpenGL graphics for a `QtWidget`. Qt manages OpenGL contexts and windows, so I had to create a new operating mode for `morph::Visual` in which it would use an externally managed context. To do this I defined `OWNED_MODE` enabled by `#define` lines.
 
-In `OWNED_MODE`, an alternative windowing system can be used and `morph::win_t` is mapped to the appropriate window/widget type. Any `Visual` code that is involved in setting up the windowing system is disabled in `OWNED_MODE`.
+In March 2025, I redesigned the code so that Visual-with-OWNED_MODE became a class called `VisualOwnable`.
 
-However, unless you are integrating morphologica into Qt or WxWidgets, you will leave `OWNED_MODE` undefined.
+However, unless you are integrating morphologica into Qt or WxWidgets, you won't have to learn about `VisualOwnable`.

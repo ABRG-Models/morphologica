@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <cassert>
+#include <cstring>
 #include <stdio.h>
 #include <cstdint>
 
@@ -1748,7 +1749,7 @@ namespace hp {
             thehp = xyzarrtohealpix(xyz, Nside);
             if (thehp == hp) {
                 if (closestxyz)
-                    memcpy(closestxyz, xyz, 3*sizeof(double));
+                    std::memcpy(closestxyz, xyz, 3*sizeof(double));
                 return 0;
             }
 
@@ -1815,7 +1816,7 @@ namespace hp {
             }
 
             if (closestxyz)
-                memcpy(closestxyz, midxyz, 3*sizeof(double));
+                std::memcpy(closestxyz, midxyz, 3*sizeof(double));
 
             return distsq2deg(dist2mid);
         }

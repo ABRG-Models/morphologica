@@ -156,9 +156,10 @@ namespace morph {
         //! Set false to omit the hexes (to show just the geometry of showoverlap==true)
         bool showhexes = true;
 
+        void initializeVertices() { this->initializeVertices (false); }
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
-        void initializeVertices()
+        void initializeVertices(const bool update)
         {
             this->idx = 0;
             this->set_datasize();
@@ -167,7 +168,7 @@ namespace morph {
             switch (this->hexVisMode) {
             case HexVisMode::Triangles:
             {
-                this->initializeVerticesTris();
+                this->initializeVerticesTris (update);
                 break;
             }
             case HexVisMode::HexInterp:
@@ -179,11 +180,43 @@ namespace morph {
             }
         }
 
+        // This locally defined reinit function knows that we don't want to clear vertexPositions/vertexNormals
+        void reinit_on_update()
+        {
+            if (this->setContext != nullptr) { this->setContext (this->parentVis); }
+            // No need to set idx to 0 on an update, or clear/empty vertex/indices containers
+            this->initializeVertices (true); // true for 'update' not 'initial build'
+            this->reinit_buffers(); // could potentially be 'reinit_position_color_buffers_only()'
+        }
+
+        // Override the updateData method
+        void updateData (const std::vector<T>* _data)
+        {
+            this->scalarData = _data;
+            switch (this->hexVisMode) {
+            case HexVisMode::Triangles:
+            {
+                this->reinit_on_update(); // instead of VisualDataModel<T,glver>::reinit().
+                break;
+            }
+            default:
+            {
+                VisualDataModel<T,glver>::reinit();
+                break;
+            }
+            }
+        }
+
         // Initialize vertex buffer objects and vertex array object.
 
-        //! Initialize as triangled. Gives a smooth surface with much
-        //! less compute than initializeVerticesHexesInterpolated.
-        void initializeVerticesTris()
+        /*!
+         * Initialize as triangled. Gives a smooth surface with much less compute than
+         * initializeVerticesHexesInterpolated.
+         *
+         * If update is true, then we are updating an existing HexGridVisual, and that
+         * means we don't need to re-generate the indices OR change the normals.
+         */
+        void initializeVerticesTris (const bool update)
         {
             unsigned int nhex = this->hg->num();
 
@@ -191,43 +224,70 @@ namespace morph {
 
             std::array<float, 3> blkclr = {0,0,0};
 
+            if (update == false) {
+                this->vertexPositions.resize (3u * nhex);
+                this->vertexNormals.resize (3u * nhex);
+                this->vertexColors.resize (3u * nhex);
+                this->indices.reserve (6u * nhex);
+            }
+
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 std::array<float, 3> clr = this->setColour (hi);
                 // If dataCoords has been populated, use these for hex positions, allowing for
                 // mapping of the 2D HexGrid onto a 3D manifold.
                 if (this->dataCoords == nullptr) {
-                    this->vertex_push (this->zoom*this->hg->d_x[hi],
-                                       this->zoom*this->hg->d_y[hi],
-                                       this->zoom*dcopy[hi], this->vertexPositions);
+                    if (update == false) {
+                        this->vertexPositions[hi * 3] = this->zoom * this->hg->d_x[hi];
+                        this->vertexPositions[hi * 3 + 1] = this->zoom * this->hg->d_y[hi];
+                    }
+                    this->vertexPositions[hi * 3 + 2] = this->zoom * dcopy[hi];
 
                 } else { // Otherwise use the positions directly in the HexGrid:
-                    this->vertex_push ((*this->dataCoords)[hi], this->vertexPositions);
+                    if (update == false) {
+                        this->vertexPositions[hi * 3] = (*this->dataCoords)[hi][0];
+                        this->vertexPositions[hi * 3 + 1] = (*this->dataCoords)[hi][1];
+                    }
+                    this->vertexPositions[hi * 3 + 2] = (*this->dataCoords)[hi][2];
                 }
                 if (this->markedHexes.count(hi)) {
-                    this->vertex_push (blkclr, this->vertexColors);
+                    this->vertexColors[hi * 3] = blkclr[0];
+                    this->vertexColors[hi * 3 + 1] = blkclr[1];
+                    this->vertexColors[hi * 3 + 2] = blkclr[2];
                 } else {
-                    this->vertex_push (clr, this->vertexColors);
+                    this->vertexColors[hi * 3] = clr[0];
+                    this->vertexColors[hi * 3 + 1] = clr[1];
+                    this->vertexColors[hi * 3 + 2] = clr[2];
                 }
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+                if (update == false) {
+                    this->vertexNormals[hi * 3] = 0.0f;
+                    this->vertexNormals[hi * 3 + 1] = 0.0f;
+                    this->vertexNormals[hi * 3 + 2] = 1.0f;
+                }
             }
 
             // Build indices based on neighbour relations in the HexGrid
-            for (unsigned int hi = 0; hi < nhex; ++hi) {
-                if (HAS_NNE(hi) && HAS_NE(hi)) {
-                    //std::cout << "1st triangle " << hi << "->" << NNE(hi) << "->" << NE(hi) << std::endl;
-                    this->indices.push_back (hi);
-                    this->indices.push_back (NNE(hi));
-                    this->indices.push_back (NE(hi));
-                }
+            // Only needs to happen *on init*. On update, this will not change :)
+            if (update == false) {
+                std::size_t ind_sz = 0;
+                for (unsigned int hi = 0; hi < nhex; ++hi) {
+                    if (HAS_NNE(hi) && HAS_NE(hi)) {
+                        //std::cout << "1st triangle " << hi << "->" << NNE(hi) << "->" << NE(hi) << std::endl;
+                        this->indices.resize (ind_sz + 3);
+                        this->indices[ind_sz++] = hi;
+                        this->indices[ind_sz++] = NNE(hi);
+                        this->indices[ind_sz++] = NE(hi);
+                    }
 
-                if (HAS_NW(hi) && HAS_NSW(hi)) {
-                    //std::cout << "2nd triangle " << hi << "->" << NW(hi) << "->" << NSW(hi) << std::endl;
-                    this->indices.push_back (hi);
-                    this->indices.push_back (NW(hi));
-                    this->indices.push_back (NSW(hi));
+                    if (HAS_NW(hi) && HAS_NSW(hi)) {
+                        //std::cout << "2nd triangle " << hi << "->" << NW(hi) << "->" << NSW(hi) << std::endl;
+                        this->indices.resize (ind_sz + 3);
+                        this->indices[ind_sz++] = hi;
+                        this->indices[ind_sz++] = NW(hi);
+                        this->indices[ind_sz++] = NSW(hi);
+                    }
                 }
+                this->idx = nhex;
             }
-            this->idx = nhex;
         }
 
         //! Initialize as hexes, with z position of each of the 6
@@ -1061,10 +1121,6 @@ namespace morph {
             }
        }
 
-        //! Initialize as hexes, with a step quad between each
-        //! hex. Might look cool. Writeme. Have this for morph::GridVisual.
-        void initializeVerticesHexesStepped() {}
-
         //! How to render the hexes. Triangles are faster, HexInterp allows you to see
         //! the scale of the hexes in your sim
         HexVisMode hexVisMode = HexVisMode::HexInterp;
@@ -1091,7 +1147,8 @@ namespace morph {
             return clr;
         }
 
-        //! The HexGrid to visualize
+        //! The HexGrid to visualize. This is not expected to change (update methods may
+        //! assume the HexGrid has remained unaltered)
         const HexGrid* hg;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
@@ -1100,48 +1157,6 @@ namespace morph {
         std::vector<float> dcolour;
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
-    };
-
-    //! Extended HexGridVisual class for plotting with individual red, green and blue
-    //! values (i.e., without a ColourMap).
-    template <class T, int glver = morph::gl::version_4_1>
-    class HexGridVisualManual : public morph::HexGridVisual<T,glver>
-    {
-    public:
-        //! Individual colour values for plotting
-        std::vector<float> R, G, B;
-
-        HexGridVisualManual(GLuint sp, GLuint tsp, const morph::HexGrid* _hg, const morph::vec<float> _offset)
-            : morph::HexGridVisual<T,glver>(sp, tsp, _hg, _offset)
-        {
-            R.resize (this->hg->num(), 0.0f);
-            G.resize (this->hg->num(), 0.0f);
-            B.resize (this->hg->num(), 0.0f);
-        };
-
-#ifdef HGV_DEPRECATED
-        HexGridVisualManual(GLuint sp, GLuint tsp,
-                            const morph::HexGrid* _hg,
-                            const morph::vec<float> _offset,
-                            const std::vector<T>* _data,
-                            const morph::scale<T, float>& zscale,
-                            const morph::scale<T, float>& cscale,
-                            morph::ColourMapType _cmt)
-            : morph::HexGridVisual<T,glver>(sp, tsp, _hg, _offset, _data, zscale, cscale, _cmt)
-        {
-            R.resize (this->hg->num(), 0.0f);
-            G.resize (this->hg->num(), 0.0f);
-            B.resize (this->hg->num(), 0.0f);
-        };
-#endif
-
-    protected:
-        //! In this manual-colour-setting HexGridVisual we override this:
-        std::array<float, 3> setColour (unsigned int hi) override
-        {
-            std::array<float, 3> clr = {R[hi], G[hi], B[hi]};
-            return clr;
-        }
     };
 
 } // namespace morph

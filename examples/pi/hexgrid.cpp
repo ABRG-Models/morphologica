@@ -14,9 +14,8 @@
 
 int main()
 {
-    // Contructor args are width, height, title, coordinate arrows offset, cooridnate
-    // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
-    morph::Visual<morph::gl::version_3_1_es> v(1600, 1000, "morph::HexGridVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    // Contructor args are width, height, title
+    morph::Visual<morph::gl::version_3_1_es> v(1600, 1000, "morph::HexGridVisual");
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
@@ -40,11 +39,7 @@ int main()
 
     // Create a HexGrid to show in the scene. Hexes outside the circular boundary will
     // all be discarded.
-#ifdef __WIN__ // HexGrid performance is bad on Windows
-    morph::HexGrid hg(0.03f, 3.0f, 0.0f);
-#else
     morph::HexGrid hg(0.01f, 3.0f, 0.0f);
-#endif
     hg.setCircularBoundary (0.6f);
     std::cout << "Number of pixels in grid:" << hg.num() << std::endl;
 

@@ -3,7 +3,7 @@
 /*
  * Common code for SSBO interactions in morph programs
  *
- * Note: You have to include GL3/gl3.h/GL/glext.h/GLEW3/gl31.h etc for the GL types and
+ * Note: You have to include a header like gl3.h or glext.h etc for the GL types and
  * functions BEFORE including this file.
  *
  * Author: Seb James.

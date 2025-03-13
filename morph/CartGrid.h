@@ -450,7 +450,7 @@ namespace morph {
             // After creating rects list, need to set neighbour relations in each Rect, as loaded in d_ne,
             // etc.
             for (morph::Rect& _r : this->rects) {
-                DBG ("Set neighbours for Rect " << _r.outputRG());
+                // ("Set neighbours for Rect " << _r.outputRG());
                 // For each Rect, six loops through rects:
                 if (_r.has_ne() == true) {
                     bool matched = false;

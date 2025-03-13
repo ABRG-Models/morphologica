@@ -50,6 +50,11 @@
 #include <vector>
 
 namespace lenthe {
+
+    // Rather than assuming M_PI will be defined, we define a double precision constexpr
+    // __pi, which is cast to Real{} in the templates (Seb).
+    static constexpr double __pi = 3.141592653589793238462643383279502884197169399375106;
+
     // This is the minimum code subset extracted (by Seb) from colourspace.hpp to make the maps work:
     namespace color {
 
@@ -93,9 +98,9 @@ namespace lenthe {
                 //standard illuminants as xyz (normalized XYZ)
                 static constexpr T D65_2[3] = { T{0.31271}, T{0.32902}, T{0.35827} }; // D65 for 2 degree observer
                 //RGB chromaticities as xyz (normalized XYZ)
-                static constexpr T sRGB    [3][3] = { T{0.6400}, T{0.3300}, T{0.0300},
-                                                      T{0.3000}, T{0.6000}, T{0.1000},
-                                                      T{0.1500}, T{0.0600}, T{0.7900} }; //standard RGB (custom gamma)
+                static constexpr T sRGB[3][3] = { { T{0.6400}, T{0.3300}, T{0.0300} },
+                                                  { T{0.3000}, T{0.6000}, T{0.1000} },
+                                                  { T{0.1500}, T{0.0600}, T{0.7900} } }; //standard RGB (custom gamma)
                 //sRGB custom gamma constants
                 static constexpr T sA = T{0.055};   //deviation of gamma correction coefficient from 1
                 static constexpr T sGamma = T{2.4};//gamma exponent
@@ -862,23 +867,23 @@ namespace lenthe {
             //@param amplitude : amplitude of sine wave (defaults to 0.05 or 10% of [0,1])
             template <typename Real> Real testSignal(const Real x, const bool periodic, const size_t numPeriods = 64, const Real amplitude = Real(0.05)) {
                 if(periodic) {
-                    const Real y = std::fmod(x + std::sin(x * M_PI * 2 * numPeriods) * amplitude, 1);//compute test signal value restricted to [-1,1]
+                    const Real y = std::fmod(x + std::sin(x * Real{__pi} * 2 * numPeriods) * amplitude, 1);//compute test signal value restricted to [-1,1]
                     return std::signbit(y) ? y + 1 : y;
                 } else {
                     //compute minimum and maximum values of x + sin(x * pi * 2 * numPeriods) * amplitude
-                    const Real kk = M_PI * 2 * amplitude * numPeriods;
+                    const Real kk = Real{__pi} * 2 * amplitude * numPeriods;
                     const bool clip = kk <= Real(1);
-                    const Real k = clip ? Real(1) / (2 * numPeriods) : std::acos(Real(-1) / kk) / (M_PI * 2 * numPeriods);//offset for extrema
+                    const Real k = clip ? Real(1) / (2 * numPeriods) : std::acos(Real(-1) / kk) / (Real{__pi} * 2 * numPeriods);//offset for extrema
                     const Real tMin = Real(           1) / numPeriods - k;//location of minima in first period
                     const Real tMax = Real(numPeriods-1) / numPeriods + k;//location of maxima in last period
-                    const Real sk = clip ? 0 : std::sqrt(Real(1) - Real(1) / (kk * kk) );//sin(tMax * M_PI * 2 * N) && -sin(tMin * M_PI * 2 * N)
+                    const Real sk = clip ? 0 : std::sqrt(Real(1) - Real(1) / (kk * kk) );//sin(tMax * __pi * 2 * N) && -sin(tMin * __pi * 2 * N)
                     const Real vMin = std::min(tMin - sk * amplitude, Real(0));//value of signal minimum
                     const Real vMax = std::max(tMax + sk * amplitude, Real(1));
 
                     //compute linear modulation so that signal falls in [0,1] and compute
                     const Real m = Real(1) / (vMax - vMin);
                     const Real b = m * -vMin;
-                    return (x + std::sin(x * M_PI * 2 * numPeriods) * amplitude) * m + b;//compute test signal value
+                    return (x + std::sin(x * Real{__pi} * 2 * numPeriods) * amplitude) * m + b;//compute test signal value
                 }
             }
 
@@ -893,17 +898,17 @@ namespace lenthe {
                     //build signal
                     for(size_t i = 0; i < numSamples; i++) {
                         const Real x = Real(i) / (numSamples-1);
-                        const Real y = std::fmod(x + std::sin(x * M_PI * 2 * numPeriods) * amplitude, 1);//compute test signal value restricted to [-1,1]
+                        const Real y = std::fmod(x + std::sin(x * Real{__pi} * 2 * numPeriods) * amplitude, 1);//compute test signal value restricted to [-1,1]
                         signal[i] = std::signbit(y) ? y + 1 : y;
                     }
                 } else {
                     //compute minimum and maximum values of x + sin(x * pi * 2 * numPeriods) * amplitude
-                    const Real kk = M_PI * 2 * amplitude * numPeriods;
+                    const Real kk = Real{__pi} * 2 * amplitude * numPeriods;
                     const bool clip = kk <= Real(1);
-                    const Real k = clip ? Real(1) / (2 * numPeriods) : std::acos(Real(-1) / kk) / (M_PI * 2 * numPeriods);//offset for extrema
+                    const Real k = clip ? Real(1) / (2 * numPeriods) : std::acos(Real(-1) / kk) / (Real{__pi} * 2 * numPeriods);//offset for extrema
                     const Real tMin = Real(           1) / numPeriods - k;//location of minima in first period
                     const Real tMax = Real(numPeriods-1) / numPeriods + k;//location of maxima in last period
-                    const Real sk = clip ? 0 : std::sqrt(Real(1) - Real(1) / (kk * kk) );//sin(tMax * M_PI * 2 * N) && -sin(tMin * M_PI * 2 * N)
+                    const Real sk = clip ? 0 : std::sqrt(Real(1) - Real(1) / (kk * kk) );//sin(tMax * Real{__pi} * 2 * N) && -sin(tMin * Real{__pi} * 2 * N)
                     const Real vMin = std::min(tMin - sk * amplitude, Real(0));//value of signal minimum
                     const Real vMax = std::max(tMax + sk * amplitude, Real(1));
 
@@ -914,7 +919,7 @@ namespace lenthe {
                     //build signal
                     for(size_t i = 0; i < numSamples; i++) {
                         const Real x = Real(i) / (numSamples-1);
-                        signal[i] = (x + std::sin(x * M_PI * 2 * numPeriods) * amplitude) * m + b;//compute test signal value
+                        signal[i] = (x + std::sin(x * Real{__pi} * 2 * numPeriods) * amplitude) * m + b;//compute test signal value
                     }
                 }
             }
@@ -1032,7 +1037,7 @@ namespace lenthe {
                     const Real r = std::sqrt(x * x + yy);//compute radius
                     const size_t idx = offset + stride * i;//compute pixel index
                     if(rMin <= r && r <= Real(1)) {//compute color
-                        Real t = std::atan2(y, x) / (M_PI * 2);//[-0.5,0.5]
+                        Real t = std::atan2(y, x) / (Real{__pi} * 2);//[-0.5,0.5]
                         if(std::signbit(t)) t += Real(1);//[0,1]
                         if(ripple) {
                             const Real x = (r - rMin) / (Real(1) - rMin);//compute fractional progress
@@ -1072,7 +1077,7 @@ namespace lenthe {
                     Real r = std::sqrt(x * x + yy);//compute radius
                     const size_t idx = offset + stride * i;//compute pixel index
                     if(r <= Real(1)) {//compute color
-                        Real t = std::atan2(y, x) / (M_PI * 2);//[-0.5,0.5]
+                        Real t = std::atan2(y, x) / (Real{__pi} * 2);//[-0.5,0.5]
                         if(std::signbit(t)) t += Real(1);//[0,1]
                         if(thetaRipple ) t = detail::testSignal(t, true , N * 2, tRipple);//apply r ripple
                         if(radialRipple) r = detail::testSignal(r, false, N / 2, rRipple);//apply t ripple
@@ -1102,9 +1107,9 @@ namespace lenthe {
             //build unprojection function once
             Real(*unproject)(const Real&);
             switch(proj) {
-            case Projection::Ortho  : unproject = [](const Real& r)->Real{return std::acos( std::sqrt( Real(1) - r * r ) ) / M_PI                ;}; break;//orthographic projection
-            case Projection::Stereo : unproject = [](const Real& r)->Real{return Real(0) == r ? 0 : Real(1) - std::atan( Real(1) / r ) * 2 / M_PI;}; break;//stereographic projection
-            case Projection::Lambert: unproject = [](const Real& r)->Real{return Real(1) - std::acos(r / std::sqrt(2)) * Real(2) / M_PI          ;}; break;//lambert equal area modified for pi()/2 projects -> 1
+            case Projection::Ortho  : unproject = [](const Real& r)->Real{return std::acos( std::sqrt( Real(1) - r * r ) ) / Real{__pi}                ;}; break;//orthographic projection
+            case Projection::Stereo : unproject = [](const Real& r)->Real{return Real(0) == r ? 0 : Real(1) - std::atan( Real(1) / r ) * 2 / Real{__pi};}; break;//stereographic projection
+            case Projection::Lambert: unproject = [](const Real& r)->Real{return Real(1) - std::acos(r / std::sqrt(2)) * Real(2) / Real{__pi}          ;}; break;//lambert equal area modified for pi()/2 projects -> 1
             case Projection::Dist   : unproject = [](const Real& r)->Real{return r / 2                                                           ;}; break;//equal distance
             }
 
@@ -1123,7 +1128,7 @@ namespace lenthe {
                     if(r <= Real(1)) {//compute color
                         Real p = unproject(r);
                         if(!nh) p = Real(1) - p;//move to southern hemisphere if needed
-                        Real a = std::atan2(y, x) / (M_PI * 2);//azimuthal angle [-0.5,0.5]
+                        Real a = std::atan2(y, x) / (Real{__pi} * 2);//azimuthal angle [-0.5,0.5]
                         if(std::signbit(a)) a += Real(1);//azimuthal angle [0,1]
                         if(polarRipple  ) p = detail::testSignal(p, false, N    , pRipple);//apply p ripple
                         if(azimuthRipple) a = detail::testSignal(a, true , N * 2, aRipple);//apply a ripple
@@ -1169,8 +1174,8 @@ namespace lenthe {
                         if(r2 <= Real(1)) {//compute color
                             //convert from cartesian to fractional sphereical
                             Real r = std::sqrt(r2);
-                            Real p = std::acos(z / r) / M_PI;
-                            Real a = std::atan2(y, x) / (M_PI * 2);//azimuthal angle [-0.5,0.5]
+                            Real p = std::acos(z / r) / Real{__pi};
+                            Real a = std::atan2(y, x) / (Real{__pi} * 2);//azimuthal angle [-0.5,0.5]
                             if(std::signbit(a)) a += Real(1);//azimuthal angle [0,1]
                             if(radialRipple ) r = detail::testSignal(r, false, N / 2, rRipple);//apply r ripple
                             if(polarRipple  ) p = detail::testSignal(p, false, N    , pRipple);//apply p ripple

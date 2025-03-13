@@ -8,19 +8,20 @@
 #include <sstream>
 #include <wx/wx.h>
 
-#include <GL/glew.h> // must be included before glcanvas.h
 #include <wx/glcanvas.h>
 #include <wx/colordlg.h>
 
-// Visual is going to be owned either by the morph::wx::canvas or by the morph::wx::frame
-#define OWNED_MODE 1
-// Define morph::win_t before #including morph/Visual.h
+// VisualOwnable is going to be owned either by the morph::wx::canvas or by the morph::wx::frame
+// Define morph::win_t before #including morph/VisualOwnable.h
 namespace morph { using win_t = wxGLCanvas; }
 
 #include <morph/gl/version.h>
-#include <morph/Visual.h>
+// In the wx examples, we include <morph/glad/gl.h> early in the main.cpp file
+#include <morph/VisualOwnable.h>
 // We need to be able to convert from wxWidgets keycodes to morph keycodes
 #include <morph/wx/keycodes.h>
+
+#include <morph/wx/mygetprocaddress.h>
 
 namespace morph {
     namespace wx {
@@ -59,13 +60,16 @@ namespace morph {
 
             bool InitializeOpenGLFunctions()
             {
-                GLenum err = glewInit();
-                if (GLEW_OK != err) {
-                    wxLogError("OpenGL GLEW initialization failed: %s",
-                               reinterpret_cast<const char *>(glewGetErrorString(err)));
+#ifdef GLAD_OPTION_GL_MX
+                []<bool flag = false>() { static_assert(flag, "multi-context glad header is not supported in viswx"); }();
+#else
+                // Can we get GLADloadfunc from wx? Maybe need the internal loader version of glad?
+                int version = gladLoadGL (mygetprocaddress);
+                if (version == 0) {
+                    wxLogError("OpenGL gladLoadGL initialization failed");
                     return false;
                 }
-                wxLogDebug("Status: Using GLEW %s", reinterpret_cast<const char *>(glewGetString(GLEW_VERSION)));
+#endif
                 return true;
             }
 
@@ -205,7 +209,7 @@ namespace morph {
 
             bool ready() { return this->glInitialized; }
 
-            morph::Visual<glver> v;
+            morph::VisualOwnable<glver> v;
 
         private:
             std::unique_ptr<wxGLContext> glContext;

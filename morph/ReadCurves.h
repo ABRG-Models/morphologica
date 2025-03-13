@@ -8,16 +8,11 @@
  */
 #pragma once
 
-#include <morph/MorphDbg.h>
 #include <string>
 #include <list>
 #include <vector>
 #include <map>
-#ifdef __WIN__
-# include <rapidxml-1.13/rapidxml.hpp>
-#else
-# include <morph/rapidxml.hpp>
-#endif
+#include <rapidxml/rapidxml.hpp>
 #include <morph/BezCurvePath.h>
 #include <morph/AllocAndRead.h>
 #include <morph/tools.h>
@@ -336,7 +331,7 @@ namespace morph
                 throw std::runtime_error ("Found a <path> element without a d attribute");
             }
 
-            DBG ("Path commands for layer " << layerName << ": " << d);
+            // std::cout << "Path commands for layer " << layerName << ": " << d << std::endl;
 
             morph::BezCurvePath<float> curves = this->parseD (d);
             curves.name = layerName;

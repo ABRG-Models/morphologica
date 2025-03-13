@@ -197,7 +197,7 @@ usage:
         fprintf(out, "#define INCBIN_PREFIX %s\n", prefix);
     if (style != 0)
         fprintf(out, "#define INCBIN_STYLE INCBIN_STYLE_SNAKE\n");
-    fprintf(out, "#include \"incbin.h\"\n\n");
+    fprintf(out, "#include <morph/fonts/incbin.h>\n\n");
     fprintf(out, "#ifdef __cplusplus\n");
     fprintf(out, "extern \"C\" {\n");
     fprintf(out, "#endif\n\n");

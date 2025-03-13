@@ -1,13 +1,9 @@
 #include <iostream>
-#define DEBUG 1
-#define DBGSTREAM std::cout
-#include "morph/MorphDbg.h"
 
 #include "morph/ReadCurves.h"
 #include <utility>
 #include <vector>
 #include <fstream>
-#include <math.h>
 #include "morph/BezCoord.h"
 #include "morph/BezCurvePath.h"
 

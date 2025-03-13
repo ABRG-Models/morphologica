@@ -39,7 +39,7 @@ namespace morph {
      * coordinates can be any of the straightforward STL containers such as std::vector
      * or std::list (but not std::map). The coordinate should be some type which has one
      * of the following: .first and .second attributes (such as std::pair), .x and .y
-     * attributes (such as OpenCV's cv::Point), .x() and .y() methods or the ability to
+     * attributes, .x() and .y() methods or the ability to
      * access members in an array-like fashion (std::vector or morph::vec). For example:
      *
      *\code{c++}

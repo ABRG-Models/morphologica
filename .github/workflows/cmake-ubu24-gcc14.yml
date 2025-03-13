@@ -1,0 +1,22 @@
+name: Ubu 24 gcc14
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README**'
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  call-workflow-passing-data:
+    uses: ABRG-Models/morphologica/.github/workflows/cmake-ubuntu-template.yml@main
+    with:
+      RUNNER_IMAGE: ubuntu-24.04
+      BUILD_TYPE: Release
+      CC: gcc-14
+      CXX: g++-14

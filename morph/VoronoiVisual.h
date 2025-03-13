@@ -16,6 +16,7 @@
 #include <morph/scale.h>
 #include <morph/vec.h>
 #include <iostream>
+#include <cstring>
 #include <vector>
 #include <array>
 #include <map>
@@ -102,7 +103,7 @@ namespace morph {
 
             // Generate the 2D Voronoi diagram
             jcv_diagram diagram;
-            memset (&diagram, 0, sizeof(jcv_diagram));
+            std::memset (&diagram, 0, sizeof(jcv_diagram));
 
             jcv_rect domain = {
                 jcv_point{rx.min - this->border_width, ry.min - this->border_width, 0.0f},
@@ -294,7 +295,7 @@ namespace morph {
                         while (e) {
                             t0 = rqinv * morph::vec<float>{ e->pos[0].x() * this->zoom, e->pos[0].y() * this->zoom, 0.0f };
                             t1 = rqinv * morph::vec<float>{ e->pos[1].x() * this->zoom, e->pos[1].y() * this->zoom, 0.0f };
-                            this->computeTube (t0, t1, morph::colour::black, morph::colour::black, 0.01f, 6);
+                            this->computeTube (t0, t1, morph::colour::black, morph::colour::black, this->voronoi_grid_thickness, 6);
                             e = e->next;
                         }
                     }
@@ -307,7 +308,7 @@ namespace morph {
                         while (e) {
                             this->computeTube ({ e->pos[0].x() * this->zoom, e->pos[0].y() * this->zoom, 0.0f },
                                                { e->pos[1].x() * this->zoom, e->pos[1].y() * this->zoom, 0.0f },
-                                               morph::colour::black, morph::colour::black, 0.01f, 6);
+                                               morph::colour::black, morph::colour::black, this->voronoi_grid_thickness, 6);
                             e = e->next;
                         }
                     }
@@ -317,7 +318,7 @@ namespace morph {
             if (this->debug_dataCoords) {
                 // Add some spheres at the original data points for debugging
                 for (unsigned int i = 0; i < ncoords; ++i) {
-                    this->computeSphere ((*this->dataCoords)[i] * this->zoom, morph::colour::black, 0.008f);
+                    this->computeSphere ((*this->dataCoords)[i] * this->zoom, morph::colour::black, this->dataCoord_sphere_size);
                 }
             }
 
@@ -408,8 +409,13 @@ namespace morph {
         bool debug_edges = false;
         //! If true, show 2D Voronoi edges
         bool show_voronoi2d = false;
+        //! The thickness of the lines (tubes) used to draw the 2D Voronoi grid (if show_voronoi2d is true)
+        float voronoi_grid_thickness = 0.01f;
         //! If true, show black spheres at dataCoord locations
         bool debug_dataCoords = false;
+        //! The size of the black spheres are dataCoord locations
+        float dataCoord_sphere_size = 0.008f;
+
 
         //! What direction should be considered 'z' when converting the data into a voronoi diagram?
         //! The data values will be rotated before the Voronoi pass, then rotated back.

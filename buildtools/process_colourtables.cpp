@@ -9,6 +9,9 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <format>
+#include <cstdlib>
+#include <cstring>
 #include <morph/tools.h>
 
 enum class ctabletype {
@@ -17,16 +20,19 @@ enum class ctabletype {
     unknown
 };
 
-int main ()
+int main()
 {
     ctabletype tt = ctabletype::unknown;
-    // First get a directory listing and make sure we're in the Crameri folder
+    // First get a directory listing and make sure we're in a compatible folder of colour maps
     if (morph::tools::fileExists ("+README_ScientificColourMaps.pdf")) {
+        // Hint: Obtain ScientificColourMaps8.zip from https://www.fabiocrameri.ch/colourmaps/
         tt = ctabletype::Crameri;
     } else if (morph::tools::fileExists ("CET-C1.csv")) {
+        // Hint: Obtain CETperceptual_csv_0_1.zip from https://colorcet.com/download/index.html
         tt = ctabletype::CET;
     } else {
-        std::cerr << "Run this program within the Crameri OR CET colour table directories\n";
+        std::cerr << "Run this program from within the Crameri (ScientificColourMaps8) OR "
+                  << "CET (CETperceptual_csv_0_1) colour table directories\n";
         return -1;
     }
 
@@ -34,8 +40,7 @@ int main ()
     std::vector<std::string> dirs;
     std::vector<std::string> table_files;
     std::string basedir = "./";
-    std::string subdir = "";
-    morph::tools::readDirectoryTree (dirs, basedir, subdir);
+    morph::tools::readDirectoryTree (dirs, basedir);
     if (tt == ctabletype::Crameri) {
         for (auto dir : dirs) {
             std::cerr << "Got file " << dir << std::endl;
@@ -121,8 +126,6 @@ int main ()
         ifile.seekg(0);
 
         std::string name_upperfirst = name;
-        // Upper-case first character
-        std::transform (name_upperfirst.begin(), name_upperfirst.begin()+1, name_upperfirst.begin(), morph::to_upper());
         // Replace non-allowed chars with _
         std::string::size_type ptr = std::string::npos;
         while ((ptr = name_upperfirst.find_last_not_of (CHARS_NUMERIC_ALPHA"_", ptr)) != std::string::npos) {
@@ -140,8 +143,9 @@ int main ()
                 std::cerr << "text format error: != 3 values in line '" << line << "', (got "<< tokens.size() << ")\n";
                 return -1;
             }
-            hpp << "            {"
-                << tokens[0] << "," << tokens[1] << "," << tokens[2] << (cline++ < lastline ? "},\n" : "}\n");
+            hpp << std::format("            {{ {:.7f}f, {:.7f}f, {:.7f}f }}{}",
+                               std::atof(tokens[0].c_str()), std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()),
+                               (cline++ < lastline ? "," : "")) << std::endl;
         }
         hpp << "        }}; // cm_" << name_upperfirst << "\n";
 
@@ -154,8 +158,8 @@ int main ()
                      << "                break;\n"
                      << "            }\n";
 
-        cpp_content2 << "            } else if (_s == \"" << name_lower << "\") {\n"
-                     << "                cmt = morph::ColourMapType::" << name_upperfirst << ";\n";
+        cpp_content2 << "            case morph::crc32 (\"" << name_upperfirst << "\"sv):\n"
+                     << "                cmt = morph::ColourMapType::" << name_upperfirst << "; break;\n";
 
         cpp_content3 << "            case ColourMapType::"<< name_upperfirst << ":\n"
                      << "            {\n"

@@ -93,6 +93,71 @@ int main()
     if (vvshrt.argmax() != 3) { --rtn; }
     if (vvshrt.arglongest() != 3) { --rtn; }
 
+    auto vrng = vvshrt.range();
+    std::cout << "\nvvshrt range: " << vrng << std::endl;
+    if (vrng.min == vvshrt[1] && vrng.max == vvshrt[3]) {
+        // Good
+    } else {
+        --rtn;
+    }
+
+    morph::range<morph::vec<double, 3>> vextnts = vvshrt.extent();
+    std::cout << "vextnts = " << vextnts << std::endl;
+
+    if (vextnts.min == morph::vec<double, 3>{-6.78819124e-05, -0, 0}
+        && vextnts.max == morph::vec<double, 3>{7.34092391e-05, 2, 6.78819124e-05}) {
+        // Good
+    } else {
+        --rtn;
+    }
+
+    // Check scalar vvec::extent() function (which calls back to vvec::range())
+    morph::range<float> vfr = morph::vvec<float>{1, 2, 3, 4}.extent();
+    std::cout << "scalar range: " << vfr << std::endl;
+    vfr = morph::vvec<float>{1, 2, -3, 4}.extent();
+    std::cout << "scalar range: " << vfr << std::endl;
+
+    // Test vector extent with an array of ints
+    morph::vvec<std::array<int, 2>> vvai = {
+        {-1, 1},
+        {-3, 4},
+        {-6, 2},
+        {5,-4},
+        {90, 8},
+        {-7,-8}
+    };
+    std::array<int, 2> themin = {-7, -8};
+    std::array<int, 2> themax = {90, 8};
+    morph::range<std::array<int, 2>> vvair = vvai.extent();
+    if (themin != vvair.min || themax != vvair.max) { --rtn; }
+
+#if 0
+    // Correctly does not compile because vvec<float> is not fixed size
+    morph::vvec<morph::vvec<float>> vvvvf = {{-1,1},{-2,5,3}};
+    auto vvvvfr = vvvvf.extent();
+#endif
+
+    // DOES compile - the vvec times vvec overload gets called and then called again, but then size
+    // issues cause a runtime error which will alert the sleepy programmer that they were doing
+    // something odd
+    try {
+        morph::vvec<morph::vvec<float>> vvvvf2 = {{-1,1},{-2,5,3}};
+        morph::vvec<float>  vfac  = { 1, 2, 3 };
+        auto result = vvvvf2 * vfac;
+        --rtn;
+    } catch (const std::exception& e) {
+        std::cout << "Expected exception: " << e.what() << std::endl;
+    }
+
+    morph::vvec<morph::vec<int, 2>> vvfm = { {2, 3}, {4, 5} };
+    morph::vec<int, 2> factor = {10, 100};
+    morph::vvec<morph::vec<int, 2>> vvfm_result = (vvfm * factor);
+    std::cout << vvfm << " * " << factor << " = " << vvfm_result << std::endl;
+    if ((vvfm_result[0] == morph::vec<int, 2>{20, 300}
+         && vvfm_result[1] == morph::vec<int, 2>{40, 500}) == false) {
+        --rtn;
+    }
+
     std::cout << "rtn: " << rtn << std::endl;
     return rtn;
 }

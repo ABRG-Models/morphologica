@@ -12,11 +12,8 @@ constexpr int my_gl_version = morph::gl::version_4_1;
 struct myvisual final : public morph::Visual<my_gl_version>
 {
     // Boilerplate constructor (just copy this):
-    myvisual (int width, int height, const std::string& title,
-              const morph::vec<float, 2> caOffset = {-0.8,-0.8},
-              const morph::vec<float> caLength = {.05,.05,.05},
-              const float caThickness = 2.0f, const float caEm = 0.0f)
-        : morph::Visual<my_gl_version> (width, height, title, caOffset, caLength, caThickness, caEm) {}
+    myvisual (int width, int height, const std::string& title)
+        : morph::Visual<my_gl_version> (width, height, title) {}
     // Some attributes that you might need in your myvisual scene:
     bool moving = false;
 protected:
@@ -47,7 +44,7 @@ protected:
             std::cout << "myvisual::key_callback_extra called for key=" << key << " scancode="
                       << scancode << " action=" << action << " and mods=" << mods << std::endl;
         }
-        // 'm' key means toggle the 'moving' attribute
+        // 'f' key means toggle the 'moving' attribute
         if (key == morph::key::f && action == morph::keyaction::press) { this->moving = this->moving ? false : true; }
 
         if (key == morph::key::h && action == morph::keyaction::press) {

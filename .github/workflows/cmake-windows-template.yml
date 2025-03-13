@@ -1,0 +1,71 @@
+name: Windows Template
+on:
+  workflow_call:
+    inputs:
+      RUNNER_IMAGE:
+        required: true
+        type: string
+      BUILD_TYPE:
+        required: true
+        type: string
+      VCPKG_TRIPLET:
+        required: true
+        type: string
+
+env:
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg_repo\cache
+
+jobs:
+  build:
+    runs-on: ${{ inputs.RUNNER_IMAGE }}
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Clone vcpkg repository
+      uses: actions/checkout@v4
+      with:
+        repository: microsoft/vcpkg
+        path: vcpkg_repo
+
+    - name: Make a cache directory
+      run: mkdir cache
+      working-directory: vcpkg_repo
+
+    - name: Cache vcpkg dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}\vcpkg_repo\cache
+        key: ${{ inputs.RUNNER_IMAGE }}-vcpkg
+
+    - name: Bootstrap vcpkg
+      run: ./bootstrap-vcpkg.bat
+      working-directory: vcpkg_repo
+
+    - name: Install dependencies using vcpkg
+      run: ./vcpkg install --triplet=${{ inputs.VCPKG_TRIPLET }} --x-manifest-root=${{ github.workspace }}\vcpkg --x-install-root=installed
+      working-directory: vcpkg_repo
+
+    - name: Configure CMake
+      run: |
+        cmake -B ${{ github.workspace }}/build `
+        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg_repo\scripts\buildsystems\vcpkg.cmake `
+        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\build\install `
+        -DCMAKE_BUILD_TYPE=${{ inputs.BUILD_TYPE }} `
+        -DBUILD_TESTS=ON `
+        -DBUILD_EXAMPLES=ON
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}\build --config ${{ inputs.BUILD_TYPE }}
+
+    - name: Test
+      working-directory: ${{ github.workspace }}/build
+      run: ctest -C ${{ inputs.BUILD_TYPE }}
+
+    - name: Test standalone examples
+      working-directory: ${{github.workspace}}/standalone_examples
+      run: compile_standalone_examples.bat
+      shell: cmd

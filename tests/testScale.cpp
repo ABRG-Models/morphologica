@@ -10,6 +10,7 @@ using std::cout;
 using std::endl;
 #include "morph/scale.h"
 using morph::scale;
+#include <cmath>
 
 int main () {
 
@@ -145,7 +146,7 @@ int main () {
     vector<array<float, 4>>::const_iterator r2i = result2.end();
     r2i--; // To get to last element in vector
     float r2ilen = std::sqrt ((*r2i)[0] * (*r2i)[0] + (*r2i)[1] * (*r2i)[1] + (*r2i)[2] * (*r2i)[2] + (*r2i)[3] * (*r2i)[3]);
-    if (abs(r2ilen - 1) > 0.0001) {
+    if (std::abs(r2ilen - 1) > 0.0001) {
         cout << "Error" << endl;
         rtn--;
     }

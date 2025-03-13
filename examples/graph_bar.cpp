@@ -14,7 +14,7 @@ int main()
     morph::vvec<float> absc = {1, 2, 3, 4};
     morph::vvec<float> ord = {1, 1, 4, 2};
 
-    morph::Visual v(1024, 768, "Bar graph", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
+    morph::Visual v(1024, 768, "Bar graph");
     auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
     v.bindmodel (gv);
 

@@ -3,7 +3,7 @@
 /*
  * Common code for GL functionality in morphologica programs.
  *
- * Note: You have to include GL3/gl3.h/GL/glext.h/GLEW3/gl31.h etc for the GL types and
+ * Note: You have to include a header like gl3.h or glext.h etc for the GL types and
  * functions BEFORE including this file.
  *
  * Author: Seb James.
@@ -17,14 +17,15 @@ namespace morph {
     namespace gl {
         //! A GL error checking function. The additional namespace was a class, but didn't need to be.
         namespace Util {
-
             GLenum checkError (const char *file, int line)
             {
                 GLenum errorCode = 0;
 #ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
                 unsigned int ecount = 0;
                 std::string error;
+
                 while ((errorCode = glGetError()) != GL_NO_ERROR) {
+
                     switch (errorCode) {
                     case GL_INVALID_ENUM:
                     {

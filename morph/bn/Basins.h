@@ -83,7 +83,7 @@ namespace morph {
                     }
                     ++cmi;
                 }
-                //DBGF ("After merge, this->nodes.size() = " << this->nodes.size());
+                // ("After merge, this->nodes.size() = " << this->nodes.size());
             }
 
             //! An "output for debugging" method
@@ -139,7 +139,7 @@ namespace morph {
                 std::map<state_t, StateNode>::const_iterator mi = this->nodes.begin();
                 while (mi != this->nodes.end()) {
                     unsigned int trans = ((unsigned int)mi->second.id << 16) | (unsigned int)mi->second.child;
-                    //DBG2 ("Inserting transition 0x" << hex << trans << dec);
+                    // ("Inserting transition 0x" << hex << trans << dec);
                     transitions.insert (trans);
                     ++mi;
                 }
@@ -232,17 +232,17 @@ namespace morph {
 
                         if (basin.nodes.count (st) > 0) {
                             // Already visited this state so it's in an attractor
-                            //DBG2 ("Repeat st " << state_str(st) << "!");
+                            // ("Repeat st " << state_str(st) << "!");
                             if (st == last_st) {
                                 // It's a point attractor
-                                //DBGF("fixed point attractor");
+                                // ("fixed point attractor");
                                 basin.endpoint = endpoint::point;
                                 // Which means it's its own parent. Set parent of the node that's ALREADY BEEN added to basin.
                                 basin.nodes.find(st)->second.parents.insert (st);
                                 basin.limitCycle.insert (st);
                             } else {
                                 // It's a limit cycle.
-                                //DBGF("limit cycle attractor");
+                                // ("limit cycle attractor");
                                 // Go around the limit cycle to determine its identity, which is a set of states.
                                 basin.endpoint = endpoint::limit;
                                 // Update the parent of the copy of this state that's already in the basin object
@@ -267,7 +267,7 @@ namespace morph {
 
                         // Insert it into basin
                         basin.nodes.insert (make_pair (st, stnode));
-                        //DBG2 ("Inserting " << state_str (st));
+                        // ("Inserting " << state_str (st));
 
                         // Update last_st and st
                         last_st = st;

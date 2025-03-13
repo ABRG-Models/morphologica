@@ -2,58 +2,50 @@
  * Test use of vec<F, N> objects in a scale class.
  */
 
+#include <cmath>
 #include <vector>
-using std::vector;
 #include <list>
-using std::list;
 #include <array>
-using std::array;
 #include <iostream>
-using std::cout;
-using std::endl;
 #include "morph/vec.h"
-using morph::vec;
 #include "morph/scale.h"
-using morph::scale;
 
-int main () {
+int main ()
+{
+    namespace m = morph;
 
     int rtn = 0;
 
-    scale<vec<float,4>> s2;
+    m::scale<m::vec<float,4>> s2;
     s2.do_autoscale = true;
-    vector<vec<float,4>> vaf;
+    std::vector<m::vec<float,4>> vaf;
     vaf.push_back ({1,1,2,1});
     vaf.push_back ({2,2,2,3});
     vaf.push_back ({3,3,4,1});
     vaf.push_back ({4,4,4,4});
-    vector<vec<float,4>> result2(vaf);
+    std::vector<m::vec<float,4>> result2(vaf);
     s2.transform (vaf, result2);
 
-    cout << "vector<vec<float,4>> unscaled/scaled vectors:\n";
+    std::cout << "vector<vec<float,4>> unscaled/scaled vectors:\n";
     for (unsigned int i = 0; i < result2.size(); ++i) {
 
-        cout << "(";
-        for (auto v : vaf[i]) {
-            cout << v << ",";
-        }
-        cout << ")   ";
+        std::cout << "(";
+        for (auto v : vaf[i]) { std::cout << v << ","; }
+        std::cout << ")   ";
 
-        cout << "(";
-        for (auto v : result2[i]) {
-            cout << v << ",";
-        }
-        cout << ")\n";
+        std::cout << "(";
+        for (auto v : result2[i]) { std::cout << v << ","; }
+        std::cout << ")\n";
     }
 
-    cout << "Stream scale<vec<float,4>>: " << s2 << endl;
+    std::cout << "Stream scale<vec<float,4>>: " << s2 << std::endl;
 
     // Test this scaling:
-    vector<vec<float, 4>>::const_iterator r2i = result2.end();
+    std::vector<m::vec<float, 4>>::const_iterator r2i = result2.end();
     r2i--; // To get to last element in vector
     float r2ilen = std::sqrt ((*r2i)[0] * (*r2i)[0] + (*r2i)[1] * (*r2i)[1] + (*r2i)[2] * (*r2i)[2] + (*r2i)[3] * (*r2i)[3]);
-    if (abs(r2ilen - 1) > 0.0001) {
-        cout << "Error" << endl;
+    if (std::abs(r2ilen - 1) > 0.0001) {
+        std::cout << "Error" << std::endl;
         rtn--;
     }
 

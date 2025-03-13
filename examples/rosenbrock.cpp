@@ -26,7 +26,7 @@ int main()
     int rtn = -1;
 
     // Set up a visual environment
-    morph::Visual v(2600, 1800, "Rosenbrock bananas", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
+    morph::Visual v(2600, 1800, "Rosenbrock bananas");
     v.zNear = 0.001;
     v.zFar = 100000;
     v.fov=60;
@@ -92,6 +92,9 @@ int main()
 
     morph::RandUniform<float> rng(-3, 3);
 
+    // This is the same as the NM_Simplex::run function, but it is reproduced here to *visualize*
+    // the Simplex as it descends the surface. For a more compact way to write your NM_Simplex, see
+    // tests/testNMSimplex.cpp
     while (!v.readyToFinish) {
 
         simp.reset (i_vertices);
@@ -167,9 +170,10 @@ int main()
         } else {
             rtn = -1;
         }
-    }
 
-    v.keepOpen();
+        std::cout << "Pausing (Press Ctrl-v to re-run gradient descent)...\n";
+        v.pauseOpen();
+    }
 
     return rtn;
 }

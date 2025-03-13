@@ -1,0 +1,22 @@
+name: Mac OS 15
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README**'
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  call-workflow-passing-data:
+    uses: ABRG-Models/morphologica/.github/workflows/cmake-mac-template.yml@main
+    with:
+      RUNNER_IMAGE: macos-15
+      BUILD_TYPE: Release
+      CC: clang-15
+      CXX: clang++-15

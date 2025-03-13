@@ -31,7 +31,7 @@ namespace morph {
     {
     public:
         //! Default constructor
-        mat22() { this->setToIdentity(); }
+        mat22() noexcept { this->setToIdentity(); }
 
         /*!
          * The matrix data, arranged in column major format to be similar to
@@ -40,7 +40,7 @@ namespace morph {
         alignas(morph::vec<F, 4>) morph::vec<F, 4> mat;
 
         //! Return a string representation of the matrix
-        std::string str() const
+        std::string str() const noexcept
         {
             std::stringstream ss;
             ss <<"[ "<< mat[0]<<" , "<<mat[2]<<" ;\n";
@@ -49,7 +49,7 @@ namespace morph {
         }
 
         //! Return a string representation of the passed-in column-major matrix
-        static std::string str (const morph::vec<F, 4>& arr)
+        static std::string str (const morph::vec<F, 4>& arr) noexcept
         {
             std::stringstream ss;
             ss <<"[ "<< arr[0]<<" , "<<arr[2]<<" ;\n";
@@ -57,7 +57,7 @@ namespace morph {
             return ss.str();
         }
 
-        void setToIdentity()
+        void setToIdentity() noexcept
         {
             this->mat.zero();
             this->mat[0] = F{1};
@@ -65,7 +65,7 @@ namespace morph {
         }
 
         //! Set this matrix up so that it would rotate a 2D vector by rot_rad radians, anticlockwise.
-        void rotate (const F rot_rad)
+        void rotate (const F rot_rad) noexcept
         {
             this->mat[0] = std::cos (rot_rad);
             this->mat[1] = std::sin (rot_rad);
@@ -74,12 +74,12 @@ namespace morph {
         }
 
         //! Access elements of the matrix
-        F& operator[] (unsigned int idx) { return this->mat[idx]; }
+        F& operator[] (unsigned int idx) noexcept { return this->mat[idx]; }
         // note: assume F is a built-in type here (safe - F will be float or double)
-        const F operator[] (unsigned int idx) const  { return this->mat[idx]; }
+        const F operator[] (unsigned int idx) const noexcept  { return this->mat[idx]; }
 
         //! Access a given row of the matrix
-        morph::vec<F, 2> row (unsigned int idx) const // unsigned char would be enough capacity!
+        morph::vec<F, 2> row (unsigned int idx) const noexcept // unsigned char would be enough capacity!
         {
             morph::vec<F, 2> r = {F{0}, F{0}};
             if (idx > 1U) { return r; }
@@ -89,7 +89,7 @@ namespace morph {
         }
 
         //! Access a given column of the matrix
-        morph::vec<F, 2> col (unsigned int idx) const
+        morph::vec<F, 2> col (unsigned int idx) const noexcept
         {
             morph::vec<F, 3> c = {F{0}, F{0}};
             if (idx > 1U) { return c; }
@@ -100,7 +100,7 @@ namespace morph {
         }
 
         //! Transpose this matrix
-        void transpose()
+        void transpose() noexcept
         {
             F a = this->mat[2];
             this->mat[2] = this->mat[1];
@@ -108,7 +108,7 @@ namespace morph {
         }
 
         //! Transpose the matrix @matrx, returning the transposed version.
-        morph::vec<F, 4> transpose (const morph::vec<F, 4>& matrx) const
+        morph::vec<F, 4> transpose (const morph::vec<F, 4>& matrx) const noexcept
         {
             morph::vec<F, 4> tposed;
             tposed[0] = matrx[0];
@@ -119,23 +119,23 @@ namespace morph {
         }
 
         //! Compute determinant for column-major 2x2 matrix @cm
-        static F determinant (morph::vec<F, 4> cm)
+        static F determinant (morph::vec<F, 4> cm) noexcept
         {
             return ((cm[0]*cm[3]) - (cm[1]*cm[2]));
         }
 
-        F determinant() const
+        F determinant() const noexcept
         {
             return ((this->mat[0]*this->mat[3]) - (this->mat[1]*this->mat[2]));
         }
 
-        morph::vec<F, 4> adjugate() const
+        morph::vec<F, 4> adjugate() const noexcept
         {
             morph::vec<F, 4> adj = { this->mat[3], -this->mat[1], -this->mat[2], this->mat[0] };
             return adj;
         }
 
-        mat22<F> invert()
+        mat22<F> invert() noexcept
         {
             mat22<F> rtn;
             F det = this->determinant();
@@ -151,13 +151,13 @@ namespace morph {
 
         //! *= operator for a scalar value.
         template <typename T=F>
-        void operator*= (const T& f)
+        void operator*= (const T& f) noexcept
         {
             for (unsigned int i = 0; i<4; ++i) { this->mat[i] *= f; }
         }
 
         //! Right-multiply this->mat with m2.
-        void operator*= (const morph::vec<F, 4>& m2)
+        void operator*= (const morph::vec<F, 4>& m2) noexcept
         {
             morph::vec<F, 4> result;
             // Top row
@@ -170,7 +170,7 @@ namespace morph {
         }
 
         //! Right-multiply this->mat with m2.
-        void operator*= (const mat22<F>& m2)
+        void operator*= (const mat22<F>& m2) noexcept
         {
             morph::vec<F, 4> result;
             // Top row
@@ -183,7 +183,7 @@ namespace morph {
         }
 
         //! Return this->mat * m2
-        mat22<F> operator* (const morph::vec<F, 4>& m2) const
+        mat22<F> operator* (const morph::vec<F, 4>& m2) const noexcept
         {
             mat22<F> result;
             // Top row
@@ -196,7 +196,7 @@ namespace morph {
         }
 
         //! Return this-> mat * m2
-        mat22<F> operator* (const mat22<F>& m2) const
+        mat22<F> operator* (const mat22<F>& m2) const noexcept
         {
             mat22<F> result;
             // Top row
@@ -209,7 +209,7 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        morph::vec<F, 2> operator* (const morph::vec<F, 2>& v1) const
+        morph::vec<F, 2> operator* (const morph::vec<F, 2>& v1) const noexcept
         {
             morph::vec<F, 2> v = {
                 this->mat[0] * v1[0] + this->mat[2] * v1[1],

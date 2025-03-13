@@ -27,7 +27,7 @@ namespace morph {
             for (unsigned int i = 0; i < B; ++i) {
                 morph::vvec<T> resample (data_n);
                 morph::vvec<unsigned int> randindices (data_n);
-                randindices.randomize (0, data_n);
+                randindices.randomize (0, data_n - 1);
                 for (unsigned int j = 0; j < data_n; ++j) {
                     resample[j] = data[randindices[j]];
                 }
