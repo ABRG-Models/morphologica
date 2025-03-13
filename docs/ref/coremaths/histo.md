@@ -6,10 +6,20 @@ layout: page
 permalink: /ref/coremaths/histo
 nav_order: 11
 ---
+# morph::histo
+{: .no_toc}
+
 ```c++
 #include <morph/histo.h>
 ```
 Header file: [morph/histo.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/histo.h).
+
+**Table of Contents**
+
+- TOC
+{:toc}
+
+## Summary
 
 `morph::histo` is a simple histogram class. You pass in a container of
 data values and the number of bins you want to sort it into.
@@ -57,8 +67,6 @@ int main()
     std::cout << "Counts are: " << _counts << std::endl;
     morph::vvec<float> _proportions = h.proportions;
     std::cout << "Proportions are: " << _proportions << std::endl;
-
-    return 0;
 }
 ```
 
@@ -75,4 +83,62 @@ Counts are: (2,1,4)
 Proportions are: (0.285714298,0.142857149,0.571428597)
 ```
 
+### Accessing statistics
+
+The histogram statistics are available as:
+
+* `histo::bins` A `vvec<T>` of the bin centres
+* `histo::binedges` A `vvec<T>` of the bin edges
+* `histo::counts` A `vvec<size_t>` of bin counts
+* `histo::proportions` A `vvec<T>` of the counts as proportions
+
+You can also obtain the proportion of counts above or below a position `x` on the bin axis using `histo::proportion_below(const T& x)`. Using the same example numbers:
+
+```c++
+#include <morph/histo.h>
+int main()
+{
+    morph::vvec<int> numbers = { 1, 1, 2, 3, 4, 4, 4 };
+    morph::histo<int, float> h(numbers, 3);
+    std::cout << "The proportion of " << numbers << " falling below 2.5 is: "
+              << h.proportion_below (2.5f) << std::endl;
+}
+```
+outputs:
+```
+The proportion of (1,1,2,3,4,4,4) falling below 2.5 is: 0.357143
+```
+
+The function `histo::proportion_above(const T& x)` returns the proportion above x (it returns 1 - proportion_below(x)).
+
+## Histogram graphs
+
 You can graph your histograms with [`morph::GraphVisual`](/morphologica/ref/visual/graphvisual). See any of the examples [graph_histo.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph_histo.cpp), [randvec.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/randvec.cpp) or [bootstrap.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/bootstrap.cpp).
+
+Very briefly:
+
+```c++
+// includes: vvec.h, histo.h, Visual.h, GraphVisual.h
+int main()
+{
+    morph::vvec<int> numbers = { 1, 1, 2, 3, 4, 4, 4 };
+    morph::histo<int, float> h(numbers, 3);
+
+    morph::Visual v(1024, 768, "Histogram");
+
+    // Create a new GraphVisual with offset within the scene of 0,0,0. Note the type for
+    // the GraphVisual has to match the *second* template type for the histo.
+    auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>{0,0,0});
+    v.bindmodel (gv);
+
+    // Here we simply pass in our morph::histo object, h, as the data to graph
+    gv->setdata (h);
+
+    gv->xlabel = "Bin";
+    gv->ylabel = "Proportion";
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    v.keepOpen();
+}
+```
