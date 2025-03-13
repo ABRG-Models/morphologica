@@ -1,4 +1,4 @@
-# morphologica
+# morphologica: plotting for c++
 
 ![A banner image morphologica VisualModels](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner2.png?raw=true)
 
