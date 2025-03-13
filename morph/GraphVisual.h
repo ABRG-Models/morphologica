@@ -190,7 +190,7 @@ namespace morph {
             morph::range<Flt> datarange;
 
             if (_abscissae.size() != dsize) {
-                throw std::runtime_error ("update: size mismatch");
+                throw std::runtime_error ("GraphVisual::update: size mismatch");
             }
 
             if (data_idx >= this->graphDataCoords.size()) {
@@ -362,15 +362,16 @@ namespace morph {
             // _quivs should have same size as g.n()
             if (_quivs.size() != g.n()) {
                 std::stringstream ee;
-                ee << "Size mismatch. Grid has " << g.n() << " elements but there are "
-                   << _quivs.size() << " quivers";
+                ee << "GraphVisual::setdata: Size mismatch. Grid has " << g.n()
+                   << " elements but there are " << _quivs.size() << " quivers";
                 throw std::runtime_error (ee.str());
             }
 
             if (ds.markerstyle != morph::markerstyle::quiver
                 && ds.markerstyle != morph::markerstyle::quiver_fromcoord
                 && ds.markerstyle != morph::markerstyle::quiver_tocoord) {
-                throw std::runtime_error ("markerstyle must be morph::markerstyle::quiver(_fromcoord/_tocoord)"
+                throw std::runtime_error ("GraphVisual::setdata: markerstyle must be "
+                                          "morph::markerstyle::quiver(_fromcoord/_tocoord)"
                                           " for this setdata() overload");
             }
 
@@ -450,7 +451,7 @@ namespace morph {
         {
             if (_abscissae.size() != _data.size()) {
                 std::stringstream ee;
-                ee << "size mismatch. abscissa size " << _abscissae.size() << " and data size: " << _data.size();
+                ee << "GraphVisual::setdata: size mismatch. abscissa size " << _abscissae.size() << " and data size: " << _data.size();
                 throw std::runtime_error (ee.str());
             }
 
@@ -551,7 +552,7 @@ namespace morph {
         void setdata (const morph::histo<H, Flt>& h, morph::DatasetStyle& ds)
         {
             if (ds.policy != morph::stylepolicy::bar) {
-                throw std::runtime_error ("setdata(histo, DatasetStyle): Your DatasetStyle policy must be morph::stylepolicy::bar");
+                throw std::runtime_error ("GraphVisual::setdata(histo, DatasetStyle): Your DatasetStyle policy must be morph::stylepolicy::bar");
             }
             if constexpr (bar_width_auto == true) {
                 ds.markersize = (this->width - this->width * 2 * this->dataaxisdist) * (h.binwidth / static_cast<Flt>(h.datarange.span()));
@@ -657,7 +658,7 @@ namespace morph {
         void setdataaxisdist (float proportion)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Call GraphVisual::setdataaxisdist() *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setdataaxisdist: Call this function *before* using setdata to set the data");
             }
             this->dataaxisdist = proportion;
         }
@@ -686,7 +687,7 @@ namespace morph {
         void setsize (float _width, float _height)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set the size of your graph with setsize *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setsize: Set the size of your graph with setsize *before* using setdata to set the data");
             }
             this->resetsize (_width, _height);
         }
@@ -696,7 +697,7 @@ namespace morph {
         void zoomgraph (Flt factor)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set the size of your graph with zoomgraph *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::zoomgraph: Set the size of your graph with zoomgraph *before* using setdata to set the data");
             }
             float _w = this->width;
             float _h = this->height;
@@ -724,7 +725,7 @@ namespace morph {
         void setlimits_x (const morph::range<Flt>& range_x, bool force = false)
         {
             if (!force && !this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits_x: Set your axis limits *before* using setdata to set the data");
             }
             this->scalingpolicy_x = morph::scalingpolicy::manual;
             this->datarange_x = range_x;
@@ -742,7 +743,7 @@ namespace morph {
         void setlimits_y (const morph::range<Flt>& range_y, bool force = false)
         {
             if (!force && !this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits_y: Set your axis limits *before* using setdata to set the data");
             }
             this->scalingpolicy_y = morph::scalingpolicy::manual;
             this->datarange_y = range_y;
@@ -760,7 +761,7 @@ namespace morph {
         void setlimits_y2 (const morph::range<Flt>& range_y2, bool force = false)
         {
             if (!force && !this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits_y2: Set your axis limits *before* using setdata to set the data");
             }
             this->scalingpolicy_y = morph::scalingpolicy::manual; // scalingpolicy_y common to both left and right axes?
             this->datarange_y2 = range_y2;
@@ -782,7 +783,7 @@ namespace morph {
         void setlimits (const morph::range<Flt>& range_x, const morph::range<Flt>& range_y)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits: Set your axis limits *before* using setdata to set the data");
             }
 
             // Set limits with 4 args gives fully manual scaling
@@ -810,7 +811,7 @@ namespace morph {
                         const morph::range<Flt>& range_y, const morph::range<Flt>& range_y2)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits: Set your axis limits *before* using setdata to set the data");
             }
 
             // Set limits with 4 args gives fully manual scaling
@@ -1013,7 +1014,9 @@ namespace morph {
                         this->quiver_colour_scale.transform (final_qlengths, colour_qlengths);
 
                         // Finally loop thru coords, drawing a quiver for each
-                        if (static_cast<uint64_t>(coords_end) > nquiv) { throw std::runtime_error ("coords_end is off the end of quivers"); }
+                        if (static_cast<uint64_t>(coords_end) > nquiv) {
+                            throw std::runtime_error ("GraphVisual::drawDataCommon: coords_end is off the end of quivers");
+                        }
                         for (unsigned int i = coords_start; i < coords_end; ++i) {
                             this->quiver ((*this->graphDataCoords[dsi])[i], final_quivers[i], colour_qlengths[i], this->datastyles[dsi]);
                         }
@@ -1730,10 +1733,10 @@ namespace morph {
             } else {
                 if (this->ord2_scale.ready()) {
                     if (!this->abscissa_scale.ready()) {
-                        throw std::runtime_error ("abscissa scale is not set (though ord2 scale is set). Is there abscissa (x) data?");
+                        throw std::runtime_error ("GraphVisual::computeTickPositions: abscissa scale is not set (though ord2 scale is set). Is there abscissa (x) data?");
                     }
                 } else if (!(this->abscissa_scale.ready() && this->ord1_scale.ready())) {
-                    throw std::runtime_error ("abscissa and ordinate scales not set. Is there data?");
+                    throw std::runtime_error ("GraphVisual::computeTickPositions: abscissa and ordinate scales not set. Is there data?");
                 }
                 // Compute locations for ticks...
                 Flt _xmin = this->abscissa_scale.inverse_one (this->abscissa_scale.output_range.min);
