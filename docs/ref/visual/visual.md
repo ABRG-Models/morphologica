@@ -373,7 +373,7 @@ you [derive a custom morph::Visual](#extending-morphvisual-to-add-custom-key-act
 
 # Working with Visuals in a loop
 
-If you have a static scene, you can simply call `Visual::keepOpen()`, which allows the user to rotate the view and observe the scene.
+If you have a static scene, you can simply call `Visual::keepOpen()`, which allows the user to rotate the view and observe the scene until quitting the program.
 
 If you have a dynamic scene, where the scene is updated as a model is computed, or on the basis of some sort of input data, you'll need to under stand the `render`, `poll`, `wait` and `waitevents` function calls and also how to access the VisualModels in your scene, so they can be updated.
 
@@ -416,6 +416,42 @@ while (v.readyToFinish == false) {
 Use of `waitevents` prevents the frame rate becoming too high. If you need the maximum possible framerate, then you can instead call `Visual::poll()` in place of `waitevents`.
 
 If you want to guarantee the 0.018 s pause, you can instead call `v.wait (0.018)`.
+
+## Pausing within a simulation
+
+You may have a program which computes a set of numbers which you wish
+to plot and observe in order to make a decision about whether to quit
+the program, or continue on to a second stage of computation. You
+can't use `keepOpen()` for this, because you can only exit keepOpen by
+signaling that the program is ready to finish.
+
+Instead, you can use `Visual::pauseOpen()`. This sets a 'paused' flag,
+and goes into a render loop. This loop is exited when the user signals
+`readyToFinish` or causes the protected function `Visual::unpause()`
+to be called (this is bound to the key Ctrl-v).
+
+```c++
+MySim sim;
+// Simulation part one
+for (int i = 0; i < 1000; ++i) {
+    sim.step();
+    v.waitevents (0.018);
+    // Observe graph change during simulation
+    gv_pointer->append (sim.x(), sim.y(), 0);
+    v.render();
+}
+
+// After 1000 steps, pause to observe the graph until user continues
+// with Ctrl-v or quits with Ctrl-q
+v.pauseOpen();
+
+// Simulation part two only executes if readyToFinish is false
+for (int i = 0; i < 1000 && v.readyToFinish == false; ++i) {
+    // ...
+}
+
+v.keepOpen(); // View final result until user quits
+```
 
 # Saving an image to make a movie
 
