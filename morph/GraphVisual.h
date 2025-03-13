@@ -501,6 +501,14 @@ namespace morph {
             }
         }
 
+        //! Set data using two ranges as input
+        void setdata (const morph::range<Flt> xx, const morph::range<Flt> yy, const DatasetStyle& ds)
+        {
+            morph::vvec<Flt> xxvv = { xx.min, xx.max };
+            morph::vvec<Flt> yyvv = { yy.min, yy.max };
+            this->setdata (xxvv, yyvv, ds);
+        }
+
         //! setdata overload that accepts vvec of coords (as morph::vec<Flt, 2>)
         void setdata (const morph::vvec<morph::vec<Flt, 2>>& _coords, const DatasetStyle& ds)
         {
@@ -568,6 +576,88 @@ namespace morph {
             this->datarange_y.min = Flt{0};
 
             this->setdata (h.bins, h.proportions, ds);
+        }
+
+        /*!
+         * Add vertical lines representing the x locations at which the function has the value
+         * y_value on the graph. Note that the same abscissae and data must be passed to this
+         * function as to the setdata() function. Line colour is copied from the passed-in dataset.
+         *
+         * This method does not draw a horizontal line on the graph at y_value.
+         */
+        template <typename Ctnr1, typename Ctnr2> requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        void add_y_crossing_lines (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt y_value, const morph::DatasetStyle& ds_data)
+        {
+            morph::vvec<Flt> xvals = morph::GraphVisual<Flt>::x_at_y_value (_abscissae, _data, y_value);
+            morph::range<Flt> yy (morph::range_init::for_search);
+            for (auto d : _data) { yy.update (d); } // Find the range
+            morph::DatasetStyle dsv (morph::stylepolicy::lines);
+            if (ds_data.policy == morph::stylepolicy::lines) {
+                dsv.linecolour = ds_data.linecolour;
+            } else {
+                dsv.linecolour = ds_data.markercolour;
+            }
+            dsv.linewidth = ds_data.linewidth;
+            dsv.datalabel = ""; // Always empty the datalabel
+            for (auto xv : xvals) {
+                morph::range<Flt> xx = { xv, xv };
+                this->setdata (xx, yy, dsv);
+            }
+        }
+
+        /*!
+         * Add vertical lines representing the x locations at which the function has the value
+         * y_value on the graph. Note that the same abscissae and data must be passed to this
+         * function as to the setdata() function. Line colour is copied from the passed-in dataset.
+         *
+         * This method ALSO draws a horizontal line on the graph at y_value, using the DatasetStyle
+         * ds_hline.
+         */
+        template <typename Ctnr1, typename Ctnr2> requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        morph::vvec<Flt> add_y_crossing_lines (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt y_value,
+                                               const morph::DatasetStyle& ds_data, const morph::DatasetStyle& ds_hline)
+        {
+            // Draw the horizontal line
+            morph::range<Flt> yy = { y_value, y_value };
+            morph::range<Flt> xx (morph::range_init::for_search);
+            for (auto a : _abscissae) { xx.update (a); }
+            this->setdata (xx, yy, ds_hline);
+            // And the vertical y crossings
+            this->add_y_crossing_lines (_abscissae, _data, y_value, ds_data);
+        }
+
+        // Static function to find the crossings in the right money. Requires data to be passed in.
+        // Return all the x values where the function crosses the y_value.
+        template <typename Ctnr1, typename Ctnr2> requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        static morph::vvec<Flt> x_at_y_value (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt y_value)
+        {
+            if (_abscissae.size() != _data.size()) {
+                std::stringstream ee;
+                ee << "GraphVisual::x_at_y_value: size mismatch. abscissa size "
+                   << _abscissae.size() << " and data size: " << _data.size();
+                throw std::runtime_error (ee.str());
+            }
+            // First find crossing points, for which we require that the y values are in vvec format
+            morph::vvec<Flt> y_values (_data);
+            morph::vvec<float> crossings = y_values.crossing_points (y_value);
+            // Now, for each of crossings, we have to interpolate the points in _abscissae to get the x to return
+            morph::vvec<Flt> x_values = {};
+            for (const float crs : crossings) {
+                // bool up = crs > float{0} ? true : false; // Don't care here, but could
+                float crs_abs = std::abs (crs);
+                int crs_i = static_cast<int>(crs_abs);
+                if (crs_abs - static_cast<float>(crs_i) > 0.25f) {
+                    // intermediate. Interpolate
+                    morph::scale<Flt> interp;
+                    interp.output_range = morph::range<Flt>{static_cast<Flt>(_data.at(crs_i)), static_cast<Flt>(_data.at(crs_i + 1))};
+                    interp.compute_scaling (static_cast<Flt>(_abscissae.at(crs_i)), static_cast<Flt>(_abscissae.at(crs_i + 1)));
+                    x_values.push_back (interp.inverse_one (y_value));
+                } else {
+                    // crossing is *on* crs_i
+                    x_values.push_back (_abscissae.at(crs_i));
+                }
+            }
+            return x_values;
         }
 
     protected:
