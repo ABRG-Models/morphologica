@@ -7,30 +7,17 @@ cmake_minimum_required(VERSION 3.10)
 # Give your project a name
 project(ModelTemplate)
 
-# We make a morph-library-local define for our operating system. Determine this from CMAKE_SYSTEM
-if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(OS_FLAG "-D_morph_GLN_")
-elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(OS_FLAG "-D_morph_NIX_")
-elseif(APPLE)
-  set(OS_FLAG "-D_morph_OSX_")
-elseif(CMAKE_SYSTEM MATCHES Win.*)
-  set(OS_FLAG "-D_morph_WIN_")
-else()
-  message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
-endif()
-
 # morphologica uses c++-20 language features
 set(CMAKE_CXX_STANDARD 20)
 
 # Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-sign-compare")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -g -O3 -Wno-sign-compare")
 elseif (WIN32)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -DNOMINMAX /EHsc")
+  set(CMAKE_CXX_FLAGS "-DNOMINMAX /EHsc")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas -Wno-sign-compare")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas -Wno-sign-compare")
 endif()
 
 # Add OpenMP flags here, if necessary

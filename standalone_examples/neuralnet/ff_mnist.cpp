@@ -23,7 +23,7 @@ int main()
     morph::nn::FeedForwardNet<float> ff1({784,30,10});
 
     // Create a random number generator
-#ifdef _morph_WIN_
+#ifdef _MSC_VER
     morph::RandUniform<unsigned short> rng((unsigned short)0, (unsigned short)9);
 #else
     morph::RandUniform<unsigned char> rng((unsigned char)0, (unsigned char)9);

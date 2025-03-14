@@ -10,34 +10,17 @@ project(RecurrentNet)
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
-# We make a morph-library-local define for our operating system. Determine this from CMAKE_SYSTEM
-message(STATUS "Operating system: " ${CMAKE_SYSTEM})
-if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(EXTRA_HOST_DEFINITION "-D_morph_GLN_")
-elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(EXTRA_HOST_DEFINITION "-D_morph_NIX_")
-elseif(APPLE)
-  set(EXTRA_HOST_DEFINITION "-D_morph_OSX_")
-elseif(CMAKE_SYSTEM MATCHES Win.*)
-  set(EXTRA_HOST_DEFINITION "-D_morph_WIN_")
-else()
-  message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
-endif()
-
 # morphologica uses c++-20 language features
 set(CMAKE_CXX_STANDARD 20)
 
-# Common cflags
-set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION}")
-
 # OS dependent cflags
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wfatal-errors -Wno-sign-compare -g -O3")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -Wno-sign-compare -g -O3")
 elseif (WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX /EHsc")
+  set(CMAKE_CXX_FLAGS "-DNOMINMAX /EHsc")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wfatal-errors -Wno-sign-compare -g -Wno-unused-result -Wno-unknown-pragmas -O3")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -Wno-sign-compare -g -Wno-unused-result -Wno-unknown-pragmas -O3")
 endif()
 
 # In Visual Studio, if CMAKE_BUILD_TYPE is "Debug", some programs will run very slowly
