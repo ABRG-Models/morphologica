@@ -214,6 +214,9 @@ if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
 
+# Additional examples (requires BUILD_EXAMPLES ON)
+option(BUILD_DOC_SCREENSHOTS "Build documentation screenshot examples" OFF)
+
 # first we can indicate the documentation build as an option and set it to ON by default
 option(BUILD_DOC "Build documentation" OFF)
 if(BUILD_DOC)

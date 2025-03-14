@@ -36,6 +36,11 @@ endif()
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
+# Screenshots used in the documentation/reference website
+if(BUILD_DOC_SCREENSHOTS)
+  add_subdirectory(docs)
+endif()
+
 #
 # Any example that uses morph::HexGrid or morph::CartGrid requires
 # libarmadillo (because these classes use morph::BezCurve).

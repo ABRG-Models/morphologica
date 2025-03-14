@@ -217,13 +217,14 @@ Note that we call `add_y_crossing_lines` using the same data (`x` and `y`) and t
 Only vertical lines that indicate the x crossing locations will be drawn by this overload of `add_y_crossing_lines`.
 
 `add_y_crossing_lines` returns a `vvec` containing the crossing locations. This may be empty or contain any number of crossings.
+Crossing points are determined by linear interpolation between the two nearest data points, unless the crossing point is exactly on a datum.
 
 Here's the result:
 
 ![Screenshot of GraphVisual graph, with annotation lines](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_line_simple.png?raw=true)
 
 To additionally draw a horizontal line indicating the value 7, you can add a second DatasetStyle to your call to `add_y_crossing_lines`.
-The following example also shows an example of creating a graph label from the returned crossings.
+The following example also shows how to create a text label from the returned crossings.
 
 ```c++
     morph::DatasetStyle ds (morph::stylepolicy::lines);
@@ -251,8 +252,11 @@ The following example also shows an example of creating a graph label from the r
     gv->addLabel (std::format("y=7 at x = {:s}", ss.str()), { 0.05f, 0.05f, 0.0f }, morph::TextFeatures(0.03f));
 
 ```
+With the additional annotation line and text label, the graph looks like this:
 
 ![Screenshot of GraphVisual graph, with more annotation lines](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_line_full.png?raw=true)
+
+To draw annotation lines where the data cross at particular *x* values, use `GraphVisual::add_x_crossing_lines` in a similar way ([graph_line_xcross.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph_line_xcross.cpp) is the example code).
 
 ## Unicode for special characters
 
