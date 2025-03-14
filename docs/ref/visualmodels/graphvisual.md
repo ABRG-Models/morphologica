@@ -190,6 +190,64 @@ There are six options for a marker-and-line graph:
 ```
 ![Screenshot of two GraphVisual graphs, with different line and marker style options](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_both.png?raw=true)
 
+### Data annotation lines
+
+In general, `GraphVisual` is intended only to display your data and *not* to compute any additional statistics.
+However, there is one statistical computation which is helpful enough to be integrated into the class.
+This is the determination of locations where your graphed data cross a particular value for x or y, so that vertical and horizontal annotation lines can be drawn on the graph.
+
+After calling `setdata`, it is possible to annotate your graph with `GraphVisual::add_y_crossing_lines` (for adding lines where the data crosses a y value) and the similarly named `GraphVisual::add_x_crossing_lines` to annotate data crossing an x value.
+
+The example [graph_line.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph_line.cpp) has well annotated code that shows how to use these functions. The simplest code is:
+
+```c++
+    // A style for the dataset
+    morph::DatasetStyle ds (morph::stylepolicy::lines);
+    ds.linecolour = morph::colour::crimson;
+
+    gv->setdata (x, y, ds); // Set the data in our GraphVisual, gv
+
+    // Find, and annotate with vertical lines, the locations where the graph crosses
+    // y=7. The x values of the crossing points are returned.
+    morph::vvec<double> xcross = gv->add_y_crossing_lines (x, y, 7.0, ds);
+```
+
+Note that we call `add_y_crossing_lines` using the same data (`x` and `y`) and the same DatasetStyle as we used in the call to `setdata`.
+`add_y_crossing_lines` will extract a colour from the DatasetStyle for the annotation lines and make their width a proportion of the original linewidth.
+Only vertical lines that indicate the x crossing locations will be drawn by this overload of `add_y_crossing_lines`.
+
+`add_y_crossing_lines` returns a `vvec` containing the crossing locations. This may be empty or contain any number of crossings.
+
+To additionally draw a horizontal line indicating the value 7, you can add a second DatasetStyle to your call to `add_y_crossing_lines`.
+The following example also shows an example of creating a graph label from the returned crossings.
+
+```c++
+    morph::DatasetStyle ds (morph::stylepolicy::lines);
+    ds.linecolour = morph::colour::crimson;
+    gv->setdata (x, y, ds); // Set the data in our GraphVisual, gv
+
+    // A second DatasetStyle is used to specify a colour and linewidth for a horizontal line at y=7.
+    morph::DatasetStyle ds_horz (morph::stylepolicy::lines);
+    ds_horz.linecolour = morph::colour::grey68;
+    ds_horz.linewidth = ds.linewidth * 0.6f;
+
+    // Annotate, including a horizontal line
+    morph::vvec<double> xcross = gv->add_y_crossing_lines (x, y, 7, ds, ds_horz);
+
+    // Use results in xcross to build a label
+    size_t n = xcross.size();
+    std::stringstream ss;
+    if (n > 0) {
+        for (size_t i = 0; i < n; ++i) {
+            ss << std::format ("{}{}{:.2f}", ((i == 0 || i == n - 1) ? "" : ", "), (i == (n - 1) ? " and " : ""), xcross[i]);
+        }
+    } else {
+        ss << "[no values]";
+    }
+    gv->addLabel (std::format("y=7 at x = {:s}", ss.str()), { 0.05f, 0.05f, 0.0f }, morph::TextFeatures(0.03f));
+
+```
+
 ## Unicode for special characters
 
 You can incorporate unicode characters into your `DatasetStyle` datalabels and axis labels.
