@@ -4,7 +4,7 @@
  * Awesome graphics code for high performance graphing and visualisation.
  *
  * This is one of the two main visual scene classes in morphologica and derives from
- * morph::VisualOwnable, adding window handling with GLFW3.
+ * morph::VisualOwnableNoMX, adding window handling with GLFW3.
  *
  * This one assumes GL has been loaded with global function aliases (glCear, glEnable, etc)
  *
@@ -29,7 +29,7 @@ namespace morph {
 }
 
 #include <morph/gl/version.h>
-#include <morph/VisualOwnable.h>
+#include <morph/VisualOwnableNoMX.h>
 #include <morph/VisualGlfw.h>
 
 namespace morph {
@@ -52,7 +52,7 @@ namespace morph {
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
     template <int glver = morph::gl::version_4_1>
-    class VisualNoMX : public morph::VisualOwnable<glver>
+    class VisualNoMX : public morph::VisualOwnableNoMX<glver>
     {
     public:
         /*!
@@ -89,7 +89,7 @@ namespace morph {
         {
             morph::VisualGlfw<glver>::i().init(); // Init GLFW windows system
             // VisualResources provides font management. Ensure it exists in memory.
-            morph::VisualResources<glver>::i().create();
+            morph::VisualResourcesNoMX<glver>::i().create();
             // Set up the window that will present the OpenGL graphics.  This has to
             // happen BEFORE the call to VisualResources::freetype_init()
             this->init_window();
@@ -302,7 +302,7 @@ namespace morph {
          */
         virtual bool key_callback (int _key, int scancode, int action, int mods)
         {
-            return morph::VisualOwnable<glver>::template key_callback<true> (_key, scancode, action, mods);
+            return morph::VisualOwnableNoMX<glver>::template key_callback<true> (_key, scancode, action, mods);
         }
     };
 

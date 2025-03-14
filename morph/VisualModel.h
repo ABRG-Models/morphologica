@@ -13,7 +13,7 @@
 #ifdef GLAD_OPTION_GL_MX
 # include <morph/VisualModelImplMX.h>
 #else
-# include <morph/VisualModelImpl.h>
+# include <morph/VisualModelImplNoMX.h>
 #endif
 
 namespace morph {
@@ -36,7 +36,7 @@ namespace morph {
      * morph/VisualModelBase.h
      *
      * Note on morph::gl::multicontext. This is defined as a static constexpr int with the value 1
-     * or 0 in <morph/VisualOwnable.h> or <morph/VisualOwnableMX.h>, one or other of which must have
+     * or 0 in <morph/VisualOwnableNoMX.h> or <morph/VisualOwnableMX.h>, one or other of which must have
      * been #included before you include <morph/VisualModel.h>
      */
     template <int glver = morph::gl::version_4_1>

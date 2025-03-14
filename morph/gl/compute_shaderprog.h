@@ -5,9 +5,9 @@
 #include <sstream>
 #include <cstddef>
 #include <morph/gl/version.h>
-#include <morph/gl/util.h>
+#include <morph/gl/util_nomx.h>
 #include <morph/gl/shaders.h>
-#include <morph/gl/loadshaders.h>
+#include <morph/gl/loadshaders_nomx.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 

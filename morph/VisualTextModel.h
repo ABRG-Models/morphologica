@@ -17,11 +17,11 @@
 #ifdef GLAD_OPTION_GL_MX
 # include <morph/VisualTextModelImplMX.h>
 #else
-# include <morph/VisualTextModelImpl.h>
+# include <morph/VisualTextModelImplNoMX.h>
 #endif
 
 namespace morph {
-    // glad_type is set in VisualOwnable.h or VisualOwnableMX.h
+    // glad_type is set in VisualOwnableNoMX.h or VisualOwnableMX.h
     template <int glver = morph::gl::version_4_1>
     struct VisualTextModel : public morph::VisualTextModelImpl<glver, morph::gl::multicontext> {
         VisualTextModel(morph::TextFeatures _tf)

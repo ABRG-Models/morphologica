@@ -10,7 +10,7 @@
  */
 
 #include <morph/vec.h>
-#include <morph/gl/util.h>
+#include <morph/gl/util_nomx.h>
 #include <iostream>
 #include <stdexcept>
 

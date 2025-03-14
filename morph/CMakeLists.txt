@@ -77,17 +77,17 @@ install(
   VisualDefaultShaders.h
 
   VisualFaceBase.h
-  VisualFace.h
+  VisualFaceNoMX.h
   VisualFaceMX.h
 
   VisualResourcesBase.h
-  VisualResources.h
+  VisualResourcesNoMX.h
   VisualResourcesMX.h
 
   VisualGlfw.h
 
   VisualBase.h
-  VisualOwnable.h
+  VisualOwnableNoMX.h
   VisualOwnableMX.h
   VisualNoMX.h
   VisualMX.h
@@ -95,14 +95,14 @@ install(
   VisualCompoundRay.h
 
   VisualModelBase.h
-  VisualModelImpl.h
+  VisualModelImplNoMX.h
   VisualModelImplMX.h
   VisualModel.h
 
   VisualDataModel.h
 
   VisualTextModelBase.h
-  VisualTextModelImpl.h
+  VisualTextModelImplNoMX.h
   VisualTextModelImplMX.h
   VisualTextModel.h
 

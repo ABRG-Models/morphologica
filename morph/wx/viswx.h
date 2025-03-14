@@ -11,13 +11,13 @@
 #include <wx/glcanvas.h>
 #include <wx/colordlg.h>
 
-// VisualOwnable is going to be owned either by the morph::wx::canvas or by the morph::wx::frame
-// Define morph::win_t before #including morph/VisualOwnable.h
+// VisualOwnableNoMX is going to be owned either by the morph::wx::canvas or by the morph::wx::frame
+// Define morph::win_t before #including morph/VisualOwnableNoMX.h
 namespace morph { using win_t = wxGLCanvas; }
 
 #include <morph/gl/version.h>
 // In the wx examples, we include <morph/glad/gl.h> early in the main.cpp file
-#include <morph/VisualOwnable.h>
+#include <morph/VisualOwnableNoMX.h>
 // We need to be able to convert from wxWidgets keycodes to morph keycodes
 #include <morph/wx/keycodes.h>
 
@@ -209,7 +209,7 @@ namespace morph {
 
             bool ready() { return this->glInitialized; }
 
-            morph::VisualOwnable<glver> v;
+            morph::VisualOwnableNoMX<glver> v;
 
         private:
             std::unique_ptr<wxGLContext> glContext;
