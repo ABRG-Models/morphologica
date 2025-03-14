@@ -36,6 +36,11 @@ endif()
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
+# Screenshots used in the documentation/reference website
+if(BUILD_DOC_SCREENSHOTS)
+  add_subdirectory(docs)
+endif()
+
 #
 # Any example that uses morph::HexGrid or morph::CartGrid requires
 # libarmadillo (because these classes use morph::BezCurve).
@@ -260,8 +265,13 @@ target_link_libraries(graph1 OpenGL::GL glfw Freetype::Freetype)
 add_executable(graph1_nomx graph1_nomx.cpp)
 target_link_libraries(graph1_nomx OpenGL::GL glfw Freetype::Freetype)
 
-add_executable(graph_line graph_line.cpp)
-target_link_libraries(graph_line OpenGL::GL glfw Freetype::Freetype)
+if(HAVE_STD_FORMAT)
+  add_executable(graph_line graph_line.cpp)
+  target_link_libraries(graph_line OpenGL::GL glfw Freetype::Freetype)
+
+  add_executable(graph_line_xcross graph_line_xcross.cpp)
+  target_link_libraries(graph_line_xcross OpenGL::GL glfw Freetype::Freetype)
+endif()
 
 add_executable(graph_dynamic_x2 graph_dynamic_x2.cpp)
 target_link_libraries(graph_dynamic_x2 OpenGL::GL glfw Freetype::Freetype)

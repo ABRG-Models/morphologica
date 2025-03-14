@@ -190,7 +190,7 @@ namespace morph {
             morph::range<Flt> datarange;
 
             if (_abscissae.size() != dsize) {
-                throw std::runtime_error ("update: size mismatch");
+                throw std::runtime_error ("GraphVisual::update: size mismatch");
             }
 
             if (data_idx >= this->graphDataCoords.size()) {
@@ -362,15 +362,16 @@ namespace morph {
             // _quivs should have same size as g.n()
             if (_quivs.size() != g.n()) {
                 std::stringstream ee;
-                ee << "Size mismatch. Grid has " << g.n() << " elements but there are "
-                   << _quivs.size() << " quivers";
+                ee << "GraphVisual::setdata: Size mismatch. Grid has " << g.n()
+                   << " elements but there are " << _quivs.size() << " quivers";
                 throw std::runtime_error (ee.str());
             }
 
             if (ds.markerstyle != morph::markerstyle::quiver
                 && ds.markerstyle != morph::markerstyle::quiver_fromcoord
                 && ds.markerstyle != morph::markerstyle::quiver_tocoord) {
-                throw std::runtime_error ("markerstyle must be morph::markerstyle::quiver(_fromcoord/_tocoord)"
+                throw std::runtime_error ("GraphVisual::setdata: markerstyle must be "
+                                          "morph::markerstyle::quiver(_fromcoord/_tocoord)"
                                           " for this setdata() overload");
             }
 
@@ -450,7 +451,7 @@ namespace morph {
         {
             if (_abscissae.size() != _data.size()) {
                 std::stringstream ee;
-                ee << "size mismatch. abscissa size " << _abscissae.size() << " and data size: " << _data.size();
+                ee << "GraphVisual::setdata: size mismatch. abscissa size " << _abscissae.size() << " and data size: " << _data.size();
                 throw std::runtime_error (ee.str());
             }
 
@@ -498,6 +499,14 @@ namespace morph {
                     this->graphDataCoords[didx].get()->at(i) = morph::vec<float>{ static_cast<float>(ad[i]), static_cast<float>(sd[i]), float{0} };
                 }
             }
+        }
+
+        //! Set data using two ranges as input
+        void setdata (const morph::range<Flt> xx, const morph::range<Flt> yy, const DatasetStyle& ds)
+        {
+            morph::vvec<Flt> xxvv = { xx.min, xx.max };
+            morph::vvec<Flt> yyvv = { yy.min, yy.max };
+            this->setdata (xxvv, yyvv, ds);
         }
 
         //! setdata overload that accepts vvec of coords (as morph::vec<Flt, 2>)
@@ -551,7 +560,7 @@ namespace morph {
         void setdata (const morph::histo<H, Flt>& h, morph::DatasetStyle& ds)
         {
             if (ds.policy != morph::stylepolicy::bar) {
-                throw std::runtime_error ("setdata(histo, DatasetStyle): Your DatasetStyle policy must be morph::stylepolicy::bar");
+                throw std::runtime_error ("GraphVisual::setdata(histo, DatasetStyle): Your DatasetStyle policy must be morph::stylepolicy::bar");
             }
             if constexpr (bar_width_auto == true) {
                 ds.markersize = (this->width - this->width * 2 * this->dataaxisdist) * (h.binwidth / static_cast<Flt>(h.datarange.span()));
@@ -567,6 +576,170 @@ namespace morph {
             this->datarange_y.min = Flt{0};
 
             this->setdata (h.bins, h.proportions, ds);
+        }
+
+        /*!
+         * Add vertical lines representing the x locations at which the function has the value
+         * y_value on the graph. Note that the same abscissae and data must be passed to this
+         * function as to the setdata() function. Line colour is copied from the passed-in dataset.
+         *
+         * This method does not draw a horizontal line on the graph at y_value.
+         */
+        template <typename Ctnr1, typename Ctnr2>
+        requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        morph::vvec<Flt> add_y_crossing_lines (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt y_value, const morph::DatasetStyle& ds_data)
+        {
+            morph::vvec<Flt> xvals = morph::GraphVisual<Flt>::x_at_y_value (_abscissae, _data, y_value);
+            morph::range<Flt> yy (morph::range_init::for_search);
+            for (auto d : _data) { yy.update (d); } // Find the range
+            morph::DatasetStyle dsv (morph::stylepolicy::lines);
+            if (ds_data.policy == morph::stylepolicy::lines) {
+                dsv.linecolour = ds_data.linecolour;
+            } else {
+                dsv.linecolour = ds_data.markercolour;
+            }
+            dsv.linewidth = ds_data.linewidth * 0.5f; // Use a reduced width cf the original dataset style
+            dsv.datalabel = ""; // Always empty the datalabel
+            for (auto xv : xvals) {
+                morph::range<Flt> xx = { xv, xv };
+                this->setdata (xx, yy, dsv);
+            }
+            return xvals;
+        }
+
+        /*!
+         * Add vertical lines representing the x locations at which the function has the value
+         * y_value on the graph. Note that the same abscissae and data must be passed to this
+         * function as to the setdata() function. Line colour is copied from the passed-in dataset.
+         *
+         * This method ALSO draws a horizontal line on the graph at y_value, using the DatasetStyle
+         * ds_hline.
+         */
+        template <typename Ctnr1, typename Ctnr2>
+        requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        morph::vvec<Flt> add_y_crossing_lines (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt y_value,
+                                               const morph::DatasetStyle& ds_data, const morph::DatasetStyle& ds_hline)
+        {
+            // Draw the horizontal line
+            morph::range<Flt> yy = { y_value, y_value };
+            morph::range<Flt> xx (morph::range_init::for_search);
+            for (auto a : _abscissae) { xx.update (a); }
+            this->setdata (xx, yy, ds_hline);
+            // And the vertical y crossings
+            return this->add_y_crossing_lines (_abscissae, _data, y_value, ds_data);
+        }
+
+        // Static function to find the crossings in the right money. Requires data to be passed in.
+        // Return all the x values where the function crosses the y_value.
+        template <typename Ctnr1, typename Ctnr2>
+        requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        static morph::vvec<Flt> x_at_y_value (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt y_value)
+        {
+            if (_abscissae.size() != _data.size()) {
+                std::stringstream ee;
+                ee << "GraphVisual::x_at_y_value: size mismatch. abscissa size "
+                   << _abscissae.size() << " and data size: " << _data.size();
+                throw std::runtime_error (ee.str());
+            }
+            // First find crossing points, for which we require that the y values are in vvec format
+            morph::vvec<Flt> y_values (_data);
+            morph::vvec<float> crossings = y_values.crossing_points (y_value);
+            // Now, for each of crossings, we have to interpolate the points in _abscissae to get the x to return
+            morph::vvec<Flt> x_values = {};
+            for (const float crs : crossings) {
+                // bool up = crs > float{0} ? true : false; // Don't care here, but could
+                float crs_abs = std::abs (crs);
+                int crs_i = static_cast<int>(crs_abs);
+                if (crs_abs - static_cast<float>(crs_i) > 0.25f) {
+                    // intermediate. Interpolate
+                    morph::scale<Flt> interp;
+                    interp.output_range = morph::range<Flt>{static_cast<Flt>(_data.at(crs_i)), static_cast<Flt>(_data.at(crs_i + 1))};
+                    interp.compute_scaling (static_cast<Flt>(_abscissae.at(crs_i)), static_cast<Flt>(_abscissae.at(crs_i + 1)));
+                    x_values.push_back (interp.inverse_one (y_value));
+                } else {
+                    // crossing is *on* crs_i
+                    x_values.push_back (_abscissae.at(crs_i));
+                }
+            }
+            return x_values;
+        }
+
+        // Now the x crossing lines
+        template <typename Ctnr1, typename Ctnr2>
+        requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        morph::vvec<Flt> add_x_crossing_lines (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt x_value, const morph::DatasetStyle& ds_data)
+        {
+            morph::vvec<Flt> yvals = morph::GraphVisual<Flt>::y_at_x_value (_abscissae, _data, x_value);
+
+            morph::range<Flt> xx (morph::range_init::for_search);
+            for (auto a : _abscissae) { xx.update (a); } // Find the range
+            morph::DatasetStyle dsv (morph::stylepolicy::lines);
+            if (ds_data.policy == morph::stylepolicy::lines) {
+                dsv.linecolour = ds_data.linecolour;
+            } else {
+                dsv.linecolour = ds_data.markercolour;
+            }
+            dsv.linewidth = ds_data.linewidth * 0.5f; // Use a reduced width cf the original dataset style
+            dsv.datalabel = ""; // Always empty the datalabel
+            for (auto yv : yvals) {
+                morph::range<Flt> yy = { yv, yv };
+                this->setdata (xx, yy, dsv);
+            }
+            return yvals;
+        }
+        /*!
+         * Add horizontal lines representing the y locations at which the function has the value
+         * x_value on the graph. Note that the same abscissae and data must be passed to this
+         * function as to the setdata() function. Line colour is copied from the passed-in dataset.
+         *
+         * This method ALSO draws a vertical line on the graph at x_value, using the DatasetStyle
+         * ds_vline.
+         */
+        template <typename Ctnr1, typename Ctnr2>
+        requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        morph::vvec<Flt> add_x_crossing_lines (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt x_value,
+                                               const morph::DatasetStyle& ds_data, const morph::DatasetStyle& ds_vline)
+        {
+            // Draw the vertical line
+            morph::range<Flt> xx = { x_value, x_value };
+            morph::range<Flt> yy (morph::range_init::for_search);
+            for (auto d : _data) { yy.update (d); }
+            this->setdata (xx, yy, ds_vline);
+            // And the horizontal x crossings
+            return this->add_x_crossing_lines (_abscissae, _data, x_value, ds_data);
+        }
+
+        template <typename Ctnr1, typename Ctnr2>
+        requires (morph::is_copyable_container<Ctnr1>::value && morph::is_copyable_container<Ctnr2>::value)
+        static morph::vvec<Flt> y_at_x_value (const Ctnr1& _abscissae, const Ctnr2& _data, const Flt x_value)
+        {
+            if (_abscissae.size() != _data.size()) {
+                std::stringstream ee;
+                ee << "GraphVisual::y_at_x_value: size mismatch. abscissa size "
+                   << _abscissae.size() << " and data size: " << _data.size();
+                throw std::runtime_error (ee.str());
+            }
+            // First find crossing points, for which we require that the x values are in vvec format
+            morph::vvec<Flt> x_values (_abscissae);
+            morph::vvec<float> crossings = x_values.crossing_points (x_value);
+            // Now, for each of crossings, we have to interpolate the points in _data to get the y to return
+            morph::vvec<Flt> y_values = {};
+            for (const float crs : crossings) {
+                // bool up = crs > float{0} ? true : false; // Don't care here, but could
+                float crs_abs = std::abs (crs);
+                int crs_i = static_cast<int>(crs_abs);
+                if (crs_abs - static_cast<float>(crs_i) > 0.25f) {
+                    // intermediate. Interpolate
+                    morph::scale<Flt> interp;
+                    interp.output_range = morph::range<Flt>{static_cast<Flt>(_data.at(crs_i)), static_cast<Flt>(_data.at(crs_i + 1))};
+                    interp.compute_scaling (static_cast<Flt>(_abscissae.at(crs_i)), static_cast<Flt>(_abscissae.at(crs_i + 1)));
+                    y_values.push_back (interp.transform_one (x_value));
+                } else {
+                    // crossing is *on* crs_i
+                    y_values.push_back (_data.at(crs_i));
+                }
+            }
+            return y_values;
         }
 
     protected:
@@ -657,7 +830,7 @@ namespace morph {
         void setdataaxisdist (float proportion)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Call GraphVisual::setdataaxisdist() *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setdataaxisdist: Call this function *before* using setdata to set the data");
             }
             this->dataaxisdist = proportion;
         }
@@ -686,7 +859,7 @@ namespace morph {
         void setsize (float _width, float _height)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set the size of your graph with setsize *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setsize: Set the size of your graph with setsize *before* using setdata to set the data");
             }
             this->resetsize (_width, _height);
         }
@@ -696,7 +869,7 @@ namespace morph {
         void zoomgraph (Flt factor)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set the size of your graph with zoomgraph *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::zoomgraph: Set the size of your graph with zoomgraph *before* using setdata to set the data");
             }
             float _w = this->width;
             float _h = this->height;
@@ -724,7 +897,7 @@ namespace morph {
         void setlimits_x (const morph::range<Flt>& range_x, bool force = false)
         {
             if (!force && !this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits_x: Set your axis limits *before* using setdata to set the data");
             }
             this->scalingpolicy_x = morph::scalingpolicy::manual;
             this->datarange_x = range_x;
@@ -742,7 +915,7 @@ namespace morph {
         void setlimits_y (const morph::range<Flt>& range_y, bool force = false)
         {
             if (!force && !this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits_y: Set your axis limits *before* using setdata to set the data");
             }
             this->scalingpolicy_y = morph::scalingpolicy::manual;
             this->datarange_y = range_y;
@@ -760,7 +933,7 @@ namespace morph {
         void setlimits_y2 (const morph::range<Flt>& range_y2, bool force = false)
         {
             if (!force && !this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits_y2: Set your axis limits *before* using setdata to set the data");
             }
             this->scalingpolicy_y = morph::scalingpolicy::manual; // scalingpolicy_y common to both left and right axes?
             this->datarange_y2 = range_y2;
@@ -782,7 +955,7 @@ namespace morph {
         void setlimits (const morph::range<Flt>& range_x, const morph::range<Flt>& range_y)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits: Set your axis limits *before* using setdata to set the data");
             }
 
             // Set limits with 4 args gives fully manual scaling
@@ -810,7 +983,7 @@ namespace morph {
                         const morph::range<Flt>& range_y, const morph::range<Flt>& range_y2)
         {
             if (!this->graphDataCoords.empty()) {
-                throw std::runtime_error ("Set your axis limits *before* using setdata to set the data");
+                throw std::runtime_error ("GraphVisual::setlimits: Set your axis limits *before* using setdata to set the data");
             }
 
             // Set limits with 4 args gives fully manual scaling
@@ -1013,7 +1186,9 @@ namespace morph {
                         this->quiver_colour_scale.transform (final_qlengths, colour_qlengths);
 
                         // Finally loop thru coords, drawing a quiver for each
-                        if (static_cast<uint64_t>(coords_end) > nquiv) { throw std::runtime_error ("coords_end is off the end of quivers"); }
+                        if (static_cast<uint64_t>(coords_end) > nquiv) {
+                            throw std::runtime_error ("GraphVisual::drawDataCommon: coords_end is off the end of quivers");
+                        }
                         for (unsigned int i = coords_start; i < coords_end; ++i) {
                             this->quiver ((*this->graphDataCoords[dsi])[i], final_quivers[i], colour_qlengths[i], this->datastyles[dsi]);
                         }
@@ -1730,10 +1905,10 @@ namespace morph {
             } else {
                 if (this->ord2_scale.ready()) {
                     if (!this->abscissa_scale.ready()) {
-                        throw std::runtime_error ("abscissa scale is not set (though ord2 scale is set). Is there abscissa (x) data?");
+                        throw std::runtime_error ("GraphVisual::computeTickPositions: abscissa scale is not set (though ord2 scale is set). Is there abscissa (x) data?");
                     }
                 } else if (!(this->abscissa_scale.ready() && this->ord1_scale.ready())) {
-                    throw std::runtime_error ("abscissa and ordinate scales not set. Is there data?");
+                    throw std::runtime_error ("GraphVisual::computeTickPositions: abscissa and ordinate scales not set. Is there data?");
                 }
                 // Compute locations for ticks...
                 Flt _xmin = this->abscissa_scale.inverse_one (this->abscissa_scale.output_range.min);
