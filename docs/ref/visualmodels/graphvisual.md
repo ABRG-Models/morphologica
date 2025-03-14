@@ -218,6 +218,10 @@ Only vertical lines that indicate the x crossing locations will be drawn by this
 
 `add_y_crossing_lines` returns a `vvec` containing the crossing locations. This may be empty or contain any number of crossings.
 
+Here's the result:
+
+![Screenshot of GraphVisual graph, with annotation lines](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_line_simple.png?raw=true)
+
 To additionally draw a horizontal line indicating the value 7, you can add a second DatasetStyle to your call to `add_y_crossing_lines`.
 The following example also shows an example of creating a graph label from the returned crossings.
 
@@ -247,6 +251,8 @@ The following example also shows an example of creating a graph label from the r
     gv->addLabel (std::format("y=7 at x = {:s}", ss.str()), { 0.05f, 0.05f, 0.0f }, morph::TextFeatures(0.03f));
 
 ```
+
+![Screenshot of GraphVisual graph, with more annotation lines](https://github.com/ABRG-Models/morphologica/blob/main/docs/images/graph_line_full.png?raw=true)
 
 ## Unicode for special characters
 
