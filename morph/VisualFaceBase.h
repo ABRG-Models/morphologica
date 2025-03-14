@@ -31,9 +31,9 @@
  * have different code for Linux and Mac. Both tested only on Intel CPUs.
  */
 
-#ifdef __GLN__
+#ifdef _morph_GLN_
 
-# ifdef __AARCH64__
+# ifdef _morph_AARCH64_
 
 // "a", @progbits isn't liked by pi/arm, but "a", %progbits DOES seem to be necessary
 asm("\n.pushsection vera_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n.popsection\n");
@@ -75,7 +75,7 @@ asm("\n.pushsection dvsansbi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR 
 
 #endif
 
-#elif defined __OSX__
+#elif defined _morph_OSX_
 
 // On Mac, we need a different incantation to use .incbin
 asm("\t.global ___start_vera_ttf\n\t.global ___stop_vera_ttf\n___start_vera_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n___stop_vera_ttf:\n");
@@ -94,12 +94,12 @@ asm("\t.global ___start_dvsansit_ttf\n\t.global ___stop_dvsansit_ttf\n___start_d
 asm("\t.global ___start_dvsansbd_ttf\n\t.global ___stop_dvsansbd_ttf\n___start_dvsansbd_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Bold.ttf\"\n___stop_dvsansbd_ttf:\n");
 asm("\t.global ___start_dvsansbi_ttf\n\t.global ___stop_dvsansbi_ttf\n___start_dvsansbi_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-BoldOblique.ttf\"\n___stop_dvsansbi_ttf:\n");
 
-#elif defined __WIN__
+#elif defined _morph_WIN_
 
 # include <morph/fonts/verafonts.h> // Includes vera fonts AND DejaVu fonts.
 # include <cstdlib>
 
-#elif defined __WIN__INCBIN // Only for parsing this file with the incbin executable to create verafonts.h
+#elif defined _morph_WIN__INCBIN // Define this only for parsing this file with the incbin executable to create verafonts.h
 
 // Visual Studio doesn't allow __asm{} calls in C__ code anymore, so try Dale Weiler's incbin.h
 #define INCBIN_PREFIX vf_
@@ -129,7 +129,7 @@ INCBIN(dvsansbi, "./fonts/dejavu/DejaVuSans-BoldOblique.ttf");
 #endif
 
 // These external pointers are set up by the inline assembly above
-#ifndef __WIN__
+#ifndef _morph_WIN_
 extern const char __start_verabd_ttf[];
 extern const char __stop_verabd_ttf[];
 extern const char __start_verabi_ttf[];
@@ -184,7 +184,7 @@ namespace morph {
             void init_common (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
             {
                 std::string fontpath = "";
-#ifdef __WIN__
+#ifdef _morph_WIN_
 		char* userprofile = getenv ("USERPROFILE");
 		std::string uppath("");
 		if (userprofile != nullptr) {

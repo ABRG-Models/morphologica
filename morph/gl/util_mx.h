@@ -17,7 +17,7 @@ namespace morph {
             GLenum checkError (const char *file, int line, GladGLContext* glfn)
             {
                 GLenum errorCode = 0;
-#ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
+#ifndef _morph_OSX_ // MacOS didn't like multiple calls to glGetError(); don't know why
                 unsigned int ecount = 0;
                 std::string error;
 

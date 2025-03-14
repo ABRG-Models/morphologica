@@ -34,7 +34,7 @@ namespace morph {
             return std::sqrt ( mc::one_over_four_pi * (T{2} * static_cast<T>(l) + T{1}) * (morph::math::factorial<T, I>(l - absm) / morph::math::factorial<T, I>(l + absm)));
         }
 
-#ifndef __OSX__ // There is no std::assoc_legendre on Mac, apparently
+#ifndef _morph_OSX_ // There is no std::assoc_legendre on Mac, apparently
         //! Wraps std::assoc_legendre, allowing signed m (abs(m) always passed to std::assoc_legendre)
         template <typename T, typename UI, typename I, typename std::enable_if< std::is_integral<UI>{} && !std::is_signed<UI>{} && std::is_integral<I>{} && std::is_signed<I>{}, bool>::type = true >
         T Plm (const UI l, const I m, const T x)
@@ -65,6 +65,6 @@ namespace morph {
         {
             return morph::math::real_spherical_harmonic<T, UI, I>(l, m, morph::math::Nlm<T, UI, I>(l, m), phi, theta);
         }
-#endif // __OSX__
+#endif // _morph_OSX_
     } // math
 } // morph

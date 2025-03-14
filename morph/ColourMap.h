@@ -575,7 +575,7 @@ namespace morph {
         static ColourMapType strToColourMapType (const std::string& s)
         {
             // Allow use of string_view constants: "like this"sv
-#ifndef __WIN__
+#ifndef _morph_WIN_
             using std::literals::string_view_literals::operator""sv;
 #else
             using namespace std::literals;

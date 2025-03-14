@@ -25,7 +25,7 @@
 #include <morph/vvec.h>
 #include <morph/tools.h>
 
-#ifdef __WIN__
+#ifdef _morph_WIN_
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 

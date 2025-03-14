@@ -14,7 +14,7 @@ int main() {
     // Test x(), y() etc members
     cout << "x: " << v.x() << endl;
     cout << "z: " << v.z() << endl;
-#ifndef __WIN__ // may cause debug assertion, so lets avoid that
+#ifndef _morph_WIN_ // may cause debug assertion, so lets avoid that
     cout << "w: " << v.w() << endl;
 #endif
     // Test renormalize
@@ -283,7 +283,7 @@ int main() {
               << " to " << linsi[linsi.size()-1] << ":\n" << linsi << std::endl;
 
 
-#ifndef __WIN__ // VS doesn't like the dot product here. I can't figure out what's wrong
+#ifndef _morph_WIN_ // VS doesn't like the dot product here. I can't figure out what's wrong
     // Test different vvec  types dotted:
     vvec<double> left = h1;
     vvec<int> right = { 2,2,3 };

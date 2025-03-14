@@ -13,16 +13,16 @@ message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/
 # morphologica uses c++-20 language features
 set(CMAKE_CXX_STANDARD 20)
 
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
+# We make a morph-library-local define for our operating system. Determine this from CMAKE_SYSTEM
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})
 if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(EXTRA_HOST_DEFINITION "-D__GLN__")
+  set(EXTRA_HOST_DEFINITION "-D_morph_GLN_")
 elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(EXTRA_HOST_DEFINITION "-D__NIX__")
+  set(EXTRA_HOST_DEFINITION "-D_morph_NIX_")
 elseif(APPLE)
-  set(EXTRA_HOST_DEFINITION "-D__OSX__")
+  set(EXTRA_HOST_DEFINITION "-D_morph_OSX_")
 elseif(CMAKE_SYSTEM MATCHES Win.*)
-  set(EXTRA_HOST_DEFINITION "-D__WIN__")
+  set(EXTRA_HOST_DEFINITION "-D_morph_WIN_")
 else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
@@ -37,7 +37,7 @@ elseif (WIN32)
   set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -DNOMINMAX /EHsc")
 else()
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON}  -Wall -Wfatal-errors -g -O3 -D__ICC__")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON}  -Wall -Wfatal-errors -g -O3 -D_morph_ICC_")
   else () # GCC or Clang
     # This assumes a gcc compiler (or a gcc mimic like Clang)
     set(CMAKE_CXX_FLAGS "${FLAGS_COMMON}  -Wall -Wfatal-errors -g -O3")

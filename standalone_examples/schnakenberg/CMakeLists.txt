@@ -8,15 +8,15 @@ cmake_minimum_required(VERSION 3.10)
 # Give your project a name
 project(Schnakenberg)
 
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ are required
+# We make a morph-library-local define for our operating system. Determine this from CMAKE_SYSTEM
 if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(OS_FLAG "-D__GLN__")
+  set(OS_FLAG "-D_morph_GLN_")
 elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(OS_FLAG "-D__NIX__")
+  set(OS_FLAG "-D_morph_NIX_")
 elseif(APPLE)
-  set(OS_FLAG "-D__OSX__")
-elseif(WIN32)
-  set(OS_FLAG "-D__WIN__")
+  set(OS_FLAG "-D_morph_OSX_")
+elseif(CMAKE_SYSTEM MATCHES Win.*)
+  set(OS_FLAG "-D_morph_WIN_")
 else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
