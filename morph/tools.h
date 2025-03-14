@@ -413,7 +413,7 @@ namespace morph
             }
         }
 
-#ifdef __WIN__
+#ifdef _MSC_VER
 # pragma warning( disable : 4996 ) // asctime
 #endif
         /*!

@@ -4,7 +4,7 @@
 #pragma once
 
 // Define a version string for the shaders
-#ifdef __OSX__
+#ifdef __APPLE__
 // Mac support is fixed at OpenGL 4.1 in favour of their own graphics API.
 #define OpenGL_VersionString "#version 410\n"
 #else

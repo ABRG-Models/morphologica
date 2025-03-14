@@ -157,9 +157,9 @@ namespace morph {
             for (int i = 0; i < iterations; ++i) {
 
                 // Compute n_verts/n_faces for current iterations i
-                int _T = morph::math::pow(4, i);
-                int _n_verts = 10 * _T + 2; // i=0; 12 i=1; 42
-                int _n_faces = 20 * _T;     // i=0; 20 i=1; 80
+                int _t = morph::math::pow(4, i);
+                int _n_verts = 10 * _t + 2; // i=0; 12 i=1; 42
+                int _n_faces = 20 * _t;     // i=0; 20 i=1; 80
 
                 int next_face = _n_faces;
                 for (int f = 0; f < _n_faces; ++f) { // Loop over existing faces

@@ -5,27 +5,6 @@ project(morphologica)
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or
-# __WIN__ are required
-message(STATUS "Operating system: " ${CMAKE_SYSTEM})
-if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(MORPH_HOST_DEFINITION "-D__GLN__")
-elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(MORPH_HOST_DEFINITION "-D__NIX__")
-elseif(APPLE)
-  set(MORPH_HOST_DEFINITION "-D__OSX__")
-elseif(CMAKE_SYSTEM MATCHES Win.*)
-  set(MORPH_HOST_DEFINITION "-D__WIN__")
-else()
-  message(FATAL_ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
-endif()
-
-# Need to find the host system processor to fine tune assembly in VisualFace.h
-message(STATUS "Host system processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
-if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES aarch64)
-  set(MORPH_HOST_DEFINITION "${MORPH_HOST_DEFINITION} -D__AARCH64__")
-endif()
-
 #
 # The base C++ version in morphologica is current C++-17 but I am considering C++20 or 23
 #
@@ -52,7 +31,7 @@ else()
     # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
     if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
       message(WARNING "Intel compiler has not been tested for some time")
-      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++20 -xHOST -O3 -D__ICC__")
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++20 -xHOST -O3")
     else() # GCC or Clang
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
         # Add compiler version check, to ensure gcc is version 11 or later.

@@ -8,30 +8,17 @@ cmake_minimum_required(VERSION 3.10)
 # Give your project a name
 project(Schnakenberg)
 
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ are required
-if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(OS_FLAG "-D__GLN__")
-elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(OS_FLAG "-D__NIX__")
-elseif(APPLE)
-  set(OS_FLAG "-D__OSX__")
-elseif(WIN32)
-  set(OS_FLAG "-D__WIN__")
-else()
-  message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
-endif()
-
 # morphologica uses c++-20 language features
 set(CMAKE_CXX_STANDARD 20)
 
 # Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -g -O3")
 elseif (WIN32)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -DNOMINMAX /EHsc")
+  set(CMAKE_CXX_FLAGS "-DNOMINMAX /EHsc")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas")
 endif()
 
 # In Visual Studio, if CMAKE_BUILD_TYPE is "Debug", some programs will run very slowly

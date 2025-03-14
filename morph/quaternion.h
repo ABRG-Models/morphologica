@@ -160,8 +160,8 @@ namespace morph {
         }
 
         //! Overload * operator. q1 is 'this->'. Returns the quaternion that would be written into this by this->postmultiply(q2)
-        template <typename _F=F>
-        constexpr quaternion<F> operator* (const quaternion<_F>& q2) const noexcept
+        template <typename Fy=F>
+        constexpr quaternion<F> operator* (const quaternion<Fy>& q2) const noexcept
         {
             quaternion<F> q;
             q.w = this->w * q2.w - this->x * q2.x - this->y * q2.y - this->z * q2.z;
@@ -172,8 +172,8 @@ namespace morph {
         }
 
         //! Rotate a vector v_r by this quaternion, returning the resulting rotated vector
-        template <typename _F=F, std::size_t N = 3, std::enable_if_t<(N==3||N==4), int> = 0>
-        constexpr morph::vec<F, N> operator* (const morph::vec<_F, N>& v_r) const noexcept
+        template <typename Fy=F, std::size_t N = 3, std::enable_if_t<(N==3||N==4), int> = 0>
+        constexpr morph::vec<F, N> operator* (const morph::vec<Fy, N>& v_r) const noexcept
         {
             // Do the rotation by extracting the rotation matrix and then rotating.
             std::array<F, 16> rotn_mat = { F{0} };
