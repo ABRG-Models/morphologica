@@ -36,28 +36,27 @@ int main()
     // Now set the data
     gv->setdata (x, y, ds);
 
-    // A second DatasetStyle is used to specify a colour and linewidth for a horizontal line at y=7.
-    morph::DatasetStyle ds_horz (morph::stylepolicy::lines);
-    ds_horz.linecolour = morph::colour::grey68;
-    ds_horz.linewidth = ds.linewidth * 0.6f;
+    // A second DatasetStyle is used to specify a colour and linewidth for a vertical line at x=7.3
+    morph::DatasetStyle ds_vert (morph::stylepolicy::lines);
+    ds_vert.linecolour = morph::colour::grey68;
+    ds_vert.linewidth = ds.linewidth * 0.6f;
 
     // Find, and annotate with vertical lines, the locations where the graph crosses
-    // y=7. The x values of the crossing points are returned.
-    morph::vvec<double> xcross = gv->add_y_crossing_lines (x, y, 7, ds, ds_horz);
+    // x=7.3. The y values of the crossing points are returned.
+    morph::vvec<double> ycross = gv->add_x_crossing_lines (x, y, 7.3, ds, ds_vert);
 
-    // Use results in xcross to annotate the graph
-    size_t n = xcross.size();
+    size_t n = ycross.size();
     std::stringstream ss;
     if (n > 0) {
-        // Loop through the elements of xcross, formatting a string
+        // Loop through the elements of ycross, formatting a string
         for (size_t i = 0; i < n; ++i) {
-            ss << std::format ("{}{}{:.2f}", ((i == 0 || i == n - 1) ? "" : ", "), (i == (n - 1) ? " and " : ""), xcross[i]);
+            ss << std::format ("{}{}{:.2f}", ((i == 0 || i == n - 1) ? "" : ", "), (i == (n - 1) ? " and " : ""), ycross[i]);
         }
     } else {
         ss << "[no values]";
     }
     // Add a label at location {.05, .05, 0} with fontsize 0.03
-    gv->addLabel (std::format("y=7 at x = {:s}", ss.str()), { 0.05f, 0.05f, 0.0f }, morph::TextFeatures(0.03f));
+    gv->addLabel (std::format("At x=7.3, y = {:s}", ss.str()), { 0.05f, 0.05f, 0.0f }, morph::TextFeatures(0.03f));
 
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();
