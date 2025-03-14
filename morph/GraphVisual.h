@@ -597,7 +597,7 @@ namespace morph {
             } else {
                 dsv.linecolour = ds_data.markercolour;
             }
-            dsv.linewidth = ds_data.linewidth;
+            dsv.linewidth = ds_data.linewidth * 0.5f; // Use a reduced width cf the original dataset style
             dsv.datalabel = ""; // Always empty the datalabel
             for (auto xv : xvals) {
                 morph::range<Flt> xx = { xv, xv };
