@@ -613,7 +613,7 @@ namespace morph {
             return (std::exp (res));
         }
 
-        void compute_scaling_linear (T input_min, T input_max)
+        virtual void compute_scaling_linear (T input_min, T input_max)
         {
             // Here, we need to use the output type for the computations. Does that mean
             // params is stored in the output type? I think it does.
