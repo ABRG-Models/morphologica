@@ -38,7 +38,7 @@ namespace morph {
         VisualTextModelImpl (morph::TextFeatures _tfeatures)
             : VisualTextModelBase<glver>::VisualTextModelBase (_tfeatures) {}
 
-        virtual ~VisualTextModelImpl()
+        ~VisualTextModelImpl()
         {
             if (this->vbos != nullptr) {
                 glDeleteBuffers (this->numVBO, this->vbos.get());

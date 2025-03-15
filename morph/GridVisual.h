@@ -394,7 +394,7 @@ namespace morph {
         }
 
         //! Do the computations to initialize the vertices that will represent the HexGrid.
-        virtual void initializeVertices()
+        void initializeVertices()
         {
             // Optionally compute an offset to ensure that the cartgrid is centred about the mv_offset.
             if (this->options.test(gridvisual_flags::centralize) == true) {

@@ -26,7 +26,7 @@ namespace morph {
         std::string path_to_compound_eye = "eyes/1000-horizontallyAcute-variableDegree.eye";
 
         //! We simply override the savegltf function to output in compound-ray format.
-        virtual void savegltf (const std::string& gltf_file)
+        void savegltf (const std::string& gltf_file)
         {
             std::ofstream fout;
             fout.open (gltf_file, std::ios::out|std::ios::trunc);
@@ -49,12 +49,12 @@ namespace morph {
     protected:
         //! Compound-ray gltf needs a background-shader to be specified. This is added to the
         //! "scenes" section
-        virtual void compoundRayBackground (std::ofstream& fout) const
+        void compoundRayBackground (std::ofstream& fout) const
         {
             fout << "\"extras\" : { \"background-shader\": \"simple_sky\" }, ";
         }
 
-        virtual void compoundRayPanCam (std::ofstream& fout) const
+        void compoundRayPanCam (std::ofstream& fout) const
         {
             fout << "    {\n"
                  << "      \"name\" : \"regular-panoramic\",\n"
@@ -71,7 +71,7 @@ namespace morph {
                  << "    }";
         }
 
-        virtual void compoundRayEyeCam (std::ofstream& fout) const
+        void compoundRayEyeCam (std::ofstream& fout) const
         {
             fout << "    {\n"
                  << "      \"name\" : \"simulated-compound-eye\",\n"
@@ -91,7 +91,7 @@ namespace morph {
         }
 
         //! This outputs an example of a compound-ray compatible cameras section
-        virtual void compoundRayCameras (std::ofstream& fout) const
+        void compoundRayCameras (std::ofstream& fout) const
         {
             fout << "  \"cameras\" : [\n";
             // Output camera sections of the cameras array
@@ -104,7 +104,7 @@ namespace morph {
 
         //! Hardcoded camera nodes for compound-ray compatible gltf. This goes in the gltf "nodes"
         //! section.
-        virtual void compoundRayCameraNodes (std::ofstream& fout) const
+        void compoundRayCameraNodes (std::ofstream& fout) const
         {
             fout << "    {\n"
                  << "      \"camera\" : 0,\n"
@@ -129,7 +129,7 @@ namespace morph {
         }
 
         //! Output a scenes section of glTF
-        virtual void gltf_scenes (std::ofstream& fout) const
+        void gltf_scenes (std::ofstream& fout) const
         {
             fout << "{\n  \"scenes\" : [ { ";
             if (this->enable_compound_ray_gltf == true) { compoundRayBackground (fout); }
@@ -141,7 +141,7 @@ namespace morph {
         }
 
         //! Output a nodes section of glTF
-        virtual void gltf_nodes (std::ofstream& fout) const
+        void gltf_nodes (std::ofstream& fout) const
         {
             fout << "  \"nodes\" : [\n";
             if (this->enable_compound_ray_gltf == true) { compoundRayCameraNodes (fout); }
@@ -155,13 +155,13 @@ namespace morph {
         }
 
         //! Output a cameras section of glTF
-        virtual void gltf_cameras (std::ofstream& fout) const
+        void gltf_cameras (std::ofstream& fout) const
         {
             if (this->enable_compound_ray_gltf == true) { compoundRayCameras (fout); }
         }
 
         //! Output a meshes section of glTF
-        virtual void gltf_meshes (std::ofstream& fout) const
+        void gltf_meshes (std::ofstream& fout) const
         {
             // glTF meshes
             fout << "  \"meshes\" : [\n";
@@ -176,7 +176,7 @@ namespace morph {
         }
 
         // Output the buffers, bufferviews and accessors sections of glTF
-        virtual void gltf_buffers (std::ofstream& fout) const
+        void gltf_buffers (std::ofstream& fout) const
         {
             // glTF buffers
             fout << "  \"buffers\" : [\n";
@@ -278,14 +278,14 @@ namespace morph {
         }
 
         //! Output a materials section of glTF
-        virtual void gltf_materials (std::ofstream& fout) const
+        void gltf_materials (std::ofstream& fout) const
         {
             // Default material is single sided, so make it double sided
             fout << "  \"materials\" : [ { \"doubleSided\" : true } ],\n";
         }
 
         //! Output the asset section of glTF
-        virtual void gltf_asset (std::ofstream& fout) const
+        void gltf_asset (std::ofstream& fout) const
         {
             fout << "  \"asset\" : {\n"
                  << "    \"generator\" : \"https://github.com/ABRG-Models/morphologica [version "

@@ -66,7 +66,7 @@ namespace morph {
         }
 
         //! Common code to call after the vertices have been set up. GL has to have been initialised.
-        virtual void postVertexInit() final
+        void postVertexInit() final
         {
             // Do gl memory allocation of vertex array once only
             if (this->vbos == nullptr) {
@@ -102,13 +102,13 @@ namespace morph {
         }
 
         //! Initialize vertex buffer objects and vertex array object. Empty for 'text only' VisualModels.
-        virtual void initializeVertices() {};
+        void initializeVertices() {};
 
         /*!
          * Re-initialize the buffers. Client code might have appended to
          * vertexPositions/Colors/Normals and indices before calling this method.
          */
-        virtual void reinit_buffers() final
+        void reinit_buffers() final
         {
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
@@ -127,7 +127,7 @@ namespace morph {
         }
 
         //! reinit ONLY vertexColors buffer
-        virtual void reinit_colour_buffer() final
+        void reinit_colour_buffer() final
         {
             if (this->setContext != nullptr) { this->setContext (this->parentVis); }
             if (this->postVertexInitRequired == true) { this->postVertexInit(); }
@@ -143,7 +143,7 @@ namespace morph {
         static constexpr bool debug_render = false;
         //! Render the VisualModel. Note that it is assumed that the OpenGL context has been
         //! obtained by the parent Visual::render call.
-        virtual void render() // not final
+        void render() // not final
         {
             if (this->hide == true) { return; }
 
@@ -284,13 +284,13 @@ namespace morph {
             return this->texts.back()->getTextGeometry();
         }
 
-        virtual void setSceneMatrixTexts (const mat44<float>& sv) final
+        void setSceneMatrixTexts (const mat44<float>& sv) final
         {
             auto ti = this->texts.begin();
             while (ti != this->texts.end()) { (*ti)->setSceneMatrix (sv); ti++; }
         }
 
-        virtual void setSceneTranslationTexts (const vec<float>& v0) final
+        void setSceneTranslationTexts (const vec<float>& v0) final
         {
             auto ti = this->texts.begin();
             while (ti != this->texts.end()) { (*ti)->setSceneTranslation (v0); ti++; }
@@ -326,7 +326,7 @@ namespace morph {
         std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
 
         //! Set up a vertex buffer object - bind, buffer and set vertex array object attribute
-        virtual void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition) final
+        void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition) final
         {
             std::size_t sz = dat.size() * sizeof(float);
 
