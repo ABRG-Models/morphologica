@@ -39,7 +39,7 @@ namespace morph {
         VisualModelImpl (const vec<float>& _mv_offset) : morph::VisualModelBase<glver>::VisualModelBase(_mv_offset) {}
 
         //! destroy gl buffers in the deconstructor
-        ~VisualModelImpl()
+        virtual ~VisualModelImpl() // clang gives -Wdelete-non-abstract-non-virtual-dtor without virtual
         {
             // Explicitly clear owned VisualTextModels
             this->texts.clear();
