@@ -38,7 +38,7 @@ public:
 
         SetSizerAndFit(sizer);
 
-        colorButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event) {
+        colorButton->Bind(wxEVT_BUTTON, [this]([[maybe_unused]] wxCommandEvent &event) {
             wxColourData colorData;
             wxColourDialog dialog(this, &colorData);
             if (dialog.ShowModal() == wxID_OK) {

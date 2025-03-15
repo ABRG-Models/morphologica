@@ -91,7 +91,7 @@ namespace morph {
             }
 
             // Check if any of the VisualModels in the Visual need a reinit and then call Visual::render
-            void OnPaint (wxPaintEvent &event)
+            void OnPaint ([[maybe_unused]] wxPaintEvent &event)
             {
                 wxPaintDC dc(this);
                 if (!this->glInitialized) { return; }
