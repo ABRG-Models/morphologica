@@ -73,7 +73,7 @@ namespace morph {
         }
 
         //! A function to call to simply make sure the singleton instance exists
-        virtual void create() final {}
+        void create() final {}
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
@@ -98,7 +98,7 @@ namespace morph {
         }
 
         //! Loop through this->faces clearing out those associated with the given morph::Visual
-        virtual void clearVisualFaces (morph::VisualBase<glver>* _vis) final
+        void clearVisualFaces (morph::VisualBase<glver>* _vis) final
         {
             auto f = this->faces.begin();
             while (f != this->faces.end()) {

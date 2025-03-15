@@ -51,7 +51,7 @@ namespace morph {
         }
 
         //! A function to call to simply make sure the singleton instance exists
-        virtual void create() final {}
+        void create() final {}
 
         //! Initialize a freetype library instance and add to this->freetypes. I wanted
         //! to have only a single freetype library instance, but this didn't work, so I
@@ -99,7 +99,7 @@ namespace morph {
         }
 
         //! Loop through this->faces clearing out those associated with the given morph::Visual
-        virtual void clearVisualFaces (morph::VisualBase<glver>* _vis) final
+        void clearVisualFaces (morph::VisualBase<glver>* _vis) final
         {
             auto f = this->faces.begin();
             while (f != this->faces.end()) {

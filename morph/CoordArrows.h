@@ -25,7 +25,6 @@ namespace morph {
     public:
         CoordArrows() : morph::VisualModel<glver>() {}
         CoordArrows (const morph::vec<float, 3>& offset) : morph::VisualModel<glver>(offset) {}
-        virtual ~CoordArrows () {}
 
         //! Must make the boilerplate bindmodel call before calling init() (for text handling)
         void init (const vec<float, 3> _lengths, const float _thickness, const float _em)

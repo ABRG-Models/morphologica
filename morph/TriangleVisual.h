@@ -22,8 +22,6 @@ namespace morph {
             this->init (_offset, _coord1, _coord2, _coord3, _col);
         }
 
-        virtual ~TriangleVisual () {}
-
         void init (const vec<float, 3> _offset,
                    const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
                    const std::array<float, 3> _col)

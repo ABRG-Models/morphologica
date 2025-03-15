@@ -45,8 +45,6 @@ namespace morph {
             this->fontscale = tfeatures.fontsize / static_cast<float>(tfeatures.fontres);
         }
 
-        virtual ~VisualTextModelBase() {}
-
         //! Render the VisualTextModel
         virtual void render() = 0;
 
