@@ -1,7 +1,7 @@
 /*!
  * \file
  *
- * Declares a VisualFace class to hold the information about a (Freetype-managed) font
+ * Declares a VisualFaceNoMX class to hold the information about a (Freetype-managed) font
  * face and the GL-textures that will reproduce it.
  *
  * This class is derived from VisualFaceBase and adds globally aliased GL function calls.
@@ -24,7 +24,7 @@ namespace morph {
 
     namespace visgl {
 
-        struct VisualFace : public morph::visgl::VisualFaceBase
+        struct VisualFaceNoMX : public morph::visgl::VisualFaceBase
         {
             /*!
              * Construct with a morph::VisualFont \a _font, which specifies a supported
@@ -39,7 +39,7 @@ namespace morph {
              * of font textures for separate VisualTextModel instances which might have
              * the same pixel size.
              */
-            VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
+            VisualFaceNoMX (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
             {
                 this->init_common (_font, fontpixels, ft_freetype);
 
@@ -99,7 +99,7 @@ namespace morph {
                 FT_Done_Face (this->face);
             }
 
-            ~VisualFace() {}
+            ~VisualFaceNoMX() {}
         };
     } // namespace gl
 } // namespace morph

@@ -18,9 +18,9 @@
 # error "GL headers should have been included already"
 #endif
 
-#include <morph/gl/util.h>
-#include <morph/VisualFace.h>
-#include <morph/VisualResources.h>
+#include <morph/gl/util_nomx.h>
+#include <morph/VisualFaceNoMX.h>
+#include <morph/VisualResourcesNoMX.h>
 
 namespace morph {
 
@@ -98,7 +98,7 @@ namespace morph {
             morph::TextGeometry geom;
 
             if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis);
+                this->face = VisualResourcesNoMX<glver>::i().getVisualFace (this->tfeatures, this->parentVis);
             }
 
             // First convert string from ASCII/UTF-8 into Unicode.
@@ -120,7 +120,7 @@ namespace morph {
             morph::TextGeometry geom;
 
             if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis);
+                this->face = VisualResourcesNoMX<glver>::i().getVisualFace (this->tfeatures, this->parentVis);
             }
 
             for (std::basic_string<char32_t>::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
@@ -172,7 +172,7 @@ namespace morph {
         void setupText (const std::basic_string<char32_t>& _txt)
         {
             if (this->face == nullptr) {
-                this->face = VisualResources<glver>::i().getVisualFace (this->tfeatures, this->parentVis);
+                this->face = VisualResourcesNoMX<glver>::i().getVisualFace (this->tfeatures, this->parentVis);
             }
 
             this->txt = _txt;
@@ -282,7 +282,7 @@ namespace morph {
         }
 
         //! A face for this text. The face is specfied by tfeatures.font
-        morph::visgl::VisualFace* face = nullptr;
+        morph::visgl::VisualFaceNoMX* face = nullptr;
 
         //! Set up a vertex buffer object - bind, buffer and set vertex array object attribute
         void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition) final

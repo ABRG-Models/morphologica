@@ -13,7 +13,7 @@
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/range.h>
-#include <morph/gl/util.h>
+#include <morph/gl/util_nomx.h>
 
 namespace morph {
     namespace gl {

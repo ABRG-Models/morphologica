@@ -1,7 +1,7 @@
 /*!
  * \file
  *
- * Declares a VisualModel implementation class, adding globally aliases GL function calls.
+ * Declares a VisualModelImpl implementation class, adding globally aliases GL function calls.
  *
  * \author Seb James
  * \date March 2025
@@ -19,7 +19,7 @@
 
 #include <morph/VisualModelBase.h>
 
-#include <morph/gl/util.h>
+#include <morph/gl/util_nomx.h>
 #include <morph/VisualTextModel.h>
 #include <morph/TextGeometry.h>
 
@@ -173,8 +173,8 @@ namespace morph {
                 if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, (this->model_scaling * this->viewmatrix).mat.data()); }
 
                 if constexpr (debug_render) {
-                    std::cout << "VisualModel::render: scenematrix:\n" << this->scenematrix << std::endl;
-                    std::cout << "VisualModel::render: model viewmatrix:\n" << this->viewmatrix << std::endl;
+                    std::cout << "VisualModelImpl::render: scenematrix:\n" << this->scenematrix << std::endl;
+                    std::cout << "VisualModelImpl::render: model viewmatrix:\n" << this->viewmatrix << std::endl;
                 }
 
                 // Draw the triangles

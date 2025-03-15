@@ -4,7 +4,7 @@
  * Declares a VisualModel base class to hold the vertices that make up some individual model object
  * that can be part of an OpenGL scene.
  *
- * GL function calls are added in VisualModelImpl.h and VisualModelImplMX.h
+ * GL function calls are added in VisualModelImplNoMX.h and VisualModelImplMX.h
  *
  * \author Seb James
  * \date March 2025
@@ -55,7 +55,7 @@ namespace morph {
      * This class contains some common 'object primitives' code, such as computeSphere and
      * computeCone, which compute the vertices that will make up sphere and cone, respectively.
      *
-     * It contains no GL function calls, these are added in the derived classes VisualModelImpl and
+     * It contains no GL function calls, these are added in the derived classes VisualModelImplNoMX and
      * VisualModelImplMX.
      */
     template <int glver = morph::gl::version_4_1>

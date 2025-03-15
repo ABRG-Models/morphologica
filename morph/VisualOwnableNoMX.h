@@ -28,15 +28,15 @@
 // headers. This must appear BEFORE the rest of the morph headers.
 namespace morph { namespace gl { static constexpr int multicontext = 0; } }
 
-#include <morph/VisualResources.h>
+#include <morph/VisualResourcesNoMX.h>
 #include <morph/VisualTextModel.h>
 #include <morph/VisualBase.h>
-#include <morph/gl/loadshaders.h>
+#include <morph/gl/loadshaders_nomx.h>
 
 namespace morph {
 
     /*!
-     * VisualOwnable - adds GL calls to the 'scene' base class, VisualBase
+     * VisualOwnableNoMX - adds GL calls to the 'scene' base class, VisualBase
      *
      * This class assumes that GL functions have been loaded as global aliases, such as glClear()
      * for Clear() and glEnable() for Enable().
@@ -44,7 +44,7 @@ namespace morph {
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
     template <int glver = morph::gl::version_4_1>
-    class VisualOwnable : public morph::VisualBase<glver>
+    class VisualOwnableNoMX : public morph::VisualBase<glver>
     {
     public:
         /*!
@@ -52,13 +52,13 @@ namespace morph {
          * such as a QWidget.  We have to wait on calling init functions until an OpenGL
          * environment is guaranteed to exist.
          */
-        VisualOwnable() {}
+        VisualOwnableNoMX() {}
 
         /*!
          * Construct a new visualiser. The rule is 1 window to one Visual object. So, this creates a
          * new window and a new OpenGL context.
          */
-        VisualOwnable (const int _width, const int _height, const std::string& _title, const bool _version_stdout = true)
+        VisualOwnableNoMX (const int _width, const int _height, const std::string& _title, const bool _version_stdout = true)
         {
             this->window_w = _width;
             this->window_h = _height;
@@ -88,14 +88,14 @@ namespace morph {
                 this->shaders.tprog = 0;
             }
             // Free up the Fonts associated with this morph::Visual
-            morph::VisualResources<glver>::i().freetype_deinit (this);
+            morph::VisualResourcesNoMX<glver>::i().freetype_deinit (this);
         }
 
     protected:
         void freetype_init() final
         {
             // Now make sure that Freetype is set up (we assume that caller code has set the correct OpenGL context)
-            morph::VisualResources<glver>::i().freetype_init (this);
+            morph::VisualResourcesNoMX<glver>::i().freetype_init (this);
         }
 
     public:
@@ -105,7 +105,7 @@ namespace morph {
         void init_resources()
         {
             // VisualResources provides font management and GLFW management. Ensure it exists in memory.
-            morph::VisualResources<glver>::i().create();
+            morph::VisualResourcesNoMX<glver>::i().create();
             this->freetype_init();
         }
 
