@@ -3,7 +3,7 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 # Note: Using a C++-20 construct in these programs
 add_executable(shadercompute shadercompute.cpp)
 # As we're not loading GL with glad2, we have to set these defines
-target_compile_definitions (shadercompute PUBLIC GL3_PROTOTYPES=1 GL_GLEXT_PROTOTYPES=1)
+target_compile_definitions (shadercompute PUBLIC GL3_PROTOTYPES GL_GLEXT_PROTOTYPES)
 target_link_libraries(shadercompute OpenGL::GL glfw)
 
 if (OpenGL_EGL_FOUND)
