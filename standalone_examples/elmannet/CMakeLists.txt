@@ -27,13 +27,6 @@ else()
   endif()
 endif()
 
-# Additional GL compiler flags.
-#
-# Following `cmake --help-policy CMP0072`
-set(OpenGL_GL_PREFERENCE "GLVND")
-# Add GL defines to the CXX_FLAGS
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
-
 # We assume that the morphologica tree is 'next to' our .cpp files.
 set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
 include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include) # Allows GL3/gl3.h to be found
