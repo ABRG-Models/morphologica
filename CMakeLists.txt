@@ -92,16 +92,6 @@ if(OpenMP_CXX_FOUND)
   endif()
 endif()
 
-# Following `cmake --help-policy CMP0072`
-set(OpenGL_GL_PREFERENCE "GLVND")
-
-# Additional GL compiler flags.
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES") # May not be required since glad
-
-if(APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
-endif()
-
 # The code in VisualFace which builds the Vera family truetype fonts
 # into the program binary needs to have a define of MORPH_FONTS_DIR,
 # so set it up here:
@@ -111,7 +101,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Lib finding
+
+set(OpenGL_GL_PREFERENCE "GLVND") # Following `cmake --help-policy CMP0072`
 if(APPLE OR WIN32)
+  if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
+  endif()
   find_package(OpenGL REQUIRED)
 else()
   find_package(OpenGL REQUIRED EGL) # GL ES 3.1 used in one gl compute example
