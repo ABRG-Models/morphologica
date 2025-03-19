@@ -9,13 +9,14 @@ permalink: /tutorials/quick/
 
 This page is going to show you how to build and run one of the morphologica 2D graph examples.
 
-Quick-start assumption: You're using a Debian flavour of Linux. If you're using another type of Linux, then I hope you can figure out the packages you'll need from the list below and how to install them. In all other ways, the process will be the same. If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users (works, but less well supported).
+Quick-start assumption: You're using a Debian flavour of Linux. If you're using another type of Linux, then I hope you can figure out the packages you'll need from the list below and how to install them. In all other ways, the process will be the same. If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users (vcpkg is used to obtain dependencies).
 
 ## Install dependencies
 This command will install dependencies for building graph1.cpp and (almost) all the other examples (assuming a Debian-like OS)
 
 ```bash
 sudo apt install build-essential cmake git wget  \
+                 nlohmann-json3-dev librapidxml-dev \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
                  libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev
 ```
