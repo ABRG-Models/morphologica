@@ -22,3 +22,4 @@ jobs:
       BUILD_TYPE: Release
       CC: clang-17
       CXX: clang++-17
+      WX_PACKAGE: libwxgtk3.2-dev
