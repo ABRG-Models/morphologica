@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   call-workflow-passing-data:
-    uses: ABRG-Models/morphologica/.github/workflows/cmake-ubuntu-template.yml@457-add-qt-wx-to-ci
+    uses: ABRG-Models/morphologica/.github/workflows/cmake-ubuntu-template.yml@main
     with:
       RUNNER_IMAGE: ubuntu-22.04
       BUILD_TYPE: Release
