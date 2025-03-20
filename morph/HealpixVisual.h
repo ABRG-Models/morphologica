@@ -490,10 +490,7 @@ namespace morph {
             if (c != 1) { throw std::runtime_error ("That nside is not a power of 2"); }
             // Find k, then call set_order, which does re-sizing
             int64_t _k = -1;
-            while (_nside) {
-                _nside >>= 1;
-                _k++;
-            }
+            while (_nside) { _nside >>= 1, ++_k; }
             this->set_order (_k);
         }
         int64_t get_nside() { return this->nside; }
