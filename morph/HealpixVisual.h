@@ -478,6 +478,24 @@ namespace morph {
                 this->pixeldata.resize (this->n_pixels(), T{0});
             }
         }
+        int64_t get_order() { return this->k; }
+
+        void set_nside (int64_t _nside)
+        {
+            if (_nside < 0) { throw std::runtime_error ("nside must be positive"); }
+            // Count bits set in _nside. Should be 1 only.
+            int64_t n = _nside;
+            int64_t c = 0; // c will be the count of bits
+            while (n) { n &= n--, ++c; } // Kernighan's algorithm
+            if (c != 1) { throw std::runtime_error ("That nside is not a power of 2"); }
+            // Find k, then call set_order, which does re-sizing
+            int64_t _k = -1;
+            while (_nside) {
+                _nside >>= 1;
+                _k++;
+            }
+            this->set_order (_k);
+        }
         int64_t get_nside() { return this->nside; }
 
         // Wrapper around nest2ang. Convert nest_index to angle for this pixel
