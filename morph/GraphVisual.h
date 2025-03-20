@@ -1053,10 +1053,7 @@ namespace morph {
 
             Flt range = rmax - rmin; // data range
             if (range <= std::numeric_limits<Flt>::epsilon()) {
-                if constexpr (gv_debug) {
-                    std::cout << "data range " << rmin << " to " << rmax
-                              << " is less than (or equal to) epsilon()\n";
-                }
+                if constexpr (gv_debug) { std::cout << "data range " << rmin << " to " << rmax << " is <= eps\n"; }
                 // Just two ticks in this case - one at range min and one at max.
                 ticks.push_back (rmin);
                 ticks.push_back (rmax);
@@ -1068,27 +1065,21 @@ namespace morph {
             Flt numticks = std::floor (range/trytick);
 
             if constexpr (gv_debug) {
-                std::cout << "initial trytick = " << trytick
-                          << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
+                std::cout << "initial trytick = " << trytick << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
             }
 
             if (numticks > _num_ticks_range.max) {
-                if constexpr (gv_debug) { std::cout << "numticks too high, increase tick spacing\n"; }
                 while (numticks > _num_ticks_range.max && numticks > _num_ticks_range.min) {
                     trytick = trytick * Flt{2}; // bigger tick spacing means fewer ticks
                     numticks = std::floor (range/trytick);
                 }
 
             } else if (numticks < _num_ticks_range.min) {
-                if constexpr (gv_debug) { std::cout << "numticks too low, decrease tick spacing\n"; }
-                while (numticks < _num_ticks_range.min
-                       && numticks < _num_ticks_range.max
-                       && trytick > std::numeric_limits<Flt>::epsilon()) {
+                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max && trytick > std::numeric_limits<Flt>::epsilon()) {
                     trytick = trytick * Flt{0.5};
                     numticks = std::floor (range/trytick);
                     if constexpr (gv_debug) {
-                        std::cout << "Trying reduced spacing to increase numticks. trytick = "
-                                  << trytick << " and numticks= " << numticks << "\n";
+                        std::cout << "Trying reduced spacing to increase numticks. trytick = " << trytick << " and numticks= " << numticks << "\n";
                     }
                 }
             }
@@ -1099,21 +1090,13 @@ namespace morph {
             Flt midrange = (rmin + rmax) * Flt{0.5};
             Flt a = std::round (midrange / trytick);
             Flt atick = a * trytick;
-            while (atick <= realmax && ticks.size() < (10 * _num_ticks_range.max)) {
-                // If this tick is smaller than 100th of the size of one whole tick to tick spacing, it must be 0.
-                if constexpr (gv_debug) {
-                    std::cout << "push_back ("
-                              << (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick) << ")\n";
-                }
+            while (atick <= realmax && ticks.size() < (10 * _num_ticks_range.max)) { // 2nd test avoids inf loop
+                // This tick is smaller than 100th of the size of one whole tick to tick spacing, so it must be 0.
                 ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
                 atick += trytick;
             }
             atick = (a * trytick) - trytick;
             while (atick >= realmin && ticks.size() < (10 * _num_ticks_range.max)) {
-                if constexpr (gv_debug) {
-                    std::cout << "push_back ("
-                              << (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick) << ")\n";
-                }
                 ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
                 atick -= trytick;
             }
