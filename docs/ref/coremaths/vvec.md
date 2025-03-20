@@ -62,6 +62,8 @@ vectors on which mathematical operations can be called.
 
 `vvec` is very similar to `vec`, sharing many member functions with the same name.
 
+Some methods may throw exceptions, those that do not are marked `noexcept`.
+
 ## Access
 
 As an `std::vector`-like object, your `vvec` is indexed just like your `vector`. Use any of the array access `operator[]`, the `at()` method, or STL iterators.
@@ -225,7 +227,7 @@ As long as you pass in a 'copyable container' (which means a `vector`, `array`, 
 All of these functions set all the elements of your `vvec` to a single value.
 
 ```c++
-void set_from (const _S& v);
+void set_from (const Sy& v);
 void zero();
 void set_max();
 void set_lowest();
@@ -268,8 +270,8 @@ std::cout << vv << std::endl;           // output: (1,2,3)
 ### Numpy clones
 
 ```c++
-void linspace (const _S start, const _S2 stop, const size_t num=0);
-void arange (const _S start, const _S2 stop, const _S2 increment);
+void linspace (const Sy start, const Sy2 stop, const size_t num=0);
+void arange (const Sy start, const Sy2 stop, const Sy2 increment);
 ```
 
 Python Numpy-like functions to fill the `morph::vvec` with sequences
@@ -359,10 +361,10 @@ gives output `(1,2,3)`.
 ### Length, lengthen, shorten
 
 ```c++
-template <typename _S=S>
-_S length() const;                     // return the vector length
-_S length_sq() const;                  // return the vector length squared
-_S sos() const;                        // also length squared. See header for difference
+template <typename Sy=S>
+Sy length() const;                     // return the vector length
+Sy length_sq() const;                  // return the vector length squared
+Sy sos() const;                        // also length squared. See header for difference
 // Enabled only for non-integral S:
 vvec<S> shorten (const S dl) const;    // return a vector shortened by length dl
 vvec<S> lengthen (const S dl) const;   // return a vector lengthened by length dl
@@ -407,7 +409,7 @@ the range [-1,1].
 
 Note that these functions use a template to ensure they are only enabled for non-integral types:
 ```c++
-template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
 ```
 
 Check whether your renormalized vector is a unit vector:
@@ -491,14 +493,14 @@ void prune_nan_inplace();
 ### Simple statistics
 
 ```c++
-// These template functions are declared with a type _S:
-template<typename _S=S>
+// These template functions are declared with a type Sy:
+template<typename Sy=S>
 
-_S mean() const;          // The arithmetic mean
-_S variance() const;      // The variance
-_S std() const;           // The standard deviation
-_S sum() const;           // The sum of all elements
-_S product() const;       // The product of the elements
+Sy mean() const;          // The arithmetic mean
+Sy variance() const;      // The variance
+Sy std() const;           // The standard deviation
+Sy sum() const;           // The sum of all elements
+Sy product() const;       // The product of the elements
 ```
 
 ### Maths functions
@@ -507,10 +509,10 @@ Raising elements to a **power**.
 ```c++
 vvec<S> pow (const S& p) const;          // raise all elements to the power p, returning result in new vec
 void pow_inplace (const S& p);           // in-place version which operates on the existing data in *this
-template<typename _S=S>
-vec<S, N> pow (const vvec<_S>& p) const; // Raise each element in *this to the power of the matching element in p (which must be same size)
-template<typename _S=S>
-void pow_inplace (const vvec<_S>& p);    // in-place version
+template<typename Sy=S>
+vec<S, N> pow (const vvec<Sy>& p) const; // Raise each element in *this to the power of the matching element in p (which must be same size)
+template<typename Sy=S>
+void pow_inplace (const vvec<Sy>& p);    // in-place version
 ```
 
 The **signum function** is 1 if a value is >0; -1 if the value is <0 and 0 if the value is 0.
@@ -561,14 +563,14 @@ void abs_inplace();
 
 The **scalar product** (also known as inner product or dot product) can be computed for two `vvec` instances, which must have equal size (otherwise a runtime error is thrown).
 ```c++
-template<typename _S=S>
-S dot (const vvec<_S>& v) const
+template<typename Sy=S>
+S dot (const vvec<Sy>& v) const
 ```
 
 The **cross product** is defined here only for `vvec` of size 3.
 
 If `N` is 2, then v x w is defined to be v_x w_y - v_y w_x and for N=3, see your nearest vector maths textbook. The function signatures are
 ```c++
-template<typename _S=S>
-S cross (const vvec<_S>& w) const;
+template<typename Sy=S>
+S cross (const vvec<Sy>& w) const;
 ```
