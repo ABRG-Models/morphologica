@@ -53,7 +53,7 @@ namespace morph {
         }
 
         //! Set true for any optional debugging
-        static constexpr bool gv_debug = false;
+        static constexpr bool gv_debug = true;
 
         //! Append a single datum onto the relevant graph. Build on existing data in
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
@@ -1054,9 +1054,13 @@ namespace morph {
             Flt range = rmax - rmin; // data range
             // How big should the range be? log the range, find the floor, raise it to get candidate
             Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
-            Flt numticks = floor(range/trytick);
+            if (trytick <= std::numeric_limits<Flt>::epsilon()) {
+                trytick = Flt{2} * std::numeric_limits<Flt>::epsilon();
+            }
+            Flt numticks = std::floor (range/trytick);
             if constexpr (gv_debug) {
-                std::cout << "initial trytick = " << trytick << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
+                std::cout << "initial trytick = " << trytick
+                          << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
             }
             if (numticks > _num_ticks_range.max) {
                 while (numticks > _num_ticks_range.max && numticks > _num_ticks_range.min) {
@@ -1064,11 +1068,13 @@ namespace morph {
                     numticks = floor(range/trytick);
                 }
             } else if (numticks < _num_ticks_range.min) {
-                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max) {
+                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max
+                       && trytick > std::numeric_limits<Flt>::epsilon()) {
                     trytick = trytick * Flt{0.5};
-                    numticks = floor(range/trytick);
+                    numticks = std::floor (range/trytick);
                     if constexpr (gv_debug) {
-                        std::cout << "Trying reduced spacing to increase numticks. trytick = " << trytick << " and numticks= " << numticks << "\n";
+                        std::cout << "Trying reduced spacing to increase numticks. trytick = "
+                                  << trytick << " and numticks= " << numticks << "\n";
                     }
                 }
             }
@@ -1081,11 +1087,19 @@ namespace morph {
             Flt atick = a * trytick;
             while (atick <= realmax) {
                 // This tick is smaller than 100th of the size of one whole tick to tick spacing, so it must be 0.
+                if constexpr (gv_debug) {
+                    std::cout << "push_back ("
+                              << (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick) << ")\n";
+                }
                 ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
                 atick += trytick;
             }
             atick = (a * trytick) - trytick;
             while (atick >= realmin) {
+                if constexpr (gv_debug) {
+                    std::cout << "push_back ("
+                              << (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick) << ")\n";
+                }
                 ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
                 atick -= trytick;
             }
