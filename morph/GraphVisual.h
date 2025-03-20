@@ -53,7 +53,7 @@ namespace morph {
         }
 
         //! Set true for any optional debugging
-        static constexpr bool gv_debug = true;
+        static constexpr bool gv_debug = false;
 
         //! Append a single datum onto the relevant graph. Build on existing data in
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
@@ -1052,23 +1052,37 @@ namespace morph {
             std::deque<Flt> ticks;
 
             Flt range = rmax - rmin; // data range
-            // How big should the range be? log the range, find the floor, raise it to get candidate
-            Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
-            if (trytick <= std::numeric_limits<Flt>::epsilon()) {
-                trytick = Flt{2} * std::numeric_limits<Flt>::epsilon();
+            if (range <= std::numeric_limits<Flt>::epsilon()) {
+                if constexpr (gv_debug) {
+                    std::cout << "data range " << rmin << " to " << rmax
+                              << " is less than (or equal to) epsilon()\n";
+                }
+                // Just two ticks in this case - one at range min and one at max.
+                ticks.push_back (rmin);
+                ticks.push_back (rmax);
+                return ticks;
             }
+
+            // How big should the range be? log the range, find the floor, raise it to get candidate
+            Flt trytick = std::pow (Flt{10}, std::floor (std::log10 (range)));
             Flt numticks = std::floor (range/trytick);
+
             if constexpr (gv_debug) {
                 std::cout << "initial trytick = " << trytick
                           << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
             }
+
             if (numticks > _num_ticks_range.max) {
+                if constexpr (gv_debug) { std::cout << "numticks too high, increase tick spacing\n"; }
                 while (numticks > _num_ticks_range.max && numticks > _num_ticks_range.min) {
                     trytick = trytick * Flt{2}; // bigger tick spacing means fewer ticks
-                    numticks = floor(range/trytick);
+                    numticks = std::floor (range/trytick);
                 }
+
             } else if (numticks < _num_ticks_range.min) {
-                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max
+                if constexpr (gv_debug) { std::cout << "numticks too low, decrease tick spacing\n"; }
+                while (numticks < _num_ticks_range.min
+                       && numticks < _num_ticks_range.max
                        && trytick > std::numeric_limits<Flt>::epsilon()) {
                     trytick = trytick * Flt{0.5};
                     numticks = std::floor (range/trytick);
@@ -1085,8 +1099,8 @@ namespace morph {
             Flt midrange = (rmin + rmax) * Flt{0.5};
             Flt a = std::round (midrange / trytick);
             Flt atick = a * trytick;
-            while (atick <= realmax) {
-                // This tick is smaller than 100th of the size of one whole tick to tick spacing, so it must be 0.
+            while (atick <= realmax && ticks.size() < (10 * _num_ticks_range.max)) {
+                // If this tick is smaller than 100th of the size of one whole tick to tick spacing, it must be 0.
                 if constexpr (gv_debug) {
                     std::cout << "push_back ("
                               << (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick) << ")\n";
@@ -1095,13 +1109,20 @@ namespace morph {
                 atick += trytick;
             }
             atick = (a * trytick) - trytick;
-            while (atick >= realmin) {
+            while (atick >= realmin && ticks.size() < (10 * _num_ticks_range.max)) {
                 if constexpr (gv_debug) {
                     std::cout << "push_back ("
                               << (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick) << ")\n";
                 }
                 ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
                 atick -= trytick;
+            }
+
+            // If we ended up with just one tick, revert to min and max ticks
+            if (ticks.size() < 2) {
+                ticks.clear();
+                ticks.push_back (rmin);
+                ticks.push_back (rmax);
             }
 
             return ticks;
