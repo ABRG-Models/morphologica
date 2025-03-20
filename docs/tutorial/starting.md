@@ -115,7 +115,9 @@ target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
 ### Example build files
 
-Each of the examples in [**morphologica/standalone_examples**](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples) has a CMakeLists.txt, written as if each
+You can find a complete example project called [morphologica_template](https://github.com/ABRG-Models/morphologica_template). This has a CMakeLists.txt file that you can copy and work from, along with a single example program (the graph again).
+
+Additionally, each of the examples in [**morphologica/standalone_examples**](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples) has a CMakeLists.txt, written as if each
 example was a standalone project in its own right.
 
 The best example CMakeLists.txt file is the one in [**standalone_examples/schnakenberg**](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples/schnakenberg),
