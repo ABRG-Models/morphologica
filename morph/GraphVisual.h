@@ -1059,15 +1059,12 @@ namespace morph {
                 ticks.push_back (rmax);
                 return ticks;
             }
-
             // How big should the range be? log the range, find the floor, raise it to get candidate
             Flt trytick = std::pow (Flt{10}, std::floor (std::log10 (range)));
             Flt numticks = std::floor (range/trytick);
-
             if constexpr (gv_debug) {
                 std::cout << "initial trytick = " << trytick << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
             }
-
             if (numticks > _num_ticks_range.max) {
                 while (numticks > _num_ticks_range.max && numticks > _num_ticks_range.min) {
                     trytick = trytick * Flt{2}; // bigger tick spacing means fewer ticks
@@ -1107,7 +1104,6 @@ namespace morph {
                 ticks.push_back (rmin);
                 ticks.push_back (rmax);
             }
-
             return ticks;
         }
 
