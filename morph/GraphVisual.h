@@ -1049,53 +1049,53 @@ namespace morph {
         static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
                                           const morph::range<Flt>& _num_ticks_range)
         {
-            std::deque<Flt> ticks;
+            std::deque<Flt> ticks = {};
 
-            Flt range = rmax - rmin; // data range
-            if (range <= std::numeric_limits<Flt>::epsilon()) {
+            Flt drange = rmax - rmin; // data range
+            if (drange <= std::numeric_limits<Flt>::epsilon()) {
                 if constexpr (gv_debug) { std::cout << "data range " << rmin << " to " << rmax << " is <= eps\n"; }
-                // Just two ticks in this case - one at range min and one at max.
+                // Just two ticks in this case - one at drange min and one at max.
                 ticks.push_back (rmin);
                 ticks.push_back (rmax);
                 return ticks;
             }
-            // How big should the range be? log the range, find the floor, raise it to get candidate
-            Flt trytick = std::pow (Flt{10}, std::floor (std::log10 (range)));
-            Flt numticks = std::floor (range/trytick);
+            // How big should the tick spacing be? log the drange, find the floor, raise it to get candidate
+            Flt tickspacing = std::pow (Flt{10}, std::floor (std::log10 (drange)));
+            Flt numticks = std::floor (drange / tickspacing);
             if constexpr (gv_debug) {
-                std::cout << "initial trytick = " << trytick << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
+                std::cout << "initial tickspacing = " << tickspacing << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
             }
             if (numticks > _num_ticks_range.max) {
                 while (numticks > _num_ticks_range.max && numticks > _num_ticks_range.min) {
-                    trytick = trytick * Flt{2}; // bigger tick spacing means fewer ticks
-                    numticks = std::floor (range/trytick);
+                    tickspacing = tickspacing * Flt{2}; // bigger tick spacing means fewer ticks
+                    numticks = std::floor (drange / tickspacing);
                 }
 
             } else if (numticks < _num_ticks_range.min) {
-                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max && trytick > std::numeric_limits<Flt>::epsilon()) {
-                    trytick = trytick * Flt{0.5};
-                    numticks = std::floor (range/trytick);
+                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max && tickspacing > std::numeric_limits<Flt>::epsilon()) {
+                    tickspacing = tickspacing * Flt{0.5};
+                    numticks = std::floor (drange / tickspacing);
                     if constexpr (gv_debug) {
-                        std::cout << "Trying reduced spacing to increase numticks. trytick = " << trytick << " and numticks= " << numticks << "\n";
+                        std::cout << "Trying reduced spacing to increase numticks. tickspacing = " << tickspacing << " and numticks= " << numticks << "\n";
                     }
                 }
             }
             if constexpr (gv_debug) {
-                std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks.\n";
+                std::cout << "Try (data) ticks with spacing " << tickspacing << ", which makes for " << numticks << " ticks.\n";
             }
             // Realmax and realmin come from the full range of abscissa_scale/ord1_scale
             Flt midrange = (rmin + rmax) * Flt{0.5};
-            Flt a = std::round (midrange / trytick);
-            Flt atick = a * trytick;
+            Flt a = std::round (midrange / tickspacing);
+            Flt atick = a * tickspacing;
             while (atick <= realmax && ticks.size() < (10 * _num_ticks_range.max)) { // 2nd test avoids inf loop
                 // This tick is smaller than 100th of the size of one whole tick to tick spacing, so it must be 0.
-                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
-                atick += trytick;
+                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(tickspacing) ? Flt{0} : atick);
+                atick += tickspacing;
             }
-            atick = (a * trytick) - trytick;
+            atick = (a * tickspacing) - tickspacing;
             while (atick >= realmin && ticks.size() < (10 * _num_ticks_range.max)) {
-                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
-                atick -= trytick;
+                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(tickspacing) ? Flt{0} : atick); // Not push_front?
+                atick -= tickspacing;
             }
 
             // If we ended up with just one tick, revert to min and max ticks
