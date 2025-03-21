@@ -1094,7 +1094,7 @@ namespace morph {
             }
             atick = (a * tickspacing) - tickspacing;
             while (atick >= realmin && ticks.size() < (10 * _num_ticks_range.max)) {
-                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(tickspacing) ? Flt{0} : atick); // Not push_front?
+                ticks.push_front (std::abs(atick) < Flt{0.01} * std::abs(tickspacing) ? Flt{0} : atick);
                 atick -= tickspacing;
             }
 
