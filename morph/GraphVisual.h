@@ -6,6 +6,9 @@
  */
 #pragma once
 
+#ifdef MORPH_HAVE_STD_FORMAT
+# include <format>
+#endif
 #include <iostream>
 #include <array>
 #include <vector>
@@ -53,7 +56,7 @@ namespace morph {
         }
 
         //! Set true for any optional debugging
-        static constexpr bool gv_debug = true;
+        static constexpr bool gv_debug = false;
 
         //! Append a single datum onto the relevant graph. Build on existing data in
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
@@ -1008,17 +1011,86 @@ namespace morph {
         }
 
         //! Graph-specific number formatting for tick labels.
-        static std::string graphNumberFormat (Flt num)
+        static std::string graphNumberFormat (const Flt num)
         {
+#ifdef MORPH_HAVE_STD_FORMAT
+            std::string s = std::format ("{:.4g}", num);
+#else
             std::stringstream ss;
             ss << num;
             std::string s = ss.str();
-
+#endif
             if (num > Flt{-1} && num < Flt{1} && num != Flt{0}) {
                 // It's a 0.something number. Get rid of any 0 preceding a '.'
                 std::string::size_type p = s.find ('.');
                 if (p != std::string::npos && p>0) {
                     if (s[--p] == '0') { s.erase(p, 1); }
+                }
+            }
+
+            return s;
+        }
+
+        //! Graph-specific number formatting for tick labels, when you can pass in the adjacent label (which affects formatting)
+        static std::string graphNumberFormat (const Flt num, const Flt adjacent_num)
+        {
+            if constexpr (gv_debug) { std::cout << std::endl; }
+            Flt num_diff = std::abs (num - adjacent_num);
+            int expnt_diff = static_cast<int>(std::floor (std::log10 (num_diff))); // may be negative
+            int expnt_num = 0;
+            int precn = 0;
+
+            if (num != Flt{0}) {
+                expnt_num = static_cast<int>(std::floor (std::log10 (std::abs (num))));
+            }
+
+            if constexpr (gv_debug) {
+                std::cout << "expnt_diff: " << expnt_diff << " for num_diff: " << num_diff
+                          << " [log10(" << num_diff << ") = " << std::log10 (num_diff) << "]\n";
+                std::cout << "expnt_num: " << expnt_num << " for num: " << num
+                          << " [log10(|" << num << "|) = " << std::log10 (std::abs (num)) << "]\n";
+            }
+
+            // If there is additional data beyond the critical precision, then show one extra col
+            // e.g. if we have  0.000, 0.250, 0.500 then we want to show it as:
+            // 0* 0.25, 0.50  (* 0 always gets special treatment)
+            // If we have 0.000, 1.000, 2.000 we want to show it as
+            // 0, 1, 2
+            Flt pf = std::pow (Flt{10}, expnt_diff);
+            Flt col_unit = pf * std::floor (std::abs (num) / pf);
+            if ((std::abs (num) - col_unit) > Flt{0}) { expnt_diff -= 1; }
+
+#ifdef MORPH_HAVE_STD_FORMAT
+            std::string s = "0";
+            if (num != Flt{0}) {
+                if (expnt_num > 3) {
+                    precn = expnt_num < 0 ? 0: expnt_num;
+                    s = std::format ("{:.{}e}", num, precn);
+                } else {
+                    precn = expnt_diff < 0 ? -expnt_diff: 0;
+                    s = std::format ("{:.{}f}", num, precn);
+                }
+            }
+#else
+            std::stringstream ss;
+            if (num != Flt{0}) {
+                if (expnt_num > 3) {
+                    precn = expnt_num < 0 ? 0: expnt_num;
+                } else {
+                    precn = expnt_diff < 0 ? -expnt_diff: 0;
+                }
+                ss << std::setprecision (precn);
+                ss << num;
+            } else {
+                ss << "0";
+            }
+            std::string s = ss.str();
+#endif
+            if (num > Flt{-1} && num < Flt{1} && num != Flt{0}) {
+                // It's a 0.something number. Get rid of any 0 preceding a '.'
+                std::string::size_type p = s.find ('.');
+                if (p != std::string::npos && p > 0) {
+                    if (s[--p] == '0') { s.erase (p, 1); }
                 }
             }
 
@@ -1566,7 +1638,12 @@ namespace morph {
                     auto lbl = this->makeVisualTextModel (tf);
                     // Find longest string (more or less)
                     for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
-                        std::string s = this->graphNumberFormat (this->xticks[i]);
+                        std::string s = {};
+                        if (i == 0) {
+                            s = this->graphNumberFormat (this->xticks[i], this->xticks[i+1]);
+                        } else {
+                            s = this->graphNumberFormat (this->xticks[i], this->xticks[i-1]);
+                        }
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         max_label_length = geom.width() > max_label_length ? geom.width() : max_label_length;
                     }
@@ -1582,8 +1659,12 @@ namespace morph {
                     // Omit the 0 for 'cross' axes (or maybe shift its position)
                     if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
 
-                    // Expunge any '0' from 0.123 so that it's .123 and so on.
-                    std::string s = this->graphNumberFormat (this->xticks[i]);
+                    std::string s = {};
+                    if (i == 0) {
+                        s = this->graphNumberFormat (this->xticks[i], this->xticks[i+1]);
+                    } else {
+                        s = this->graphNumberFormat (this->xticks[i], this->xticks[i-1]);
+                    }
 
                     // Issue: I need the width of the text ss.str() before I can create the
                     // VisualTextModel, so need a static method like this:
@@ -1603,7 +1684,12 @@ namespace morph {
                     // Omit the 0 for 'cross' axes (or maybe shift its position)
                     if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
 
-                    std::string s = this->graphNumberFormat (this->yticks[i]);
+                    std::string s = {};
+                    if (i == 0) {
+                        s = this->graphNumberFormat (this->yticks[i], this->yticks[i+1]);
+                    } else {
+                        s = this->graphNumberFormat (this->yticks[i], this->yticks[i-1]);
+                    }
                     auto lbl = this->makeVisualTextModel (tf);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
@@ -1620,7 +1706,13 @@ namespace morph {
                 x_for_yticks = this->width;
                 this->ytick_label_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
-                    std::string s = this->graphNumberFormat (this->yticks2[i]);
+                    std::string s = {};
+                    if (i == 0) {
+                        s = this->graphNumberFormat (this->yticks2[i], this->yticks2[i+1]);
+                    } else {
+                        s = this->graphNumberFormat (this->yticks2[i], this->yticks2[i-1]);
+                    }
+
                     auto lbl = this->makeVisualTextModel (tf);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_label_width2 = geom.width() > this->ytick_label_width2 ? geom.width() : this->ytick_label_width2;

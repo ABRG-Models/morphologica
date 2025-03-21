@@ -538,3 +538,6 @@ if(NOT APPLE)
 add_executable(testcmath testcmath.cpp)
 add_test(testcmath testcmath)
 endif()
+
+add_executable(testgraphnumberformat testgraphnumberformat.cpp)
+add_test(testgraphnumberformat testgraphnumberformat)
