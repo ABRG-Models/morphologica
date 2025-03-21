@@ -53,7 +53,7 @@ namespace morph {
         }
 
         //! Set true for any optional debugging
-        static constexpr bool gv_debug = false;
+        static constexpr bool gv_debug = true;
 
         //! Append a single datum onto the relevant graph. Build on existing data in
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
@@ -1033,10 +1033,10 @@ namespace morph {
          * This overload accepts separate min and max for the preferred number of ticks.
          */
         static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
-                                          const Flt _min_num_ticks = 3, const Flt _max_num_ticks = 10)
+                                          const Flt _min_num_ticks = 3, const Flt _max_num_ticks = 10, const bool strict_num_ticks_mode = false)
         {
             morph::range<Flt> _num_ticks_range(_min_num_ticks, _max_num_ticks);
-            return GraphVisual<Flt, glver>::maketicks (rmin, rmax, realmin, realmax, _num_ticks_range);
+            return GraphVisual<Flt, glver>::maketicks (rmin, rmax, realmin, realmax, _num_ticks_range, strict_num_ticks_mode);
         }
 
         /*!
@@ -1045,11 +1045,23 @@ namespace morph {
          * data range, plus any padding introduced by GraphVisual::dataaxisdist
          *
          * This overload accepts a morph::range for the preferred number of ticks.
+         *
+         * The bool arg allows the client code to either accept that _num_ticks_range is
+         * guidance OR to *force* the number of ticks to be in the range, even if it
+         * means irrational values. Defaults to false, whcih is the original behaviour
+         * of maketicks.
          */
         static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
-                                          const morph::range<Flt>& _num_ticks_range)
+                                          const morph::range<Flt>& _num_ticks_range, const bool strict_num_ticks_mode = false)
         {
+            if constexpr (gv_debug) {
+                std::cout << "\nGraphVisual<>::maketicks (" << rmin << "," << rmax << "," << realmin << "," << realmax << "," << _num_ticks_range << ")\n";
+            }
             std::deque<Flt> ticks = {};
+
+            if (std::numeric_limits<Flt>::has_quiet_NaN) { // If we are passed NaN, then return empty ticks
+                if (std::isnan (rmin) || std::isnan (rmax) || std::isnan (realmin) || std::isnan (realmax)) { return ticks; }
+            }
 
             Flt drange = rmax - rmin; // data range
             if (drange <= std::numeric_limits<Flt>::epsilon()) {
@@ -1059,30 +1071,61 @@ namespace morph {
                 ticks.push_back (rmax);
                 return ticks;
             }
-            // How big should the tick spacing be? log the drange, find the floor, raise it to get candidate
-            Flt tickspacing = std::pow (Flt{10}, std::floor (std::log10 (drange)));
-            Flt numticks = std::floor (drange / tickspacing);
-            if constexpr (gv_debug) {
-                std::cout << "initial tickspacing = " << tickspacing << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
-            }
-            if (numticks > _num_ticks_range.max) {
-                while (numticks > _num_ticks_range.max && numticks > _num_ticks_range.min) {
-                    tickspacing = tickspacing * Flt{2}; // bigger tick spacing means fewer ticks
-                    numticks = std::floor (drange / tickspacing);
-                }
 
-            } else if (numticks < _num_ticks_range.min) {
-                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max && tickspacing > std::numeric_limits<Flt>::epsilon()) {
-                    tickspacing = tickspacing * Flt{0.5};
-                    numticks = std::floor (drange / tickspacing);
-                    if constexpr (gv_debug) {
-                        std::cout << "Trying reduced spacing to increase numticks. tickspacing = " << tickspacing << " and numticks= " << numticks << "\n";
+            Flt tickspacing = Flt{0};
+            Flt numtickintervals = Flt{0};
+            Flt actual_numticks = Flt{0};
+
+            // A subroutine lambda to find a suitable tickspacing
+            auto subr_find_tickspacing = [drange, _num_ticks_range, &tickspacing, &numtickintervals, &actual_numticks] (const Flt mult = Flt{2})
+            {
+                // How big should the tick spacing be? log the drange, find the floor, raise it to get candidate
+                tickspacing = std::pow (Flt{10}, std::floor (std::log10 (drange)));
+                numtickintervals = std::floor (drange / tickspacing);
+                if constexpr (gv_debug) { std::cout << "initial tickspacing = " << tickspacing << ", giving " << (numtickintervals + Flt{1}) << " ticks\n"; }
+                if (numtickintervals > _num_ticks_range.max) {
+                    if constexpr (gv_debug) { std::cout << "too many ticks, increase spacing to " << (tickspacing * mult) << "\n"; }
+                    while (numtickintervals > _num_ticks_range.max && numtickintervals > _num_ticks_range.min) {
+                        tickspacing = tickspacing * mult; // bigger tick spacing means fewer ticks
+                        numtickintervals = std::floor (drange / tickspacing);
+                    }
+
+                } else if (numtickintervals < _num_ticks_range.min) {
+                    if constexpr (gv_debug) { std::cout << "too few ticks, decrease spacing to " << (tickspacing / mult) << "\n"; }
+                    while (numtickintervals < _num_ticks_range.min && numtickintervals < _num_ticks_range.max && tickspacing > std::numeric_limits<Flt>::epsilon()) {
+                        tickspacing = tickspacing / mult;
+                        numtickintervals = std::floor (drange / tickspacing);
                     }
                 }
+                if constexpr (gv_debug) { std::cout << "now tickspacing = " << tickspacing << ", giving " << (numtickintervals + Flt{1}) << " ticks\n"; }
+
+                actual_numticks = numtickintervals + Flt{1};
+            };
+
+            // Run the find tickspacing routine with a multiplier that guarantees 'nice' tick values
+            Flt tmult = Flt{2};
+            subr_find_tickspacing (tmult);
+
+            // Optionally, be strict about keeping in range, at cost of 'nice' tick values
+            if (strict_num_ticks_mode == true) {
+                tmult = Flt{1.2};
+                if constexpr (gv_debug) { std::cout << "strict_num_ticks_mode == true\n"; }
+                bool recompute_required = (actual_numticks > _num_ticks_range.max || actual_numticks < _num_ticks_range.min) ? true : false;
+                unsigned int attempts = 0;
+                while (recompute_required == true && attempts < 6) {
+                    tmult *= Flt{1.2};
+                    if constexpr (gv_debug) { std::cout << "Call subr_find_tickspacing (" << tmult << ")\n"; }
+                    subr_find_tickspacing (tmult);
+                    recompute_required = (actual_numticks > _num_ticks_range.max || actual_numticks < _num_ticks_range.min) ? true : false;
+                    ++attempts;
+                }
             }
+
             if constexpr (gv_debug) {
-                std::cout << "Try (data) ticks with spacing " << tickspacing << ", which makes for " << numticks << " ticks.\n";
+                if (actual_numticks < _num_ticks_range.min) { std::cout << "Too few ticks!\n"; }
+                if (actual_numticks > _num_ticks_range.max) { std::cout << "Too many ticks!\n"; }
             }
+
             // Realmax and realmin come from the full range of abscissa_scale/ord1_scale
             Flt midrange = (rmin + rmax) * Flt{0.5};
             Flt a = std::round (midrange / tickspacing);
@@ -1098,7 +1141,7 @@ namespace morph {
                 atick -= tickspacing;
             }
 
-            // If we ended up with just one tick, revert to min and max ticks
+            // If we ended up with just one tick (or none), revert to min and max ticks, whether or not we're in strict mode
             if (ticks.size() < 2) {
                 ticks.clear();
                 ticks.push_back (rmin);

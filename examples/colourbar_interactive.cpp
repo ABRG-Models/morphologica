@@ -84,6 +84,7 @@ protected:
         this->bindmodel (cbv);
         cbv->orientation = morph::colourbar_orientation::vertical;
         cbv->tickside = morph::colourbar_tickside::right_or_below;
+        cbv->number_of_ticks_range = morph::range<float>{4, 6};
         // Copy colourmap and scale to colourbar visual
         cbv->cm = this->hgvp->cm;
         cbv->scale = this->hgvp->colourScale;
@@ -98,6 +99,7 @@ protected:
         cbv->orientation = morph::colourbar_orientation::horizontal;
         cbv->tickside = morph::colourbar_tickside::left_or_above;
         cbv->cm = this->hgvp->cm;
+        cbv->number_of_ticks_range = morph::range<float>{2, 3};
         cbv->scale = this->hgvp->colourScale;
         std::string lbl = "ColourMapType: " + morph::ColourMap<float>::colourMapTypeToStr (this->colour_map_type);
         cbv->addLabel (lbl, morph::vec<float>{0.0f, -0.08f, 0.0f}, morph::TextFeatures(0.05f));
