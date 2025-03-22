@@ -34,15 +34,50 @@ int main()
     std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
     if (str != "13.9") { std::cout << "fail\n"; --rtn; }
 
-#if 0 // next:
     num = 1000.01f;
     next = 1000.04f;
     str = morph::graphing::number_format (num, next);
     std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
     if (str != "1000.01") { std::cout << "fail\n"; --rtn; }
+
+    num = 0.01f;
+    next = 0.04f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != ".01") { std::cout << "fail\n"; --rtn; }
+
+    num = -0.0104f;
+    next = -0.0105999999999f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "-.0104") { std::cout << "fail\n"; --rtn; }
+
+    num = -0.30000001f;
+    next = -0.350000f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "-.30") { std::cout << "fail\n"; --rtn; }
+
+    num = -0.01060f;
+    next = -0.010401f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "-.0106") { std::cout << "fail\n"; --rtn; }
+#if 0
+    num = 0.01040f;
+    next = 0.0103f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != ".0104") { std::cout << "fail\n"; --rtn; }
+
+
+    std::cout << "std::floor (-4.0f) = " << std::floor (-4.0f) << std::endl;
+
+    std::cout << std::log10(9.99998e-05) + 4.0  << std::endl;
+    std::cout << std::log10(1e-4) + 4.0  << std::endl;
+    std::cout << std::floor (std::log10(9.99998e-05))  << std::endl;
+    std::cout << std::floor (std::log10(1e-4))  << std::endl;
 #endif
-
     std::cout << (rtn ? "FAIL\n" : "PASS\n");
-
     return rtn;
 }

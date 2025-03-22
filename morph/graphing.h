@@ -54,8 +54,9 @@ namespace morph::graphing {
     static std::string number_format (const F num, const F adjacent_num)
     {
         if constexpr (gv_debug) { std::cout << std::endl; }
+        if constexpr (gv_debug) { std::cout << num << " - " << adjacent_num << " = " << num - adjacent_num << std::endl; }
         F num_diff = std::abs (num - adjacent_num);
-        int expnt_diff = static_cast<int>(std::floor (std::log10 (num_diff))); // may be negative
+        int expnt_diff = static_cast<int>(std::floor (std::log10 (num_diff)));
         int expnt_num = 0;
         int precn = 0;
 
@@ -65,7 +66,7 @@ namespace morph::graphing {
 
         if constexpr (gv_debug) {
             std::cout << "expnt_diff: " << expnt_diff << " for num_diff: " << num_diff
-                      << " [log10(" << num_diff << ") = " << std::log10 (num_diff) << "]\n";
+                      << " [log10(" << num_diff << ") = " << std::log10 (num_diff) << "] floor(log10(" << num_diff << ")) = " << std::floor(std::log10 (num_diff)) << "\n";
             std::cout << "expnt_num: " << expnt_num << " for num: " << num
                       << " [log10(|" << num << "|) = " << std::log10 (std::abs (num)) << "]\n";
         }
@@ -75,9 +76,21 @@ namespace morph::graphing {
         // 0* 0.25, 0.50  (* 0 always gets special treatment)
         // If we have 0.000, 1.000, 2.000 we want to show it as
         // 0, 1, 2
-        F pf = std::pow (F{10}, expnt_diff);
-        F col_unit = pf * std::floor (std::abs (num) / pf);
-        if ((std::abs (num) - col_unit) > F{0}) { expnt_diff -= 1; }
+        F val_diff = std::pow (F{10}, expnt_diff);
+        if constexpr (gv_debug) { std::cout << "val_diff = " << val_diff << std::endl; }
+        F col_unit = val_diff * std::floor (std::abs (num) / val_diff); //???
+
+        F next_unit_thr = val_diff * F{0.5}; // 5*val_diff/10 = val_diff*5/10 = val_diff*0.5
+
+        if constexpr (gv_debug) { std::cout << "num_col_diff = " << std::abs (num) << " - " << col_unit << std::endl; }
+        F num_col_diff = std::abs (num) - col_unit;
+        if constexpr (gv_debug) {
+            std::cout << "num_col_diff = " << num_col_diff << ", next_unit_thr = " << next_unit_thr << std::endl;
+            if (num_col_diff > next_unit_thr) {
+                std::cout << "Will decrement expnt_diff=" << expnt_diff << " by 1\n";
+            }
+        }
+        if (num_col_diff > next_unit_thr) { expnt_diff -= 1; }
 
 #ifdef MORPH_HAVE_STD_FORMAT
         std::string s = "0";
@@ -114,6 +127,7 @@ namespace morph::graphing {
             }
         }
 
+        if constexpr (gv_debug) { std::cout << "returning '" << s << "'\n"; }
         return s;
     }
 
@@ -201,8 +215,9 @@ namespace morph::graphing {
         }
 
         if constexpr (gv_debug) {
-            if (actual_numticks < _num_ticks_range.min) { std::cout << "Too few ticks!\n"; }
-            if (actual_numticks > _num_ticks_range.max) { std::cout << "Too many ticks!\n"; }
+            if (actual_numticks < _num_ticks_range.min || actual_numticks > _num_ticks_range.max) {
+                std::cout << "Number of ticks (" << actual_numticks << ") is outside range " <<  _num_ticks_range << "\n";
+            }
         }
 
         // Realmax and realmin come from the full range of abscissa_scale/ord1_scale
