@@ -1,34 +1,48 @@
 #include <iostream>
+
 // To test non-format code:
-//#ifdef MORPH_HAVE_STD_FORMAT
-//#undef MORPH_HAVE_STD_FORMAT
-//#endif
+#ifdef FORCE_NON_FORMAT
+# ifdef MORPH_HAVE_STD_FORMAT
+#  undef MORPH_HAVE_STD_FORMAT
+# endif
+#endif
+
 #include <morph/graphing.h>
 
 int main()
 {
-    float low = 1000.1f;
-    float high = 2000.2f;
-#if 0
-    std::cout << "gnf (2.345f): " << morph::graphing::number_format (2.345f) << std::endl;
-    std::cout << "gnf (2.345f, 2.335f): " << morph::graphing::number_format (2.345f, 2.335f) << std::endl;
-    std::cout << "gnf (2.1f, 20.3f): " << morph::graphing::number_format (2.1f, 20.3f) << std::endl;
-    for (int i = 0; i < 6; ++i) {
-        std::cout << "gnf ("<<low<<", "<<high<<"): " << morph::graphing::number_format (low, high) << std::endl;
-        low *= 10;
-        high *= 10;
-    }
-    std::cout << "\n\n";
+    int rtn = 0;
+
+    float num = 0.0f;
+    float next = 0.0f;
+
+    num = 1.0f;
+    next = 2.0f;
+    std::string str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "1") { std::cout << "fail\n"; --rtn; }
+
+    num = -2.0f;
+    next = -1.0f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "-2") { std::cout << "fail\n"; --rtn; }
+
+    num = 13.8889f;
+    next = 6.94444f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "13.9") { std::cout << "fail\n"; --rtn; }
+
+#if 0 // next:
+    num = 1000.01f;
+    next = 1000.04f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "1000.01") { std::cout << "fail\n"; --rtn; }
 #endif
 
-    low = 1.0f;
-    high = 2.0f;
-    std::cout << "gnf ("<<low<<", "<<high<<"): " << morph::graphing::number_format (low, high) << std::endl;
-    low = -2.0f;
-    high = -1.0f;
-    std::cout << "gnf ("<<low<<", "<<high<<"): " << morph::graphing::number_format (low, high) << std::endl;
+    std::cout << (rtn ? "FAIL\n" : "PASS\n");
 
-    low = 13.8889f;
-    high = 6.94444f;
-    std::cout << "gnf ("<<low<<", "<<high<<"): " << morph::graphing::number_format (low, high) << std::endl;
+    return rtn;
 }

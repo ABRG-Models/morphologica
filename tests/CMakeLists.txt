@@ -541,3 +541,7 @@ endif()
 
 add_executable(testgraphnumberformat testgraphnumberformat.cpp)
 add_test(testgraphnumberformat testgraphnumberformat)
+
+add_executable(testgraphnumberformat_ss testgraphnumberformat.cpp)
+target_compile_definitions(testgraphnumberformat_ss PUBLIC FORCE_NON_FORMAT)
+add_test(testgraphnumberformat_ss testgraphnumberformat_ss)

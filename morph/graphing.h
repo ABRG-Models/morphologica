@@ -18,6 +18,7 @@
 #else
 # include <sstream>
 # include <iomanip>
+# include <ios>
 #endif
 
 #include <morph/range.h>
@@ -82,10 +83,10 @@ namespace morph::graphing {
         std::string s = "0";
         if (num != F{0}) {
             if (expnt_num > 3) {
-                precn = expnt_num < 0 ? 0: expnt_num;
+                precn = expnt_num < 0 ? 0 : expnt_num;
                 s = std::format ("{:.{}e}", num, precn);
             } else {
-                precn = expnt_diff < 0 ? -expnt_diff: 0;
+                precn = expnt_diff < 0 ? -expnt_diff : 0;
                 s = std::format ("{:.{}f}", num, precn);
             }
         }
@@ -93,11 +94,12 @@ namespace morph::graphing {
         std::stringstream ss;
         if (num != F{0}) {
             if (expnt_num > 3) {
-                precn = expnt_num < 0 ? 0: expnt_num;
+                precn = expnt_num < 0 ? 0 : expnt_num;
+                ss << std::scientific << std::setprecision (precn);
             } else {
-                precn = expnt_diff < 0 ? -expnt_diff: 0;
+                precn = expnt_diff < 0 ? -expnt_diff : 0;
+                ss << std::fixed << std::setprecision (precn);
             }
-            ss << std::setprecision (precn);
             ss << num;
         } else {
             ss << "0";
