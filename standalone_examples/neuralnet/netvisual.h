@@ -13,6 +13,8 @@
 #include <morph/scale.h>
 #include <vector>
 #include <array>
+#include <sstream>
+#include <iomanip>
 
 #include <morph/nn/FeedForwardNet.h>
 

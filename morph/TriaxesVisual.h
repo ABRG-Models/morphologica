@@ -10,8 +10,8 @@
 #include <morph/vec.h>
 #include <morph/quaternion.h>
 #include <morph/VisualModel.h>
+#include <morph/graphing.h>
 #include <morph/graphstyles.h> // Share tickstyle, axestyle
-#include <morph/GraphVisual.h> // Use GraphVisual::maketicks and GraphVisual::numberFormat
 
 namespace morph {
 
@@ -69,15 +69,15 @@ namespace morph {
 
                 float realmin = this->x_scale.inverse_one (0);
                 float realmax = this->x_scale.inverse_one (this->axis_ends[0]);
-                this->xticks = morph::GraphVisual<Flt, glver>::maketicks (_xmin, _xmax, realmin, realmax, 8);
+                this->xticks = morph::graphing::maketicks<Flt> (_xmin, _xmax, realmin, realmax, Flt{5}, Flt{13}, true);
 
                 realmin = this->y_scale.inverse_one (0);
                 realmax = this->y_scale.inverse_one (this->axis_ends[1]);
-                this->yticks = morph::GraphVisual<Flt, glver>::maketicks (_ymin, _ymax, realmin, realmax, 8);
+                this->yticks = morph::graphing::maketicks<Flt> (_ymin, _ymax, realmin, realmax, Flt{5}, Flt{13}, true);
 
                 realmin = this->z_scale.inverse_one (0);
                 realmax = this->z_scale.inverse_one (this->axis_ends[2]);
-                this->zticks = morph::GraphVisual<Flt, glver>::maketicks (_zmin, _zmax, realmin, realmax, 8);
+                this->zticks = morph::graphing::maketicks<Flt> (_zmin, _zmax, realmin, realmax, Flt{5}, Flt{13}, true);
 
                 this->xtick_posns.resize (this->xticks.size());
                 this->x_scale.transform (xticks, xtick_posns);
@@ -205,7 +205,12 @@ namespace morph {
             morph::TextFeatures tf(this->fontsize, this->fontres, false, morph::colour::black, this->font);
 
             for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
-                std::string s = morph::GraphVisual<Flt, glver>::graphNumberFormat (this->xticks[i]);
+                std::string s = {};
+                if (i == 0) {
+                    s = morph::graphing::number_format (this->xticks[i], this->xticks[i+1]);
+                } else {
+                    s = morph::graphing::number_format (this->xticks[i], this->xticks[i-1]);
+                }
                 // Issue: I need the width of the text ss.str() before I can create the
                 // VisualTextModel, so need a static method like this:
                 auto lbl = this->makeVisualTextModel (tf);
@@ -218,7 +223,12 @@ namespace morph {
             }
 
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
-                std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->yticks[i]);
+                std::string s = {};
+                if (i == 0) {
+                    s = morph::graphing::number_format (this->yticks[i], this->yticks[i+1]);
+                } else {
+                    s = morph::graphing::number_format (this->yticks[i], this->yticks[i-1]);
+                }
                 auto lbl = this->makeVisualTextModel (tf);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ytick_height = geom.height() > this->ytick_height ? geom.height() : this->ytick_height;
@@ -229,7 +239,12 @@ namespace morph {
             }
 
             for (unsigned int i = 0; i < this->ztick_posns.size(); ++i) {
-                std::string s = morph::GraphVisual<Flt, glver>::graphNumberFormat (this->zticks[i]);
+                std::string s = {};
+                if (i == 0) {
+                    s = morph::graphing::number_format (this->zticks[i], this->zticks[i+1]);
+                } else {
+                    s = morph::graphing::number_format (this->zticks[i], this->zticks[i-1]);
+                }
                 auto lbl = this->makeVisualTextModel (tf);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ztick_height = geom.height() > this->ztick_height ? geom.height() : this->ztick_height;

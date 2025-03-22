@@ -102,6 +102,9 @@ if(ARMADILLO_FOUND)
   add_executable(colourbar colourbar.cpp)
   target_link_libraries(colourbar OpenGL::GL glfw Freetype::Freetype)
 
+  add_executable(colourbar_interactive colourbar_interactive.cpp)
+  target_link_libraries(colourbar_interactive OpenGL::GL glfw Freetype::Freetype)
+
   add_executable(scatter_hex_mercator scatter_hex_mercator.cpp)
   target_link_libraries(scatter_hex_mercator OpenGL::GL glfw Freetype::Freetype)
 
