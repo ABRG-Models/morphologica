@@ -17,6 +17,7 @@
 # include <format>
 #else
 # include <sstream>
+# include <iomanip>
 #endif
 
 #include <morph/range.h>
