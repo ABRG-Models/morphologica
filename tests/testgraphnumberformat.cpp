@@ -88,23 +88,14 @@ int main()
     std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
     if (str != "2.000e+04") { std::cout << "fail\n"; --rtn; }
 
-#if 0
-    std::cout << "std::floor (-4.0f) = " << std::floor (-4.0f) << std::endl;
-
-    float up = 9.99998e-05f * 1e5f;
-    float up2 = 1e-04f * 1e4f;
-    std::cout << "up=" << up << std::endl;
-    std::cout << "up2=" << up2 << std::endl;
-    std::cout << "10 - up=" << (10.0f - up) << std::endl;
-    std::cout << "10 - up2=" << (10.0f - up2) << std::endl;
-
-    int expnt_ = static_cast<int>(std::floor (std::log10 (10.0f - up)));
-    std::cout << "expnt_ = " << expnt_ << std::endl;
-    std::cout << std::log10(9.99998e-05f) + 4.0f  << std::endl;
-    std::cout << std::log10(1e-4f) + 4.0f  << std::endl;
-    std::cout << std::floor (std::log10(9.99998e-05f))  << std::endl;
-    std::cout << std::floor (std::log10(1e-4f))  << std::endl;
+#if 0 // known to fail at present:
+    num = 8.75f;
+    next = 7.5f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "8.75") { std::cout << "fail\n"; --rtn; }
 #endif
+
     std::cout << (rtn ? "FAIL\n" : "PASS\n");
     return rtn;
 }

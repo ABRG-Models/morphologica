@@ -69,15 +69,15 @@ namespace morph {
 
                 float realmin = this->x_scale.inverse_one (0);
                 float realmax = this->x_scale.inverse_one (this->axis_ends[0]);
-                this->xticks = morph::graphing::maketicks<Flt> (_xmin, _xmax, realmin, realmax, Flt{5}, Flt{13}, true);
+                this->xticks = morph::graphing::maketicks<Flt> (_xmin, _xmax, realmin, realmax, Flt{5}, Flt{13});
 
                 realmin = this->y_scale.inverse_one (0);
                 realmax = this->y_scale.inverse_one (this->axis_ends[1]);
-                this->yticks = morph::graphing::maketicks<Flt> (_ymin, _ymax, realmin, realmax, Flt{5}, Flt{13}, true);
+                this->yticks = morph::graphing::maketicks<Flt> (_ymin, _ymax, realmin, realmax, Flt{5}, Flt{13});
 
                 realmin = this->z_scale.inverse_one (0);
                 realmax = this->z_scale.inverse_one (this->axis_ends[2]);
-                this->zticks = morph::graphing::maketicks<Flt> (_zmin, _zmax, realmin, realmax, Flt{5}, Flt{13}, true);
+                this->zticks = morph::graphing::maketicks<Flt> (_zmin, _zmax, realmin, realmax, Flt{5}, Flt{13});
 
                 this->xtick_posns.resize (this->xticks.size());
                 this->x_scale.transform (xticks, xtick_posns);

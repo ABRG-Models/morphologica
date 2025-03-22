@@ -1867,14 +1867,14 @@ namespace morph {
 
                 float realmin = this->abscissa_scale.inverse_one (0);
                 float realmax = this->abscissa_scale.inverse_one (this->width);
-                this->xticks = morph::graphing::maketicks (_xmin, _xmax, realmin, realmax, this->num_ticks_range);
+                this->xticks = morph::graphing::maketicks (_xmin, _xmax, realmin, realmax, this->num_ticks_range_x);
                 this->xtick_posns.resize (this->xticks.size());
                 this->abscissa_scale.transform (xticks, xtick_posns);
 
                 if (this->ord1_scale.ready()) {
                     realmin = this->ord1_scale.inverse_one (0);
                     realmax = this->ord1_scale.inverse_one (this->height);
-                    this->yticks = morph::graphing::maketicks (_ymin, _ymax, realmin, realmax, this->num_ticks_range);
+                    this->yticks = morph::graphing::maketicks (_ymin, _ymax, realmin, realmax, this->num_ticks_range_y);
                     this->ytick_posns.resize (this->yticks.size());
                     this->ord1_scale.transform (yticks, ytick_posns);
                 }
@@ -1882,7 +1882,7 @@ namespace morph {
                 if (this->ord2_scale.ready()) {
                     realmin = this->ord2_scale.inverse_one (0);
                     realmax = this->ord2_scale.inverse_one (this->height);
-                    this->yticks2 = morph::graphing::maketicks (_ymin2, _ymax2, realmin, realmax, this->num_ticks_range);
+                    this->yticks2 = morph::graphing::maketicks (_ymin2, _ymax2, realmin, realmax, this->num_ticks_range_y2);
                     this->ytick_posns2.resize (this->yticks2.size());
                     this->ord2_scale.transform (yticks2, ytick_posns2);
                 }
@@ -2003,7 +2003,9 @@ namespace morph {
         //! Should the y (and y2) tick *labels* be omitted?
         bool omit_y_tick_labels = false;
         //! The number of tick labels permitted, stored as a morph::range
-        morph::range<Flt> num_ticks_range{ Flt{3}, Flt{10} };
+        morph::range<Flt> num_ticks_range_x{ Flt{5}, Flt{10} };
+        morph::range<Flt> num_ticks_range_y{ Flt{5}, Flt{10} };
+        morph::range<Flt> num_ticks_range_y2{ Flt{5}, Flt{10} };
         // Default font
         morph::VisualFont font = morph::VisualFont::DVSans;
         //! Font resolution - determines how textures for glyphs are generated. If your

@@ -92,8 +92,7 @@ namespace morph {
                 F _max = this->tickscale.inverse_one (this->tickscale.output_range.max);
                 float realmin = this->tickscale.inverse_one (0);
                 float realmax = this->tickscale.inverse_one (this->length);
-                this->ticks = morph::graphing::maketicks (_min, _max, realmin, realmax,
-                                                          this->number_of_ticks_range, this->strict_num_ticks_mode);
+                this->ticks = morph::graphing::maketicks (_min, _max, realmin, realmax, this->number_of_ticks_range);
                 this->tick_posns.resize (this->ticks.size());
                 this->tickscale.transform (ticks, tick_posns);
             }
@@ -181,14 +180,10 @@ namespace morph {
                     // Labels above
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = {};
-                        if (this->old_labels) {
-                            s = morph::graphing::number_format (this->ticks[i]);
+                        if (i == 0) {
+                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
                         } else {
-                            if (i == 0) {
-                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
-                            } else {
-                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
-                            }
+                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
                         }
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
@@ -206,14 +201,10 @@ namespace morph {
                     // Labels left
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = {};
-                        if (this->old_labels) {
-                            s = morph::graphing::number_format (this->ticks[i]);
+                        if (i == 0) {
+                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
                         } else {
-                            if (i == 0) {
-                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
-                            } else {
-                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
-                            }
+                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
                         }
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
@@ -234,14 +225,10 @@ namespace morph {
                     // Labels below
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = {};
-                        if (this->old_labels) {
-                            s = morph::graphing::number_format (this->ticks[i]);
+                        if (i == 0) {
+                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
                         } else {
-                            if (i == 0) {
-                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
-                            } else {
-                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
-                            }
+                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
                         }
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
@@ -259,14 +246,10 @@ namespace morph {
                     // Labels right
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = {};
-                        if (this->old_labels) {
-                            s = morph::graphing::number_format (this->ticks[i]);
+                        if (i == 0) {
+                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
                         } else {
-                            if (i == 0) {
-                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
-                            } else {
-                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
-                            }
+                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
                         }
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
@@ -396,10 +379,6 @@ namespace morph {
         bool darkbg = false;
         //! The range of acceptable numbers of ticks
         morph::range<F> number_of_ticks_range = {F{3}, F{8}};
-        //! Be strict about keeping number of ticks within number_of_ticks_range?
-        bool strict_num_ticks_mode = true;
-        //! Old style? (debug really)
-        bool old_labels = true;
         //! The line width of the colourbar frame
         float framelinewidth = 0.006f;
         //! How long should the ticks be?

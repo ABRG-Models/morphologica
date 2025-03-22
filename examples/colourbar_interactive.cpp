@@ -44,8 +44,6 @@ protected:
     // A colourmap for the wobbly function
     static constexpr morph::ColourMapType colour_map_type = morph::ColourMapType::Inferno;
 
-    bool old_labels = false;
-
     // VisualModel pointers are used as identifiers to allow removal and then replacement from the Visual
     morph::HexGridVisual<float>* hgvp = nullptr;        // "HexGridVisual Pointer"
     morph::ColourBarVisual<float>* cbvp_vert = nullptr; // "ColourBarVisual Pointer (Vertical)"
@@ -89,7 +87,6 @@ protected:
         cbv->number_of_ticks_range = morph::range<float>{4, 6};
         // Copy colourmap and scale to colourbar visual
         cbv->cm = this->hgvp->cm;
-        cbv->old_labels = this->old_labels;
         cbv->scale = this->hgvp->colourScale;
         // Now build it
         cbv->finalize();
@@ -104,7 +101,6 @@ protected:
         cbv->cm = this->hgvp->cm;
         cbv->number_of_ticks_range = morph::range<float>{2, 3};
         cbv->scale = this->hgvp->colourScale;
-        cbv->old_labels = this->old_labels;
         std::string lbl = "ColourMapType: " + morph::ColourMap<float>::colourMapTypeToStr (this->colour_map_type);
         cbv->addLabel (lbl, morph::vec<float>{0.0f, -0.08f, 0.0f}, morph::TextFeatures(0.05f));
         cbv->finalize();
@@ -138,23 +134,11 @@ protected:
             this->wobbly_function();
             this->rebuild_visualmodels();
         }
-        if (key == morph::key::o && action == morph::keyaction::press) {
-            this->old_labels = true;
-            this->wobbly_function();
-            this->rebuild_visualmodels();
-        }
-        if (key == morph::key::n && action == morph::keyaction::press) {
-            this->old_labels = false;
-            this->wobbly_function();
-            this->rebuild_visualmodels();
-        }
         if (key == morph::key::h && action == morph::keyaction::press) {
             std::cout << "Up: Double multiplier\n";
             std::cout << "Down: Halve multiplier\n";
             std::cout << "Left: shift zero down\n";
             std::cout << "Right: shift zero up\n";
-            std::cout << "o: old labels\n";
-            std::cout << "n: new labels\n";
         }
     }
 };

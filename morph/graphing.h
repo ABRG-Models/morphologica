@@ -25,46 +25,34 @@
 
 namespace morph::graphing {
 
-    static constexpr bool gv_debug = false;
+    // Debug number_format?
+    static constexpr bool nf_debug = true;
 
-    //! Graph-specific number formatting for tick labels.
-    template <typename F>
-    static std::string number_format (const F num)
-    {
-#ifdef MORPH_HAVE_STD_FORMAT
-        std::string s = std::format ("{:.4g}", num);
-#else
-        std::stringstream ss;
-        ss << num;
-        std::string s = ss.str();
-#endif
-        if (num > F{-1} && num < F{1} && num != F{0}) {
-            // It's a 0.something number. Get rid of any 0 preceding a '.'
-            std::string::size_type p = s.find ('.');
-            if (p != std::string::npos && p>0) {
-                if (s[--p] == '0') { s.erase(p, 1); }
-            }
-        }
+    // Debug maketicks?
+    static constexpr bool mt_debug = false;
 
-        return s;
-    }
-
-    //! Graph-specific number formatting for tick labels, when you can pass in the adjacent label (which affects formatting)
+    //! Graph-specific number formatting for tick labels. You must pass in an adjacent
+    //! label (which affects the optimum precision to use for formatting)
     template <typename F>
     static std::string number_format (const F num, const F adjacent_num)
     {
-        if constexpr (gv_debug) { std::cout << std::endl; }
-        if constexpr (gv_debug) { std::cout << num << " - " << adjacent_num << " = " << num - adjacent_num << std::endl; }
+        static constexpr F precision_threshold = F{1e-3};
+
+        if constexpr (nf_debug) { std::cout << std::endl << "number_format (" << num << ", " << adjacent_num << ") diff = " << num - adjacent_num << std::endl; }
         F num_diff = std::abs (num - adjacent_num);
         int expnt_diff = static_cast<int>(std::floor (std::log10 (num_diff)));
+        if constexpr (nf_debug) {
+            std::cout << "expnt_diff: " << expnt_diff << " for num_diff: " << num_diff
+                      << " [log10(" << num_diff << ") = " << std::log10 (num_diff) << "] floor(log10(" << num_diff << ")) = " << std::floor(std::log10 (num_diff)) << "\n";
+        }
         F inv_expnt = std::pow (F{10}, -expnt_diff);
         F num_mant = num_diff * inv_expnt; // Should be a value between 0 and 10
-        if constexpr (gv_debug) {
-            std::cout << "num_mant=" << num_mant << std::endl;
-            // If 10 - num_mant is very small, then it's a precision issue and we probably want expnt_diff += 1
-            std::cout << "10 - num_mant=" << (10.0f - num_mant) << std::endl;
+        if constexpr (nf_debug) {
+            std::cout << "num_mant=" << num_mant << "; 10 - num_mant=" << (10.0f - num_mant) << std::endl;
+            if (std::abs(F{10} - num_mant) < precision_threshold) { std::cout << "Will increment expnt_diff=" << expnt_diff << " by 1\n"; }
         }
-        if (std::abs(F{10} - num_mant) < F{1e-3}) { expnt_diff += 1; }
+        // If 10 - num_mant is very small, then it's a precision issue and we want expnt_diff += 1
+        if (std::abs(F{10} - num_mant) < precision_threshold) { expnt_diff += 1; }
 
         int expnt_num = 0;
         int precn = 0;
@@ -73,11 +61,8 @@ namespace morph::graphing {
             expnt_num = static_cast<int>(std::floor (std::log10 (std::abs (num))));
         }
 
-        if constexpr (gv_debug) {
-            std::cout << "expnt_diff: " << expnt_diff << " for num_diff: " << num_diff
-                      << " [log10(" << num_diff << ") = " << std::log10 (num_diff) << "] floor(log10(" << num_diff << ")) = " << std::floor(std::log10 (num_diff)) << "\n";
-            std::cout << "expnt_num: " << expnt_num << " for num: " << num
-                      << " [log10(|" << num << "|) = " << std::log10 (std::abs (num)) << "]\n";
+        if constexpr (nf_debug) {
+            std::cout << "expnt_num: " << expnt_num << " for num: " << num << " [log10(|" << num << "|) = " << std::log10 (std::abs (num)) << "]\n";
         }
 
         // If there is additional data beyond the critical precision, then show one extra col
@@ -86,18 +71,16 @@ namespace morph::graphing {
         // If we have 0.000, 1.000, 2.000 we want to show it as
         // 0, 1, 2
         F val_diff = std::pow (F{10}, expnt_diff);
-        if constexpr (gv_debug) { std::cout << "val_diff = " << val_diff << std::endl; }
+        if constexpr (nf_debug) { std::cout << "val_diff = " << val_diff << std::endl; }
         F col_unit = val_diff * std::floor (std::abs (num) / val_diff);
 
         F next_unit_thr = val_diff * F{0.5}; // 5*val_diff/10 = val_diff*5/10 = val_diff*0.5
 
-        if constexpr (gv_debug) { std::cout << "num_col_diff = " << std::abs (num) << " - " << col_unit << std::endl; }
+        if constexpr (nf_debug) { std::cout << "num_col_diff = " << std::abs (num) << " - " << col_unit << std::endl; }
         F num_col_diff = std::abs (num) - col_unit;
-        if constexpr (gv_debug) {
+        if constexpr (nf_debug) {
             std::cout << "num_col_diff = " << num_col_diff << ", next_unit_thr = " << next_unit_thr << std::endl;
-            if (num_col_diff > next_unit_thr) {
-                std::cout << "Will decrement expnt_diff=" << expnt_diff << " by 1\n";
-            }
+            if (num_col_diff > next_unit_thr) { std::cout << "Will decrement expnt_diff=" << expnt_diff << " by 1\n"; }
         }
         if (num_col_diff > next_unit_thr) { expnt_diff -= 1; }
 
@@ -136,7 +119,7 @@ namespace morph::graphing {
             }
         }
 
-        if constexpr (gv_debug) { std::cout << "returning '" << s << "'\n"; }
+        if constexpr (nf_debug) { std::cout << "returning '" << s << "'\n"; }
         return s;
     }
 
@@ -156,18 +139,19 @@ namespace morph::graphing {
     static std::deque<F> maketicks (F rmin, F rmax, float realmin, float realmax,
                                     const morph::range<F>& _num_ticks_range, const bool strict_num_ticks_mode = false)
     {
-        if constexpr (gv_debug) {
+        if constexpr (mt_debug) {
             std::cout << "\nmorph::graphing::maketicks (" << rmin << "," << rmax << "," << realmin << "," << realmax << "," << _num_ticks_range << ")\n";
         }
         std::deque<F> ticks = {};
 
-        if (std::numeric_limits<F>::has_quiet_NaN) { // If we are passed NaN, then return empty ticks
+        if (std::numeric_limits<F>::has_quiet_NaN) { // If we are passed NaN for ranges, then return empty ticks
             if (std::isnan (rmin) || std::isnan (rmax) || std::isnan (realmin) || std::isnan (realmax)) { return ticks; }
         }
 
         F drange = rmax - rmin; // data range
-        if (drange <= std::numeric_limits<F>::epsilon()) {
-            if constexpr (gv_debug) { std::cout << "data range " << rmin << " to " << rmax << " is <= eps\n"; }
+        if (drange <= std::numeric_limits<F>::epsilon()
+            || (_num_ticks_range.min == 2 && _num_ticks_range.max == 2)) {
+            if constexpr (mt_debug) { std::cout << "data range " << rmin << " to " << rmax << " is <= eps or ticks range is {2,2}\n"; }
             // Just two ticks in this case - one at drange min and one at max.
             ticks.push_back (rmin);
             ticks.push_back (rmax);
@@ -184,22 +168,22 @@ namespace morph::graphing {
             // How big should the tick spacing be? log the drange, find the floor, raise it to get candidate
             tickspacing = std::pow (F{10}, std::floor (std::log10 (drange)));
             numtickintervals = std::floor (drange / tickspacing);
-            if constexpr (gv_debug) { std::cout << "initial tickspacing = " << tickspacing << ", giving " << (numtickintervals + F{1}) << " ticks\n"; }
+            if constexpr (mt_debug) { std::cout << "initial tickspacing = " << tickspacing << ", giving " << (numtickintervals + F{1}) << " ticks\n"; }
             if (numtickintervals > _num_ticks_range.max) {
-                if constexpr (gv_debug) { std::cout << "too many ticks, increase spacing to " << (tickspacing * mult) << "\n"; }
+                if constexpr (mt_debug) { std::cout << "too many ticks, increase spacing to " << (tickspacing * mult) << "\n"; }
                 while (numtickintervals > _num_ticks_range.max && numtickintervals > _num_ticks_range.min) {
                     tickspacing = tickspacing * mult; // bigger tick spacing means fewer ticks
                     numtickintervals = std::floor (drange / tickspacing);
                 }
 
             } else if (numtickintervals < _num_ticks_range.min) {
-                if constexpr (gv_debug) { std::cout << "too few ticks, decrease spacing to " << (tickspacing / mult) << "\n"; }
+                if constexpr (mt_debug) { std::cout << "too few ticks, decrease spacing to " << (tickspacing / mult) << "\n"; }
                 while (numtickintervals < _num_ticks_range.min && numtickintervals < _num_ticks_range.max && tickspacing > std::numeric_limits<F>::epsilon()) {
                     tickspacing = tickspacing / mult;
                     numtickintervals = std::floor (drange / tickspacing);
                 }
             }
-            if constexpr (gv_debug) { std::cout << "now tickspacing = " << tickspacing << ", giving " << (numtickintervals + F{1}) << " ticks\n"; }
+            if constexpr (mt_debug) { std::cout << "now tickspacing = " << tickspacing << ", giving " << (numtickintervals + F{1}) << " ticks\n"; }
 
             actual_numticks = numtickintervals + F{1};
         };
@@ -211,19 +195,19 @@ namespace morph::graphing {
         // Optionally, be strict about keeping in range, at cost of 'nice' tick values
         if (strict_num_ticks_mode == true) {
             tmult = F{1.2};
-            if constexpr (gv_debug) { std::cout << "strict_num_ticks_mode == true\n"; }
+            if constexpr (mt_debug) { std::cout << "strict_num_ticks_mode == true\n"; }
             bool recompute_required = (actual_numticks > _num_ticks_range.max || actual_numticks < _num_ticks_range.min) ? true : false;
             unsigned int attempts = 0;
             while (recompute_required == true && attempts < 6) {
                 tmult *= F{1.2};
-                if constexpr (gv_debug) { std::cout << "Call subr_find_tickspacing (" << tmult << ")\n"; }
+                if constexpr (mt_debug) { std::cout << "Call subr_find_tickspacing (" << tmult << ")\n"; }
                 subr_find_tickspacing (tmult);
                 recompute_required = (actual_numticks > _num_ticks_range.max || actual_numticks < _num_ticks_range.min) ? true : false;
                 ++attempts;
             }
         }
 
-        if constexpr (gv_debug) {
+        if constexpr (mt_debug) {
             if (actual_numticks < _num_ticks_range.min || actual_numticks > _num_ticks_range.max) {
                 std::cout << "Number of ticks (" << actual_numticks << ") is outside range " <<  _num_ticks_range << "\n";
             }
