@@ -68,6 +68,7 @@ install(
   Winder.h
 
   DatasetStyle.h
+  graphing.h
   graphstyles.h
   TextFeatures.h
   TextGeometry.h

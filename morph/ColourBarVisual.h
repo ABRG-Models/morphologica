@@ -6,9 +6,12 @@
 
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
+#include <morph/range.h>
 #include <morph/scale.h>
 #include <morph/vec.h>
-#include <morph/GraphVisual.h> // share some features from GraphVisual
+#include <morph/ColourMap.h>
+#include <morph/graphing.h>
+#include <morph/graphstyles.h>
 
 namespace morph {
 
@@ -89,8 +92,8 @@ namespace morph {
                 F _max = this->tickscale.inverse_one (this->tickscale.output_range.max);
                 float realmin = this->tickscale.inverse_one (0);
                 float realmax = this->tickscale.inverse_one (this->length);
-                this->ticks = morph::GraphVisual<F, glver>::maketicks (_min, _max, realmin, realmax,
-                                                                       this->number_of_ticks_range, this->strict_num_ticks_mode);
+                this->ticks = morph::graphing::maketicks (_min, _max, realmin, realmax,
+                                                          this->number_of_ticks_range, this->strict_num_ticks_mode);
                 this->tick_posns.resize (this->ticks.size());
                 this->tickscale.transform (ticks, tick_posns);
             }
@@ -179,12 +182,12 @@ namespace morph {
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = {};
                         if (this->old_labels) {
-                            s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
+                            s = morph::graphing::number_format (this->ticks[i]);
                         } else {
                             if (i == 0) {
-                                s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i], this->ticks[i+1]);
+                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
                             } else {
-                                s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i], this->ticks[i-1]);
+                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
                             }
                         }
                         auto lbl = this->makeVisualTextModel (this->tf);
@@ -204,12 +207,12 @@ namespace morph {
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = {};
                         if (this->old_labels) {
-                            s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
+                            s = morph::graphing::number_format (this->ticks[i]);
                         } else {
                             if (i == 0) {
-                                s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i], this->ticks[i+1]);
+                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
                             } else {
-                                s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i], this->ticks[i-1]);
+                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
                             }
                         }
                         auto lbl = this->makeVisualTextModel (this->tf);
@@ -232,12 +235,12 @@ namespace morph {
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = {};
                         if (this->old_labels) {
-                            s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
+                            s = morph::graphing::number_format (this->ticks[i]);
                         } else {
                             if (i == 0) {
-                                s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i], this->ticks[i+1]);
+                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
                             } else {
-                                s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i], this->ticks[i-1]);
+                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
                             }
                         }
                         auto lbl = this->makeVisualTextModel (this->tf);
@@ -257,12 +260,12 @@ namespace morph {
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
                         std::string s = {};
                         if (this->old_labels) {
-                            s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
+                            s = morph::graphing::number_format (this->ticks[i]);
                         } else {
                             if (i == 0) {
-                                s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i], this->ticks[i+1]);
+                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
                             } else {
-                                s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i], this->ticks[i-1]);
+                                s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
                             }
                         }
                         auto lbl = this->makeVisualTextModel (this->tf);
