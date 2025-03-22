@@ -68,7 +68,7 @@ namespace morph {
                 return (((gl_version_number >> 30) & 0x1) > 0x0) ? true : false;
             }
             // Output a string describing the version number
-            static std::string vstring (const int gl_version_number)
+            static inline std::string vstring (const int gl_version_number)
             {
                 std::string v = std::to_string (version::major(gl_version_number)) + std::string(".")
                 + std::to_string (version::minor(gl_version_number));
