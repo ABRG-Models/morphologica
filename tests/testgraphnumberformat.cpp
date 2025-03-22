@@ -63,20 +63,47 @@ int main()
     str = morph::graphing::number_format (num, next);
     std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
     if (str != "-.0106") { std::cout << "fail\n"; --rtn; }
-#if 0
+
     num = 0.01040f;
     next = 0.0103f;
     str = morph::graphing::number_format (num, next);
     std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
     if (str != ".0104") { std::cout << "fail\n"; --rtn; }
 
+    num = 20000.0f;
+    next = 10000.0f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "2e+04") { std::cout << "fail\n"; --rtn; }
 
+    num = 20000.0f;
+    next = 20001.0f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "2.0000e+04") { std::cout << "fail\n"; --rtn; }
+
+    num = 20000.0f;
+    next = 20010.0f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "2.000e+04") { std::cout << "fail\n"; --rtn; }
+
+#if 0
     std::cout << "std::floor (-4.0f) = " << std::floor (-4.0f) << std::endl;
 
-    std::cout << std::log10(9.99998e-05) + 4.0  << std::endl;
-    std::cout << std::log10(1e-4) + 4.0  << std::endl;
-    std::cout << std::floor (std::log10(9.99998e-05))  << std::endl;
-    std::cout << std::floor (std::log10(1e-4))  << std::endl;
+    float up = 9.99998e-05f * 1e5f;
+    float up2 = 1e-04f * 1e4f;
+    std::cout << "up=" << up << std::endl;
+    std::cout << "up2=" << up2 << std::endl;
+    std::cout << "10 - up=" << (10.0f - up) << std::endl;
+    std::cout << "10 - up2=" << (10.0f - up2) << std::endl;
+
+    int expnt_ = static_cast<int>(std::floor (std::log10 (10.0f - up)));
+    std::cout << "expnt_ = " << expnt_ << std::endl;
+    std::cout << std::log10(9.99998e-05f) + 4.0f  << std::endl;
+    std::cout << std::log10(1e-4f) + 4.0f  << std::endl;
+    std::cout << std::floor (std::log10(9.99998e-05f))  << std::endl;
+    std::cout << std::floor (std::log10(1e-4f))  << std::endl;
 #endif
     std::cout << (rtn ? "FAIL\n" : "PASS\n");
     return rtn;

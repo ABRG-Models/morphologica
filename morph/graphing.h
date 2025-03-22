@@ -57,6 +57,15 @@ namespace morph::graphing {
         if constexpr (gv_debug) { std::cout << num << " - " << adjacent_num << " = " << num - adjacent_num << std::endl; }
         F num_diff = std::abs (num - adjacent_num);
         int expnt_diff = static_cast<int>(std::floor (std::log10 (num_diff)));
+        F inv_expnt = std::pow (F{10}, -expnt_diff);
+        F num_mant = num_diff * inv_expnt; // Should be a value between 0 and 10
+        if constexpr (gv_debug) {
+            std::cout << "num_mant=" << num_mant << std::endl;
+            // If 10 - num_mant is very small, then it's a precision issue and we probably want expnt_diff += 1
+            std::cout << "10 - num_mant=" << (10.0f - num_mant) << std::endl;
+        }
+        if (std::abs(F{10} - num_mant) < F{1e-3}) { expnt_diff += 1; }
+
         int expnt_num = 0;
         int precn = 0;
 
@@ -78,7 +87,7 @@ namespace morph::graphing {
         // 0, 1, 2
         F val_diff = std::pow (F{10}, expnt_diff);
         if constexpr (gv_debug) { std::cout << "val_diff = " << val_diff << std::endl; }
-        F col_unit = val_diff * std::floor (std::abs (num) / val_diff); //???
+        F col_unit = val_diff * std::floor (std::abs (num) / val_diff);
 
         F next_unit_thr = val_diff * F{0.5}; // 5*val_diff/10 = val_diff*5/10 = val_diff*0.5
 
@@ -96,7 +105,7 @@ namespace morph::graphing {
         std::string s = "0";
         if (num != F{0}) {
             if (expnt_num > 3) {
-                precn = expnt_num < 0 ? 0 : expnt_num;
+                precn = expnt_num - expnt_diff;
                 s = std::format ("{:.{}e}", num, precn);
             } else {
                 precn = expnt_diff < 0 ? -expnt_diff : 0;
@@ -107,7 +116,7 @@ namespace morph::graphing {
         std::stringstream ss;
         if (num != F{0}) {
             if (expnt_num > 3) {
-                precn = expnt_num < 0 ? 0 : expnt_num;
+                precn = expnt_num - expnt_diff;
                 ss << std::scientific << std::setprecision (precn);
             } else {
                 precn = expnt_diff < 0 ? -expnt_diff : 0;
