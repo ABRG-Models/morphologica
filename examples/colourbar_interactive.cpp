@@ -12,10 +12,6 @@
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
 #include <morph/HexGrid.h>
-// To test non-format code:
-//#ifdef MORPH_HAVE_STD_FORMAT
-//#undef MORPH_HAVE_STD_FORMAT
-//#endif
 #include <morph/ColourBarVisual.h>
 
 // This is the standard way to incorporate key-operations into a morphologica program. See also myvisual.cpp.
