@@ -39,53 +39,71 @@ namespace morph::graphing {
     {
         if constexpr (nf_debug) {
             std::cout << std::endl << "number_format (" << num << ", " << adjacent_num
-                      << ") diff = " << num - adjacent_num << std::endl;
+                      << ") called. diff = " << num - adjacent_num << std::endl;
         }
 
-        morph::range<int> adj_sigcols = morph::math::significant_cols (adjacent_num);
+        //morph::range<int> adj_sigcols = morph::math::significant_cols (adjacent_num);
         morph::range<int> num_sigcols = morph::math::significant_cols<F> (num);
         F num_diff = std::abs (num - adjacent_num);
         morph::range<int> diff_sigcols = morph::math::significant_cols<F> (num_diff);
-        std::cout << "num_sigcols: " << num_sigcols << ", adj_sigcols: " << adj_sigcols
-                  << ", diff_sigcols: " << diff_sigcols << std::endl;
+        if constexpr (nf_debug) {
+            std::cout << "num_sigcols: " << num_sigcols << ", diff_sigcols: " << diff_sigcols << std::endl;
+        }
 
-        // One way to figure out the precision is to find the difference between number precision max and diff prec. max:
-        //int precn_width = morph::math::abs (num_sigcols.max - diff_sigcols.max);
+        // Whats the num_diff maxcol? is it 9.5 plus? In which case it would round up
+        if (num_diff * morph::math::pow (F{10}, -diff_sigcols.max) >= F{9.5}) {
+            // std::cout << "roundup diff_sigcols.max\n";
+            diff_sigcols.max += 1;
+        }
 
         // Which is the minimum column we should show?
         int min_col = std::min (num_sigcols.max, diff_sigcols.max);
-        std::cout << "Min col initially: " << min_col << std::endl;
+        std::cout << "min_col initially: " << min_col << std::endl;
 
         // What's the best precision value - actual value? If it's non-negligible, then
         // add to precision. I think this is the graphing specific logic that I need.
-        //
-        // need
         F rounded = morph::math::round_to_col (num, min_col);
-        std::cout << "rounded to " << min_col << " we have " << rounded << std::endl;
-        if (std::abs(rounded - num) > morph::math::pow(F{10}, min_col - 1)) {
-            std::cout << "Rounding leaves much left over (" << std::abs(rounded - num) << ")\n";
+        std::cout << num <<  " rounded to " << min_col << " is " << rounded << std::endl;
+        while (min_col > (diff_sigcols.max - 2)
+               && std::abs(rounded - num) > morph::math::pow(F{10}, min_col - 1)) {
+            if constexpr (nf_debug) {
+
+                std::cout << "abs(rounded - num): abs(" << rounded << " - " << num << ")\n";
+
+                std::cout << "Rounding comparison was true: (" << std::abs(rounded - num) << ") > "
+                          << morph::math::pow(F{10}, min_col - 1) << " == true\n";
+
+                std::cout << "Calling round_to_col again with min_col = " << (min_col - 1) << std::endl;
+            }
             min_col -= 1;
+            rounded = morph::math::round_to_col (num, min_col);
+            std::cout << "Preview: std::abs(rounded - num) > blah? " << std::abs(rounded - num) << " > " << morph::math::pow(F{10}, min_col - 1) << " == " << ((std::abs(rounded - num) > morph::math::pow(F{10}, min_col - 1)) ? "T" : "F") << std::endl;
+        }
+        if constexpr (nf_debug) {
+            if (min_col > (diff_sigcols.max - 2)) {
+                std::cout << "Rounding comparison was false: (" << std::abs(rounded - num) << ") cf 10^min_col-1: "
+                          << morph::math::pow(F{10}, min_col - 1) << "\n";
+            }
         }
 
-        std::cout << "Min col to show: " << min_col << std::endl;
-        int precn = 2; // dummy
+        if constexpr (nf_debug) { std::cout << "min_col = " << min_col << " Now format it...\n"; }
 
 #ifdef MORPH_HAVE_STD_FORMAT
         std::string s = "0";
         if (num != F{0}) {
             if (num_sigcols.max > 3) {
-                s = std::format ("{:.{}e}", num, precn);
+                s = std::format ("{:.{}e}", num, num_sigcols.max - min_col);
             } else {
-                s = std::format ("{:.{}f}", num, -min_col);
+                s = std::format ("{:.{}f}", num, (min_col <= 0 ? -min_col : 0));
             }
         }
 #else
         std::stringstream ss;
         if (num != F{0}) {
             if (num_sigcols.max > 3) {
-                ss << std::scientific << std::setprecision (precn);
+                ss << std::scientific << std::setprecision (num_sigcols.max - min_col);
             } else {
-                ss << std::fixed << std::setprecision (precn);
+                ss << std::fixed << std::setprecision ((min_col <= 0 ? -min_col : 0));
             }
             ss << num;
         } else {

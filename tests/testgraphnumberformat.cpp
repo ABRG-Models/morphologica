@@ -13,6 +13,8 @@ int main()
 {
     int rtn = 0;
 
+    std::cout.precision(20);
+
     float num = 0.0f;
     float next = 0.0f;
 
@@ -27,12 +29,6 @@ int main()
     str = morph::graphing::number_format (num, next);
     std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
     if (str != "-2") { std::cout << "fail\n"; --rtn; }
-
-    num = 13.8889f;
-    next = 6.94444f;
-    str = morph::graphing::number_format (num, next);
-    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
-    if (str != "13.9") { std::cout << "fail\n"; --rtn; }
 
     num = 1000.01f;
     next = 1000.04f;
@@ -88,13 +84,35 @@ int main()
     std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
     if (str != "2.000e+04") { std::cout << "fail\n"; --rtn; }
 
-#if 0 // known to fail at present:
+    num = 13.8889f;
+    next = 6.94444f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "13.89") { std::cout << "fail\n"; --rtn; }
+
     num = 8.75f;
     next = 7.5f;
     str = morph::graphing::number_format (num, next);
     std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
     if (str != "8.75") { std::cout << "fail\n"; --rtn; }
-#endif
+
+    num = -10.0f;
+    next = 0.0f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "-10") { std::cout << "fail\n"; --rtn; }
+
+    num = -0.0205f;
+    next = -0.02055f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != "-.02050") { std::cout << "fail\n"; --rtn; }
+
+    num  = 0.0015f;
+    next = 0.0010f;
+    str = morph::graphing::number_format (num, next);
+    std::cout << "gnf ("<<num<<", "<<next<<"): " << str << std::endl;
+    if (str != ".0015") { std::cout << "fail\n"; --rtn; }
 
     std::cout << (rtn ? "FAIL\n" : "PASS\n");
     return rtn;
