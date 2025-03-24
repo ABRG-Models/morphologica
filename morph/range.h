@@ -15,6 +15,7 @@
 #include <limits>
 #include <complex>
 #include <morph/trait_tests.h>
+#include <morph/constexpr_math.h>
 
 namespace morph {
 
@@ -57,6 +58,18 @@ namespace morph {
             std::stringstream ss;
             ss << "[" << this->min << ", " << this->max << "]";
             return ss.str();
+        }
+
+        constexpr bool operator== (const range<T>& rhs) const noexcept
+        {
+            return (morph::math::abs(this->min - rhs.min) < std::numeric_limits<T>::epsilon()
+                    && morph::math::abs(this->max - rhs.max) < std::numeric_limits<T>::epsilon());
+        }
+
+        constexpr bool operator!= (const range<T>& rhs) const noexcept
+        {
+            return (morph::math::abs(this->min - rhs.min) > std::numeric_limits<T>::epsilon()
+                    || morph::math::abs(this->max - rhs.max) > std::numeric_limits<T>::epsilon());
         }
 
         // Initialise the range to participate in a search for the max and min through a range of data.
