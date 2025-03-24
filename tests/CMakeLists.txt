@@ -551,3 +551,6 @@ add_test(testmaketicks testmaketicks)
 
 add_executable(testsigfigs testsigfigs.cpp)
 add_test(testsigfigs testsigfigs)
+
+add_executable(testroundtocol testroundtocol.cpp)
+add_test(testroundtocol testroundtocol)

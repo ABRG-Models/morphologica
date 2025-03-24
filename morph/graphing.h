@@ -22,6 +22,7 @@
 #endif
 
 #include <morph/range.h>
+#include <morph/math.h>
 
 namespace morph::graphing {
 
@@ -36,73 +37,54 @@ namespace morph::graphing {
     template <typename F>
     static std::string number_format (const F num, const F adjacent_num)
     {
-        static constexpr F precision_threshold = F{1e-3};
+        if constexpr (nf_debug) {
+            std::cout << std::endl << "number_format (" << num << ", " << adjacent_num
+                      << ") diff = " << num - adjacent_num << std::endl;
+        }
 
-        if constexpr (nf_debug) { std::cout << std::endl << "number_format (" << num << ", " << adjacent_num << ") diff = " << num - adjacent_num << std::endl; }
+        morph::range<int> adj_sigcols = morph::math::significant_cols (adjacent_num);
+        morph::range<int> num_sigcols = morph::math::significant_cols<F> (num);
         F num_diff = std::abs (num - adjacent_num);
-        int expnt_diff = static_cast<int>(std::floor (std::log10 (num_diff)));
-        if constexpr (nf_debug) {
-            std::cout << "expnt_diff: " << expnt_diff << " for num_diff: " << num_diff
-                      << " [log10(" << num_diff << ") = " << std::log10 (num_diff) << "] floor(log10(" << num_diff << ")) = " << std::floor(std::log10 (num_diff)) << "\n";
-        }
-        F inv_expnt = std::pow (F{10}, -expnt_diff);
-        F num_mant = num_diff * inv_expnt; // Should be a value between 0 and 10
-        if constexpr (nf_debug) {
-            std::cout << "num_mant=" << num_mant << "; 10 - num_mant=" << (10.0f - num_mant) << std::endl;
-            if (std::abs(F{10} - num_mant) < precision_threshold) { std::cout << "Will increment expnt_diff=" << expnt_diff << " by 1\n"; }
-        }
-        // If 10 - num_mant is very small, then it's a precision issue and we want expnt_diff += 1
-        if (std::abs(F{10} - num_mant) < precision_threshold) { expnt_diff += 1; }
+        morph::range<int> diff_sigcols = morph::math::significant_cols<F> (num_diff);
+        std::cout << "num_sigcols: " << num_sigcols << ", adj_sigcols: " << adj_sigcols
+                  << ", diff_sigcols: " << diff_sigcols << std::endl;
 
-        int expnt_num = 0;
-        int precn = 0;
+        // One way to figure out the precision is to find the difference between number precision max and diff prec. max:
+        //int precn_width = morph::math::abs (num_sigcols.max - diff_sigcols.max);
 
-        if (num != F{0}) {
-            expnt_num = static_cast<int>(std::floor (std::log10 (std::abs (num))));
-        }
+        // Which is the minimum column we should show?
+        int min_col = std::min (num_sigcols.max, diff_sigcols.max);
+        std::cout << "Min col initially: " << min_col << std::endl;
 
-        if constexpr (nf_debug) {
-            std::cout << "expnt_num: " << expnt_num << " for num: " << num << " [log10(|" << num << "|) = " << std::log10 (std::abs (num)) << "]\n";
+        // What's the best precision value - actual value? If it's non-negligible, then
+        // add to precision. I think this is the graphing specific logic that I need.
+        //
+        // need
+        F rounded = morph::math::round_to_col (num, min_col);
+        std::cout << "rounded to " << min_col << " we have " << rounded << std::endl;
+        if (std::abs(rounded - num) > morph::math::pow(F{10}, min_col - 1)) {
+            std::cout << "Rounding leaves much left over (" << std::abs(rounded - num) << ")\n";
+            min_col -= 1;
         }
 
-        // If there is additional data beyond the critical precision, then show one extra col
-        // e.g. if we have  0.000, 0.250, 0.500 then we want to show it as:
-        // 0* 0.25, 0.50  (* 0 always gets special treatment)
-        // If we have 0.000, 1.000, 2.000 we want to show it as
-        // 0, 1, 2
-        F val_diff = std::pow (F{10}, expnt_diff);
-        if constexpr (nf_debug) { std::cout << "val_diff = " << val_diff << std::endl; }
-        F col_unit = val_diff * std::floor (std::abs (num) / val_diff);
-
-        F next_unit_thr = val_diff * F{0.5}; // 5*val_diff/10 = val_diff*5/10 = val_diff*0.5
-
-        if constexpr (nf_debug) { std::cout << "num_col_diff = " << std::abs (num) << " - " << col_unit << std::endl; }
-        F num_col_diff = std::abs (num) - col_unit;
-        if constexpr (nf_debug) {
-            std::cout << "num_col_diff = " << num_col_diff << ", next_unit_thr = " << next_unit_thr << std::endl;
-            if (num_col_diff > next_unit_thr) { std::cout << "Will decrement expnt_diff=" << expnt_diff << " by 1\n"; }
-        }
-        if (num_col_diff > next_unit_thr) { expnt_diff -= 1; }
+        std::cout << "Min col to show: " << min_col << std::endl;
+        int precn = 2; // dummy
 
 #ifdef MORPH_HAVE_STD_FORMAT
         std::string s = "0";
         if (num != F{0}) {
-            if (expnt_num > 3) {
-                precn = expnt_num - expnt_diff;
+            if (num_sigcols.max > 3) {
                 s = std::format ("{:.{}e}", num, precn);
             } else {
-                precn = expnt_diff < 0 ? -expnt_diff : 0;
-                s = std::format ("{:.{}f}", num, precn);
+                s = std::format ("{:.{}f}", num, -min_col);
             }
         }
 #else
         std::stringstream ss;
         if (num != F{0}) {
-            if (expnt_num > 3) {
-                precn = expnt_num - expnt_diff;
+            if (num_sigcols.max > 3) {
                 ss << std::scientific << std::setprecision (precn);
             } else {
-                precn = expnt_diff < 0 ? -expnt_diff : 0;
                 ss << std::fixed << std::setprecision (precn);
             }
             ss << num;

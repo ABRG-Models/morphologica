@@ -91,6 +91,57 @@ namespace morph::math {
         return sc.span();
     }
 
+    // Round the number f to the base10 col mincol. In f, our convention is that column
+    // 1 is 10s, 0 is 1s, -1 is tenths, -2 hundreds, etc. So round_to_col (1.2345f, -2)
+    // should return 1.23f.
+    template <typename F> requires std::is_floating_point_v<F>
+    constexpr F round_to_col (const F& f, const int mincol)
+    {
+        if (morph::math::isnan(f) || morph::math::isinf(f)) { return f; }
+        // How many sig figures does the type (float, double...) support?
+        constexpr F epsilon = std::numeric_limits<F>::epsilon();
+        constexpr int type_sf = static_cast<int>(morph::math::floor (morph::math::log10 (F{1} / epsilon)));
+        // Save sign and a positive version of the input
+        int sign = f > F{0} ? 1 : -1;
+        F fcpy = f > F{0} ? f : -f;
+        // Find the biggest column
+        int maxcol = static_cast<int>(morph::math::floor (morph::math::log10 (fcpy)));
+        // We will need to use 10^maxcol
+        F tentothe = morph::math::pow (F{10}, maxcol);
+        // If user passed a mincol that's too big, return number rounded to maxcol
+        if (mincol > maxcol) { return (sign > 0 ? tentothe : -tentothe); }
+        F rounded = F{0};
+        // Loop down curcol until we hit the limit for type F or mincol
+        for (int curcol = maxcol; curcol >= mincol && curcol > (maxcol - type_sf); --curcol) {
+            // What's the value in this column?
+            F colval = morph::math::floor(fcpy / tentothe);
+            // Add to rounded
+            rounded += morph::math::pow (F{10}, curcol) * colval;
+            std::cout << "rounded now = " << rounded << std::endl;
+            // If the value colval was very small then there's nothing more to do
+            if (std::abs(colval) < epsilon) {
+                std::cout << "colval = " << colval << "  < epsilon\n";
+                break;
+            }
+            // Is col val very close to 10? Add to our rounded value if so
+            if (colval > F{8}) {
+                // additional cols depends on max precision of type and current col.
+                int cols_remaining = type_sf - (maxcol - curcol); // How many significant column have we already used?
+                if (cols_remaining > 0) {
+                    F additional_cols = morph::math::pow (F{10}, cols_remaining);
+                    if (morph::math::abs((fcpy - colval * tentothe) - tentothe) < (tentothe / additional_cols)) {
+                        // Add to rounded
+                        rounded += morph::math::pow (F{10}, curcol+1);
+                        break;
+                    }
+                } else { break; } // no cols left
+            }
+            // Update fcpy by subtracting the column value, then shifting-right with multiply by 10
+            fcpy = (fcpy - colval * tentothe) * F{10};
+        }
+        return (sign > 0 ? rounded : -rounded);
+    }
+
     // Return n!
     template <typename T, typename I>
     constexpr T factorial (const I n)
