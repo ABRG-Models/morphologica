@@ -548,3 +548,6 @@ add_test(testgraphnumberformat_ss testgraphnumberformat_ss)
 
 add_executable(testmaketicks testmaketicks.cpp)
 add_test(testmaketicks testmaketicks)
+
+add_executable(testsigfigs testsigfigs.cpp)
+add_test(testsigfigs testsigfigs)
