@@ -89,7 +89,7 @@ namespace morph::math {
         return sc.span();
     }
 
-    static constexpr bool rc_debug = true;
+    static constexpr bool rc_debug = false;
 
     // Round the number f to the base10 col mincol. In f, our convention is that column
     // 1 is 10s, 0 is 1s, -1 is tenths, -2 hundreds, etc. So round_to_col (1.2345f, -2)
@@ -122,21 +122,11 @@ namespace morph::math {
             if constexpr (rc_debug) { std::cout << "rtc: rounded now = " << rounded << std::endl; }
 
             if (curcol == mincol) {
-                if constexpr (rc_debug) { std::cout << "Got curcol == mincol\n"; }
-                // Last col. do we round?
-                F final_diff = std::abs(f) - rounded;
-                if constexpr (rc_debug) { std::cout << "rtc: Final_diff: " << final_diff << std::endl; }
-                if (final_diff > F{0}) {
-                    int fdcol = static_cast<int>(morph::math::floor (morph::math::log10 (final_diff)));
-                    if constexpr (rc_debug) { std::cout << "rtc: Final col: " << fdcol << std::endl; }
-                    F final_diff_raised = final_diff * morph::math::pow (F{10}, -fdcol);
-                    if constexpr (rc_debug) { std::cout << "rtc: Final diff raised: " << final_diff_raised << std::endl; }
-                    if (final_diff_raised > F{8}) { // HERE. Is it 8 or 0.8?
-                        if constexpr (rc_debug) {
-                            std::cout << "rtc: Add " << morph::math::pow (F{10}, curcol) << " to rounded\n";
-                        }
-                        rounded += morph::math::pow (F{10}, curcol);
-                    }
+                // We're on last col. What's the colval in the next col? Peek into it
+                F fcpy_peek = (fcpy - colval * tentothe) * F{10};
+                F colval_peek = morph::math::floor (fcpy_peek / tentothe);
+                if (colval_peek >= F{5}) { // need to round curcol up
+                    rounded += morph::math::pow (F{10}, curcol) * F{1};
                 }
             }
 

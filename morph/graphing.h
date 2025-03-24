@@ -27,7 +27,7 @@
 namespace morph::graphing {
 
     // Debug number_format?
-    static constexpr bool nf_debug = true;
+    static constexpr bool nf_debug = false;
 
     // Debug maketicks?
     static constexpr bool mt_debug = false;
@@ -42,7 +42,6 @@ namespace morph::graphing {
                       << ") called. diff = " << num - adjacent_num << std::endl;
         }
 
-        //morph::range<int> adj_sigcols = morph::math::significant_cols (adjacent_num);
         morph::range<int> num_sigcols = morph::math::significant_cols<F> (num);
         F num_diff = std::abs (num - adjacent_num);
         morph::range<int> diff_sigcols = morph::math::significant_cols<F> (num_diff);
@@ -58,12 +57,11 @@ namespace morph::graphing {
 
         // Which is the minimum column we should show?
         int min_col = std::min (num_sigcols.max, diff_sigcols.max);
-        std::cout << "min_col initially: " << min_col << std::endl;
 
         // What's the best precision value - actual value? If it's non-negligible, then
         // add to precision. I think this is the graphing specific logic that I need.
         F rounded = morph::math::round_to_col (num, min_col);
-        std::cout << num <<  " rounded to " << min_col << " is " << rounded << std::endl;
+        if constexpr (nf_debug) { std::cout << num <<  " rounded to " << min_col << " is " << rounded << std::endl; }
         while (min_col > (diff_sigcols.max - 2)
                && std::abs(rounded - num) > morph::math::pow(F{10}, min_col - 1)) {
             if constexpr (nf_debug) {
@@ -77,7 +75,6 @@ namespace morph::graphing {
             }
             min_col -= 1;
             rounded = morph::math::round_to_col (num, min_col);
-            std::cout << "Preview: std::abs(rounded - num) > blah? " << std::abs(rounded - num) << " > " << morph::math::pow(F{10}, min_col - 1) << " == " << ((std::abs(rounded - num) > morph::math::pow(F{10}, min_col - 1)) ? "T" : "F") << std::endl;
         }
         if constexpr (nf_debug) {
             if (min_col > (diff_sigcols.max - 2)) {
