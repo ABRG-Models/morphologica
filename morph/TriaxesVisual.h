@@ -205,12 +205,7 @@ namespace morph {
             morph::TextFeatures tf(this->fontsize, this->fontres, false, morph::colour::black, this->font);
 
             for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
-                std::string s = {};
-                if (i == 0) {
-                    s = morph::graphing::number_format (this->xticks[i], this->xticks[i+1]);
-                } else {
-                    s = morph::graphing::number_format (this->xticks[i], this->xticks[i-1]);
-                }
+                std::string s = morph::graphing::number_format (this->xticks[i], this->xticks[i==0 ? 1 : i-1]);
                 // Issue: I need the width of the text ss.str() before I can create the
                 // VisualTextModel, so need a static method like this:
                 auto lbl = this->makeVisualTextModel (tf);
@@ -223,12 +218,7 @@ namespace morph {
             }
 
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
-                std::string s = {};
-                if (i == 0) {
-                    s = morph::graphing::number_format (this->yticks[i], this->yticks[i+1]);
-                } else {
-                    s = morph::graphing::number_format (this->yticks[i], this->yticks[i-1]);
-                }
+                std::string s = morph::graphing::number_format (this->yticks[i], this->yticks[i==0 ? 1 : i-1]);
                 auto lbl = this->makeVisualTextModel (tf);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ytick_height = geom.height() > this->ytick_height ? geom.height() : this->ytick_height;
@@ -239,12 +229,7 @@ namespace morph {
             }
 
             for (unsigned int i = 0; i < this->ztick_posns.size(); ++i) {
-                std::string s = {};
-                if (i == 0) {
-                    s = morph::graphing::number_format (this->zticks[i], this->zticks[i+1]);
-                } else {
-                    s = morph::graphing::number_format (this->zticks[i], this->zticks[i-1]);
-                }
+                std::string s = morph::graphing::number_format (this->zticks[i], this->zticks[i==0 ? 1 : i-1]);
                 auto lbl = this->makeVisualTextModel (tf);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ztick_height = geom.height() > this->ztick_height ? geom.height() : this->ztick_height;

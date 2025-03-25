@@ -1424,12 +1424,7 @@ namespace morph {
                     auto lbl = this->makeVisualTextModel (tf);
                     // Find longest string (more or less)
                     for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
-                        std::string s = {};
-                        if (i == 0) {
-                            s = morph::graphing::number_format (this->xticks[i], this->xticks[i+1]);
-                        } else {
-                            s = morph::graphing::number_format (this->xticks[i], this->xticks[i-1]);
-                        }
+                        std::string s = morph::graphing::number_format (this->xticks[i], this->xticks[i==0 ? 1 : i-1]);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         max_label_length = geom.width() > max_label_length ? geom.width() : max_label_length;
                     }
@@ -1445,13 +1440,7 @@ namespace morph {
                     // Omit the 0 for 'cross' axes (or maybe shift its position)
                     if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
 
-                    std::string s = {};
-                    if (i == 0) {
-                        s = morph::graphing::number_format (this->xticks[i], this->xticks[i+1]);
-                    } else {
-                        s = morph::graphing::number_format (this->xticks[i], this->xticks[i-1]);
-                    }
-
+                    std::string s = morph::graphing::number_format (this->xticks[i], this->xticks[i==0 ? 1 : i-1]);
                     // Issue: I need the width of the text ss.str() before I can create the
                     // VisualTextModel, so need a static method like this:
                     tf.fontsize = x_font_factor * this->fontsize;
@@ -1470,12 +1459,7 @@ namespace morph {
                     // Omit the 0 for 'cross' axes (or maybe shift its position)
                     if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
 
-                    std::string s = {};
-                    if (i == 0) {
-                        s = morph::graphing::number_format (this->yticks[i], this->yticks[i+1]);
-                    } else {
-                        s = morph::graphing::number_format (this->yticks[i], this->yticks[i-1]);
-                    }
+                    std::string s = morph::graphing::number_format (this->yticks[i], this->yticks[i==0 ? 1 : i-1]);
                     auto lbl = this->makeVisualTextModel (tf);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
@@ -1492,13 +1476,7 @@ namespace morph {
                 x_for_yticks = this->width;
                 this->ytick_label_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
-                    std::string s = {};
-                    if (i == 0) {
-                        s = morph::graphing::number_format (this->yticks2[i], this->yticks2[i+1]);
-                    } else {
-                        s = morph::graphing::number_format (this->yticks2[i], this->yticks2[i-1]);
-                    }
-
+                    std::string s = morph::graphing::number_format (this->yticks2[i], this->yticks2[i==0 ? 1 : i-1]);
                     auto lbl = this->makeVisualTextModel (tf);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_label_width2 = geom.width() > this->ytick_label_width2 ? geom.width() : this->ytick_label_width2;
