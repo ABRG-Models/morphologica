@@ -179,12 +179,7 @@ namespace morph {
                 if (this->orientation == colourbar_orientation::horizontal) {
                     // Labels above
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                        std::string s = {};
-                        if (i == 0) {
-                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
-                        } else {
-                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
-                        }
+                        std::string s = morph::graphing::number_format (this->ticks[i], this->ticks[i==0 ? 1 : i-1]);
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
@@ -200,12 +195,7 @@ namespace morph {
                 } else {
                     // Labels left
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                        std::string s = {};
-                        if (i == 0) {
-                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
-                        } else {
-                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
-                        }
+                        std::string s = morph::graphing::number_format (this->ticks[i], this->ticks[i==0 ? 1 : i-1]);
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
@@ -224,12 +214,7 @@ namespace morph {
                 if (this->orientation == colourbar_orientation::horizontal) {
                     // Labels below
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                        std::string s = {};
-                        if (i == 0) {
-                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
-                        } else {
-                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
-                        }
+                        std::string s = morph::graphing::number_format (this->ticks[i], this->ticks[i==0 ? 1 : i-1]);
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
@@ -245,12 +230,7 @@ namespace morph {
                 } else {
                     // Labels right
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                        std::string s = {};
-                        if (i == 0) {
-                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i+1]);
-                        } else {
-                            s = morph::graphing::number_format (this->ticks[i], this->ticks[i-1]);
-                        }
+                        std::string s = morph::graphing::number_format (this->ticks[i], this->ticks[i==0 ? 1 : i-1]);
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
