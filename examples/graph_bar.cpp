@@ -30,7 +30,6 @@ int main()
     gv->datarange_y.min = 0;
     // Set the data-to-axis distance based on the markersize.
     gv->setdataaxisdist (0.04f + ds.markersize/2.0f);
-    gv->num_ticks_range_x = { 5, 5 };
     gv->setdata (absc, ord, ds);
 
     // It may be nice to condense the above into a convenience function:
