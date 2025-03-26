@@ -188,6 +188,18 @@ namespace morph {
             while (di != data.end()) { *oi++ = this->inverse_one (*di++); }
         }
 
+        //! Transform a range
+        morph::range<S> transform (const morph::range<T>& data)
+        {
+            return morph::range<S>{ this->transform_one (data.min), this->transform_one (data.max) };
+        }
+
+        //! Inverse transform a range
+        morph::range<T> inverse (const morph::range<S>& data)
+        {
+            return morph::range<T>{ this->inverse_one (data.min), this->inverse_one (data.max) };
+        }
+
         /*!
          * \brief Compute scaling parameters
          *
