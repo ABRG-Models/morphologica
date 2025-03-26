@@ -27,34 +27,17 @@
 
 namespace morph::graphing {
 
-    // Debug number_format?
-    static constexpr bool nf_debug = false;
-
-    // Debug maketicks?
-    static constexpr bool mt_debug = false;
-
     //! Graph-specific number formatting for tick labels. You must pass in an adjacent
     //! label (which affects the optimum precision to use for formatting)
     template <typename F>
     static std::string number_format (const F num, const F adjacent_num)
     {
-        if constexpr (nf_debug) {
-            std::cout << std::endl << "number_format (" << num << ", " << adjacent_num
-                      << ") called. diff = " << num - adjacent_num << std::endl;
-        }
-
         morph::range<int> num_sigcols = morph::math::significant_cols<F> (num);
         F num_diff = std::abs (num - adjacent_num);
         morph::range<int> diff_sigcols = morph::math::significant_cols<F> (num_diff);
-        if constexpr (nf_debug) {
-            std::cout << "num_sigcols: " << num_sigcols << ", diff_sigcols: " << diff_sigcols << std::endl;
-        }
 
         // Whats the num_diff maxcol? is it 9.5 plus? In which case it would round up
-        if (num_diff * morph::math::pow (F{10}, -diff_sigcols.max) >= F{9.5}) {
-            // std::cout << "roundup diff_sigcols.max\n";
-            diff_sigcols.max += 1;
-        }
+        if (num_diff * morph::math::pow (F{10}, -diff_sigcols.max) >= F{9.5}) { diff_sigcols.max += 1; }
 
         // Which is the minimum column we should show?
         int min_col = std::min (num_sigcols.max, diff_sigcols.max);
@@ -62,29 +45,11 @@ namespace morph::graphing {
         // What's the best precision value - actual value? If it's non-negligible, then
         // add to precision. I think this is the graphing specific logic that I need.
         F rounded = morph::math::round_to_col (num, min_col);
-        if constexpr (nf_debug) { std::cout << num <<  " rounded to " << min_col << " is " << rounded << std::endl; }
-        while (min_col > (diff_sigcols.max - 2)
-               && std::abs(rounded - num) > morph::math::pow(F{10}, min_col - 1)) {
-            if constexpr (nf_debug) {
 
-                std::cout << "abs(rounded - num): abs(" << rounded << " - " << num << ")\n";
-
-                std::cout << "Rounding comparison was true: (" << std::abs(rounded - num) << ") > "
-                          << morph::math::pow(F{10}, min_col - 1) << " == true\n";
-
-                std::cout << "Calling round_to_col again with min_col = " << (min_col - 1) << std::endl;
-            }
+        while (min_col > (diff_sigcols.max - 2) && std::abs (rounded - num) > morph::math::pow (F{10}, min_col - 1)) {
             min_col -= 1;
             rounded = morph::math::round_to_col (num, min_col);
         }
-        if constexpr (nf_debug) {
-            if (min_col > (diff_sigcols.max - 2)) {
-                std::cout << "Rounding comparison was false: (" << std::abs(rounded - num) << ") cf 10^min_col-1: "
-                          << morph::math::pow(F{10}, min_col - 1) << "\n";
-            }
-        }
-
-        if constexpr (nf_debug) { std::cout << "min_col = " << min_col << " Now format it...\n"; }
 
 #ifdef MORPH_HAVE_STD_FORMAT
         std::string s = "0";
@@ -117,7 +82,6 @@ namespace morph::graphing {
             }
         }
 
-        if constexpr (nf_debug) { std::cout << "returning '" << s << "'\n"; }
         return s;
     }
 
@@ -136,9 +100,6 @@ namespace morph::graphing {
     template <typename F>
     static std::deque<F> maketicks (F rmin, F rmax, float realmin, float realmax, const morph::range<F>& _num_ticks_range)
     {
-        if constexpr (mt_debug) {
-            std::cout << "\nmorph::graphing::maketicks (" << rmin << "," << rmax << "," << realmin << "," << realmax << "," << _num_ticks_range << ")\n";
-        }
         std::deque<F> ticks = {};
 
         if (std::numeric_limits<F>::has_quiet_NaN) { // If we are passed NaN for ranges, then return empty ticks
@@ -148,7 +109,6 @@ namespace morph::graphing {
         F drange = rmax - rmin; // data range
         if (drange <= std::numeric_limits<F>::epsilon()
             || (_num_ticks_range.min == 2 && _num_ticks_range.max == 2)) {
-            if constexpr (mt_debug) { std::cout << "data range " << rmin << " to " << rmax << " is <= eps or ticks range is {2,2}\n"; }
             // Just two ticks in this case - one at drange min and one at max.
             ticks.push_back (rmin);
             ticks.push_back (rmax);
@@ -164,28 +124,19 @@ namespace morph::graphing {
             // How big should the tick spacing be? log the drange, find the floor, raise it to get candidate
             tickspacing = std::pow (base, std::floor (std::log (drange) / std::log(base))); // log(x)/log(5) gives log of x in base 5
             numtickintervals = std::floor (drange / tickspacing);
-
-            if constexpr (mt_debug) {
-                std::cout << "initial tickspacing = " << tickspacing << ", giving " << (numtickintervals + F{1}) << " ticks\n";
-            }
-
             constexpr F mult = F{2};
             if (numtickintervals > _num_ticks_range.max) {
-                if constexpr (mt_debug) { std::cout << "too many ticks, increase spacing to " << (tickspacing * mult) << "\n"; }
                 while (numtickintervals > _num_ticks_range.max && numtickintervals > _num_ticks_range.min) {
                     tickspacing = tickspacing * mult; // bigger tick spacing means fewer ticks
                     numtickintervals = std::floor (drange / tickspacing);
                 }
-
             } else if (numtickintervals < _num_ticks_range.min) {
-                if constexpr (mt_debug) { std::cout << "too few ticks, decrease spacing to " << (tickspacing / mult) << "\n"; }
-                while (numtickintervals < _num_ticks_range.min && numtickintervals < _num_ticks_range.max && tickspacing > std::numeric_limits<F>::epsilon()) {
+                while (numtickintervals < _num_ticks_range.min
+                       && numtickintervals < _num_ticks_range.max && tickspacing > std::numeric_limits<F>::epsilon()) {
                     tickspacing = tickspacing / mult;
                     numtickintervals = std::floor (drange / tickspacing);
                 }
             }
-            if constexpr (mt_debug) { std::cout << "now tickspacing = " << tickspacing << ", giving " << (numtickintervals + F{1}) << " ticks\n"; }
-
             actual_numticks = numtickintervals + F{1};
         };
 
@@ -193,8 +144,6 @@ namespace morph::graphing {
         F tbase = F{10};
         bool recompute_required = true;
         while (recompute_required == true && tbase > F{0}) {
-            if constexpr (mt_debug) { std::cout << "recomputing with base " << tbase << std::endl; }
-            if constexpr (mt_debug) { std::cout << "Call subr_find_tickspacing (" << tbase << ")\n"; }
             subr_find_tickspacing (tbase);
             recompute_required = (actual_numticks > _num_ticks_range.max || actual_numticks < _num_ticks_range.min) ? true : false;
             tbase -= F{1};
@@ -204,7 +153,6 @@ namespace morph::graphing {
         if (actual_numticks < _num_ticks_range.min || actual_numticks > _num_ticks_range.max) {
             // In this case our 'neat' algorithm failed, so just force some ticks with linspace
             int force_num = static_cast<int>(std::floor((_num_ticks_range.max + _num_ticks_range.min)  / F{2}));
-            if constexpr (mt_debug) { std::cout << "Forcing " << force_num << " ticks\n"; }
             morph::vvec<F> linticks;
             linticks.linspace (rmin, rmax, force_num);
             for (auto lt : linticks) { ticks.push_back (lt); }
@@ -228,7 +176,6 @@ namespace morph::graphing {
 
         // If, for any reason, we ended up with just one tick (or none), revert to min/0/max
         if (ticks.size() < 2) {
-            if constexpr (mt_debug) { std::cout << "Replacing ticks with min/max as there was just one tick\n"; }
             ticks.clear();
             ticks.push_back (rmin);
             if (rmin < F{0} && rmax > F{0}) { ticks.push_back (F{0}); }
@@ -248,6 +195,16 @@ namespace morph::graphing {
     static std::deque<F> maketicks (F rmin, F rmax, float realmin, float realmax, const F _min_num_ticks = 3, const F _max_num_ticks = 10)
     {
         morph::range<F> _num_ticks_range(_min_num_ticks, _max_num_ticks);
+        return morph::graphing::maketicks<F> (rmin, rmax, realmin, realmax, _num_ticks_range);
+    }
+
+    /*!
+     * Make ticks overload for a specified number of ticks
+     */
+    template <typename F>
+    static std::deque<F> maketicks (F rmin, F rmax, float realmin, float realmax, const F num_ticks)
+    {
+        morph::range<F> _num_ticks_range(num_ticks, num_ticks);
         return morph::graphing::maketicks<F> (rmin, rmax, realmin, realmax, _num_ticks_range);
     }
 
