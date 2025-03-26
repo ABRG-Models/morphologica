@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <morph/VisualModel.h>
 #include <morph/ColourMap.h>
@@ -31,6 +33,8 @@ namespace morph {
             else { this->reinitColours(); }
         }
 
+        void setColourData (std::vector<std::array<float, 3>>* cdata) { this->colourdata = cdata; }
+
         void reinitColours()
         {
             size_t n_data = this->n_pixels();
@@ -39,17 +43,26 @@ namespace morph {
                 throw std::runtime_error ("vertexColors is not big enough to reinitColours()");
             }
 
-            // Scale data
-            morph::vvec<float> scaled_data (this->pixeldata);
-            if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
-            this->colourScale.transform (this->pixeldata, scaled_data);
+            if (this->colourdata == nullptr) {
+                // Scale data
+                morph::vvec<float> scaled_data (this->pixeldata.size());
+                if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+                this->colourScale.transform (this->pixeldata, scaled_data);
 
-            // Re-colour
-            for (size_t i = 0u; i < n_data; ++i) {
-                auto c = this->cm.convert (scaled_data[i]);
-                this->vertexColors[3*i] = c[0];
-                this->vertexColors[3*i+1] = c[1];
-                this->vertexColors[3*i+2] = c[2];
+                // Re-colour
+                for (size_t i = 0u; i < n_data; ++i) {
+                    auto c = this->cm.convert (scaled_data[i]);
+                    this->vertexColors[3*i] = c[0];
+                    this->vertexColors[3*i+1] = c[1];
+                    this->vertexColors[3*i+2] = c[2];
+                }
+            } else {
+                // Use colour in colourdata directly, assuming it is in correct range (0->1 for each channel)
+                for (size_t i = 0u; i < n_data; ++i) {
+                    this->vertexColors[3*i] = (*colourdata)[i][0];
+                    this->vertexColors[3*i+1] = (*colourdata)[i][1];
+                    this->vertexColors[3*i+2] = (*colourdata)[i][2];
+                }
             }
 
             // Lastly, this call copies vertexColors (etc) into the OpenGL memory space
@@ -340,15 +353,24 @@ namespace morph {
         void healpix_triangles_by_nest()
         {
             // For colours and relief, we scale data
-            morph::vvec<float> scaled_colours (this->pixeldata);
+            morph::vvec<float> scaled_colours (this->pixeldata.size());
             if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
             this->colourScale.transform (this->pixeldata, scaled_colours);
-            morph::vvec<float> scaled_relief (this->pixeldata);
+            morph::vvec<float> scaled_relief (this->pixeldata.size());
             if (this->reliefScale.do_autoscale == true) { this->reliefScale.reset(); }
             this->reliefScale.transform (this->pixeldata, scaled_relief);
 
             // The first loop creates all the *vertices* using nest scheme.
             int64_t n_p = this->n_pixels();
+
+            // If colourdata is set, then use those RGB values directly, rather than scaled colours
+            bool use_colourdata = false;
+            bool anticipate_colourdata = false;
+            if (this->colourdata != nullptr) {
+                anticipate_colourdata = true;
+                if (this->colourdata->size() >= static_cast<size_t>(n_p)) { use_colourdata = true; }
+            }
+
             for (int64_t p = 0; p < n_p; ++p) {
                 // Convert nest index p to angle for this pixel
                 hp::t_ang ang = hp::nest2ang (this->nside, p);
@@ -359,8 +381,17 @@ namespace morph {
                 float _r = this->r;
                 if (this->relief == true) { _r += scaled_relief[p]; }
                 morph::vec<float> vpf = (morph::vec<double>({pv.x, pv.y, pv.z}) * _r).as_float();
+
                 // Make a colour from the pixeldata
-                std::array<float, 3> sc = this->cm.convert (scaled_colours[p]);
+                std::array<float, 3> sc = morph::colour::black;
+                if (use_colourdata == true) {
+                    sc = (*this->colourdata)[p];
+                } else if (anticipate_colourdata == true) {
+                    // Do nothing
+                } else {
+                    sc = this->cm.convert (scaled_colours[p]);
+                }
+
                 if (this->show_nest_labels) {
                     this->addLabel (std::to_string(p), (vpf  * this->r * 1.03f),
                                     morph::TextFeatures(0.025f, morph::colour::black) );
@@ -430,6 +461,9 @@ namespace morph {
             this->healpix_triangles_by_nest();
             if (this->show_spheres == true) { this->vertex_spheres(); }
             if (this->indicate_axes == true) { this->draw_coordaxes(); }
+
+            // If required, populated the angles lookup map
+            if (this->enable_angles_map && this->angles.empty()) { this->populate_angles(); }
         }
 
         // Draw a small set of coordinate arrows with origin at pixel 0
@@ -455,7 +489,7 @@ namespace morph {
                                0.0f, morph::colour::springgreen2, tthk/2);
         }
 
-        int64_t n_pixels() { return 12 * this->nside * this->nside; }
+        int64_t n_pixels() const { return 12 * this->nside * this->nside; }
 
         static constexpr int64_t k_limit = 11;
 
@@ -478,16 +512,52 @@ namespace morph {
                 this->pixeldata.resize (this->n_pixels(), T{0});
             }
         }
-        int64_t get_nside() { return this->nside; }
+        int64_t get_order() const { return this->k; }
+
+        void set_nside (int64_t _nside)
+        {
+            if (_nside < 0) { throw std::runtime_error ("nside must be positive"); }
+            // Count bits set in _nside. Should be 1 only.
+            int64_t n = _nside;
+            int64_t c = 0; // c will be the count of bits
+            while (n) { n &= n--, ++c; } // Kernighan's algorithm
+            if (c != 1) { throw std::runtime_error ("That nside is not a power of 2"); }
+            // Find k, then call set_order, which does re-sizing
+            int64_t _k = -1;
+            while (_nside) { _nside >>= 1, ++_k; }
+            this->set_order (_k);
+        }
+        int64_t get_nside() const { return this->nside; }
 
         // Wrapper around nest2ang. Convert nest_index to angle for this pixel
         hp::t_ang get_angles (int64_t nest_index) { return hp::nest2ang (this->nside, nest_index); }
+
+        // Get the angles for the index nest_index from the map angles.
+        hp::t_ang lookup_angles (int64_t nest_index) const { return this->angles.at(nest_index); }
+
+        // Populate the angles lookup map (at end of initialize vertices)
+        void populate_angles()
+        {
+            for (int64_t i = 0; i < this->n_pixels(); ++i) {
+                this->angles[i] = this->get_angles (i);
+            }
+        }
+
+        // It's faster to have a lookup map of the angles, rather than call get_angles_slow() each time.
+        std::unordered_map<int64_t, hp::t_ang> angles;
+
+        // Set true to make use of the angles lookup map, which is populated at the end
+        // of initializeVertices
+        bool enable_angles_map = false;
 
         // Sphere radius
         float r = 1.0f;
 
         // What data to show on the healpix? Indexed by NEST index
         morph::vvec<T> pixeldata;
+
+        // If this is non-null, it'll be used to colour the Fourpi instead of pixeldata.
+        std::vector<std::array<float, 3>>* colourdata = nullptr;
 
         // A colour scaling
         morph::scale<T> colourScale;

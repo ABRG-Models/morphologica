@@ -5,6 +5,8 @@ on:
     paths-ignore:
       - 'docs/**'
       - 'README**'
+      - 'examples/screenshots/**'
+      - 'examples/docs/**'
   pull_request:
     branches: [ "main" ]
 
@@ -20,3 +22,4 @@ jobs:
       BUILD_TYPE: Release
       CC: gcc-14
       CXX: g++-14
+      WX_PACKAGE: libwxgtk3.2-dev

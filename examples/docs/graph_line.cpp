@@ -9,7 +9,7 @@
 int main()
 {
     // Set up a morph::Visual 'scene environment'.
-    morph::Visual v(1024, 768, "Made with morph::GraphVisual");
+    morph::Visual v(1280, 575, "Made with morph::GraphVisual");
 
     // Create a GraphVisual object (obtaining a unique_ptr to the object) with a spatial offset within the scene of 0,0,0
     auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>{ 0.0f, 0.0f, 0.0f });
@@ -41,6 +41,9 @@ int main()
     ds_horz.linecolour = morph::colour::grey68;
     ds_horz.linewidth = ds.linewidth * 0.6f;
 
+#ifdef GRAPH_LINES_SIMPLE
+    gv->add_y_crossing_lines (x, y, 7, ds);
+#else
     // Find, and annotate with vertical lines, the locations where the graph crosses
     // y=7. The x values of the crossing points are returned.
     morph::vvec<double> xcross = gv->add_y_crossing_lines (x, y, 7, ds, ds_horz);
@@ -58,6 +61,7 @@ int main()
     }
     // Add a label at location {.05, .05, 0} with fontsize 0.03
     gv->addLabel (std::format("y=7 at x = {:s}", ss.str()), { 0.05f, 0.05f, 0.0f }, morph::TextFeatures(0.03f));
+#endif
 
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();

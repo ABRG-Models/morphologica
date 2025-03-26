@@ -285,7 +285,7 @@ namespace morph {
             }
         }
 
-        virtual void initializeVertices()
+        void initializeVertices()
         {
             // Compute an offset (in Grid frame of ref) to ensure that the curved representation of
             // the Grid has it's centre at 0 degrees. Turn centralize on/off to see the

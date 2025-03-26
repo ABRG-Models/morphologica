@@ -59,6 +59,15 @@ To query the max or min of the range, just access the `max` or `min` members:
 std::cout << "range maximum is " << r.max << " and its minimum is " << r.min << std::endl;
 ```
 
+You can determine if one range fits inside another with `range::contains()`:
+```c_++
+morph::range<int> r1 = { 1, 100 };
+morph::range<int> r2 = { 10, 90 };
+morph::range<int> r3 = { -1, 2 };
+std::cout << "range " << r1 << (r1.contains(r2) ? " contains " : " doesn't contain ") << r2 << std::endl;
+std::cout << "range " << r1 << (r1.contains(r3) ? " contains " : " doesn't contain ") << r3 << std::endl;
+```
+
 You can **stream** the range to get both at once:
 ```c++
 std::cout << r << std::endl;
@@ -77,6 +86,15 @@ morph::vvec<double> data;
 data.randomize();
 range<double> r;
 r.search_init();
+for (auto d : data) { r.update (d); }
+std::cout << "The range of values in data was: " << r << std::endl;
+```
+
+To save a line of code, there's a constructor for setting up a range ready-configured for search:
+```c++
+morph::vvec<double> data;
+data.randomize();
+range<double> r (morph::range_init::for_search);
 for (auto d : data) { r.update (d); }
 std::cout << "The range of values in data was: " << r << std::endl;
 ```

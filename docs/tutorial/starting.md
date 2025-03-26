@@ -13,7 +13,7 @@ Because morphologica is header-only, it's very easy to work with. All you have t
 
 ## Dependencies
 
-First, ensure you have the necessary dependencies installed. Classes in morphologica use Armadillo, OpenGL, Freetype, glfw3 and HDF5. You won't necessarily need all of these; it depends on which classes you will use (see [here](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md#linking-a-morphologica-program) for details). For visualisation, you only need OpenGL, Freetype and glfw3. Platform-specific instructions can be found in the files [README.build.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.linux.md), [README.build.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.mac.md) and [README.build.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.windows.md).
+First, ensure you have the necessary dependencies installed. Classes in morphologica use Armadillo, OpenGL, Freetype, glfw3, nlohmann-json and HDF5. You won't necessarily need all of these; it depends on which classes you will use (see [here](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md#linking-a-morphologica-program) for details). For visualisation, you only need OpenGL, Freetype, nlohmann-json and glfw3. Platform-specific instructions can be found in the files [README.build.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.linux.md), [README.build.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.mac.md) and [README.build.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.windows.md).
 
 ## Three necessities to build
 
@@ -40,42 +40,23 @@ This piece of boiler-plate cmake will get you started with a sensible
 set of compiler flags for morphologica:
 
 ```cmake
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
-message(STATUS "Operating system: " ${CMAKE_SYSTEM})
-if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(OS_FLAG "-D__GLN__")
-elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(OS_FLAG "-D__NIX__")
-elseif(APPLE)
-  set(OS_FLAG "-D__OSX__")
-elseif(WIN32)
-  set(OS_FLAG "-D__WIN__")
-else()
-  message(FATAL_ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
-endif()
-
 # morphologica uses c++-20 language features
 set(CMAKE_CXX_STANDARD 20)
 
-# Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
+# Set up CMAKE_CXX_FLAGS
 if (APPLE)
-  set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wfatal-errors")
-else() # assume g++ (or a gcc/g++ mimic like Clang)
-  set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors -Wno-psabi -Wno-unknown-pragmas")
+  set(CMAKE_CXX_FLAGS "-g -O3 -Wall -Wfatal-errors -DGL_SILENCE_DEPRECATION")
+elseif (WIN32)
+  set(CMAKE_CXX_FLAGS "-DNOMINMAX /EHsc /Zc:__cplusplus")
+else()
+  # This assumes a gcc compiler (or a gcc mimic like Clang)
+  set(CMAKE_CXX_FLAGS "-g -O3 -Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors -Wno-psabi -Wno-unknown-pragmas")
 endif()
-set(CMAKE_CXX_FLAGS "${OS_FLAG} -g -O3 ${COMPREHENSIVE_WARNING_FLAGS}")
 
 # Add OpenMP flags here, if necessary
 find_package(OpenMP)
 if(OpenMP_FOUND)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
-
-# Additional GL compiler flags.
-set(OpenGL_GL_PREFERENCE "GLVND")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
-if(APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
 endif()
 
 # Tell the program where the morph fonts are, to compile them into the binary
@@ -97,9 +78,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share
 # Find the libraries which will be needed
 find_package(HDF5 REQUIRED)        # Only required if you used morph::HdfData
 find_package(Armadillo REQUIRED)   # Only required if you use the Bezier curve classes or HexGrid/CartGrid
+set(OpenGL_GL_PREFERENCE "GLVND")  # Write this line before find_package(OpenGL...
 find_package(OpenGL REQUIRED)      # This, glfw3 and Freetype are required for morph::Visual
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 # Define collections of includes for the dependencies
 set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
@@ -132,7 +115,9 @@ target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
 ### Example build files
 
-Each of the examples in [**morphologica/standalone_examples**](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples) has a CMakeLists.txt, written as if each
+You can find a complete example project called [morphologica_template](https://github.com/ABRG-Models/morphologica_template). This has a CMakeLists.txt file that you can copy and work from, along with a single example program (the graph again).
+
+Additionally, each of the examples in [**morphologica/standalone_examples**](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples) has a CMakeLists.txt, written as if each
 example was a standalone project in its own right.
 
 The best example CMakeLists.txt file is the one in [**standalone_examples/schnakenberg**](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples/schnakenberg),

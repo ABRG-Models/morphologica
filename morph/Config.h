@@ -18,12 +18,12 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
-#ifndef __WIN__
+#ifndef _MSC_VER
 # include <morph/Process.h>
 #endif
 
 namespace morph {
-#ifndef __WIN__
+#ifndef _MSC_VER
     //! Callbacks class extends ProcessCallbacks
     class ConfigProcessCallbacks : public ProcessCallbacks
     {
@@ -76,7 +76,7 @@ namespace morph {
             } // else We are creating a new Config, with no pre-existing content
         }
 
-#ifndef __WIN__
+#ifndef _MSC_VER
         /*!
          * Launch git sub-processes to determine info about the current
          * repository. Intended for use with code that will save a Json formatted log of
@@ -215,7 +215,7 @@ namespace morph {
                 this->root["git_branch"] = "unknown";
             }
         }
-#endif // __WIN__
+#endif // _MSC_VER
 
         void write() { this->write (this->thefile); }
 

@@ -10,9 +10,9 @@
 #include <QWheelEvent>
 
 // VisualOwnable is going to be owned by the QOpenGLWidget
-// Define morph::win_t before #including morph/VisualOwnable.h
+// Define morph::win_t before #including morph/VisualOwnableNoMX.h
 namespace morph { using win_t = QOpenGLWidget; }
-#include <morph/VisualOwnable.h>
+#include <morph/VisualOwnableNoMX.h>
 // We need to be able to convert from Qt keycodes to morph keycodes
 #include <morph/qt/keycodes.h>
 
@@ -27,7 +27,7 @@ namespace morph {
         {
             // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::VisualOwnable
             // inside the widget.
-            morph::VisualOwnable<gl_version> v;
+            morph::VisualOwnableNoMX<gl_version> v;
 
             // In your Qt code, build VisualModels that should be added to the scene and add them to this.
             std::vector<std::unique_ptr<morph::VisualModel<gl_version>>> newvisualmodels;

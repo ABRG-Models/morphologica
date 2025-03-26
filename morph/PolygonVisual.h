@@ -22,8 +22,6 @@ namespace morph {
             this->init (_offset, _position, _vertex, _radius, _thickness, _col, _n);
         }
 
-        virtual ~PolygonVisual () {}
-
         void init (const vec<float, 3> _offset,
                    const vec<float, 3> _position, const vec<float, 3> _vertex,
                    const float _radius, const float _thickness,

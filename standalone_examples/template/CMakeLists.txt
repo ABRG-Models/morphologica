@@ -7,30 +7,17 @@ cmake_minimum_required(VERSION 3.10)
 # Give your project a name
 project(ModelTemplate)
 
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ are required
-if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(OS_FLAG "-D__GLN__")
-elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(OS_FLAG "-D__NIX__")
-elseif(APPLE)
-  set(OS_FLAG "-D__OSX__")
-elseif(WIN32)
-  set(OS_FLAG "-D__WIN__")
-else()
-  message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
-endif()
-
 # morphologica uses c++-20 language features
 set(CMAKE_CXX_STANDARD 20)
 
 # Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-sign-compare")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -g -O3 -Wno-sign-compare")
 elseif (WIN32)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -DNOMINMAX /EHsc")
+  set(CMAKE_CXX_FLAGS "-DNOMINMAX /EHsc")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${OS_FLAG} -Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas -Wno-sign-compare")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -g -O3 -Wno-unused-result -Wno-unknown-pragmas -Wno-sign-compare")
 endif()
 
 # Add OpenMP flags here, if necessary
@@ -40,12 +27,11 @@ if(OpenMP_FOUND)
 endif()
 
 # Additional GL compiler flags.
-#
-set(OpenGL_GL_PREFERENCE "GLVND") # Following `cmake --help-policy CMP0072`
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
 endif()
+
+set(OpenGL_GL_PREFERENCE "GLVND") # Following `cmake --help-policy CMP0072`
 
 # Tell the program where the morph fonts are, to compile them into the binary
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")

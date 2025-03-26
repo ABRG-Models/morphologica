@@ -18,8 +18,8 @@
 // file.
 
 #include <morph/gl/version.h>
-#include <morph/gl/util.h>
-#include <morph/gl/loadshaders.h>
+#include <morph/gl/util_nomx.h>
+#include <morph/gl/loadshaders_nomx.h>
 #include <morph/gl/compute_shaderprog.h> // A compute-shader class
 #include <morph/keys.h>
 #define GLFW_INCLUDE_NONE

@@ -24,7 +24,8 @@ Header file: [morph/vec.h](https://github.com/ABRG-Models/morphologica/blob/main
 from `std::array` and can be used in much the same way as its STL
 parent. It has iterators and you can apply STL algorithms. It is
 constexpr-capable, meaning that it can be incorporated into constexpr
-functions to do compile-time maths.
+functions to do compile-time maths. The majority of its methods are
+`nopexcept` (they do *not* throw exceptions).
 
 ```c++
 namespace morph {
@@ -267,12 +268,12 @@ f_nonconst_ref_a (dynamic_cast< std::array<float, 3>& >(v1));
 
 ### Setter functions
 ```c++
-template <typename _S=S> // S and N from morph::vec class template
-void set_from (const std::vector<_S>& vec);
-void set_from (const std::array<_S, N>& ar);
-void set_from (const std::array<_S, (N+1)>& ar);
-void set_from (const std::array<_S, (N-1)>& ar);
-void set_from (const vec<_S, (N-1)>& v);
+template <typename Sy=S> // S and N from morph::vec class template
+void set_from (const std::vector<Sy>& vec);
+void set_from (const std::array<Sy, N>& ar);
+void set_from (const std::array<Sy, (N+1)>& ar);
+void set_from (const std::array<Sy, (N-1)>& ar);
+void set_from (const vec<Sy, (N-1)>& v);
 ```
 
 These `set_from` functions set the values of this `morph::vec` from
@@ -282,7 +283,7 @@ vectors are converted to 4D before being multiplied by 4x4 transform
 matrices.
 
 ```c++
-void set_from (const _S& v);
+void set_from (const Sy& v);
 void zero();
 void set_max();
 void set_lowest();
@@ -292,8 +293,8 @@ This `set_from` overload fills all elements of the `morph::vec` with `v`. `zero(
 ### Numpy clones
 
 ```c++
-void linspace (const _S start, const _S2 stop);
-void arange (const _S start, const _S2 stop, const _S2 increment);
+void linspace (const Sy start, const Sy2 stop);
+void arange (const Sy start, const Sy2 stop, const Sy2 increment);
 ```
 
 Python Numpy-like functions to fill the `morph::vec` with sequences of
@@ -369,10 +370,10 @@ gives output `(1,2,3)`.
 ### Length, lengthen, shorten
 
 ```c++
-template <typename _S=S>
-_S length() const;                     // return the vector length
-_S length_sq() const;                  // return the vector length squared
-_S sos() const;                        // also length squared. See header for difference
+template <typename Sy=S>
+Sy length() const;                     // return the vector length
+Sy length_sq() const;                  // return the vector length squared
+Sy sos() const;                        // also length squared. See header for difference
 // Enabled only for non-integral S:
 vec<S, N> shorten (const S dl) const;  // return a vector shortened by length dl
 vec<S, N> lengthen (const S dl) const; // return a vector lengthened by length dl
@@ -408,7 +409,7 @@ the range [-1,1].
 
 Note that these functions use a template to ensure they are only enabled for non-integral types:
 ```c++
-template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
 ```
 
 Check whether your renormalized vector is a unit vector:
@@ -454,14 +455,14 @@ void replace_nan_or_inf_with (const S replacement)
 ### Simple statistics
 
 ```c++
-// These template functions are declared with a type _S:
-template<typename _S=S>
+// These template functions are declared with a type Sy:
+template<typename Sy=S>
 
-_S mean() const;          // The arithmetic mean
-_S variance() const;      // The variance
-_S std() const;           // The standard deviation
-_S sum() const;           // The sum of all elements
-_S product() const;       // The product of the elements
+Sy mean() const;          // The arithmetic mean
+Sy variance() const;      // The variance
+Sy std() const;           // The standard deviation
+Sy sum() const;           // The sum of all elements
+Sy product() const;       // The product of the elements
 ```
 
 ### Maths functions
@@ -470,10 +471,10 @@ Raising elements to a **power**.
 ```c++
 vec<S, N> pow (const S& p) const;          // raise all elements to the power p, returning result in new vec
 void pow_inplace (const S& p);             // in-place version which operates on the existing data in *this
-template<typename _S=S>
-vec<S, N> pow (const vec<_S, N>& p) const; // Raise each element in *this to the power of the matching element in p
-template<typename _S=S>
-void pow_inplace (const vec<_S, N>& p);    // in-place version
+template<typename Sy=S>
+vec<S, N> pow (const vec<Sy, N>& p) const; // Raise each element in *this to the power of the matching element in p
+template<typename Sy=S>
+void pow_inplace (const vec<Sy, N>& p);    // in-place version
 ```
 
 The **signum function** is 1 if a value is >0; -1 if the value is <0 and 0 if the value is 0.
@@ -524,23 +525,23 @@ void abs_inplace();
 
 The **scalar product** (also known as inner product or dot product) can be computed for two `vec` instances:
 ```c++
-template<typename _S=S>
-S dot (const vec<_S, N>& v) const
+template<typename Sy=S>
+S dot (const vec<Sy, N>& v) const
 ```
 
 The **cross product** is defined here only for `N`=2 or `N`=3.
 
 If `N` is 2, then v x w is defined to be v_x w_y - v_y w_x and for N=3, see your nearest vector maths textbook. The function signatures are
 ```c++
-template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-S cross (const vec<_S, _N>& w) const;
-template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-vec<S, _N> cross (const vec<_S, _N>& v) const;
+template <typename Sy=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+S cross (const vec<Sy, _N>& w) const;
+template <typename Sy=S, size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
+vec<S, _N> cross (const vec<Sy, _N>& v) const;
 ```
 
 Also defined only in two dimensions are **angle** functions. `angle()` returns the angle of the `vec`. It wraps `std::atan2(y, x)`. `set_angle()` sets the angle of a 2D `vec`, maintaining its length or setting it to 1 if it is a zero vector.
 
 ```c++
 S angle() const;                  // Returns the angle of the 2D vec in radians
-void set_angle (const _S _ang);   // Set a two dimensional angle in radians
+void set_angle (const Sy _ang);   // Set a two dimensional angle in radians
 ```

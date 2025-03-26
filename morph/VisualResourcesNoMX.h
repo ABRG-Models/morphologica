@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include <morph/VisualFace.h>
+#include <morph/VisualFaceNoMX.h>
 #include <morph/VisualResourcesBase.h>
-#include <morph/gl/util.h>
+#include <morph/gl/util_nomx.h>
 
 namespace morph {
 
@@ -22,36 +22,36 @@ namespace morph {
 
     //! Singleton resource class for morph::Visual scenes.
     template <int glver>
-    class VisualResources : public VisualResourcesBase<glver>
+    class VisualResourcesNoMX : public VisualResourcesBase<glver>
     {
     private:
-        VisualResources(){}
+        VisualResourcesNoMX(){}
         // Normally, when each morph::Visual goes out of scope, the faces associated with that
         // Visual get cleaned up (in VisualResources::freetype_deinit). So at this point, faces
         // should be empty, and the following clear() should do nothing.
-        ~VisualResources() { this->faces.clear(); }
+        ~VisualResourcesNoMX() { this->faces.clear(); }
 
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
         std::map<std::tuple<morph::VisualFont, unsigned int, morph::VisualBase<glver>*>,
-                 std::unique_ptr<morph::visgl::VisualFace>> faces;
+                 std::unique_ptr<morph::visgl::VisualFaceNoMX>> faces;
     public:
-        VisualResources(const VisualResources<glver>&) = delete;
-        VisualResources& operator=(const VisualResources<glver> &) = delete;
-        VisualResources(VisualResources<glver> &&) = delete;
-        VisualResources & operator=(VisualResources<glver> &&) = delete;
+        VisualResourcesNoMX(const VisualResourcesNoMX<glver>&) = delete;
+        VisualResourcesNoMX& operator=(const VisualResourcesNoMX<glver> &) = delete;
+        VisualResourcesNoMX(VisualResourcesNoMX<glver> &&) = delete;
+        VisualResourcesNoMX & operator=(VisualResourcesNoMX<glver> &&) = delete;
 
         //! The instance public function. Uses the very short name 'i' to keep code tidy.
         //! This relies on C++11 magic statics (N2660).
         static auto& i()
         {
-            static VisualResources<glver> instance;
+            static VisualResourcesNoMX<glver> instance;
             return instance;
         }
 
         //! A function to call to simply make sure the singleton instance exists
-        virtual void create() final {}
+        void create() final {}
 
         //! Initialize a freetype library instance and add to this->freetypes. I wanted
         //! to have only a single freetype library instance, but this didn't work, so I
@@ -80,26 +80,26 @@ namespace morph {
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::visgl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::VisualBase<glver>* _vis)
+        morph::visgl::VisualFaceNoMX* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::VisualBase<glver>* _vis)
         {
-            morph::visgl::VisualFace* rtn = nullptr;
+            morph::visgl::VisualFaceNoMX* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);
             try {
                 rtn = this->faces.at(key).get();
             } catch (const std::out_of_range&) {
-                this->faces[key] = std::make_unique<morph::visgl::VisualFace> (font, fontpixels, this->freetypes.at(_vis));
+                this->faces[key] = std::make_unique<morph::visgl::VisualFaceNoMX> (font, fontpixels, this->freetypes.at(_vis));
                 rtn = this->faces.at(key).get();
             }
             return rtn;
         }
 
-        morph::visgl::VisualFace* getVisualFace (const morph::TextFeatures& tf, morph::VisualBase<glver>* _vis)
+        morph::visgl::VisualFaceNoMX* getVisualFace (const morph::TextFeatures& tf, morph::VisualBase<glver>* _vis)
         {
             return this->getVisualFace (tf.font, tf.fontres, _vis);
         }
 
         //! Loop through this->faces clearing out those associated with the given morph::Visual
-        virtual void clearVisualFaces (morph::VisualBase<glver>* _vis) final
+        void clearVisualFaces (morph::VisualBase<glver>* _vis) final
         {
             auto f = this->faces.begin();
             while (f != this->faces.end()) {

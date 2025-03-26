@@ -18,7 +18,7 @@
 // file.
 
 #include <morph/gl/version.h>
-#include <morph/gl/util.h>
+#include <morph/gl/util_nomx.h>
 #include <morph/gl/shaders.h>
 #include <morph/gl/compute_shaderprog.h> // A compute-shader class
 

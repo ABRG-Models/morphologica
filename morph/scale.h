@@ -106,7 +106,7 @@ namespace morph {
         /*!
          * Output a short description of the scaling
          */
-        virtual std::string str() const
+        std::string str() const
         {
             std::string _type = this->type == scaling_function::Linear ? "Linear" : "Logarithmic";
             std::stringstream ss;
@@ -186,6 +186,18 @@ namespace morph {
             typename Container::const_iterator di = data.begin();
             typename OContainer::iterator oi = output.begin();
             while (di != data.end()) { *oi++ = this->inverse_one (*di++); }
+        }
+
+        //! Transform a range
+        morph::range<S> transform (const morph::range<T>& data)
+        {
+            return morph::range<S>{ this->transform_one (data.min), this->transform_one (data.max) };
+        }
+
+        //! Inverse transform a range
+        morph::range<T> inverse (const morph::range<S>& data)
+        {
+            return morph::range<T>{ this->inverse_one (data.min), this->inverse_one (data.max) };
         }
 
         /*!
@@ -320,7 +332,7 @@ namespace morph {
         morph::range<S_el> output_range = morph::range<S_el>(S_el{0}, S_el{1});
 
         //! Transform a single (math) vector T into a (math) vector S
-        virtual S transform_one (const T& datum) const
+        S transform_one (const T& datum) const
         {
             if (this->type != scaling_function::Linear) {
                 throw std::runtime_error ("scale_impl<0=vector>::transform_one(): This transform function is for Linear scaling only");
@@ -339,7 +351,7 @@ namespace morph {
         }
 
         //! For clarity, here's a description of the transform function
-        virtual std::string transform_str() const
+        std::string transform_str() const
         {
             std::stringstream ss;
             if (this->type == scaling_function::Logarithmic) {
@@ -352,14 +364,14 @@ namespace morph {
             return ss.str();
         }
 
-        virtual std::string output_range_str() const
+        std::string output_range_str() const
         {
             std::stringstream ss;
             ss << this->output_range;
             return ss.str();
         }
 
-        virtual T inverse_one (const S& datum) const
+        T inverse_one (const S& datum) const
         {
             T rtn = T{};
             if (this->type == scaling_function::Logarithmic) {
@@ -373,14 +385,14 @@ namespace morph {
         }
 
         // deprecated name. use compute_scaling()
-        virtual void compute_autoscale (T input_min, T input_max)
+        void compute_autoscale (T input_min, T input_max)
         {
             std::cerr << "Note: The function scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
             this->compute_scaling (input_min, input_max);
         }
 
-        virtual void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
-        virtual void compute_scaling (const T input_min, const T input_max)
+        void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
+        void compute_scaling (const T input_min, const T input_max)
         {
             if (this->type != scaling_function::Linear) {
                 throw std::runtime_error ("scale_impl<0=vector>::compute_scaling)(): This scaling function is for Linear scaling only");
@@ -431,7 +443,7 @@ namespace morph {
         morph::vvec<S_el> getParams() { return this->params; }
 
         //! return string representation of params
-        virtual std::string params_str() const { return this->params.str(); }
+        std::string params_str() const { return this->params.str(); }
 
         //! The scale object is ready if params has size 2.
         bool ready() const { return (this->params.size() > 1); }
@@ -504,7 +516,7 @@ namespace morph {
         //! The output range required. Change if you want to scale to something other than [0, 1]
         morph::range<S> output_range = morph::range<S>(S{0}, S{1});
 
-        virtual S transform_one (const T& datum) const
+        S transform_one (const T& datum) const
         {
             S rtn = S{0};
             if (this->type == scaling_function::Logarithmic) {
@@ -518,7 +530,7 @@ namespace morph {
         }
 
         //! A description of the transform function
-        virtual std::string transform_str() const
+        std::string transform_str() const
         {
             std::stringstream ss;
             if (this->type == scaling_function::Logarithmic && this->params.size() > 1) {
@@ -531,14 +543,14 @@ namespace morph {
             return ss.str();
         }
 
-        virtual std::string output_range_str() const
+        std::string output_range_str() const
         {
             std::stringstream ss;
             ss << this->output_range;
             return ss.str();
         }
 
-        virtual T inverse_one (const S& datum) const
+        T inverse_one (const S& datum) const
         {
             T rtn = T{0};
             if (this->type == scaling_function::Logarithmic) {
@@ -552,14 +564,14 @@ namespace morph {
         }
 
         // deprecated name
-        virtual void compute_autoscale (T input_min, T input_max)
+        void compute_autoscale (T input_min, T input_max)
         {
             std::cerr << "Note: The function scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
             this->compute_scaling (input_min, input_max);
         }
 
-        virtual void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
-        virtual void compute_scaling (const T input_min, const T input_max)
+        void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
+        void compute_scaling (const T input_min, const T input_max)
         {
             if (this->type == scaling_function::Logarithmic) {
                 this->compute_scaling_log (input_min, input_max);
@@ -596,7 +608,7 @@ namespace morph {
         morph::vvec<S> getParams() { return this->params; }
 
         //! return string representation of params
-        virtual std::string params_str() const { return this->params.str(); }
+        std::string params_str() const { return this->params.str(); }
 
         //! The scale object is ready if params has size 2.
         bool ready() const { return (this->params.size() > 1); }
@@ -648,7 +660,7 @@ namespace morph {
             }
         }
 
-        virtual void compute_scaling_log (T input_min, T input_max)
+        void compute_scaling_log (T input_min, T input_max)
         {
             // Have to check here as scale_impl<2, T, S> is built from scale_impl<1, T, S> but <= operator makes no sense
             if constexpr (morph::number_type<T>::value == 1) {

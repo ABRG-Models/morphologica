@@ -18,13 +18,13 @@ int main()
     v.bindmodel (gv);
 
     // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
-    morph::vvec<double> x;
+    morph::vvec<double> y;
 
     // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
-    x.linspace (0, 10, 11);
+    y.linspace (0, 10, 11);
 
     // Hand chosen numbers
-    morph::vvec<double> y = { 5, 8, 2, 9, 1, 2, 4, 5, 8, 3, 1 };
+    morph::vvec<double> x = { 5, 8, 2, 9, 1, 2, 4, 5, 8, 3, 1 };
 
     // Choose a line graph by creating a lines stylepolicy datasetstyle.
     morph::DatasetStyle ds (morph::stylepolicy::lines);
@@ -36,28 +36,27 @@ int main()
     // Now set the data
     gv->setdata (x, y, ds);
 
-    // A second DatasetStyle is used to specify a colour and linewidth for a horizontal line at y=7.
-    morph::DatasetStyle ds_horz (morph::stylepolicy::lines);
-    ds_horz.linecolour = morph::colour::grey68;
-    ds_horz.linewidth = ds.linewidth * 0.6f;
+    // A second DatasetStyle is used to specify a colour and linewidth for a vertical line at x=3.3
+    morph::DatasetStyle ds_vert (morph::stylepolicy::lines);
+    ds_vert.linecolour = morph::colour::grey68;
+    ds_vert.linewidth = ds.linewidth * 0.6f;
 
     // Find, and annotate with vertical lines, the locations where the graph crosses
-    // y=7. The x values of the crossing points are returned.
-    morph::vvec<double> xcross = gv->add_y_crossing_lines (x, y, 7, ds, ds_horz);
+    // x=3.3. The y values of the crossing points are returned.
+    morph::vvec<double> ycross = gv->add_x_crossing_lines (x, y, 3.3, ds, ds_vert);
 
-    // Use results in xcross to annotate the graph
-    size_t n = xcross.size();
+    size_t n = ycross.size();
     std::stringstream ss;
     if (n > 0) {
-        // Loop through the elements of xcross, formatting a string
+        // Loop through the elements of ycross, formatting a string
         for (size_t i = 0; i < n; ++i) {
-            ss << std::format ("{}{}{:.2f}", ((i == 0 || i == n - 1) ? "" : ", "), (i == (n - 1) ? " and " : ""), xcross[i]);
+            ss << std::format ("{}{}{:.2f}", ((i == 0 || i == n - 1) ? "" : ", "), (i == (n - 1) ? " and " : ""), ycross[i]);
         }
     } else {
         ss << "[no values]";
     }
     // Add a label at location {.05, .05, 0} with fontsize 0.03
-    gv->addLabel (std::format("y=7 at x = {:s}", ss.str()), { 0.05f, 0.05f, 0.0f }, morph::TextFeatures(0.03f));
+    gv->addLabel (std::format("At x=3.3, y = {:s}", ss.str()), { 0.05f, 0.05f, 0.0f }, morph::TextFeatures(0.03f));
 
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();

@@ -5,27 +5,6 @@ project(morphologica)
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or
-# __WIN__ are required
-message(STATUS "Operating system: " ${CMAKE_SYSTEM})
-if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(MORPH_HOST_DEFINITION "-D__GLN__")
-elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(MORPH_HOST_DEFINITION "-D__NIX__")
-elseif(APPLE)
-  set(MORPH_HOST_DEFINITION "-D__OSX__")
-elseif(CMAKE_SYSTEM MATCHES Win.*)
-  set(MORPH_HOST_DEFINITION "-D__WIN__")
-else()
-  message(FATAL_ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
-endif()
-
-# Need to find the host system processor to fine tune assembly in VisualFace.h
-message(STATUS "Host system processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
-if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES aarch64)
-  set(MORPH_HOST_DEFINITION "${MORPH_HOST_DEFINITION} -D__AARCH64__")
-endif()
-
 #
 # The base C++ version in morphologica is current C++-17 but I am considering C++20 or 23
 #
@@ -46,13 +25,13 @@ endif()
 
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3")
+  set(CMAKE_CXX_FLAGS "-Wall -g -O3")
 else()
   if(NOT CMAKE_SYSTEM MATCHES Win.*)
     # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
     if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
       message(WARNING "Intel compiler has not been tested for some time")
-      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++20 -xHOST -O3 -D__ICC__")
+      set(CMAKE_CXX_FLAGS "-Wall -g -std=c++20 -xHOST -O3")
     else() # GCC or Clang
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
         # Add compiler version check, to ensure gcc is version 11 or later.
@@ -63,7 +42,7 @@ else()
         endif()
       endif()
       set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors -Wno-psabi")
-      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -g ${COMPREHENSIVE_WARNING_FLAGS} -O3")
+      set(CMAKE_CXX_FLAGS "-g ${COMPREHENSIVE_WARNING_FLAGS} -O3")
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
         # Make it possible to compile complex constexpr functions (gcc only)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=5000000000")
@@ -77,7 +56,7 @@ else()
     # /EHsc required for use of exceptions
     # /Zc:__cplusplus ensures __cplusplus define does not lie
     # /constexpr:steps is equivalent to -fconstexpr-steps or -fconstexpr-ops-limit
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc /Zc:__cplusplus /constexpr:steps500000000")
+    set(CMAKE_CXX_FLAGS "-DNOMINMAX /EHsc /Zc:__cplusplus /constexpr:steps500000000")
   endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
 
@@ -113,16 +92,6 @@ if(OpenMP_CXX_FOUND)
   endif()
 endif()
 
-# Following `cmake --help-policy CMP0072`
-set(OpenGL_GL_PREFERENCE "GLVND")
-
-# Additional GL compiler flags.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
-
-if(APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
-endif()
-
 # The code in VisualFace which builds the Vera family truetype fonts
 # into the program binary needs to have a define of MORPH_FONTS_DIR,
 # so set it up here:
@@ -132,7 +101,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Lib finding
+
+set(OpenGL_GL_PREFERENCE "GLVND") # Following `cmake --help-policy CMP0072`
 if(APPLE OR WIN32)
+  if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
+  endif()
   find_package(OpenGL REQUIRED)
 else()
   find_package(OpenGL REQUIRED EGL) # GL ES 3.1 used in one gl compute example
@@ -213,6 +187,9 @@ option(BUILD_EXAMPLES "Build examples" ON)
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
+
+# Additional examples (requires BUILD_EXAMPLES ON)
+option(BUILD_DOC_SCREENSHOTS "Build documentation screenshot examples" OFF)
 
 # first we can indicate the documentation build as an option and set it to ON by default
 option(BUILD_DOC "Build documentation" OFF)

@@ -70,29 +70,29 @@ namespace morph {
     struct vec : public std::array<S, N>
     {
         //! \return the first component of the vector
-        template <std::size_t _N = N, std::enable_if_t<(_N>0), int> = 0>
+        template <std::size_t Ny = N, std::enable_if_t<(Ny>0), int> = 0>
         constexpr S x() const noexcept { return (*this)[0]; }
         //! \return the second component of the vector
-        template <std::size_t _N = N, std::enable_if_t<(_N>1), int> = 0>
+        template <std::size_t Ny = N, std::enable_if_t<(Ny>1), int> = 0>
         constexpr S y() const noexcept { return (*this)[1]; }
         //! \return the third component of the vector
-        template <std::size_t _N = N, std::enable_if_t<(_N>2), int> = 0>
+        template <std::size_t Ny = N, std::enable_if_t<(Ny>2), int> = 0>
         constexpr S z() const noexcept { return (*this)[2]; }
         //! \return the fourth component of the vector
-        template <std::size_t _N = N, std::enable_if_t<(_N>3), int> = 0>
+        template <std::size_t Ny = N, std::enable_if_t<(Ny>3), int> = 0>
         constexpr S w() const noexcept { return (*this)[3]; }
 
         //! Set data members from an std::vector
-        template <typename _S=S>
-        void set_from (const std::vector<_S>& vec) noexcept
+        template <typename Sy=S>
+        void set_from (const std::vector<Sy>& vec) noexcept
         {
             std::size_t n = std::min (N, vec.size());
             for (std::size_t i = 0; i < n; ++i) { (*this)[i] = vec[i]; }
         }
 
         //! Set data members from an array the of same size and type.
-        template <typename _S=S>
-        constexpr void set_from (const std::array<_S, N>& ar) noexcept
+        template <typename Sy=S>
+        constexpr void set_from (const std::array<Sy, N>& ar) noexcept
         {
             for (std::size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
         }
@@ -102,8 +102,8 @@ namespace morph {
          * ignoring the last element of \a ar. Used when working with 4D vectors in
          * graphics applications involving 4x4 transform matrices.
          */
-        template <typename _S=S>
-        constexpr void set_from (const std::array<_S, (N+1)>& ar) noexcept
+        template <typename Sy=S>
+        constexpr void set_from (const std::array<Sy, (N+1)>& ar) noexcept
         {
             for (std::size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
         }
@@ -114,8 +114,8 @@ namespace morph {
          * working with 2D vectors that you want to visualise in a 3D environment with
          * z set to 0.
          */
-        template <typename _S=S>
-        constexpr void set_from (const std::array<_S, (N-1)>& ar) noexcept
+        template <typename Sy=S>
+        constexpr void set_from (const std::array<Sy, (N-1)>& ar) noexcept
         {
             for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = ar[i]; }
             (*this)[N-1] = S{0};
@@ -125,31 +125,31 @@ namespace morph {
          * Set an N D vec from an N+1 D vec. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.
          */
-        template <typename _S=S>
-        constexpr void set_from (const vec<_S, (N+1)>& v) noexcept
+        template <typename Sy=S>
+        constexpr void set_from (const vec<Sy, (N+1)>& v) noexcept
         {
             for (std::size_t i = 0; i < N; ++i) { (*this)[i] = v[i]; }
         }
 
         //! Set an N D vec from an (N-1) D vec.
-        template <typename _S=S>
-        constexpr void set_from (const vec<_S, (N-1)>& v) noexcept
+        template <typename Sy=S>
+        constexpr void set_from (const vec<Sy, (N-1)>& v) noexcept
         {
             for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = v[i]; }
             (*this)[N-1] = S{0};
         }
 
         //! Set all elements from the value type v
-        template <typename _S=S>
-        constexpr void set_from (const _S& v) noexcept { std::fill (this->begin(), this->end(), v); }
+        template <typename Sy=S>
+        constexpr void set_from (const Sy& v) noexcept { std::fill (this->begin(), this->end(), v); }
 
         /*!
          * Set a linear sequence into the vector from value start to value stop. Uses
          * the vec's size to determine how many values to create. You *can* use this
          * with integer types, but be prepared to notice strange rounding errors.
          */
-        template <typename _S=S, typename _S2=S>
-        constexpr void linspace (const _S start, const _S2 stop) noexcept
+        template <typename Sy=S, typename Sy2=S>
+        constexpr void linspace (const Sy start, const Sy2 stop) noexcept
         {
             S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (N-1);
             for (std::size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
@@ -160,8 +160,8 @@ namespace morph {
          * size. If this leads to too many elements to fit in this vec, simply stop when it's
          * full. If too few, then the rest will be 0.
          */
-        template <typename _S=S, typename _S2=S>
-        constexpr void arange (const _S start, const _S2 stop, const _S2 increment) noexcept
+        template <typename Sy=S, typename Sy2=S>
+        constexpr void arange (const Sy start, const Sy2 stop, const Sy2 increment) noexcept
         {
             this->zero();
             // Figure out how many elements given the increment:
@@ -301,48 +301,48 @@ namespace morph {
         }
 
         //! Renormalize the vector to length 1.0. Only for S types that are floating point.
-        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
         constexpr void renormalize() noexcept
         {
-            auto add_squared = [](_S a, _S b) { return a + b * b; };
-            const _S denom = morph::math::sqrt (std::accumulate (this->begin(), this->end(), _S{0}, add_squared));
-            if (denom != _S{0}) {
-                _S oneovermag = _S{1} / denom;
-                auto x_oneovermag = [oneovermag](_S f) { return f * oneovermag; };
+            auto add_squared = [](Sy a, Sy b) { return a + b * b; };
+            const Sy denom = morph::math::sqrt (std::accumulate (this->begin(), this->end(), Sy{0}, add_squared));
+            if (denom != Sy{0}) {
+                Sy oneovermag = Sy{1} / denom;
+                auto x_oneovermag = [oneovermag](Sy f) { return f * oneovermag; };
                 std::transform (this->begin(), this->end(), this->begin(), x_oneovermag);
             }
         }
 
         //! Rescale the vector elements so that they all lie in the range 0-1. NOT the same as renormalize.
-        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
         constexpr void rescale() noexcept
         {
-            morph::range<_S> r = this->range();
-            _S m = r.max - r.min;
-            _S g = r.min;
-            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            morph::range<Sy> r = this->range();
+            Sy m = r.max - r.min;
+            Sy g = r.min;
+            auto rescale_op = [m, g](Sy f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
 
         //! Rescale the vector elements so that they all lie in the range -1 to 0.
-        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
         constexpr void rescale_neg() noexcept
         {
-            morph::range<_S> r = this->range();
-            _S m = r.max - r.min;
-            _S g = r.max;
-            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            morph::range<Sy> r = this->range();
+            Sy m = r.max - r.min;
+            Sy g = r.max;
+            auto rescale_op = [m, g](Sy f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
 
         //! Rescale the vector elements symetrically about 0 so that they all lie in the range -1 to 1.
-        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
         constexpr void rescale_sym() noexcept
         {
-            morph::range<_S> r = this->range();
-            _S m = (r.max - r.min) / _S{2};
-            _S g = (r.max + r.min) / _S{2};
-            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            morph::range<Sy> r = this->range();
+            Sy m = (r.max - r.min) / Sy{2};
+            Sy g = (r.max + r.min) / Sy{2};
+            auto rescale_op = [m, g](Sy f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
 
@@ -462,12 +462,12 @@ namespace morph {
          *
          * \return true if the length of the vector is 1.
          */
-        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
         constexpr bool checkunit() const noexcept
         {
-            auto subtract_squared = [](_S a, _S b) { return static_cast<_S>(a - b * b); };
-            const _S metric = std::accumulate (this->begin(), this->end(), _S{1}, subtract_squared);
-            if (morph::math::abs(metric) > morph::vec<_S>::unitThresh()) {
+            auto subtract_squared = [](Sy a, Sy b) { return static_cast<Sy>(a - b * b); };
+            const Sy metric = std::accumulate (this->begin(), this->end(), Sy{1}, subtract_squared);
+            if (morph::math::abs(metric) > morph::vec<Sy>::unitThresh()) {
                 return false;
             }
             return true;
@@ -478,21 +478,21 @@ namespace morph {
          *
          * \return a value which is as close as possible to the length
          */
-        template <typename _S=S>
-        constexpr _S length() const noexcept
+        template <typename Sy=S>
+        constexpr Sy length() const noexcept
         {
-            auto add_squared = [](_S a, S b) { return a + b * b; };
-            // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of sqrt()
-            if constexpr (std::is_integral<std::decay_t<_S>>::value == true) {
-                return static_cast<_S>(std::round(morph::math::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared))));
+            auto add_squared = [](Sy a, S b) { return a + b * b; };
+            // Add check on whether return type Sy is integral or float. If integral, then std::round then cast the result of sqrt()
+            if constexpr (std::is_integral<std::decay_t<Sy>>::value == true) {
+                return static_cast<Sy>(std::round(morph::math::sqrt(std::accumulate(this->begin(), this->end(), Sy{0}, add_squared))));
             } else {
-                return morph::math::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared));
+                return morph::math::sqrt(std::accumulate(this->begin(), this->end(), Sy{0}, add_squared));
             }
         }
 
         //! Reduce the length of the vector by the amount dl, if possible. If dl makes the vector
         //! have a negative length, then return a null vector
-        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
         constexpr vec<S, N> shorten (const S dl) const noexcept
         {
             vec<S, N> v = *this;
@@ -507,7 +507,7 @@ namespace morph {
 
         //! Increase the length of the vector by the amount dl, if possible. If dl makes the vector
         //! have a negative length, then return a null vector
-        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        template <typename Sy=S, std::enable_if_t<!std::is_integral<std::decay_t<Sy>>::value, int> = 0 >
         constexpr vec<S, N> lengthen (const S dl) const noexcept
         {
             vec<S, N> v = *this;
@@ -525,28 +525,28 @@ namespace morph {
          * elements, if elements are scalar.
          *
          * If S typed elements are morph::vecs or morph::vvecs, then return the sum of the squares
-         * of the lengths of the elements in the return _S type, which you will have to ensure to be
+         * of the lengths of the elements in the return Sy type, which you will have to ensure to be
          * a scalar.
          */
-        template <typename _S=S>
-        constexpr _S length_sq() const noexcept
+        template <typename Sy=S>
+        constexpr Sy length_sq() const noexcept
         {
-            _S _sos = _S{0};
+            Sy _sos = Sy{0};
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
-                if constexpr (std::is_scalar<std::decay_t<_S>>::value) {
+                if constexpr (std::is_scalar<std::decay_t<Sy>>::value) {
                     // Return type is also scalar
-                    _sos = this->sos<_S>();
+                    _sos = this->sos<Sy>();
                 } else {
                     // Return type is a vector. Too weird.
                     []<bool flag = false>() { static_assert(flag, "Won't compute sum of squared scalar elements into a vector type"); }();
                 }
             } else {
                 // S is a vector so i is a vector.
-                if constexpr (std::is_scalar<std::decay_t<_S>>::value) {
-                    // Return type _S is a scalar
-                    for (auto& i : *this) { _sos += i.template sos<_S>(); }
+                if constexpr (std::is_scalar<std::decay_t<Sy>>::value) {
+                    // Return type Sy is a scalar
+                    for (auto& i : *this) { _sos += i.template sos<Sy>(); }
                 } else {
-                    // Return type _S is also a vector, place result in 0th element? No, can now use vvec<vec<float>>::sos<float>()
+                    // Return type Sy is also a vector, place result in 0th element? No, can now use vvec<vec<float>>::sos<float>()
                     []<bool flag = false>() { static_assert(flag, "Won't compute sum of squared vector length elements into a vector type"); }();
                 }
             }
@@ -562,11 +562,11 @@ namespace morph {
          *
          * \return the length squared
          */
-        template <typename _S=S>
-        constexpr _S sos() const noexcept
+        template <typename Sy=S>
+        constexpr Sy sos() const noexcept
         {
-            auto add_squared = [](_S a, S b) { return a + b * b; };
-            return std::accumulate (this->begin(), this->end(), _S{0}, add_squared);
+            auto add_squared = [](Sy a, S b) { return a + b * b; };
+            return std::accumulate (this->begin(), this->end(), Sy{0}, add_squared);
         }
 
         //! Return the value of the longest component of the vector.
@@ -713,58 +713,58 @@ namespace morph {
          *
          * Only enabled for arrays of size 3 (for now, RGBA vecs could also be considered)
          *
-         * Only really makes sense for real types S/_S.
+         * Only really makes sense for real types S/Sy.
          */
-        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        constexpr _S rgb_to_grey() const noexcept
+        template <typename Sy=S, std::size_t Ny = N, std::enable_if_t<(Ny==3), int> = 0>
+        constexpr Sy rgb_to_grey() const noexcept
         {
-            const _S grey = _S{0.299} * (*this)[0] + _S{0.587} * (*this)[1] + _S{0.114} * (*this)[2];
+            const Sy grey = Sy{0.299} * (*this)[0] + Sy{0.587} * (*this)[1] + Sy{0.114} * (*this)[2];
             return grey;
         }
 
         //! Return the arithmetic mean of the elements
-        template<typename _S=S>
-        constexpr _S mean() const noexcept
+        template<typename Sy=S>
+        constexpr Sy mean() const noexcept
         {
-            const _S sum = std::accumulate (this->begin(), this->end(), _S{0});
+            const Sy sum = std::accumulate (this->begin(), this->end(), Sy{0});
             return sum / this->size();
         }
 
         //! Return the variance of the elements
-        template<typename _S=S>
-        constexpr _S variance() const noexcept
+        template<typename Sy=S>
+        constexpr Sy variance() const noexcept
         {
             if (this->empty()) { return S{0}; }
-            _S _mean = this->mean<_S>();
-            _S sos_deviations = _S{0};
+            Sy _mean = this->mean<Sy>();
+            Sy sos_deviations = Sy{0};
             for (S val : *this) {
                 sos_deviations += ((val-_mean)*(val-_mean));
             }
-            _S variance = sos_deviations / (this->size()-1);
+            Sy variance = sos_deviations / (this->size()-1);
             return variance;
         }
 
         //! Return the standard deviation of the elements
-        template<typename _S=S>
-        constexpr _S std() const noexcept
+        template<typename Sy=S>
+        constexpr Sy std() const noexcept
         {
-            if (this->empty()) { return _S{0}; }
-            return morph::math::sqrt (this->variance<_S>());
+            if (this->empty()) { return Sy{0}; }
+            return morph::math::sqrt (this->variance<Sy>());
         }
 
         //! Return the sum of the elements
-        template<typename _S=S>
-        constexpr _S sum() const noexcept
+        template<typename Sy=S>
+        constexpr Sy sum() const noexcept
         {
-            return std::accumulate (this->begin(), this->end(), _S{0});
+            return std::accumulate (this->begin(), this->end(), Sy{0});
         }
 
         //! Return the product of the elements
-        template<typename _S=S>
-        constexpr _S product() const noexcept
+        template<typename Sy=S>
+        constexpr Sy product() const noexcept
         {
-            auto _product = [](_S a, S b) mutable { return a ? a * b : b; };
-            return std::accumulate (this->begin(), this->end(), _S{0}, _product);
+            auto _product = [](Sy a, S b) mutable { return a ? a * b : b; };
+            return std::accumulate (this->begin(), this->end(), Sy{0}, _product);
         }
 
         /*!
@@ -783,8 +783,8 @@ namespace morph {
         constexpr void pow_inplace (const S& p) noexcept { for (auto& i : *this) { i = static_cast<S>(morph::math::pow (i, p)); } }
 
         //! Element-wise power
-        template<typename _S=S>
-        constexpr vec<S, N> pow (const vec<_S, N>& p) const noexcept
+        template<typename Sy=S>
+        constexpr vec<S, N> pow (const vec<Sy, N>& p) const noexcept
         {
             auto pi = p.begin();
             vec<S, N> rtn{};
@@ -792,8 +792,8 @@ namespace morph {
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
-        template<typename _S=S>
-        constexpr void pow_inplace (const vec<_S, N>& p) noexcept
+        template<typename Sy=S>
+        constexpr void pow_inplace (const vec<Sy, N>& p) noexcept
         {
             auto pi = p.begin();
             for (auto& i : *this) { i = static_cast<S>(morph::math::pow (i, (*pi++))); }
@@ -976,24 +976,24 @@ namespace morph {
          *    auto _cmp = [](morph::vec<int,2> a, morph::vec<int,2> b){return a.lexical_lessthan(b);};
          *    std::map<morph::vec<int, 2>, std::string, decltype(_cmp)> themap(_cmp);
          */
-        template<typename _S=S>
-        bool lexical_lessthan (const vec<_S, N>& rhs) const noexcept
+        template<typename Sy=S>
+        bool lexical_lessthan (const vec<Sy, N>& rhs) const noexcept
         {
             return std::lexicographical_compare (this->begin(), this->end(), rhs.begin(), rhs.end());
         }
 
         /*!
          * Like lexical_lessthan, but elements of vec must be less than by at least n_eps *
-         * numeric_limits<_S>::epsilon() to be different. If *this is less than rhs on that basis,
+         * numeric_limits<Sy>::epsilon() to be different. If *this is less than rhs on that basis,
          * return true.
          */
-        template<typename _S=S>
-        bool lexical_lessthan_beyond_epsilon (const vec<_S, N>& rhs, const int n_eps = 1) const noexcept
+        template<typename Sy=S>
+        bool lexical_lessthan_beyond_epsilon (const vec<Sy, N>& rhs, const int n_eps = 1) const noexcept
         {
             for (std::size_t i = 0; i < N; ++i) {
-                const _S _this = (*this)[i];
-                const _S _rhs = rhs[i];
-                const _S eps = std::numeric_limits<_S>::epsilon() * n_eps;
+                const Sy _this = (*this)[i];
+                const Sy _rhs = rhs[i];
+                const Sy eps = std::numeric_limits<Sy>::epsilon() * n_eps;
                 if ((_rhs - _this) > eps) {
                     // _rhs is properly less than _this, so _this is gtr than _rhs
                     return false;
@@ -1006,24 +1006,24 @@ namespace morph {
         }
 
         //! Another way to compare vectors would be by length.
-        template<typename _S=S>
-        bool length_lessthan (const vec<_S, N>& rhs) const noexcept { return this->length() < rhs.length(); }
+        template<typename Sy=S>
+        bool length_lessthan (const vec<Sy, N>& rhs) const noexcept { return this->length() < rhs.length(); }
 
         //! Length less-than-or-equal
-        template<typename _S=S>
-        bool length_lte (const vec<_S, N>& rhs) const noexcept { return this->length() <= rhs.length(); }
+        template<typename Sy=S>
+        bool length_lte (const vec<Sy, N>& rhs) const noexcept { return this->length() <= rhs.length(); }
 
         //! Length greater-than
-        template<typename _S=S>
-        bool length_gtrthan (const vec<_S, N>& rhs) const noexcept { return this->length() > rhs.length(); }
+        template<typename Sy=S>
+        bool length_gtrthan (const vec<Sy, N>& rhs) const noexcept { return this->length() > rhs.length(); }
 
         //! Length greater-than-or-equal
-        template<typename _S=S>
-        bool length_gte (const vec<_S, N>& rhs) const noexcept { return this->length() >= rhs.length(); }
+        template<typename Sy=S>
+        bool length_gte (const vec<Sy, N>& rhs) const noexcept { return this->length() >= rhs.length(); }
 
         //! Return true if each element of *this is less than its counterpart in rhs.
-        template<typename _S=S>
-        constexpr bool operator< (const vec<_S, N>& rhs) const noexcept
+        template<typename Sy=S>
+        constexpr bool operator< (const vec<Sy, N>& rhs) const noexcept
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b < (*ri++) ? S{0} : S{1}); };
@@ -1031,8 +1031,8 @@ namespace morph {
         }
 
         //! Return true if each element of *this is <= its counterpart in rhs.
-        template<typename _S=S>
-        constexpr bool operator<= (const vec<_S, N>& rhs) const noexcept
+        template<typename Sy=S>
+        constexpr bool operator<= (const vec<Sy, N>& rhs) const noexcept
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b <= (*ri++) ? S{0} : S{1}); };
@@ -1040,8 +1040,8 @@ namespace morph {
         }
 
         //! Return true if each element of *this is greater than its counterpart in rhs.
-        template<typename _S=S>
-        constexpr bool operator> (const vec<_S, N>& rhs) const noexcept
+        template<typename Sy=S>
+        constexpr bool operator> (const vec<Sy, N>& rhs) const noexcept
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b > (*ri++) ? S{0} : S{1}); };
@@ -1049,8 +1049,8 @@ namespace morph {
         }
 
         //! Return true if each element of *this is >= its counterpart in rhs.
-        template<typename _S=S>
-        constexpr bool operator>= (const vec<_S, N>& rhs) const noexcept
+        template<typename Sy=S>
+        constexpr bool operator>= (const vec<Sy, N>& rhs) const noexcept
         {
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b >= (*ri++) ? S{0} : S{1}); };
@@ -1083,11 +1083,11 @@ namespace morph {
          *
          * \return scalar product
          */
-        template<typename _S=S>
-        constexpr S dot (const vec<_S, N>& v) const noexcept
+        template<typename Sy=S>
+        constexpr S dot (const vec<Sy, N>& v) const noexcept
         {
             auto vi = v.begin();
-            auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
+            auto dot_product = [vi](S a, Sy b) mutable { return a + b * (*vi++); };
             const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
             return rtn;
         }
@@ -1099,10 +1099,10 @@ namespace morph {
          * higher dimensions, its more complicated to define what the cross product is,
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
-        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        constexpr vec<S, _N> cross (const vec<_S, _N>& v) const noexcept
+        template <typename Sy=S, std::size_t Ny = N, std::enable_if_t<(Ny==3), int> = 0>
+        constexpr vec<S, Ny> cross (const vec<Sy, Ny>& v) const noexcept
         {
-            vec<S, _N> vrtn{};
+            vec<S, Ny> vrtn{};
             vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
             vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
             vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
@@ -1110,8 +1110,8 @@ namespace morph {
         }
 
         //! Define a 2D cross product, v x w to be v_x w_y - v_y w_x.
-        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        constexpr S cross (const vec<_S, _N>& w) const noexcept
+        template <typename Sy=S, std::size_t Ny = N, std::enable_if_t<(Ny==2), int> = 0>
+        constexpr S cross (const vec<Sy, Ny>& w) const noexcept
         {
             S rtn = (*this)[0] * w.y() - (*this)[1] * w.x();
             return rtn;
@@ -1122,10 +1122,10 @@ namespace morph {
         // pi]).  This is the naming convention in mathematical texts. YOU MAY NEED TO SWITCH theta
         // AND phi because some functions, including boost::math for its spherical harmonics uses a
         // different convention, swapping theta and phi!
-        template <std::size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        constexpr vec<S, _N> cartesian_to_spherical() const noexcept
+        template <std::size_t Ny = N, std::enable_if_t<(Ny==3), int> = 0>
+        constexpr vec<S, Ny> cartesian_to_spherical() const noexcept
         {
-            vec<S, _N> spherical = {S{0}}; // { rho, theta, phi }
+            vec<S, Ny> spherical = {S{0}}; // { rho, theta, phi }
             // Assuming *this is cartesian, convert to spherical coordinates.
             S rho = this->length();
             spherical[0] = rho;                                  // rho
@@ -1161,7 +1161,7 @@ namespace morph {
         /*!
          * Two dimensional angle in radians (only for N=2) wrt to the axes
          */
-        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+        template <typename Sy=S, std::size_t Ny = N, std::enable_if_t<(Ny==2), int> = 0>
         constexpr S angle() const noexcept
         {
             S _angle = morph::math::atan2 ((*this)[1], (*this)[0]);
@@ -1172,8 +1172,8 @@ namespace morph {
          * Set a two dimensional angle in radians (only for N=2). Preserve length, unless vector
          * length is 0, in which case set as unit vector.
          */
-        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        constexpr void set_angle (const _S _ang) noexcept
+        template <typename Sy=S, std::size_t Ny = N, std::enable_if_t<(Ny==2), int> = 0>
+        constexpr void set_angle (const Sy _ang) noexcept
         {
             S l = this->length();
             (*this)[0] = morph::math::cos (_ang);
@@ -1184,11 +1184,11 @@ namespace morph {
         /*!
          * Scalar multiply * operator
          *
-         * This function will only be defined if typename _S is a
+         * This function will only be defined if typename Sy is a
          * scalar type. Multiplies this vec<S, N> by s, element-wise.
          */
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr vec<S, N> operator* (const _S& s) const noexcept
+        template <typename Sy=S, std::enable_if_t<std::is_scalar<std::decay_t<Sy>>::value, int> = 0 >
+        constexpr vec<S, N> operator* (const Sy& s) const noexcept
         {
             vec<S, N> rtn{};
             auto mult_by_s = [s](S elmnt) { return elmnt * s; };
@@ -1204,8 +1204,8 @@ namespace morph {
          *
          * \return Hadamard product of left hand size (*this) and right hand size (\a v)
          */
-        template<typename _S=S>
-        constexpr vec<S, N> operator* (const vec<_S, N>& v) const noexcept
+        template<typename Sy=S>
+        constexpr vec<S, N> operator* (const vec<Sy, N>& v) const noexcept
         {
             vec<S, N> rtn = {};
             auto vi = v.begin();
@@ -1217,11 +1217,11 @@ namespace morph {
         /*!
          * Scalar multiply *= operator
          *
-         * This function will only be defined if typename _S is a
+         * This function will only be defined if typename Sy is a
          * scalar type. Multiplies this vec<S, N> by s, element-wise.
          */
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr void operator*= (const _S& s) noexcept
+        template <typename Sy=S, std::enable_if_t<std::is_scalar<std::decay_t<Sy>>::value, int> = 0 >
+        constexpr void operator*= (const Sy& s) noexcept
         {
             auto mult_by_s = [s](S elmnt) { return elmnt * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
@@ -1232,8 +1232,8 @@ namespace morph {
          *
          * Hadamard product. Multiply *this vector with \a v, elementwise.
          */
-        template <typename _S=S>
-        constexpr void operator*= (const vec<_S, N>& v) noexcept
+        template <typename Sy=S>
+        constexpr void operator*= (const vec<Sy, N>& v) noexcept
         {
             auto vi = v.begin();
             auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
@@ -1241,8 +1241,8 @@ namespace morph {
         }
 
         //! Scalar divide by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr vec<S, N> operator/ (const _S& s) const noexcept
+        template <typename Sy=S, std::enable_if_t<std::is_scalar<std::decay_t<Sy>>::value, int> = 0 >
+        constexpr vec<S, N> operator/ (const Sy& s) const noexcept
         {
             vec<S, N> rtn;
             for (std::size_t i = 0; i < N; ++i) { rtn[i] = S{0}; } // init rtn
@@ -1258,8 +1258,8 @@ namespace morph {
          *
          * \return elementwise division of left hand size (*this) by right hand size (\a v)
          */
-        template<typename _S=S>
-        constexpr vec<S, N> operator/ (const vec<_S, N>& v) const noexcept
+        template<typename Sy=S>
+        constexpr vec<S, N> operator/ (const vec<Sy, N>& v) const noexcept
         {
             vec<S, N> rtn{};
             std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
@@ -1267,8 +1267,8 @@ namespace morph {
         }
 
         //! Scalar divide by s
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr void operator/= (const _S& s) noexcept
+        template <typename Sy=S, std::enable_if_t<std::is_scalar<std::decay_t<Sy>>::value, int> = 0 >
+        constexpr void operator/= (const Sy& s) noexcept
         {
             auto div_by_s = [s](S elmnt) { return elmnt / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
@@ -1279,15 +1279,15 @@ namespace morph {
          *
          * Element by element division. Divide *this vector by \a v, elementwise.
          */
-        template <typename _S=S>
-        constexpr void operator/= (const vec<_S, N>& v) noexcept
+        template <typename Sy=S>
+        constexpr void operator/= (const vec<Sy, N>& v) noexcept
         {
             std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
         }
 
         //! Scalar addition
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr vec<S, N> operator+ (const _S& s) const noexcept
+        template <typename Sy=S, std::enable_if_t<std::is_scalar<std::decay_t<Sy>>::value, int> = 0 >
+        constexpr vec<S, N> operator+ (const Sy& s) const noexcept
         {
             vec<S, N> rtn{};
             auto add_s = [s](S elmnt) { return elmnt + s; };
@@ -1305,8 +1305,8 @@ namespace morph {
         }
 
         //! vec addition operator
-        template<typename _S=S>
-        constexpr vec<S, N> operator+ (const vec<_S, N>& v) const noexcept
+        template<typename Sy=S>
+        constexpr vec<S, N> operator+ (const vec<Sy, N>& v) const noexcept
         {
             vec<S, N> vrtn{};
             auto vi = v.begin();
@@ -1316,8 +1316,8 @@ namespace morph {
         }
 
         //! Scalar addition
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr void operator+= (const _S& s) noexcept
+        template <typename Sy=S, std::enable_if_t<std::is_scalar<std::decay_t<Sy>>::value, int> = 0 >
+        constexpr void operator+= (const Sy& s) noexcept
         {
             auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
@@ -1331,8 +1331,8 @@ namespace morph {
         }
 
         //! vec addition operator
-        template<typename _S=S>
-        constexpr void operator+= (const vec<_S, N>& v) noexcept
+        template<typename Sy=S>
+        constexpr void operator+= (const vec<Sy, N>& v) noexcept
         {
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
@@ -1340,8 +1340,8 @@ namespace morph {
         }
 
         //! Scalar subtraction
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr vec<S, N> operator- (const _S& s) const noexcept
+        template <typename Sy=S, std::enable_if_t<std::is_scalar<std::decay_t<Sy>>::value, int> = 0 >
+        constexpr vec<S, N> operator- (const Sy& s) const noexcept
         {
             vec<S, N> rtn{};
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
@@ -1365,8 +1365,8 @@ namespace morph {
 # endif
 #endif
         //! vec subtraction operator
-        template<typename _S=S>
-        constexpr vec<S, N> operator- (const vec<_S, N>& v) const noexcept
+        template<typename Sy=S>
+        constexpr vec<S, N> operator- (const vec<Sy, N>& v) const noexcept
         {
             vec<S, N> vrtn{};
             auto vi = v.begin();
@@ -1381,8 +1381,8 @@ namespace morph {
 #endif
 
         //! Scalar subtraction
-        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        constexpr void operator-= (const _S& s) noexcept
+        template <typename Sy=S, std::enable_if_t<std::is_scalar<std::decay_t<Sy>>::value, int> = 0 >
+        constexpr void operator-= (const Sy& s) noexcept
         {
             auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
@@ -1396,8 +1396,8 @@ namespace morph {
         }
 
         //! vec subtraction operator
-        template<typename _S=S>
-        constexpr void operator-= (const vec<_S, N>& v) noexcept
+        template<typename Sy=S>
+        constexpr void operator-= (const vec<Sy, N>& v) noexcept
         {
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };

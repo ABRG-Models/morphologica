@@ -10,34 +10,17 @@ project(RecurrentNet)
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
-message(STATUS "Operating system: " ${CMAKE_SYSTEM})
-if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(EXTRA_HOST_DEFINITION "-D__GLN__")
-elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(EXTRA_HOST_DEFINITION "-D__NIX__")
-elseif(APPLE)
-  set(EXTRA_HOST_DEFINITION "-D__OSX__")
-elseif(CMAKE_SYSTEM MATCHES Win.*)
-  set(EXTRA_HOST_DEFINITION "-D__WIN__")
-else()
-  message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
-endif()
-
 # morphologica uses c++-20 language features
 set(CMAKE_CXX_STANDARD 20)
 
-# Common cflags
-set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION}")
-
 # OS dependent cflags
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wfatal-errors -Wno-sign-compare -g -O3")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -Wno-sign-compare -g -O3")
 elseif (WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX /EHsc")
+  set(CMAKE_CXX_FLAGS "-DNOMINMAX /EHsc")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wfatal-errors -Wno-sign-compare -g -Wno-unused-result -Wno-unknown-pragmas -O3")
+  set(CMAKE_CXX_FLAGS "-Wall -Wfatal-errors -Wno-sign-compare -g -Wno-unused-result -Wno-unknown-pragmas -O3")
 endif()
 
 # In Visual Studio, if CMAKE_BUILD_TYPE is "Debug", some programs will run very slowly
@@ -51,18 +34,13 @@ if(OpenMP_FOUND)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-# Additional GL compiler flags.
-#
-# Following `cmake --help-policy CMP0072`
-set(OpenGL_GL_PREFERENCE "GLVND")
-# Add GL defines to the CXX_FLAGS
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
-
 # Tell the program where the morph fonts are, to compile them into the binary
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Declare the path to morphologica
 set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
+
+set(OpenGL_GL_PREFERENCE "GLVND") # Following `cmake --help-policy CMP0072`
 
 # Find the libraries which will be needed
 find_package(OpenGL REQUIRED)
