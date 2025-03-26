@@ -26,10 +26,15 @@ namespace morph {
     template <typename T> struct range;
     template <typename T> std::ostream& operator<< (std::ostream&, const range<T>&);
 
-    // range is a constexpr-friendly literal type
+    // range is a constexpr-friendly literal type defining a closed interval [min, max]
     template <typename T>
     struct range
     {
+        // The minimum value in the closed interval
+        T min = T{0};
+        // The maximum value
+        T max = T{0};
+
         // In the default constructor, min == max == T{0}
         constexpr range() noexcept {}
         // Range constructor in which you can specify that the range should be initialized for search
@@ -39,11 +44,6 @@ namespace morph {
         }
         // Range constructor taking the min and max for a ready-to-go range
         constexpr range (const T& _min, const T& _max) noexcept : min(_min), max(_max) {}
-
-        // The minimum
-        T min = T{0};
-        // The maximum
-        T max = T{0};
 
         // Set the range to _min, _max
         constexpr void set (const T& _min, const T& _max) noexcept
@@ -60,16 +60,34 @@ namespace morph {
             return ss.str();
         }
 
-        constexpr bool operator== (const range<T>& rhs) const noexcept
+        template<typename Ty=T>
+        requires std::is_floating_point_v<Ty>
+        constexpr bool operator== (const range<Ty>& rhs) const noexcept
         {
-            return (morph::math::abs(this->min - rhs.min) < std::numeric_limits<T>::epsilon()
-                    && morph::math::abs(this->max - rhs.max) < std::numeric_limits<T>::epsilon());
+            return (morph::math::abs(this->min - static_cast<T>(rhs.min)) < std::numeric_limits<T>::epsilon()
+                    && morph::math::abs(this->max - static_cast<T>(rhs.max)) < std::numeric_limits<T>::epsilon());
         }
 
-        constexpr bool operator!= (const range<T>& rhs) const noexcept
+        template<typename Ty=T>
+        requires std::is_floating_point_v<Ty>
+        constexpr bool operator!= (const range<Ty>& rhs) const noexcept
         {
-            return (morph::math::abs(this->min - rhs.min) > std::numeric_limits<T>::epsilon()
-                    || morph::math::abs(this->max - rhs.max) > std::numeric_limits<T>::epsilon());
+            return (morph::math::abs(this->min - static_cast<T>(rhs.min)) > std::numeric_limits<T>::epsilon()
+                    || morph::math::abs(this->max - static_cast<T>(rhs.max)) > std::numeric_limits<T>::epsilon());
+        }
+
+        template<typename Ty=T>
+        requires std::is_integral_v<Ty>
+        constexpr bool operator== (const range<Ty>& rhs) const noexcept
+        {
+            return (this->min == static_cast<T>(rhs.min) && this->max == static_cast<T>(rhs.max));
+        }
+
+        template<typename Ty=T>
+        requires std::is_integral_v<Ty>
+        constexpr bool operator!= (const range<Ty>& rhs) const noexcept
+        {
+            return (this->min != static_cast<T>(rhs.min) || this->max != static_cast<T>(rhs.max));
         }
 
         // Initialise the range to participate in a search for the max and min through a range of data.
