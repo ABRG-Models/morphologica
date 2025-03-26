@@ -554,3 +554,6 @@ add_test(testsigfigs testsigfigs)
 
 add_executable(testroundtocol testroundtocol.cpp)
 add_test(testroundtocol testroundtocol)
+
+add_executable(testmakeformatticks testmakeformatticks.cpp)
+add_test(testmakeformatticks testmakeformatticks)
