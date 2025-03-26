@@ -47,6 +47,28 @@ int main()
 
     std::cout << "\n\n";
 
+    for (float l = 4.0f; l < 12.0f; ++l) {
+        // Asking for 0 or 1 ticks should give min 2
+        morph::range<float> nticks = { 0.0f, 1.0f };
+        std::deque<float> ticks = morph::graphing::maketicks (-l, l, -l, l, nticks);
+        std::cout << "l " << l << ", [0,1]: ";
+        print_ticks (ticks);
+        if (ticks.size() < 2) { --rtn; }
+    }
+
+    std::cout << "\n\n";
+
+    for (float l = 4.0f; l < 12.0f; ++l) {
+        // Asking for 0 or 1 ticks should give min 2
+        morph::range<float> nticks = { 0.0f, 1.0f };
+        std::deque<float> ticks = morph::graphing::maketicks (0.0f, l, 0.0f, l, nticks);
+        std::cout << "l " << l << ", [0,1]: ";
+        print_ticks (ticks);
+        if (ticks.size() < 2) { --rtn; }
+    }
+
+    std::cout << "\n\n";
+
     if (rtn == 0) { std::cout << "Test SUCCESS\n"; } else { std::cout << "Test FAIL\n"; }
 
     return rtn;
