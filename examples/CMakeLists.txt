@@ -495,3 +495,5 @@ target_link_libraries(line OpenGL::GL glfw Freetype::Freetype)
 add_executable(txt txt.cpp)
 target_link_libraries(txt OpenGL::GL glfw Freetype::Freetype)
 target_compile_definitions(txt PUBLIC GLAD_OPTION_MX=1)
+
+add_executable(maketicks maketicks.cpp)
