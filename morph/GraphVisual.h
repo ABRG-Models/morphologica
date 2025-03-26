@@ -25,6 +25,7 @@
 #include <morph/colour.h>
 #include <morph/gl/version.h>
 #include <morph/VisualModel.h>
+#include <morph/graphing.h>
 #include <morph/graphstyles.h>
 #include <morph/ColourMap.h>
 #include <morph/Grid.h>
@@ -1007,106 +1008,6 @@ namespace morph {
             this->axiscolour = {0.8f, 0.8f, 0.8f};
         }
 
-        //! Graph-specific number formatting for tick labels.
-        static std::string graphNumberFormat (Flt num)
-        {
-            std::stringstream ss;
-            ss << num;
-            std::string s = ss.str();
-
-            if (num > Flt{-1} && num < Flt{1} && num != Flt{0}) {
-                // It's a 0.something number. Get rid of any 0 preceding a '.'
-                std::string::size_type p = s.find ('.');
-                if (p != std::string::npos && p>0) {
-                    if (s[--p] == '0') { s.erase(p, 1); }
-                }
-            }
-
-            return s;
-        }
-
-        /*!
-         * Auto-computes the tick marker locations (in data space) for the data range rmin to
-         * rmax. realmin and realmax gives the data range actually displayed on the graph - it's the
-         * data range, plus any padding introduced by GraphVisual::dataaxisdist.
-         *
-         * This overload accepts separate min and max for the preferred number of ticks.
-         */
-        static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
-                                          const Flt _min_num_ticks = 3, const Flt _max_num_ticks = 10)
-        {
-            morph::range<Flt> _num_ticks_range(_min_num_ticks, _max_num_ticks);
-            return GraphVisual<Flt, glver>::maketicks (rmin, rmax, realmin, realmax, _num_ticks_range);
-        }
-
-        /*!
-         * Auto-computes the tick marker locations (in data space) for the data range rmin to
-         * rmax. realmin and realmax gives the data range actually displayed on the graph - it's the
-         * data range, plus any padding introduced by GraphVisual::dataaxisdist
-         *
-         * This overload accepts a morph::range for the preferred number of ticks.
-         */
-        static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
-                                          const morph::range<Flt>& _num_ticks_range)
-        {
-            std::deque<Flt> ticks;
-
-            Flt range = rmax - rmin; // data range
-            if (range <= std::numeric_limits<Flt>::epsilon()) {
-                if constexpr (gv_debug) { std::cout << "data range " << rmin << " to " << rmax << " is <= eps\n"; }
-                // Just two ticks in this case - one at range min and one at max.
-                ticks.push_back (rmin);
-                ticks.push_back (rmax);
-                return ticks;
-            }
-            // How big should the range be? log the range, find the floor, raise it to get candidate
-            Flt trytick = std::pow (Flt{10}, std::floor (std::log10 (range)));
-            Flt numticks = std::floor (range/trytick);
-            if constexpr (gv_debug) {
-                std::cout << "initial trytick = " << trytick << ", numticks: " << numticks << " num_ticks_range = " << _num_ticks_range << std::endl;
-            }
-            if (numticks > _num_ticks_range.max) {
-                while (numticks > _num_ticks_range.max && numticks > _num_ticks_range.min) {
-                    trytick = trytick * Flt{2}; // bigger tick spacing means fewer ticks
-                    numticks = std::floor (range/trytick);
-                }
-
-            } else if (numticks < _num_ticks_range.min) {
-                while (numticks < _num_ticks_range.min && numticks < _num_ticks_range.max && trytick > std::numeric_limits<Flt>::epsilon()) {
-                    trytick = trytick * Flt{0.5};
-                    numticks = std::floor (range/trytick);
-                    if constexpr (gv_debug) {
-                        std::cout << "Trying reduced spacing to increase numticks. trytick = " << trytick << " and numticks= " << numticks << "\n";
-                    }
-                }
-            }
-            if constexpr (gv_debug) {
-                std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks.\n";
-            }
-            // Realmax and realmin come from the full range of abscissa_scale/ord1_scale
-            Flt midrange = (rmin + rmax) * Flt{0.5};
-            Flt a = std::round (midrange / trytick);
-            Flt atick = a * trytick;
-            while (atick <= realmax && ticks.size() < (10 * _num_ticks_range.max)) { // 2nd test avoids inf loop
-                // This tick is smaller than 100th of the size of one whole tick to tick spacing, so it must be 0.
-                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
-                atick += trytick;
-            }
-            atick = (a * trytick) - trytick;
-            while (atick >= realmin && ticks.size() < (10 * _num_ticks_range.max)) {
-                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
-                atick -= trytick;
-            }
-
-            // If we ended up with just one tick, revert to min and max ticks
-            if (ticks.size() < 2) {
-                ticks.clear();
-                ticks.push_back (rmin);
-                ticks.push_back (rmax);
-            }
-            return ticks;
-        }
-
     protected:
 
         //! Stores the length of each entry in graphDataCoords - i.e how many data
@@ -1523,7 +1424,7 @@ namespace morph {
                     auto lbl = this->makeVisualTextModel (tf);
                     // Find longest string (more or less)
                     for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
-                        std::string s = this->graphNumberFormat (this->xticks[i]);
+                        std::string s = morph::graphing::number_format (this->xticks[i], this->xticks[i==0 ? 1 : i-1]);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         max_label_length = geom.width() > max_label_length ? geom.width() : max_label_length;
                     }
@@ -1539,9 +1440,7 @@ namespace morph {
                     // Omit the 0 for 'cross' axes (or maybe shift its position)
                     if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
 
-                    // Expunge any '0' from 0.123 so that it's .123 and so on.
-                    std::string s = this->graphNumberFormat (this->xticks[i]);
-
+                    std::string s = morph::graphing::number_format (this->xticks[i], this->xticks[i==0 ? 1 : i-1]);
                     // Issue: I need the width of the text ss.str() before I can create the
                     // VisualTextModel, so need a static method like this:
                     tf.fontsize = x_font_factor * this->fontsize;
@@ -1560,7 +1459,7 @@ namespace morph {
                     // Omit the 0 for 'cross' axes (or maybe shift its position)
                     if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
 
-                    std::string s = this->graphNumberFormat (this->yticks[i]);
+                    std::string s = morph::graphing::number_format (this->yticks[i], this->yticks[i==0 ? 1 : i-1]);
                     auto lbl = this->makeVisualTextModel (tf);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
@@ -1577,7 +1476,7 @@ namespace morph {
                 x_for_yticks = this->width;
                 this->ytick_label_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
-                    std::string s = this->graphNumberFormat (this->yticks2[i]);
+                    std::string s = morph::graphing::number_format (this->yticks2[i], this->yticks2[i==0 ? 1 : i-1]);
                     auto lbl = this->makeVisualTextModel (tf);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_label_width2 = geom.width() > this->ytick_label_width2 ? geom.width() : this->ytick_label_width2;
@@ -1946,14 +1845,14 @@ namespace morph {
 
                 float realmin = this->abscissa_scale.inverse_one (0);
                 float realmax = this->abscissa_scale.inverse_one (this->width);
-                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax, this->num_ticks_range);
+                this->xticks = morph::graphing::maketicks (_xmin, _xmax, realmin, realmax, this->num_ticks_range_x);
                 this->xtick_posns.resize (this->xticks.size());
                 this->abscissa_scale.transform (xticks, xtick_posns);
 
                 if (this->ord1_scale.ready()) {
                     realmin = this->ord1_scale.inverse_one (0);
                     realmax = this->ord1_scale.inverse_one (this->height);
-                    this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax, this->num_ticks_range);
+                    this->yticks = morph::graphing::maketicks (_ymin, _ymax, realmin, realmax, this->num_ticks_range_y);
                     this->ytick_posns.resize (this->yticks.size());
                     this->ord1_scale.transform (yticks, ytick_posns);
                 }
@@ -1961,7 +1860,7 @@ namespace morph {
                 if (this->ord2_scale.ready()) {
                     realmin = this->ord2_scale.inverse_one (0);
                     realmax = this->ord2_scale.inverse_one (this->height);
-                    this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax, this->num_ticks_range);
+                    this->yticks2 = morph::graphing::maketicks (_ymin2, _ymax2, realmin, realmax, this->num_ticks_range_y2);
                     this->ytick_posns2.resize (this->yticks2.size());
                     this->ord2_scale.transform (yticks2, ytick_posns2);
                 }
@@ -2082,7 +1981,9 @@ namespace morph {
         //! Should the y (and y2) tick *labels* be omitted?
         bool omit_y_tick_labels = false;
         //! The number of tick labels permitted, stored as a morph::range
-        morph::range<Flt> num_ticks_range{ Flt{3}, Flt{10} };
+        morph::range<Flt> num_ticks_range_x{ Flt{5}, Flt{10} };
+        morph::range<Flt> num_ticks_range_y{ Flt{5}, Flt{10} };
+        morph::range<Flt> num_ticks_range_y2{ Flt{5}, Flt{10} };
         // Default font
         morph::VisualFont font = morph::VisualFont::DVSans;
         //! Font resolution - determines how textures for glyphs are generated. If your

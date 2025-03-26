@@ -6,9 +6,12 @@
 
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
+#include <morph/range.h>
 #include <morph/scale.h>
 #include <morph/vec.h>
-#include <morph/GraphVisual.h> // share some features from GraphVisual
+#include <morph/ColourMap.h>
+#include <morph/graphing.h>
+#include <morph/graphstyles.h>
 
 namespace morph {
 
@@ -89,13 +92,7 @@ namespace morph {
                 F _max = this->tickscale.inverse_one (this->tickscale.output_range.max);
                 float realmin = this->tickscale.inverse_one (0);
                 float realmax = this->tickscale.inverse_one (this->length);
-
-                if (this->justmaxmin == true) {
-                    // This may not work quite right, depending on the range in this->scale.
-                    this->ticks = morph::GraphVisual<F, glver>::maketicks (_min, _max, realmin, realmax, 2, 2); // max 2, min 2
-                } else {
-                    this->ticks = morph::GraphVisual<F, glver>::maketicks (_min, _max, realmin, realmax, 8); // 8 is max num ticks
-                }
+                this->ticks = morph::graphing::maketicks (_min, _max, realmin, realmax, this->number_of_ticks_range);
                 this->tick_posns.resize (this->ticks.size());
                 this->tickscale.transform (ticks, tick_posns);
             }
@@ -182,7 +179,7 @@ namespace morph {
                 if (this->orientation == colourbar_orientation::horizontal) {
                     // Labels above
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                        std::string s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
+                        std::string s = morph::graphing::number_format (this->ticks[i], this->ticks[i==0 ? 1 : i-1]);
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
@@ -198,7 +195,7 @@ namespace morph {
                 } else {
                     // Labels left
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                        std::string s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
+                        std::string s = morph::graphing::number_format (this->ticks[i], this->ticks[i==0 ? 1 : i-1]);
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
@@ -217,7 +214,7 @@ namespace morph {
                 if (this->orientation == colourbar_orientation::horizontal) {
                     // Labels below
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                        std::string s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
+                        std::string s = morph::graphing::number_format (this->ticks[i], this->ticks[i==0 ? 1 : i-1]);
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
@@ -233,7 +230,7 @@ namespace morph {
                 } else {
                     // Labels right
                     for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                        std::string s = morph::GraphVisual<F, glver>::graphNumberFormat (this->ticks[i]);
+                        std::string s = morph::graphing::number_format (this->ticks[i], this->ticks[i==0 ? 1 : i-1]);
                         auto lbl = this->makeVisualTextModel (this->tf);
                         morph::TextGeometry geom = lbl->getTextGeometry (s);
                         this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
@@ -360,8 +357,8 @@ namespace morph {
         std::array<float, 3> framecolour = morph::colour::black;
         //! Set axis and text colours for a dark or black background
         bool darkbg = false;
-        //! Plot ONLY the max and min values of the scaling?
-        bool justmaxmin = false;
+        //! The range of acceptable numbers of ticks
+        morph::range<F> number_of_ticks_range = {F{3}, F{8}};
         //! The line width of the colourbar frame
         float framelinewidth = 0.006f;
         //! How long should the ticks be?

@@ -60,6 +60,11 @@ else()
   endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
 
+# If you tell the code you have std::format, then it may use it
+if(HAVE_STD_FORMAT)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_HAVE_STD_FORMAT")
+endif()
+
 # In Visual Studio, if CMAKE_BUILD_TYPE is "Debug", some programs will run very slowly
 if(WIN32)
   set(CMAKE_BUILD_TYPE "Release")

@@ -538,3 +538,22 @@ if(NOT APPLE)
 add_executable(testcmath testcmath.cpp)
 add_test(testcmath testcmath)
 endif()
+
+add_executable(testgraphnumberformat testgraphnumberformat.cpp)
+add_test(testgraphnumberformat testgraphnumberformat)
+
+add_executable(testgraphnumberformat_ss testgraphnumberformat.cpp)
+target_compile_definitions(testgraphnumberformat_ss PUBLIC FORCE_NON_FORMAT)
+add_test(testgraphnumberformat_ss testgraphnumberformat_ss)
+
+add_executable(testmaketicks testmaketicks.cpp)
+add_test(testmaketicks testmaketicks)
+
+add_executable(testsigfigs testsigfigs.cpp)
+add_test(testsigfigs testsigfigs)
+
+add_executable(testroundtocol testroundtocol.cpp)
+add_test(testroundtocol testroundtocol)
+
+add_executable(testmakeformatticks testmakeformatticks.cpp)
+add_test(testmakeformatticks testmakeformatticks)
