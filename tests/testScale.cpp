@@ -283,6 +283,19 @@ int main ()
     if (std::abs(idsc2.transform_one (-10.4f) - -10.4) > 5 * std::numeric_limits<float>::epsilon()) { --rtn; }
     if (std::abs(idsc2.inverse_one (3.475f) - 3.475) > 5 * std::numeric_limits<float>::epsilon()) { --rtn; }
 
+    morph::scale<morph::vec<float>> vecidsc;
+    vecidsc.identity_scaling();
+    std::cout << "(identity scaling) (1,1,1) transforms to " << vecidsc.transform_one (morph::vec<float>{1,1,1}) << std::endl;
+    std::cout << "(identity scaling) (1,-1,1) transforms to " << vecidsc.transform_one (morph::vec<float>{1,-1,1}) << std::endl;
+    if (vecidsc.transform_one (morph::vec<float>{1,-1,1}) != morph::vec<float>{1,-1,1}) { --rtn; }
+
+    morph::scale<std::complex<float>> cpxidsc;
+    cpxidsc.identity_scaling();
+    std::cout << "(identity scaling) 1+2i transforms to " << cpxidsc.transform_one (std::complex<float>{1,2}) << std::endl;
+    std::cout << "(identity scaling) 1-2i transforms to " << cpxidsc.transform_one (std::complex<float>{1,-2}) << std::endl;
+    if (cpxidsc.transform_one (std::complex<float>{1,-2}) != std::complex<float>{1,-2}) { --rtn; }
+
+
     std::cout << "testScale " << (rtn == 0 ? "Passed" : "Failed") << std::endl;
     return rtn;
 }
