@@ -126,6 +126,10 @@ if(HDF5_FOUND)
   target_link_libraries(testhdfdata4f ${HDF5_C_LIBRARIES})
   add_test(testhdfdata4f testhdfdata4f)
 
+  add_executable(testhdfdata5 testhdfdata5.cpp)
+  target_link_libraries(testhdfdata5 ${HDF5_C_LIBRARIES})
+  add_test(testhdfdata5 testhdfdata5)
+
 endif(HDF5_FOUND)
 
 if(${glfw3_FOUND})
