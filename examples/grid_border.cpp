@@ -62,7 +62,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->zScale.setParams(0.0f, 0.0f);
+    gv->zScale.null_scaling();
     gv->addLabel ("2) 1 + no zScale", morph::vec<float>({0,-0.2,0}), morph::TextFeatures(0.05f));
     gv->finalize();
     v.addVisualModel (gv);
@@ -74,7 +74,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->zScale.setParams(0.0f, 0.0f);
+    gv->zScale.null_scaling();
     gv->showborder (true);
     gv->border_thickness = 0.25f;
     gv->border_colour = morph::colour::cyan;
@@ -105,7 +105,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->zScale.setParams(0.0f, 0.0f);
+    gv->zScale.null_scaling();
     gv->showgrid (true);
     gv->grid_colour = morph::colour::black;
     gv->grid_thickness = 0.1f;
@@ -120,7 +120,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->zScale.setParams(0.0f, 0.0f);
+    gv->zScale.null_scaling();
     gv->showgrid (true);
     gv->grid_colour = morph::colour::black;
     gv->grid_thickness = 0.1f;
@@ -139,7 +139,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->zScale.setParams(0.0f, 0.0f);
+    gv->zScale.null_scaling();
 
     gv->showselectedpixborder (true);
     gv->selected_pix[6] = morph::colour::forestgreen;
@@ -165,7 +165,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::RectInterp;
     gv->setVectorData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
-    gv->zScale.setParams(0.0f, 0.0f);
+    gv->zScale.null_scaling();
 
     gv->showgrid (true);
     gv->grid_colour = morph::colour::black;

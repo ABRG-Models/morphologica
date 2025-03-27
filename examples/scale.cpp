@@ -77,6 +77,11 @@ int main()
     s.transform (vv1, vvresult);
     std::cout << "With scale::setParams(0,0) " << vv1 << " scales to: " << vvresult << "\n";
 
+    // This is often useful, so it has an alias function:
+    s.null_scaling();
+    s.transform (vv1, vvresult);
+    std::cout << "With scale::null_scaling() " << vv1 << " scales to: " << vvresult << "\n";
+
     // DON'T try to use compute autoscale to allow you to scale any number to zero. Here's what you
     // get with compute_scaling (0,0)
     s.compute_scaling (0.0f, 0.0f);

@@ -60,7 +60,7 @@ int main()
     gv->setScalarData (&data);
 
     // To show a grid first set the scaling so that the whole image is flat
-    //gv->zScale.setParams (0, 0);
+    //gv->zScale.null_scaling();
     // Say you want a grid
     //gv->showgrid (true);
     // Choose the thickness. This is a proportion of the pixel dimensions

@@ -180,7 +180,7 @@ int main()
         gv2->gridVisMode = morph::GridVisMode::Pixels;
         gv2->setScalarData (&image_data);
         gv2->cm.setType (morph::ColourMapType::GreyscaleInv);
-        gv2->zScale.setParams (0, 0);
+        gv2->zScale.null_scaling();
         gv2->addLabel ("morph::GridVisual (flat, pixels)", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
         gv2->finalize();
         v.addVisualModel (gv2);

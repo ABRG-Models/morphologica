@@ -42,7 +42,7 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Cork);
     gv->zScale.do_autoscale = false;
-    gv->zScale.setParams (0, 0);
+    gv->zScale.null_scaling();
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     gv->addLabel (std::string("GridVisMode::Triangles, cm: ") + gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.03f));

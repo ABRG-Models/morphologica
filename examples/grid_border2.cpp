@@ -51,7 +51,7 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Cork);
     gv->zScale.do_autoscale = false;
-    gv->zScale.setParams (0, 0);
+    gv->zScale.null_scaling();
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters
@@ -71,7 +71,7 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Cork);
     gv->zScale.do_autoscale = false;
-    gv->zScale.setParams (0, 0);
+    gv->zScale.null_scaling();
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     gv->showborder (false);
@@ -87,7 +87,7 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Cork);
     gv->zScale.do_autoscale = false;
-    gv->zScale.setParams (0, 0);
+    gv->zScale.null_scaling();
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     gv->showborder (false);
@@ -105,7 +105,7 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Cork);
     gv->zScale.do_autoscale = false;
-    gv->zScale.setParams (0, 0);
+    gv->zScale.null_scaling();
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters
@@ -133,7 +133,7 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Cork);
     gv->zScale.do_autoscale = false;
-    gv->zScale.setParams (0, 0);
+    gv->zScale.null_scaling();
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters
@@ -160,7 +160,7 @@ int main()
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Cork);
     gv->zScale.do_autoscale = false;
-    gv->zScale.setParams (0, 0);
+    gv->zScale.null_scaling();
     gv->colourScale.do_autoscale = false;
     gv->colourScale.compute_scaling (-1, 1);
     // Border specific parameters

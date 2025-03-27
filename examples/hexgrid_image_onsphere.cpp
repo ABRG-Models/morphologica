@@ -140,7 +140,7 @@ int main()
     hgv->setScalarData (&hex_image_data);
     // The only real difference is that this has no hgv->setDataCoords(&sphere_coords) call.
     hgv->cm.setType (morph::ColourMapType::Inferno);
-    hgv->zScale.setParams (0, 1);
+    hgv->zScale.setParams (0, 1); // sets a z offset of 1 across the hexgrid
     hgv->addLabel (std::string("2D HexGrid"),
                    morph::vec<float>{1.2*r_sph, -1.2*r_sph, 1},
                    morph::TextFeatures(0.05f));

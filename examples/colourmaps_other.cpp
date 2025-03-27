@@ -103,7 +103,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::Triangles;
     gv->setVectorData (&data);
     gv->cm.setType (cmap_2d_types[0]);
-    gv->zScale.setParams(0,0);
+    gv->zScale.null_scaling();
     gv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_2d_types[0]), {0, -0.1, 0}, morph::TextFeatures(0.05f));
     gv->twodimensional = true;
     gv->finalize();
@@ -116,7 +116,7 @@ int main()
     gv->gridVisMode = morph::GridVisMode::Triangles;
     gv->setVectorData (&data);
     gv->cm.setType (cmap_2d_types[1]);
-    gv->zScale.setParams(0,0);
+    gv->zScale.null_scaling();
     gv->addLabel ("Duochrome red-green", {0, -0.1, 0}, morph::TextFeatures(0.05f));
     gv->twodimensional = true;
     gv->finalize();
@@ -130,7 +130,7 @@ int main()
     gv->setVectorData (&data);
     gv->cm.setType (cmap_2d_types[1]);
     gv->cm.setHueRB();
-    gv->zScale.setParams(0,0);
+    gv->zScale.null_scaling();
     gv->addLabel ("Duochrome red-blue", {0, -0.1, 0}, morph::TextFeatures(0.05f));
     gv->twodimensional = true;
     gv->finalize();

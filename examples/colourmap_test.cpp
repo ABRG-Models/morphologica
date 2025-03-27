@@ -62,7 +62,7 @@ int main()
         gv->gridVisMode = morph::GridVisMode::Triangles;
         gv->setScalarData (&data);
         gv->cm.setType (cmtype);
-        gv->zScale.setParams (0, 0);
+        gv->zScale.null_scaling();
         gv->addLabel (gv->cm.getTypeStr(), morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
         gv->finalize();
         v.addVisualModel (gv);

@@ -209,7 +209,6 @@ namespace morph {
          * \param input_min The minimum value of the input data
          * \param input_max The maximum value of the input data
          */
-        virtual void compute_autoscale (T input_min, T input_max) = 0; // deprecated name, left to avoid breaking client code
         virtual void compute_scaling (const T input_min, const T input_max) = 0;
         virtual void compute_scaling (const morph::range<T>& input_range) = 0;
 
@@ -385,13 +384,6 @@ namespace morph {
                 throw std::runtime_error ("scale_impl<0=vector>::inverse_one(): Unknown scaling");
             }
             return rtn;
-        }
-
-        // deprecated name. use compute_scaling()
-        void compute_autoscale (T input_min, T input_max)
-        {
-            std::cerr << "Note: The function scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
-            this->compute_scaling (input_min, input_max);
         }
 
         void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
@@ -570,13 +562,6 @@ namespace morph {
                 throw std::runtime_error ("scale_impl<1=scalar>::inverse_one(): Unknown scaling");
             }
             return rtn;
-        }
-
-        // deprecated name
-        void compute_autoscale (T input_min, T input_max)
-        {
-            std::cerr << "Note: The function scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
-            this->compute_scaling (input_min, input_max);
         }
 
         void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }

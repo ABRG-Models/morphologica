@@ -88,7 +88,7 @@ int main()
         gv->gridVisMode = morph::GridVisMode::Triangles;
         gv->setVectorData (&data);
         gv->cm.setType (cmap_type);
-        gv->zScale.setParams(0,0);
+        gv->zScale.null_scaling();
         gv->addLabel (morph::ColourMap<float>::colourMapTypeToStr (cmap_type), {0, -0.1, 0}, morph::TextFeatures(0.05f));
         gv->twodimensional = true;
         gv->finalize();

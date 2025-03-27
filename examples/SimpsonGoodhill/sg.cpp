@@ -173,7 +173,7 @@ struct SimpsonGoodhill
         cgv->setVectorData (&points);
         cgv->cm.setType (morph::ColourMapType::Duochrome);
         cgv->cm.setHueRG();
-        cgv->zScale.setParams (0.0f, 0.0f); // make retina visual flat
+        cgv->zScale.null_scaling(); // make retina visual flat
         cgv->addLabel ("Retina", {0.0f, 1.1f, 0.0f});
         cgv->finalize();
         v->addVisualModel (cgv);
