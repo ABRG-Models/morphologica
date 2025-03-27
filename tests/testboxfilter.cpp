@@ -59,7 +59,7 @@ int main()
     morph::vvec<uint8_t> input_u8 (data_sz, 0);
     input_u8.randomize();
 #endif
-    unsigned int uisum = input_u8.sum<unsigned int>();
+    unsigned int uisum = input_u8.sum<false, unsigned int>();
     unsigned int uisum2 = input_u8.sum(); // auto template param deduction? No.
     std::cout << "input_u8: " << uisum << " or " << uisum2  << std::endl;
 

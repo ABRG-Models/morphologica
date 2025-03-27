@@ -631,11 +631,16 @@ namespace morph {
          *
          * \return the length squared
          */
-        template <typename Sy=S>
+        template <bool test_for_nans = false, typename Sy=S>
         Sy sos() const noexcept
         {
-            auto add_squared = [](Sy a, S b) { return a + b * b; };
-            return std::accumulate (this->begin(), this->end(), Sy{0}, add_squared);
+            if constexpr (test_for_nans) {
+                auto add_squared = [](Sy a, S b) { return std::isnan(b) ? a : a + b * b; };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, add_squared);
+            } else {
+                auto add_squared = [](Sy a, S b) { return a + b * b; };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, add_squared);
+            }
         }
 
         //! \return the value of the longest component of the vector.
@@ -1084,53 +1089,83 @@ namespace morph {
         }
 
         //! \return the arithmetic mean of the elements
-        template<typename Sy=S>
+        template<bool test_for_nans = false, typename Sy=S>
         Sy mean() const noexcept
         {
-            const Sy sum = std::accumulate (this->begin(), this->end(), Sy{0});
-            return sum / this->size();
+            if constexpr (test_for_nans) {
+                if (this->has_nan()) {
+                    // Deal with non-numbers with a special accumulate function
+                    std::size_t n_nans = 0u;
+                    auto _ignoring_nans = [&n_nans](Sy a, S b) mutable { return std::isnan(b) ? ++n_nans, a : a + b; };
+                    Sy sum =  std::accumulate (this->begin(), this->end(), Sy{0}, _ignoring_nans);
+                    return sum / (this->size() - n_nans);
+                } else {
+                    const Sy sum = std::accumulate (this->begin(), this->end(), Sy{0});
+                    return sum / this->size();
+                }
+            } else {
+                const Sy sum = std::accumulate (this->begin(), this->end(), Sy{0});
+                return sum / this->size();
+            }
         }
 
         //! \return the variance of the elements
-        template<typename Sy=S>
+        template<bool test_for_nans = false, typename Sy=S>
         Sy variance() const noexcept
         {
             if (this->empty()) { return S{0}; }
-            Sy _mean = this->mean<Sy>();
+            Sy _mean = this->mean<test_for_nans, Sy>();
             Sy sos_deviations = Sy{0};
+            std::size_t n_nans = 0u;
             for (S val : *this) {
-                sos_deviations += ((val-_mean)*(val-_mean));
+                if constexpr (test_for_nans) {
+                    if (std::isnan (val)) {
+                        ++n_nans; continue;
+                    }
+                }
+                sos_deviations += ((val - _mean) * (val - _mean));
             }
-            Sy variance = sos_deviations / (this->size()-1);
+            Sy variance = sos_deviations / (this->size() - 1 - n_nans);
             return variance;
         }
 
         //! \return the standard deviation of the elements
-        template<typename Sy=S>
+        template<bool test_for_nans = false, typename Sy=S>
         Sy std() const noexcept
         {
             if (this->empty()) { return Sy{0}; }
-            return std::sqrt (this->variance<Sy>());
+            return std::sqrt (this->variance<test_for_nans, Sy>());
         }
 
         //! \return the sum of the elements. If elements are of a constrained type, you can call this something like:
         //! vvec<uint8_t> uv (256, 10);
-        //! unsigned int thesum = uv.sum<unsigned int>();
-        template<typename Sy=S>
+        //! unsigned int thesum = uv.sum<false, unsigned int>();
+        //! If test_for_nans is true, then sum is performed ignoring any nan values
+        template<bool test_for_nans = false, typename Sy=S>
         Sy sum() const noexcept
         {
-            return std::accumulate (this->begin(), this->end(), Sy{0});
+            if constexpr (test_for_nans) {
+                auto _ignoring_nans = [](Sy a, S b) mutable { return std::isnan(b) ? a : a + b; };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, _ignoring_nans);
+            } else {
+                return std::accumulate (this->begin(), this->end(), Sy{0});
+            }
         }
 
         //! \return the product of the elements. If elements are of a constrained type, you can call
         //! this something like:
         //! vvec<uint8_t> uv (256, 10);
         //! unsigned int theproduct = uv.product<unsigned int>();
-        template<typename Sy=S>
+        template<bool test_for_nans = false, typename Sy=S>
         Sy product() const noexcept
         {
-            auto _product = [](Sy a, S b) mutable { return a ? a * b : b; };
-            return std::accumulate (this->begin(), this->end(), Sy{0}, _product);
+            if constexpr (test_for_nans) {
+                auto _product_ign_nans = [](Sy a, S b) mutable { return (a ? (std::isnan(b) ? a : a * b) : b); };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, _product_ign_nans);
+            } else {
+                auto _product = [](Sy a, S b) mutable { return a ? a * b : b; };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, _product);
+            }
         }
 
         /*!

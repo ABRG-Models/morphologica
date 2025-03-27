@@ -503,7 +503,7 @@ int main() {
     // Sum of squares
     vvec<uint8_t> sos1 = {2, 3, 4, 5};
     std::cout << sos1.as_uint() << " uint8_t sum of squares: sos1.sos(): " << sos1.sos() << std::endl;
-    std::cout << sos1.as_uint() << " uint8_t sum of squares: sos1.sos<unsigned int>(): " << sos1.sos<unsigned int>() << std::endl;
+    std::cout << sos1.as_uint() << " uint8_t sum of squares: sos1.sos<unsigned int>(): " << sos1.sos<false, unsigned int>() << std::endl;
 
     std::cout << sos1.as_uint() << " uint8_t to power 3: sos1.pow<uint8_t>(4) = " << sos1.pow<uint8_t>(4).as_uint() << std::endl;
     std::cout << sos1.as_uint() << " uint8_t to power 3: sos1.pow<unsigned int>(4) = " << sos1.pow<unsigned int>(4) << std::endl;
@@ -527,11 +527,11 @@ int main() {
 
     morph::vvec<uint8_t> uv = {10, 10, 10};
     std::cout << uv.as_uint() << ".product() = " << static_cast<unsigned int>(uv.product()) << std::endl;
-    std::cout << uv.as_uint() << ".product<unsigned int>() = " << uv.product<unsigned int>() << std::endl;
+    std::cout << uv.as_uint() << ".product<false, unsigned int>() = " << uv.product<false, unsigned int>() << std::endl;
 
     morph::vvec<uint8_t> uv2 = {1, 2, 10, 3, 11, 23};
-    std::cout << uv2.as_uint() << " mean: " << uv2.mean<float>() << std::endl;
-    std::cout << uv2.as_uint() << " variance: " << uv2.variance<float>() << std::endl;
+    std::cout << uv2.as_uint() << " mean: " << uv2.mean<false, float>() << std::endl;
+    std::cout << uv2.as_uint() << " variance: " << uv2.variance<false, float>() << std::endl;
 
     morph::vvec<float> uv2f = {1, 2, 10, 3, 11, 23};
     std::cout << uv2f << " mean: " << uv2f.mean() << std::endl;
