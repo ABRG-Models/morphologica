@@ -631,11 +631,16 @@ namespace morph {
          *
          * \return the length squared
          */
-        template <typename Sy=S>
+        template <bool test_for_nans = false, typename Sy=S>
         Sy sos() const noexcept
         {
-            auto add_squared = [](Sy a, S b) { return a + b * b; };
-            return std::accumulate (this->begin(), this->end(), Sy{0}, add_squared);
+            if constexpr (test_for_nans) {
+                auto add_squared = [](Sy a, S b) { return std::isnan(b) ? a : a + b * b; };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, add_squared);
+            } else {
+                auto add_squared = [](Sy a, S b) { return a + b * b; };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, add_squared);
+            }
         }
 
         //! \return the value of the longest component of the vector.
@@ -1134,22 +1139,33 @@ namespace morph {
 
         //! \return the sum of the elements. If elements are of a constrained type, you can call this something like:
         //! vvec<uint8_t> uv (256, 10);
-        //! unsigned int thesum = uv.sum<unsigned int>();
-        template<typename Sy=S>
+        //! unsigned int thesum = uv.sum<false, unsigned int>();
+        //! If test_for_nans is true, then sum is performed ignoring any nan values
+        template<bool test_for_nans = false, typename Sy=S>
         Sy sum() const noexcept
         {
-            return std::accumulate (this->begin(), this->end(), Sy{0});
+            if constexpr (test_for_nans) {
+                auto _ignoring_nans = [](Sy a, S b) mutable { return std::isnan(b) ? a : a + b; };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, _ignoring_nans);
+            } else {
+                return std::accumulate (this->begin(), this->end(), Sy{0});
+            }
         }
 
         //! \return the product of the elements. If elements are of a constrained type, you can call
         //! this something like:
         //! vvec<uint8_t> uv (256, 10);
         //! unsigned int theproduct = uv.product<unsigned int>();
-        template<typename Sy=S>
+        template<bool test_for_nans = false, typename Sy=S>
         Sy product() const noexcept
         {
-            auto _product = [](Sy a, S b) mutable { return a ? a * b : b; };
-            return std::accumulate (this->begin(), this->end(), Sy{0}, _product);
+            if constexpr (test_for_nans) {
+                auto _product_ign_nans = [](Sy a, S b) mutable { return (a ? (std::isnan(b) ? a : a * b) : b); };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, _product_ign_nans);
+            } else {
+                auto _product = [](Sy a, S b) mutable { return a ? a * b : b; };
+                return std::accumulate (this->begin(), this->end(), Sy{0}, _product);
+            }
         }
 
         /*!

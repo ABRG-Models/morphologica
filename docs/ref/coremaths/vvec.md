@@ -492,15 +492,26 @@ void prune_nan_inplace();
 
 ### Simple statistics
 
+These template functions are declared with a boolean that directs code to account for NaNs in the data and a type `Sy`:
+
 ```c++
-// These template functions are declared with a type Sy:
-template<typename Sy=S>
+// All are:
+template<bool test_for_nans=false, typename Sy=S>
 
 Sy mean() const;          // The arithmetic mean
 Sy variance() const;      // The variance
 Sy std() const;           // The standard deviation
 Sy sum() const;           // The sum of all elements
+Sy sos() const;           // The sum of the squared elements
 Sy product() const;       // The product of the elements
+```
+
+That means that you can obtain the statistic in type `Sy`, ignoring NaN values with calls like:
+
+```c++
+using fl = std::numeric_limits<float>;
+morph::vvec<float> nums = { 1.0f, 2.1f, fl::quietNaN(), 3.2f };
+double themean = nums.mean<true, double>();
 ```
 
 ### Maths functions
