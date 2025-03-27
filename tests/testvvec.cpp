@@ -530,8 +530,8 @@ int main() {
     std::cout << uv.as_uint() << ".product<unsigned int>() = " << uv.product<unsigned int>() << std::endl;
 
     morph::vvec<uint8_t> uv2 = {1, 2, 10, 3, 11, 23};
-    std::cout << uv2.as_uint() << " mean: " << uv2.mean<float>() << std::endl;
-    std::cout << uv2.as_uint() << " variance: " << uv2.variance<float>() << std::endl;
+    std::cout << uv2.as_uint() << " mean: " << uv2.mean<false, float>() << std::endl;
+    std::cout << uv2.as_uint() << " variance: " << uv2.variance<false, float>() << std::endl;
 
     morph::vvec<float> uv2f = {1, 2, 10, 3, 11, 23};
     std::cout << uv2f << " mean: " << uv2f.mean() << std::endl;
