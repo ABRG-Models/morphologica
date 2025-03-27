@@ -1084,11 +1084,24 @@ namespace morph {
         }
 
         //! \return the arithmetic mean of the elements
-        template<typename Sy=S>
+        template<bool test_for_nans = false, typename Sy=S>
         Sy mean() const noexcept
         {
-            const Sy sum = std::accumulate (this->begin(), this->end(), Sy{0});
-            return sum / this->size();
+            if constexpr (test_for_nans) {
+                if (this->has_nan()) {
+                    // Deal with non-numbers with a special accumulate function
+                    std::size_t n_nans = 0u;
+                    auto _ignoring_nans = [&n_nans](Sy a, S b) mutable { return std::isnan(b) ? ++n_nans, a : a + b; };
+                    Sy sum =  std::accumulate (this->begin(), this->end(), Sy{0}, _ignoring_nans);
+                    return sum / (this->size() - n_nans);
+                } else {
+                    const Sy sum = std::accumulate (this->begin(), this->end(), Sy{0});
+                    return sum / this->size();
+                }
+            } else {
+                const Sy sum = std::accumulate (this->begin(), this->end(), Sy{0});
+                return sum / this->size();
+            }
         }
 
         //! \return the variance of the elements
