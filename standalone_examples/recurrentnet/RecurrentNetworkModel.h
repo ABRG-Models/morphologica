@@ -161,7 +161,7 @@ namespace recurrentnet {
             contextID = -1; // flag for not set
             contextVal = 0.0; // default
 
-            morph::HdfData network(filename,1);
+            morph::HdfData network(filename, std::ios::in);
 
             network.read_contained_vals ("F", F);
             N = F.size();
@@ -326,7 +326,7 @@ namespace recurrentnet {
 
             // Setup network connectivity
             std::vector<int> pre, post;
-            std::stringstream ss; ss << logpath << "/network.h5"; morph::HdfData network(ss.str(),1);
+            std::stringstream ss; ss << logpath << "/network.h5"; morph::HdfData network(ss.str(), std::ios::in);
             network.read_contained_vals ("pre", pre);
             network.read_contained_vals ("post", post);
 
@@ -408,7 +408,7 @@ namespace recurrentnet {
         void loadWeights(void) {
 
             std::stringstream fname; fname << logpath << "/weights.h5";
-            morph::HdfData loaded(fname.str(),1);
+            morph::HdfData loaded(fname.str(), std::ios::in);
             loaded.read_contained_vals ("weights", P.W);
             P.Wbest = P.W;
         }
