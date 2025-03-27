@@ -211,12 +211,7 @@ namespace morph {
 
     public:
         /*!
-         * Construct, creating open file_id. If read_data is true, then open in read
-         * mode; if read_data is false, then truncate on opening. Note that this HDF5
-         * wrapper library doesn't attempt to carry out HDF5 file modification
-         * operations - it's all-or-nothing - a file is truncated and recreated if it's
-         * going to have data written into it at all. Finally, set
-         * show_hdf_internal_errors to true to switch on libhdf's verbose error output.
+         * Construct, defining file access with the morph::FileAccess enum.
          */
         HdfData (const std::string fname,
                  const FileAccess _file_access = FileAccess::TruncateWrite,
@@ -225,6 +220,37 @@ namespace morph {
             this->init (fname, _file_access, show_hdf_internal_errors);
         }
 
+        /*!
+         * Constructor that takes familiar std::ios flags to specify read/write
+         */
+        HdfData (const std::string fname,
+                 const std::ios_base::openmode _file_access,
+                 const bool show_hdf_internal_errors = false)
+        {
+            FileAccess fa_native = FileAccess::ReadOnly;
+            if (_file_access == std::ios::in) {
+                fa_native = FileAccess::ReadOnly;
+            } else if (_file_access == std::ios::out) {
+                fa_native = FileAccess::ReadWrite;
+            } else if (_file_access == (std::ios::out | std::ios::trunc)) {
+                fa_native = FileAccess::TruncateWrite;
+            } else {
+                std::stringstream ee;
+                ee << "HdfData: Your ios_base::openmode options are: ios::in (for ReadOnly); "
+                   << "ios::out|ios::trunc (for TruncateWrite) or ios::out (for ReadWrite)";
+                throw std::runtime_error (ee.str());
+            }
+            this->init (fname, fa_native, show_hdf_internal_errors);
+        }
+
+        /*!
+         * Construct, creating open file_id. If read_data is true, then open in read
+         * mode; if read_data is false, then truncate on opening. Note that this HDF5
+         * wrapper library doesn't attempt to carry out HDF5 file modification
+         * operations - it's all-or-nothing - a file is truncated and recreated if it's
+         * going to have data written into it at all. Finally, set
+         * show_hdf_internal_errors to true to switch on libhdf's verbose error output.
+         */
         HdfData (const std::string fname, const bool read_data, const bool show_hdf_internal_errors = false)
         {
             FileAccess _file_access = (read_data ? FileAccess::ReadOnly : FileAccess::TruncateWrite);
