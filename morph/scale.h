@@ -216,6 +216,9 @@ namespace morph {
         //! Set the identity scaling (a linear scaling with 0 mapping to 0 and 1 mapping to 1)
         virtual void identity_scaling() = 0;
 
+        //! Set null scaling. This scales any value to S{0}
+        virtual void null_scaling() = 0;
+
         /*!
          * \brief Compute scaling function from data
          *
@@ -423,6 +426,12 @@ namespace morph {
             this->compute_scaling (minvec, maxvec);
         }
 
+        virtual void null_scaling()
+        {
+            this->do_autoscale = false;
+            this->setParams (S_el{0}, S_el{0});
+        }
+
         //! Set params for a two parameter scaling
         //! \param p0 The zeroth parameter
         //! \param p1 The first parameter
@@ -586,6 +595,12 @@ namespace morph {
         {
             this->do_autoscale = false;
             this->compute_scaling (this->output_range.min, this->output_range.max);
+        }
+
+        virtual void null_scaling()
+        {
+            this->do_autoscale = false;
+            this->setParams (S{0}, S{0});
         }
 
         //! Set params for a two parameter scaling
