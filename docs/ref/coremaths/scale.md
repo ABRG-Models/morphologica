@@ -64,9 +64,24 @@ float transformed = s.transform_one (2.0f); // Transforms a single value using t
 ```
 #### Inverse transform
 
-You can also apply the inverse scaling to individual values (though not to a container of values at time time of writing):
+You can also apply the inverse scaling to individual values:
 ```c++
 float inverse_transformed = s.inverse_one (10.0f);
+```
+and you can inverse-transform whole containers of data as in this example:
+```c++
+morph::scale<double> s;
+s.do_autoscale = true;
+morph::vvec<double> input = { 10, 20, 30, 40 };
+morph::vvec<double> output (input.size());
+morph::vvec<double> inputcpy (input.size());
+s.transform (input, output);  // one way...
+s.inverse (output, inputcpy); // ...and back
+std::cout << input << " transforms to " << output << " and inverses to " << inputcpy << std::endl;
+```
+output:
+```
+(10,20,30,40) transforms to (0,0.33333333333333331,0.66666666666666674,1) and inverses to (10,20,30,40)
 ```
 
 ### Automatically finding the scaling parameters
