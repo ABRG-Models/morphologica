@@ -59,9 +59,11 @@ morph::scale<float> s;
 std::vector<float> input (10, 0.0f);
 std::vector<float> output (10, 0.0f);
 // snip code to find scaling parameters and initialise input
-s.transform (input, output);               // Applies scaling to all values in the input container
-float transformed = s.tranform_one (2.0f); // Transforms a single value using the scaling
+s.transform (input, output);                // Applies scaling to all values in the input container
+float transformed = s.transform_one (2.0f); // Transforms a single value using the scaling
 ```
+#### Inverse transform
+
 You can also apply the inverse scaling to individual values (though not to a container of values at time time of writing):
 ```c++
 float inverse_transformed = s.inverse_one (10.0f);
@@ -123,6 +125,11 @@ s.output_range.min = 1.0f;
 s.output_range.max = 2.0f;
 s.do_autoscale = true;      // transform() will scale output to range [1,2] by calling compute_scaling_from_data()
 ```
+or set it with brace initializers:
+```c++
+morph::scale<int, float> s;
+s.output_range = { 1.0f, 2.0f };
+```
 
 ### Manually setting the scaling parameters
 
@@ -145,12 +152,11 @@ You can only set the params if you already know the gradient and offset for your
 ```c++
 // Set up linear scaling so that numbers in range [-10, 10] get scaled to [0,5]
 morph::scale<int, float> s;
-s.output_range.min = 0;
-s.output_range.max = 5;
+s.output_range = { 0.0f, 5.0f };
 s.compute_scaling (-10, 10);
 ```
 
-You can also pass the input range to `scale<>::compute_scaling` and set the `output_range` using `morph::range<>` objects:
+You can also pass the input range to `scale<>::compute_scaling` and set the `output_range` with explicit `morph::range<>` objects:
 
 ```c++
 morph::scale<int, float> s;
@@ -164,6 +170,15 @@ You can trigger the computation of the scaling function if you have a container 
 morph::scale<int, float> s;
 std::vector<int> input_data = { 1, 2, 3, 6, 100 };
 s.compute_scaling_from_data (input_data);
+```
+
+#### Identity scaling
+
+If you need your `scale` object to perform the identity scaling, set its parameters with
+```c++
+morph::scale<double> sid;
+sid.identity_scaling();
+std::cout << 2.0 << " = " << sid.transform_one (2.0) << std::endl; // "2.0 = 2.0"
 ```
 
 ### Logarithmic scaling
@@ -205,6 +220,8 @@ The API is essentially the same, except for the fact that the output_range (whic
     // If you set the output_range, use the type of the vec *elements*
     // vec_scale.output_range.min = 1.0f; // float, not vec<float,4>
     // vec_scale.output_range.max = 2.0f;
+    // or
+    // vec_scale.output_range = { 1.0f, 2.0f };
 
     std::deque<morph::vec<float,4>> vec_input; // An input container
     vec_input.push_back ({1,1,2,1});
