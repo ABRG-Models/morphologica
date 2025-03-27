@@ -1105,25 +1105,31 @@ namespace morph {
         }
 
         //! \return the variance of the elements
-        template<typename Sy=S>
+        template<bool test_for_nans = false, typename Sy=S>
         Sy variance() const noexcept
         {
             if (this->empty()) { return S{0}; }
-            Sy _mean = this->mean<Sy>();
+            Sy _mean = this->mean<test_for_nans, Sy>();
             Sy sos_deviations = Sy{0};
+            std::size_t n_nans = 0u;
             for (S val : *this) {
-                sos_deviations += ((val-_mean)*(val-_mean));
+                if constexpr (test_for_nans) {
+                    if (std::isnan (val)) {
+                        ++n_nans; continue;
+                    }
+                }
+                sos_deviations += ((val - _mean) * (val - _mean));
             }
-            Sy variance = sos_deviations / (this->size()-1);
+            Sy variance = sos_deviations / (this->size() - 1 - n_nans);
             return variance;
         }
 
         //! \return the standard deviation of the elements
-        template<typename Sy=S>
+        template<bool test_for_nans = false, typename Sy=S>
         Sy std() const noexcept
         {
             if (this->empty()) { return Sy{0}; }
-            return std::sqrt (this->variance<Sy>());
+            return std::sqrt (this->variance<test_for_nans, Sy>());
         }
 
         //! \return the sum of the elements. If elements are of a constrained type, you can call this something like:
