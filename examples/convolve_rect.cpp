@@ -74,7 +74,7 @@ int main()
     cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (&data);
     cgv->cm.setType (morph::ColourMapType::GreyscaleInv);
-    cgv->zScale.setParams (0, 0);
+    cgv->zScale.null_scaling();
     cgv->addLabel(std::string("Original"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
                   morph::TextFeatures(0.1f, 48));
     cgv->finalize();
@@ -86,7 +86,7 @@ int main()
     cgvk->cartVisMode = morph::CartVisMode::RectInterp;
     cgvk->setScalarData (&kdata);
     cgvk->cm.setType (morph::ColourMapType::GreyscaleInv);
-    cgvk->zScale.setParams (0, 0);
+    cgvk->zScale.null_scaling();
     cgvk->addLabel(std::string("Kernel"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
                    morph::TextFeatures(0.1f, 48));
     cgvk->finalize();
@@ -98,7 +98,7 @@ int main()
     cgvr->cartVisMode = morph::CartVisMode::RectInterp;
     cgvr->setScalarData (&convolved);
     cgvr->cm.setType (morph::ColourMapType::GreyscaleInv);
-    cgvr->zScale.setParams (0, 0);
+    cgvr->zScale.null_scaling();
     cgvr->addLabel (std::string("Convolved"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
                     morph::TextFeatures(0.1f, 48));
     cgvr->finalize();

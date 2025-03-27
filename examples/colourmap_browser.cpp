@@ -67,7 +67,7 @@ morph::VisualModel<>* addmap (myvisual& v, morph::ColourMapType display_map_type
         gv->twodimensional = true;
         gv->setScalarData (&data);
         gv->cm = nextmap;
-        gv->zScale.setParams (0, 0);
+        gv->zScale.null_scaling();
         gv->addLabel (gv->cm.getTypeStr() + std::string(" (") + gv->cm.getFlagsStr() + std::string(")"),
                       morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05f));
         gv->finalize();

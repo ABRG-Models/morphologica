@@ -70,7 +70,7 @@ int main()
     gv1->gridVisMode = morph::GridVisMode::RectInterp;
     gv1->setScalarData (&image_data);
     gv1->cm.setType (morph::ColourMapType::GreyscaleInv); // inverse greyscale is good for a monochrome image
-    gv1->zScale.setParams (0, 0); // As it's an image, we don't want relief, so set the zScale to have a zero gradient
+    gv1->zScale.null_scaling(); // As it's an image, we don't want relief, so set the zScale to have a zero gradient
     gv1->addLabel ("Original", {0, -0.2, 0}, morph::TextFeatures(0.1f));
     gv1->finalize();
     v.addVisualModel (gv1);
@@ -81,7 +81,7 @@ int main()
     gv2->gridVisMode = morph::GridVisMode::RectInterp;
     gv2->setScalarData (&img_resampled);
     gv2->cm.setType (morph::ColourMapType::GreyscaleInv);
-    gv2->zScale.setParams (0, 0);
+    gv2->zScale.null_scaling();
     gv2->addLabel ("Resampled to coarser Grid", {0, -0.2, 0}, morph::TextFeatures(0.1f));
     gv2->finalize();
     v.addVisualModel (gv2);
@@ -90,7 +90,7 @@ int main()
     v.bindmodel (hgv);
     hgv->setScalarData (&hex_image_data);
     hgv->cm.setType (morph::ColourMapType::GreyscaleInv);
-    hgv->zScale.setParams (0, 0);
+    hgv->zScale.null_scaling();
     hgv->addLabel ("Resampled to HexGrid", {-g2.width() / 2.0f, -0.2f - g2.height() / 2.0f, 0}, morph::TextFeatures(0.1f));
     hgv->finalize();
     v.addVisualModel (hgv);

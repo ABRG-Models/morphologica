@@ -209,12 +209,14 @@ namespace morph {
          * \param input_min The minimum value of the input data
          * \param input_max The maximum value of the input data
          */
-        virtual void compute_autoscale (T input_min, T input_max) = 0; // deprecated name, left to avoid breaking client code
         virtual void compute_scaling (const T input_min, const T input_max) = 0;
         virtual void compute_scaling (const morph::range<T>& input_range) = 0;
 
         //! Set the identity scaling (a linear scaling with 0 mapping to 0 and 1 mapping to 1)
         virtual void identity_scaling() = 0;
+
+        //! Set null scaling. This scales any value to S{0}
+        virtual void null_scaling() = 0;
 
         /*!
          * \brief Compute scaling function from data
@@ -384,13 +386,6 @@ namespace morph {
             return rtn;
         }
 
-        // deprecated name. use compute_scaling()
-        void compute_autoscale (T input_min, T input_max)
-        {
-            std::cerr << "Note: The function scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
-            this->compute_scaling (input_min, input_max);
-        }
-
         void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
         void compute_scaling (const T input_min, const T input_max)
         {
@@ -421,6 +416,12 @@ namespace morph {
             T maxvec = {this->output_range.max};
             // Compute a scaling with these vectors
             this->compute_scaling (minvec, maxvec);
+        }
+
+        virtual void null_scaling()
+        {
+            this->do_autoscale = false;
+            this->setParams (S_el{0}, S_el{0});
         }
 
         //! Set params for a two parameter scaling
@@ -563,13 +564,6 @@ namespace morph {
             return rtn;
         }
 
-        // deprecated name
-        void compute_autoscale (T input_min, T input_max)
-        {
-            std::cerr << "Note: The function scale::compute_autoscale has been renamed to compute_scaling. Please update your code.\n";
-            this->compute_scaling (input_min, input_max);
-        }
-
         void compute_scaling (const morph::range<T>& input_range) { this->compute_scaling (input_range.min, input_range.max); }
         void compute_scaling (const T input_min, const T input_max)
         {
@@ -586,6 +580,12 @@ namespace morph {
         {
             this->do_autoscale = false;
             this->compute_scaling (this->output_range.min, this->output_range.max);
+        }
+
+        virtual void null_scaling()
+        {
+            this->do_autoscale = false;
+            this->setParams (S{0}, S{0});
         }
 
         //! Set params for a two parameter scaling

@@ -304,6 +304,17 @@ int main ()
     morph::range<float> r_itfromed = scrng.inverse (r_tformed);
     std::cout << for_scaling << " scales to " <<  r_tformed << " which inverses back to " << r_itfromed << std::endl;
 
+    morph::scale<double, float> nullsc1;
+    nullsc1.null_scaling();
+    std::cout << "null scaling of " << 3.0 << " is " << nullsc1.transform_one (3.0) << std::endl;
+    if (nullsc1.transform_one (3.0)) { --rtn; }
+    std::cout << "inverse null scaling of " << 3.0 << " is " << nullsc1.inverse_one (3.0f) << std::endl;
+    std::cout << "inverse null scaling of " << 0.0 << " is " << nullsc1.inverse_one (0.0f) << std::endl;
+    std::cout << "inverse null scaling of " << -3.0 << " is " << nullsc1.inverse_one (-3.0f) << std::endl;
+    if (!std::isinf(nullsc1.inverse_one (3.0f))) { --rtn; }
+    if (!std::isinf(nullsc1.inverse_one (-3.0f))) { --rtn; }
+    if (!std::isnan(nullsc1.inverse_one (0.0f))) { --rtn; }
+
     if (std::abs(for_scaling.min - r_itfromed.min) > std::numeric_limits<float>::epsilon()
         || std::abs(for_scaling.max - r_itfromed.max) > std::numeric_limits<float>::epsilon()) { --rtn; }
 

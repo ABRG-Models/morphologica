@@ -196,6 +196,17 @@ sid.identity_scaling();
 std::cout << 2.0 << " = " << sid.transform_one (2.0) << std::endl; // "2.0 = 2.0"
 ```
 
+#### Null scaling
+
+If you need your `scale` object to always output 0, you can set it to 'null scaling'.
+```c++
+morph::scale<double> sid;
+sid.null_scaling();
+std::cout << 2.0 << " null-scales to " << sid.transform_one (2.0) << std::endl; // "2.0 null-scales to 0.0"
+```
+
+`scale::null_scaling()` is equivalent to calling `scale::setParams (0, 0)`.
+
 ### Logarithmic scaling
 
 Set logarithmic scaling by calling `setlog`.
