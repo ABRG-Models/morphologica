@@ -42,8 +42,9 @@ namespace morph {
 ## Construct
 
 ```c++
-morph::range<T> r;                  // Default range has min == max == T{0}
-morph::range<float> r(0.0f, 10.0f); // Construct with a defined closed interval [0, 10]
+morph::range<T> r;                                 // Default range has min == max == T{0}
+morph::range<T> r(T{0}, T{10});                    // Construct with a defined interval [0, 10]
+morph::range<T> r (morph::range_init::for_search); // Construct ready for search
 ```
 
 ## Set
@@ -126,7 +127,7 @@ for (auto d : data) { r.update (d); } // update on each element of data
 std::cout << "The range of values in data was: " << r << std::endl;
 ```
 
-To save a line of code, there's a constructor for setting up a range ready-configured for search:
+To save a line of code, use the constructor for setting up a range ready-configured for search:
 ```c++
 morph::vvec<double> data;
 data.randomize();
