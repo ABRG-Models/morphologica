@@ -1455,7 +1455,8 @@ namespace morph {
 
         //! Smooth the vector by convolving with a gaussian filter with Gaussian width
         //! sigma and overall width 2*sigma*n_sigma
-        vvec<S> smooth_gauss (const S sigma, const unsigned int n_sigma, const wrapdata wrap = wrapdata::none) const
+        template<wrapdata wrap = wrapdata::none>
+        vvec<S> smooth_gauss (const S sigma, const unsigned int n_sigma) const
         {
             morph::vvec<S> filter;
             S hw = std::round(sigma*n_sigma);
@@ -1463,10 +1464,11 @@ namespace morph {
             filter.linspace (-hw, hw, elements);
             filter.gauss_inplace (sigma);
             filter /= filter.sum();
-            return this->convolve (filter, wrap);
+            return this->convolve<wrap, false> (filter);
         }
         //! Gaussian smoothing in place
-        void smooth_gauss_inplace (const S sigma, const unsigned int n_sigma, const wrapdata wrap = wrapdata::none)
+        template<wrapdata wrap = wrapdata::none>
+        void smooth_gauss_inplace (const S sigma, const unsigned int n_sigma)
         {
             morph::vvec<S> filter;
             S hw = std::round(sigma*n_sigma);
@@ -1474,11 +1476,15 @@ namespace morph {
             filter.linspace (-hw, hw, elements);
             filter.gauss_inplace (sigma);
             filter /= filter.sum();
-            this->convolve_inplace (filter, wrap);
+            this->convolve_inplace<wrap, false> (filter);
         }
 
         //! Do 1-D convolution of *this with the presented kernel and return the result
-        vvec<S> convolve (const vvec<S>& kernel, const wrapdata wrap = wrapdata::none) const
+        //! \tparam wrap whether or not we wrap around the ends of the vvec.
+        //! \tparam puremaths If true, execute the pure maths version of convolve, in
+        //! which the vvec returned will be larger than the input.
+        template<wrapdata wrap = wrapdata::none, bool puremaths = false>
+        vvec<S> convolve (const vvec<S>& kernel) const
         {
             int _n = this->size();
             vvec<S> rtn(_n);
@@ -1492,9 +1498,11 @@ namespace morph {
                 for (int j = 0; j<kw; ++j) {
                     // ii is the index into the data by which kernel[j] should be multiplied
                     int ii = i+j-zki;
-                    // Handle wrapping around the data with these two ternaries
-                    ii += ii < 0 && wrap==wrapdata::wrap ? _n : 0;
-                    ii -= ii >= _n && wrap==wrapdata::wrap ? _n : 0;
+                    if constexpr (wrap == wrapdata::wrap) {
+                        // Handle wrapping around the data
+                        ii += ii < 0 ? _n : 0;
+                        ii -= ii >= _n ? _n : 0;
+                    } // else nothing to do
                     if (ii < 0 || ii >= _n) { continue; }
                     sum += (*this)[ii] * kernel[j];
                 }
@@ -1502,7 +1510,8 @@ namespace morph {
             }
             return rtn;
         }
-        void convolve_inplace (const vvec<S>& kernel, const wrapdata wrap = wrapdata::none)
+        template<wrapdata wrap = wrapdata::none, bool puremaths = false>
+        void convolve_inplace (const vvec<S>& kernel)
         {
             int _n = this->size();
             vvec<S> d(_n); // We make a copy of *this
@@ -1517,9 +1526,11 @@ namespace morph {
                 for (int j = 0; j<kw; ++j) {
                     // ii is the index into the data by which kernel[j] should be multiplied
                     int ii = i+j-zki;
-                    // Handle wrapping around the data with these two ternaries
-                    ii += ii < 0 && wrap==wrapdata::wrap ? _n : 0;
-                    ii -= ii >= _n && wrap==wrapdata::wrap ? _n : 0;
+                    if constexpr (wrap == wrapdata::wrap) {
+                        // Handle wrapping around the data
+                        ii += ii < 0 ? _n : 0;
+                        ii -= ii >= _n ? _n : 0;
+                    } // else nothing to do
                     if (ii < 0 || ii >= _n) { continue; }
                     sum += d[ii] * kernel[j];
                 }

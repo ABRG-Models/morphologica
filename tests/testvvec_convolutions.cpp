@@ -11,7 +11,7 @@ int main()
     std::cout << a << " * " << b << " = " << r1  << " (no wrap, expect " << r1expct << ")" << std::endl;
     if (r1 != r1expct) { rtn -= 1; }
     morph::vvec<float> r2expct = {13, 14, 15};
-    morph::vvec<float> r2 = a.convolve (b, morph::vvec<float>::wrapdata::wrap);
+    morph::vvec<float> r2 = a.convolve<morph::vvec<float>::wrapdata::wrap> (b);
     std::cout << a << " * " << b << " = " << r2  << " (wrap, expect " << r2expct << ")" << std::endl;
     if (r2 != r2expct) { rtn -= 1; }
 
@@ -19,7 +19,7 @@ int main()
     r1 = a;
     r2 = a;
     r1.convolve_inplace (b);
-    r2.convolve_inplace (b, morph::vvec<float>::wrapdata::wrap);
+    r2.convolve_inplace<morph::vvec<float>::wrapdata::wrap> (b);
     if (r1 != r1expct) { rtn -= 1; }
     if (r2 != r2expct) { rtn -= 1; }
 

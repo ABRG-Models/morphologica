@@ -16,7 +16,7 @@ int main()
     r.randomize();
     y += r;
 
-    morph::vvec<double> y2 = y.smooth_gauss (3.0, 3, wrapdata::wrap);
+    morph::vvec<double> y2 = y.smooth_gauss<wrapdata::wrap> (3.0, 3);
 
     wrapdata w = wrapdata::wrap;
     morph::vvec<double> yd = y2;
