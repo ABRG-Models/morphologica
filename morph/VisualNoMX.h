@@ -64,7 +64,7 @@ namespace morph {
             this->window_w = _width;
             this->window_h = _height;
             this->title = _title;
-            this->version_stdout = _version_stdout;
+            this->options.set (visual_options::versionStdout, _version_stdout);
 
             this->init_resources();
             this->init_gl();

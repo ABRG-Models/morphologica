@@ -47,6 +47,7 @@ namespace morph {
     {
         readyToFinish,
         paused,
+        sceneLocked,
         rotateMode,
         rotateModMode,
         translateMode
@@ -61,9 +62,10 @@ namespace morph {
         coordArrowsInScene,
         //! Set to true to show the title text within the scene
         showTitle,
-        user_info_stdout,
-        sceneLocked,
-        version_stdout,
+        //! Set true to output some user information to stdout (e.g. user requested quit)
+        userInfoStdout,
+        //! If true, output morph version to stdout
+        versionStdout
     };
 
     //! Whether to render with perspective or orthographic (or even a cylindrical projection)
@@ -122,8 +124,8 @@ namespace morph {
             : window_w(_width)
             , window_h(_height)
             , title(_title)
-            , version_stdout(_version_stdout)
         {
+            this->options.set (visual_options::versionStdout, _version_stdout);
             this->init_gl(); // abstract
         }
 
@@ -365,8 +367,8 @@ namespace morph {
         //! Set to true to show the title text within the scene
         void showTitle (const bool val) { this->options.set (visual_options::showTitle, val); }
 
-        //! If true, output some user information to stdout (e.g. user requested quit)
-        bool user_info_stdout = true;
+        //! Set true to output some user information to stdout (e.g. user requested quit)
+        void userInfoStdout (const bool val) { this->options.set (visual_options::userInfoStdout, val); }
 
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1f;
@@ -640,10 +642,6 @@ namespace morph {
 
         //! The title for the Visual. Used in window title and if saving out 3D model or png image.
         std::string title = "morph::Visual";
-
-        //! If true, output some version information (morphologica version, OpenGL version) to
-        //! stdout. Protected as this has no effect after init()
-        bool version_stdout = true;
 
         //! The user's 'selected visual model'. For model specific changes to alpha and possibly colour
         unsigned int selectedVisualModel = 0u;
@@ -1161,7 +1159,7 @@ namespace morph {
         //! and calls an external callback function that you may have set up.
         void signal_to_quit()
         {
-            if (this->user_info_stdout == true) { std::cout << "User requested exit.\n"; }
+            if (this->options.test (visual_options::userInfoStdout)) { std::cout << "User requested exit.\n"; }
             // 1. Set our 'readyToFinish' flag to true
             this->readyToFinish = true;
             // 2. Call any external callback that's been set by client code

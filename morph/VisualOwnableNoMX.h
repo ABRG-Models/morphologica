@@ -63,7 +63,7 @@ namespace morph {
             this->window_w = _width;
             this->window_h = _height;
             this->title = _title;
-            this->version_stdout = _version_stdout;
+            this->options.set (visual_options::versionStdout, _version_stdout);
 
             this->init_gl();
         }
@@ -355,7 +355,7 @@ namespace morph {
         {
             this->setContext(); // if managing context
 
-            if (this->version_stdout == true) {
+            if (this->options.test (visual_options::versionStdout) == true) {
                 unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
                 std::cout << "This is version " << morph::version_string()
                           << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)
