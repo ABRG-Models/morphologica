@@ -15,7 +15,7 @@ int main (int argc, char** argv)
 
     morph::Visual v(1024, 768, "Title");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.showTitle = true;
     // For a white background:
     v.backgroundWhite();

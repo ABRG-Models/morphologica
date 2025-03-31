@@ -22,7 +22,7 @@ int main()
     int rtn = -1;
 
     morph::Visual v(1024, 768, "Geodesic vertices");
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.lightingEffects();
 
     constexpr int iterations = 3;

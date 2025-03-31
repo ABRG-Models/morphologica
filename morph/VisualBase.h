@@ -17,6 +17,7 @@
 #include <morph/gl/shaders.h>
 #include <morph/keys.h>
 #include <morph/version.h>
+#include <morph/flags.h>
 
 #include <nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
@@ -40,6 +41,28 @@
 #include <morph/lodepng.h>
 
 namespace morph {
+
+    // Here are our boolean state flags
+    enum class visual_state : uint32_t
+    {
+        readyToFinish,    // s
+        paused,           // s
+        rotateMode,       // s
+        rotateModMode,    // s
+        translateMode     // s
+    };
+    enum class visual_options : uint32_t
+    {
+        //! Set true to disable the 'X' button on the Window from exiting the program
+        preventWindowCloseWithButton,
+        //! Set to true to show the coordinate arrows
+        showCoordArrows,
+        coordArrowsInScene,
+        showTitle,
+        user_info_stdout,
+        sceneLocked,
+        version_stdout,
+    };
 
     //! Whether to render with perspective or orthographic (or even a cylindrical projection)
     enum class perspective_type
@@ -300,14 +323,27 @@ namespace morph {
             this->coordArrows->setViewRotation (this->rotation);
         }
 
+        // State flags
+        morph::flags<visual_state> state;
+        void state_defaults()
+        {
+            this->state.reset();
+            //this->state.set (visual_state::something, true);
+        }
+
+        // Option flags
+        morph::flags<visual_options> options;
+        void options_defaults()
+        {
+            this->options.reset();
+            //this->options.set (visual_options::something, true);
+        }
+
         //! Set to true when the program should end
         bool readyToFinish = false;
 
         //! paused can be set true so that pauseOpen() can be used to display the window mid-simulation
         bool paused = false;
-
-        //! Set true to disable the 'X' button on the Window from exiting the program
-        bool preventWindowCloseWithButton = false;
 
         /*
          * User-settable projection values for the near clipping distance, the far clipping distance
@@ -318,8 +354,8 @@ namespace morph {
         float zFar = 300.0f;
         float fov = 30.0f;
 
-        //! Set to true to show the coordinate arrows
-        bool showCoordArrows = false;
+        //! Setter
+        void showCoordArrows (const bool val) { this->options.set (visual_options::showCoordArrows, val); }
 
         //! If true, then place the coordinate arrows at the origin of the scene, rather than offset.
         bool coordArrowsInScene = false;
@@ -700,7 +736,7 @@ namespace morph {
             }
 
             if (!this->sceneLocked && _key == key::c  && (mods & keymod::control) && action == keyaction::press) {
-                this->showCoordArrows = !this->showCoordArrows;
+                this->options.flip (visual_options::showCoordArrows);
                 needs_render = true;
             }
 
@@ -1064,7 +1100,7 @@ namespace morph {
 
         virtual void window_close_callback()
         {
-            if (this->preventWindowCloseWithButton == false) {
+            if (this->options.test (visual_options::preventWindowCloseWithButton) == false) {
                 this->signal_to_quit();
             } else {
                 std::cerr << "Ignoring user request to exit (Visual::preventWindowCloseWithButton)\n";

@@ -245,7 +245,7 @@ namespace morph {
             if (loc_p != -1) { this->glfn->UniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             if ((this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective)
-                && this->showCoordArrows == true) {
+                && this->options.test(visual_options::showCoordArrows)) {
                 // Ensure coordarrows centre sphere will be visible on BG:
                 this->coordArrows->setColourForBackground (this->bgcolour); // releases context...
                 this->setContext(); // ...so re-acquire if we're managing it

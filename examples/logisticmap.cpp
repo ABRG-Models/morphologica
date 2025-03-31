@@ -16,7 +16,6 @@ int main()
 
     morph::Visual v(1024, 768, "The Logistic Map");
     v.zNear = 0.001;
-    v.showCoordArrows = false;
     v.backgroundWhite();
     v.lightingEffects();
 

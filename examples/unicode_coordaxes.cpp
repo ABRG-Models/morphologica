@@ -44,7 +44,7 @@ int main()
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
     // The coordinate arrows can be hidden
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     // The title can be hidden
     v.showTitle = false;
     // The coord arrows can be displayed within the scene (rather than in, say, the corner)

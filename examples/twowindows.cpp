@@ -20,7 +20,7 @@ int main()
     // scaling factor (0.5) for the coordinate arrows. Defines, and makes current a new
     // window and OpenGL context.
     morph::Visual v(1024, 768, "Window 1");
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.showTitle = true;
     v.backgroundWhite();
     v.lightingEffects();
@@ -28,7 +28,7 @@ int main()
     // If I define a second Visual here, then the OpenGL context will now be 'pointing'
     // at this Visual v2
     morph::Visual v2(768, 768, "Graph on Window 2");
-    v2.showCoordArrows = true;
+    v2.showCoordArrows (true);
     v2.showTitle = true;
     v2.backgroundWhite();
     v2.lightingEffects();

@@ -16,7 +16,7 @@ int main()
     using mc = morph::mathconst<float>;
 
     morph::Visual v(1024, 768, "Inverse Mercator HexGrid");
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.lightingEffects();
 
     morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };

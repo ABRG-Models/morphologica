@@ -18,7 +18,7 @@ int main()
     int rtn = -1;
 
     morph::Visual v(1024, 768, "(constexpr) Geodesic Polyhedra");
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.lightingEffects (true);
 
     try {
