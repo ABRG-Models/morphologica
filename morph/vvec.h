@@ -217,6 +217,19 @@ namespace morph {
             return rtn;
         }
 
+        //! Append vvec to *this
+        template <typename Sy=S>
+        void append (const vvec<Sy>& other)
+        {
+            std::size_t sz = this->size();
+            std::size_t osz = other.size();
+            std::size_t j = 0;
+            this->resize (sz + osz);
+            for (std::size_t i = sz; i < sz + osz; ++i) {
+                (*this)[i] = static_cast<S>(other[j++]);
+            }
+        }
+
         /*!
          * Set a linear sequence into the vector from value start to value stop. If
          * num>0 then resize the vector first, otherwise use the vvec's current
