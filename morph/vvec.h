@@ -68,6 +68,10 @@ namespace morph {
 
         //! Used in functions for which wrapping is important
         enum class wrapdata { none, wrap };
+        //! Should a function resize the output?
+        enum class resize_output { no, yes };
+        //! Should a function treat a kernel as symmetric and centralize it?
+        enum class centre_kernel { no, yes };
 
         //! \return the first component of the vector
         S x() const noexcept { return (*this)[0]; }
@@ -1464,7 +1468,7 @@ namespace morph {
             filter.linspace (-hw, hw, elements);
             filter.gauss_inplace (sigma);
             filter /= filter.sum();
-            return this->convolve<wrap, false> (filter);
+            return this->convolve<wrap, centre_kernel::yes, resize_output::no> (filter);
         }
         //! Gaussian smoothing in place
         template<wrapdata wrap = wrapdata::none>
@@ -1476,27 +1480,34 @@ namespace morph {
             filter.linspace (-hw, hw, elements);
             filter.gauss_inplace (sigma);
             filter /= filter.sum();
-            this->convolve_inplace<wrap, false> (filter);
+            this->convolve_inplace<wrap, centre_kernel::yes, resize_output::no> (filter);
         }
 
         //! Do 1-D convolution of *this with the presented kernel and return the result
         //! \tparam wrap whether or not we wrap around the ends of the vvec.
         //! \tparam resize_output If true, execute the pure maths version of convolve, in
         //! which the vvec returned is be larger than the input by (kernel_width-1).
-        template<wrapdata wrap = wrapdata::none, bool resize_output = false>
+        template<wrapdata wrap = wrapdata::none,
+                 centre_kernel centre = centre_kernel::yes,
+                 resize_output resize_out = resize_output::no>
         vvec<S> convolve (const vvec<S>& kernel) const
         {
             int sz = this->size();
             int osz = sz; // osz is size of output vvec
             int kw = kernel.size(); // kernel width
-            if constexpr (resize_output) { osz += (kw - 1); }
+            int zki = 0;  // zero of the kernel index
+            if constexpr (centre == centre_kernel::yes) {
+                zki = kw / 2;            // kernel half width
+                zki -= (kw % 2) ? 0 : 1; // zero of the kernel index. Necessary?
+            }
+            if constexpr (resize_out == resize_output::yes) { osz += (kw - 1); }
             vvec<S> rtn(osz);
             for (int i = 0; i < osz; ++i) {
                 // For each element, i, compute the convolution sum
                 S sum = S{0};
                 for (int j = 0; j < kw; ++j) {
                     // ii is the index into the data by which kernel[j] should be multiplied
-                    int ii = i - j; // -j effectively 'flips' the kernel, as is required by the defintion of convolution
+                    int ii = i - j + zki; // -j effectively 'flips' the kernel, as is required by the defintion of convolution
                     if constexpr (wrap == wrapdata::wrap) {
                         // Handle wrapping around the data
                         ii += ii < 0 ? sz : 0;
@@ -1509,14 +1520,16 @@ namespace morph {
             }
             return rtn;
         }
-        template<wrapdata wrap = wrapdata::none, bool resize_output = false>
+        template<wrapdata wrap = wrapdata::none,
+                 centre_kernel centre = centre_kernel::yes,
+                 resize_output resize_out = resize_output::no>
         void convolve_inplace (const vvec<S>& kernel)
         {
             int sz = this->size();
             vvec<S> d(*this); // We make a copy of *this;
             int osz = sz; // osz is size of output vvec
             int kw = kernel.size(); // kernel width
-            if constexpr (resize_output) {
+            if constexpr (resize_out == resize_output::yes) {
                 osz += (kw - 1);
                 this->resize (osz); // resize self
             }
