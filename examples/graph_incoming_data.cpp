@@ -12,6 +12,8 @@
 
 int main()
 {
+    namespace uc = morph::unicode;
+
     int rtn = -1;
 
     morph::Visual v(1024, 768, "Graph");
@@ -39,10 +41,9 @@ int main()
         gv->prepdata ("Third power", morph::axisside::left);
         gv->prepdata ("Fifth power", morph::axisside::right);
 
-        using morph::unicode;
-        gv->ylabel = "f(x) = x" + unicode::toUtf8(unicode::ss3);
+        gv->ylabel = "f(x) = x" + uc::toUtf8(uc::ss3);
         // ylabel2 is the right hand y axis label
-        gv->ylabel2 = "f(x) = x" + unicode::toUtf8(unicode::ss5);
+        gv->ylabel2 = "f(x) = x" + uc::toUtf8(uc::ss5);
 
         gv->finalize();
 

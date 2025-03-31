@@ -16,7 +16,7 @@ namespace morph {
     class CyclicColourVisual : public VisualModel<glver>
     {
         using mc = morph::mathconst<F>;
-        using uc = morph::unicode;
+
     public:
         //! Constructor
         //! \param _offset The offset within morph::Visual space to place this model
@@ -30,8 +30,8 @@ namespace morph {
             this->tf.colour = this->framecolour;
             this->twodimensional = true;
             this->labels.clear();
-            this->labels = { uc::toUtf8(uc::pi)+std::string("/2"), uc::toUtf8(uc::pi),
-                             std::string("3")+uc::toUtf8(uc::pi)+std::string("/2"), "0" };
+            this->labels = { unicode::toUtf8(unicode::pi)+std::string("/2"), unicode::toUtf8(unicode::pi),
+                             std::string("3")+unicode::toUtf8(unicode::pi)+std::string("/2"), "0" };
         }
 
         void setTextColour (const std::array<float, 3>& c) { this->tf.colour = c; }

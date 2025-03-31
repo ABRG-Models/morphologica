@@ -12,6 +12,8 @@
 
 int main()
 {
+    namespace uc = morph::unicode;
+
     int rtn = -1;
 
     morph::Visual v(1024, 768, "Graph");
@@ -42,11 +44,10 @@ int main()
 
         gv->axisstyle = morph::axisstyle::L;
 
-        using morph::unicode;
         // Set xlabel to include the greek character alpha:
-        gv->xlabel = "Include unicode symbols like this: " + unicode::toUtf8 (unicode::alpha);
-        // A gamma - using raw unicode here instead of unicode::gamma
-        gv->ylabel = "Unicode for Greek gamma is 0x03b3: " + morph::unicode::toUtf8 (0x03b3);
+        gv->xlabel = "Include unicode symbols like this: " + uc::toUtf8 (uc::alpha);
+        // A gamma - using raw unicode here instead of uc::gamma
+        gv->ylabel = "Unicode for Greek gamma is 0x03b3: " + uc::toUtf8 (0x03b3);
 
         gv->setthickness (0.001f);
         gv->finalize();

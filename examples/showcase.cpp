@@ -86,7 +86,7 @@ struct izhi
 
 int main()
 {
-    using morph::unicode;
+    namespace uc = morph::unicode;
 
     morph::Visual v(1920, 1080, "morphologica showcase");
     v.setSceneTrans (morph::vec<float,3>({1.30124f, -0.730136f, -8.2f}));
@@ -102,12 +102,12 @@ int main()
         gv1->setsize (1.6, 1.6);
         morph::vvec<double> x;
         x.linspace (-0.5, 0.8, 14);
-        std::string ds1legend = unicode::toUtf8 (unicode::alpha) + "(x) = x" + unicode::toUtf8 (unicode::ss3);
+        std::string ds1legend = uc::toUtf8 (uc::alpha) + "(x) = x" + uc::toUtf8 (uc::ss3);
         gv1->setdata (x, x.pow(3), ds1legend);
-        gv1->ylabel = unicode::toUtf8 (unicode::alpha);
-        std::string ds2legend = unicode::toUtf8 (unicode::beta) + "(x) = 100x" + unicode::toUtf8 (unicode::ss2);
+        gv1->ylabel = uc::toUtf8 (uc::alpha);
+        std::string ds2legend = uc::toUtf8 (uc::beta) + "(x) = 100x" + uc::toUtf8 (uc::ss2);
         gv1->setdata (x, x.pow(2)*100, ds2legend, morph::axisside::right);
-        gv1->ylabel2 = unicode::toUtf8 (unicode::beta);
+        gv1->ylabel2 = uc::toUtf8 (uc::beta);
         gv1->addLabel ("morph::GraphVisual with morph::axisstyle::twinax", morph::vec<float>({0,-0.25,0}), morph::TextFeatures(0.05));
         gv1->finalize();
         v.addVisualModel (gv1);

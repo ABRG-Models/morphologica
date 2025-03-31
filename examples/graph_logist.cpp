@@ -8,7 +8,8 @@
 std::string make_legend_str (double k, double x0)
 {
     // We'll use morphologica's awesome unicode chars for the subscript 0 on x0
-    using morph::unicode;
+    namespace uc = morph::unicode;
+
     std::stringstream ktxt;
     if (k != 1.0) { ktxt << k; }
     std::stringstream brtxt;
@@ -22,7 +23,7 @@ std::string make_legend_str (double k, double x0)
         }
     }
     std::stringstream eqn;
-    eqn << "k="<<k<<", x" << unicode::toUtf8(unicode::subs0) << "=" << x0;
+    eqn << "k="<<k<<", x" << uc::toUtf8(uc::subs0) << "=" << x0;
     eqn << ": f(x) = 1 / [1 + exp (-"<< ktxt.str() << brtxt.str() << "x" << ostxt.str() << ")]";
     return eqn.str();
 }
