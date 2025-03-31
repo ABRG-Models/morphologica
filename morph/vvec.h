@@ -1523,7 +1523,7 @@ namespace morph {
         template<wrapdata wrap = wrapdata::none, bool puremaths = false>
         void convolve_inplace (const vvec<S>& kernel)
         {
-            if (constexpr puremaths == false) {
+            if constexpr (puremaths == false) {
                 int _n = this->size();
                 vvec<S> d(_n); // We make a copy of *this
                 std::copy (this->begin(), this->end(), d.begin());
@@ -1549,6 +1549,7 @@ namespace morph {
                 }
             } else {
                 // Compile time error? But *could* increase size of vvec
+                throw std::runtime_error("writeme");
             }
         }
 
