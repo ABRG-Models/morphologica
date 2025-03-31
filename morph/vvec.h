@@ -1510,15 +1510,12 @@ namespace morph {
                     // ii is the index into the data by which kernel[j] should be multiplied
                     int ii = i - j + zki; // -j effectively 'flips' the kernel, as is required by
                                           // the definition of convolution
-                    //std::cout << "i=" << i << " j=" << j << " zki=" << zki << ", data index i-j+zki=" << ii << std::endl;
                     if constexpr (wrap == wrapdata::wrap) {
                         // Handle wrapping around the data
                         ii += ii < 0 ? sz : 0;
                         ii -= ii >= sz ? sz : 0;
-                        //std::cout << "wrap: ii becomes " << ii << std::endl;
                     } // else nothing to do
                     if (ii < 0 || ii >= sz) { continue; }
-                    //std::cout << "rtn[" << i << "] += " << (*this)[ii] << " * " << kernel[j] << " = " << (*this)[ii] * kernel[j] << std::endl;
                     sum += (*this)[ii] * kernel[j];
                 }
                 rtn[i] = sum;
