@@ -57,6 +57,7 @@ namespace morph {
         preventWindowCloseWithButton,
         //! Set to true to show the coordinate arrows
         showCoordArrows,
+        //! If true, then place the coordinate arrows at the origin of the scene, rather than offset.
         coordArrowsInScene,
         showTitle,
         user_info_stdout,
@@ -358,7 +359,7 @@ namespace morph {
         void showCoordArrows (const bool val) { this->options.set (visual_options::showCoordArrows, val); }
 
         //! If true, then place the coordinate arrows at the origin of the scene, rather than offset.
-        bool coordArrowsInScene = false;
+        void coordArrowsInScene (const bool val) { this->options.set (visual_options::coordArrowsInScene, val); }
 
         //! Set to true to show the title text within the scene
         bool showTitle = false;

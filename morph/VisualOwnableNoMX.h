@@ -244,7 +244,7 @@ namespace morph {
                 this->coordArrows->setColourForBackground (this->bgcolour); // releases context...
                 this->setContext(); // ...so re-acquire if we're managing it
 
-                if (this->coordArrowsInScene == true) {
+                if (this->options.test (visual_options::coordArrowsInScene) == true) {
                     this->coordArrows->setSceneMatrix (sceneview);
                 } else {
                     this->positionCoordArrows();

@@ -59,7 +59,7 @@ namespace morph {
 int main()
 {
     morph::Visual v(1024, 768, "Lines");
-    v.coordArrowsInScene = true;
+    v.coordArrowsInScene (true);
     auto vm = std::make_unique<morph::LinestestVisual<>>();
     v.bindmodel (vm);
     vm->finalize();

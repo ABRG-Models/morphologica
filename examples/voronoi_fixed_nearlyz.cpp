@@ -31,7 +31,7 @@ int main()
     int rtn = -1;
 
     myvisual v(1024, 768, "VoronoiVisual");
-    v.coordArrowsInScene = true;
+    v.coordArrowsInScene (true);
 
     std::vector<morph::vec<float>> points = {
         {0,0,1},

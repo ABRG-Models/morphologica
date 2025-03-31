@@ -17,7 +17,7 @@ int main()
     morph::Visual v(1024, 768, "morph::VectorVisual");
     v.lightingEffects();
     v.showCoordArrows (true);
-    v.coordArrowsInScene = true;
+    v.coordArrowsInScene (true);
 
     morph::vec<float> offset = {1,0,0};
 

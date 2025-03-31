@@ -19,7 +19,7 @@ int main()
     morph::Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
     v.showCoordArrows (true);
-    v.coordArrowsInScene = true;
+    v.coordArrowsInScene (true);
     // For a white background:
     v.backgroundWhite();
     // Switch on a mix of diffuse/ambient lighting

@@ -28,8 +28,6 @@ int main()
     v.showCoordArrows (true);
     // The title can be hidden
     v.showTitle = false;
-    // The coord arrows can be displayed within the scene (rather than in, say, the corner)
-    v.coordArrowsInScene = false;
     // You can set the background (white, black, or any other colour)
     v.backgroundWhite();
     // You can switch on the "lighting shader" which puts diffuse light into the scene

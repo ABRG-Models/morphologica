@@ -23,7 +23,6 @@ int main()
 
     morph::Visual v(1024, 768, "morph::ScatterVisual");
     v.showCoordArrows (true);
-    //v.coordArrowsInScene = true;
     v.lightingEffects();
 
     morph::geometry::polyhedron<float> ico = morph::geometry::icosahedron<float>();
