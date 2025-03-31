@@ -1481,75 +1481,60 @@ namespace morph {
 
         //! Do 1-D convolution of *this with the presented kernel and return the result
         //! \tparam wrap whether or not we wrap around the ends of the vvec.
-        //! \tparam puremaths If true, execute the pure maths version of convolve, in
-        //! which the vvec returned will be larger than the input.
-        template<wrapdata wrap = wrapdata::none, bool puremaths = false>
+        //! \tparam resize_output If true, execute the pure maths version of convolve, in
+        //! which the vvec returned is be larger than the input by (kernel_width-1).
+        template<wrapdata wrap = wrapdata::none, bool resize_output = false>
         vvec<S> convolve (const vvec<S>& kernel) const
         {
             int sz = this->size();
             int osz = sz; // osz is size of output vvec
             int kw = kernel.size(); // kernel width
-            int klast = kw - 1;
-            if constexpr (puremaths) { osz += klast; }
+            if constexpr (resize_output) { osz += (kw - 1); }
             vvec<S> rtn(osz);
-            int khw = kw / 2;  // kernel half width
-            int khwr = kw % 2; // kernel half width remainder
-            int zki = khwr ? khw : khw - 1; // zero of the kernel index
             for (int i = 0; i < osz; ++i) {
                 // For each element, i, compute the convolution sum
                 S sum = S{0};
-                for (int j = 0; j < kw; ++j) { // or for (int j = kw - 1; j >= 0; --j) { ?
+                for (int j = 0; j < kw; ++j) {
                     // ii is the index into the data by which kernel[j] should be multiplied
-                    int ii = i;
-                    if constexpr (puremaths) {
-                        ii -= j;
-                    } else { // 'centred kernel'
-                        ii += ((klast - j) - zki);
-                    }
+                    int ii = i - j; // -j effectively 'flips' the kernel, as is required by the defintion of convolution
                     if constexpr (wrap == wrapdata::wrap) {
                         // Handle wrapping around the data
                         ii += ii < 0 ? sz : 0;
                         ii -= ii >= sz ? sz : 0;
                     } // else nothing to do
-                    if (ii < 0 || ii >= sz) {
-                        continue;
-                    }
-                    sum += this->at(ii) * kernel[j];
+                    if (ii < 0 || ii >= sz) { continue; }
+                    sum += (*this)[ii] * kernel[j];
                 }
                 rtn[i] = sum;
             }
             return rtn;
         }
-        template<wrapdata wrap = wrapdata::none, bool puremaths = false>
+        template<wrapdata wrap = wrapdata::none, bool resize_output = false>
         void convolve_inplace (const vvec<S>& kernel)
         {
-            if constexpr (puremaths == false) {
-                int _n = this->size();
-                vvec<S> d(_n); // We make a copy of *this
-                std::copy (this->begin(), this->end(), d.begin());
-                int kw = kernel.size(); // kernel width
-                int khw = kw/2;  // kernel half width
-                int khwr = kw%2; // kernel half width remainder
-                int zki = khwr ? khw : khw-1; // zero of the kernel index
-                for (int i = 0; i < _n; ++i) {
-                    // For each element, i, compute the convolution sum
-                    S sum = S{0};
-                    for (int j = 0; j<kw; ++j) {
-                        // ii is the index into the data by which kernel[j] should be multiplied
-                        int ii = i+j-zki;
-                        if constexpr (wrap == wrapdata::wrap) {
-                            // Handle wrapping around the data
-                            ii += ii < 0 ? _n : 0;
-                            ii -= ii >= _n ? _n : 0;
-                        } // else nothing to do
-                        if (ii < 0 || ii >= _n) { continue; }
-                        sum += d[ii] * kernel[j];
-                    }
-                    (*this)[i] = sum;
+            int sz = this->size();
+            vvec<S> d(*this); // We make a copy of *this;
+            int osz = sz; // osz is size of output vvec
+            int kw = kernel.size(); // kernel width
+            if constexpr (resize_output) {
+                osz += (kw - 1);
+                this->resize (osz); // resize self
+            }
+            for (int i = 0; i < osz; ++i) {
+                // For each element, i, compute the convolution sum
+                S sum = S{0};
+                for (int j = 0; j < kw; ++j) {
+                    // ii is the index into the data by which kernel[j] should be multiplied
+                    int ii = i - j;
+                    if constexpr (wrap == wrapdata::wrap) {
+                        // Handle wrapping around the data
+                        ii += ii < 0 ? sz : 0;
+                        ii -= ii >= sz ? sz : 0;
+                    } // else nothing to do
+                    if (ii < 0 || ii >= sz) { continue; }
+                    sum += d[ii] * kernel[j];
                 }
-            } else {
-                // Compile time error? But *could* increase size of vvec
-                throw std::runtime_error("writeme");
+                (*this)[i] = sum;
             }
         }
 
