@@ -14,7 +14,7 @@
 #include <morph/HexGrid.h>
 
 #include <morph/unicode.h>
-using morph::unicode;
+namespace uc =  morph::unicode;
 
 // Derive Visual to modify the coordinate arrows object in the constructor.
 class MyVisual : public morph::Visual<>
@@ -25,8 +25,8 @@ public:
     {
         this->backgroundWhite();
         this->coordArrows->clear();
-        this->coordArrows->x_label = unicode::toUtf8 (unicode::theta);
-        this->coordArrows->y_label = std::string("d") + unicode::toUtf8 (unicode::beta);
+        this->coordArrows->x_label = uc::toUtf8 (uc::theta);
+        this->coordArrows->y_label = std::string("d") + uc::toUtf8 (uc::beta);
         this->coordArrows->z_label = "F";
         this->coordArrows->initAxisLabels();
         this->coordArrows->reinit();

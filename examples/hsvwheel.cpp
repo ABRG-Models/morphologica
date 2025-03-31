@@ -119,9 +119,9 @@ int main()
     auto hsv_vis2 = std::make_unique<SquareGridVisual>(offset, hue_rotn);
     v.bindmodel (hsv_vis2);
     //
-    using morph::unicode;
+    namespace uc = morph::unicode;
     std::string lbl2("hue rotation = ");
-    lbl2 += std::to_string (hue_rotn/morph::mathconst<float>::pi) + unicode::toUtf8(unicode::pi);
+    lbl2 += std::to_string (hue_rotn/morph::mathconst<float>::pi) + uc::toUtf8(uc::pi);
     hsv_vis2->addLabel (lbl2, morph::vec<float>({0,-1,0}), tf);
     //
     hsv_vis2->finalize();

@@ -8,7 +8,7 @@
 int main()
 {
     // We'll use morphologica's awesome unicode chars
-    using morph::unicode;
+    namespace uc = morph::unicode;
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Logistic functions");
     v.addLabel ("Change logistic function parameters in ../examples/graph_logist2.json (live updates)", morph::vec<float>({0,0,0}));
@@ -31,7 +31,7 @@ int main()
     x.linspace (g1x0, g1x1, 100);
     // Logistic functions. Args are parameters to the function are (xoffset, alpha)
     std::stringstream lftag;
-    lftag << "k=" << k << ", x" << unicode::toUtf8(unicode::subs0) << "=" << x0; // A dataset tag
+    lftag << "k=" << k << ", x" << uc::toUtf8(uc::subs0) << "=" << x0; // A dataset tag
     // vvec::logistic() returns a new vvec with the logistic function-transformed values:
     gv->setdata (x, x.logistic (k, x0), lftag.str());
     gv->ylabel = "f(x)";
@@ -65,7 +65,7 @@ int main()
             x0 = conf.get<double> ("x0", 4.0);
 
             std::stringstream newtag;
-            newtag << "k=" << k << ", x" << unicode::toUtf8(unicode::subs0) << "=" << x0;
+            newtag << "k=" << k << ", x" << uc::toUtf8(uc::subs0) << "=" << x0;
 
             // Remove label and existing legends with VisualModel::clearTexts()
             gvptr->clearTexts();
@@ -73,7 +73,7 @@ int main()
             gvptr->update (x, x.logistic(k, x0), newtag.str(), 0);
             // Show the general eqn by adding a label below the first graph
             std::stringstream eqngen;
-            eqngen << "f(x) = 1 / [1 + exp (-k(x - x"<< unicode::toUtf8(unicode::subs0) << ")]";
+            eqngen << "f(x) = 1 / [1 + exp (-k(x - x"<< uc::toUtf8(uc::subs0) << ")]";
             gvptr->addLabel (eqngen.str(), morph::vec<float>({0.1f, -0.3f, 0.0f}), morph::TextFeatures(0.05f));
 
             gv2ptr->clearTexts();

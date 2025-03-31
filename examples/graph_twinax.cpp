@@ -2,8 +2,8 @@
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 #include <morph/vvec.h>
-
-using morph::unicode;
+#include <morph/unicode.h>
+namespace uc = morph::unicode;
 
 int main()
 {
@@ -20,14 +20,14 @@ int main()
     x.linspace (-0.5, 0.8, 14);
 
     // Set a graph up of x^3
-    std::string ds1legend = unicode::toUtf8 (unicode::alpha) + "(x) = x" + unicode::toUtf8 (unicode::ss3);
+    std::string ds1legend = uc::toUtf8 (uc::alpha) + "(x) = x" + uc::toUtf8 (uc::ss3);
     gv->setdata (x, x.pow(3), ds1legend);
-    gv->ylabel = unicode::toUtf8 (unicode::alpha);
+    gv->ylabel = uc::toUtf8 (uc::alpha);
 
     // And 100x^2
-    std::string ds2legend = unicode::toUtf8 (unicode::beta) + "(x) = 100x" + unicode::toUtf8 (unicode::ss2);
+    std::string ds2legend = uc::toUtf8 (uc::beta) + "(x) = 100x" + uc::toUtf8 (uc::ss2);
     gv->setdata (x, x.pow(2)*100, ds2legend, morph::axisside::right);
-    gv->ylabel2 = unicode::toUtf8 (unicode::beta);
+    gv->ylabel2 = uc::toUtf8 (uc::beta);
 
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();

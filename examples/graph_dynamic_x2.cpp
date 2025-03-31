@@ -12,6 +12,8 @@
 
 int main()
 {
+    namespace uc = morph::unicode;
+
     int rtn = -1;
 
     morph::Visual v(1024, 768, "Graph");
@@ -60,12 +62,11 @@ int main()
         } else {
             gvup->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
             // The code here demonstrates how to include unicode characters (ss2 is "superscript 2")
-            using morph::unicode;
             gvup->setdata (absc, absc, "y=x");
-            gvup->setdata (absc, _absc.pow(2)+0.05f, "y=x" + unicode::toUtf8(unicode::ss2));
-            gvup->setdata (absc, _absc.pow(3)+0.1f, "y=x" + unicode::toUtf8(unicode::ss3));
-            gvup->setdata (absc, _absc.pow(4)+0.15f, "y=x" + unicode::toUtf8(unicode::ss4));
-            gvup->setdata (absc, _absc.pow(5)+0.2f, "y=x" + unicode::toUtf8(unicode::ss5));
+            gvup->setdata (absc, _absc.pow(2)+0.05f, "y=x" + uc::toUtf8(uc::ss2));
+            gvup->setdata (absc, _absc.pow(3)+0.1f, "y=x" + uc::toUtf8(uc::ss3));
+            gvup->setdata (absc, _absc.pow(4)+0.15f, "y=x" + uc::toUtf8(uc::ss4));
+            gvup->setdata (absc, _absc.pow(5)+0.2f, "y=x" + uc::toUtf8(uc::ss5));
         }
 
         if constexpr (setup_axes) {
