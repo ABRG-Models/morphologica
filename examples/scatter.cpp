@@ -20,7 +20,6 @@ int main()
     v.zNear = 0.001;
     v.showCoordArrows (true);
     v.coordArrowsInScene (true);
-    v.showTitle = true;
     // Blueish background:
     v.bgcolour = {0.6f, 0.6f, 0.8f, 0.5f};
     v.lightingEffects();

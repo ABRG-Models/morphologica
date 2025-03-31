@@ -22,8 +22,6 @@ int main()
     v.sceneLocked = false;
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
-    // The title can be hidden
-    v.showTitle = false;
     // You can set the background (white, black, or any other colour)
     v.backgroundWhite();
     // You can switch on the "lighting shader" which puts diffuse light into the scene

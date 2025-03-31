@@ -17,7 +17,6 @@ int main()
     morph::Visual v(1024, 768, "morph::QuiverVisual");
     v.zNear = 0.001;
     v.showCoordArrows (true);
-    v.showTitle = true;
     // For a white background:
     v.backgroundBlack();
     v.lightingEffects();

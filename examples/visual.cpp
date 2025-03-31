@@ -27,8 +27,8 @@ int main()
     v.scenetrans_stepsize = 0.5;
     // The coordinate arrows can be hidden
     v.showCoordArrows (true);
-    // The title can be hidden
-    v.showTitle = true;
+    // The title can be shown, or hidden (default)
+    v.showTitle (true);
     // The coord arrows can be displayed within the scene (rather than in, say, the corner)
     v.coordArrowsInScene (false);
     // You can set the background (white, black, or any other colour)

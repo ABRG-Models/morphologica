@@ -22,8 +22,6 @@ int main()
     v.sceneLocked = false;
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
-    // The title can be hidden
-    v.showTitle = false;
     // The coord arrows can be displayed within the scene (rather than in, say, the corner). Set true to do so.
     v.coordArrowsInScene (false);
     // You can set the background (white, black, or any other colour)

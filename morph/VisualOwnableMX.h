@@ -274,7 +274,7 @@ namespace morph {
             }
 
             morph::vec<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
-            if (this->showTitle == true) {
+            if (this->options.test (visual_options::showTitle) == true) {
                 // Render the title text
                 this->textModel->setSceneTranslation (v0);
                 this->textModel->setVisibleOn (this->bgcolour);

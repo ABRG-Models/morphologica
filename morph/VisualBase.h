@@ -45,11 +45,11 @@ namespace morph {
     // Here are our boolean state flags
     enum class visual_state : uint32_t
     {
-        readyToFinish,    // s
-        paused,           // s
-        rotateMode,       // s
-        rotateModMode,    // s
-        translateMode     // s
+        readyToFinish,
+        paused,
+        rotateMode,
+        rotateModMode,
+        translateMode
     };
     enum class visual_options : uint32_t
     {
@@ -59,6 +59,7 @@ namespace morph {
         showCoordArrows,
         //! If true, then place the coordinate arrows at the origin of the scene, rather than offset.
         coordArrowsInScene,
+        //! Set to true to show the title text within the scene
         showTitle,
         user_info_stdout,
         sceneLocked,
@@ -355,14 +356,14 @@ namespace morph {
         float zFar = 300.0f;
         float fov = 30.0f;
 
-        //! Setter
+        //! Setter for visual_options::showCoordArrows
         void showCoordArrows (const bool val) { this->options.set (visual_options::showCoordArrows, val); }
 
         //! If true, then place the coordinate arrows at the origin of the scene, rather than offset.
         void coordArrowsInScene (const bool val) { this->options.set (visual_options::coordArrowsInScene, val); }
 
         //! Set to true to show the title text within the scene
-        bool showTitle = false;
+        void showTitle (const bool val) { this->options.set (visual_options::showTitle, val); }
 
         //! If true, output some user information to stdout (e.g. user requested quit)
         bool user_info_stdout = true;

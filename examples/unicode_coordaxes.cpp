@@ -45,8 +45,6 @@ int main()
     v.scenetrans_stepsize = 0.5;
     // The coordinate arrows can be hidden
     v.showCoordArrows (true);
-    // The title can be hidden
-    v.showTitle = false;
     // You can set the background (white, black, or any other colour)
     v.backgroundWhite();
     // You can switch on the "lighting shader" which puts diffuse light into the scene
