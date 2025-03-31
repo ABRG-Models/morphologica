@@ -1493,27 +1493,32 @@ namespace morph {
         vvec<S> convolve (const vvec<S>& kernel) const
         {
             int sz = this->size();
-            int osz = sz; // osz is size of output vvec
+            int osz = sz;           // osz is size of output vvec
             int kw = kernel.size(); // kernel width
-            int zki = 0;  // zero of the kernel index
-            if constexpr (centre == centre_kernel::yes) {
-                zki = kw / 2;            // kernel half width
-                zki -= (kw % 2) ? 0 : 1; // zero of the kernel index. Necessary?
-            }
+            int zki = 0;            // zero of the kernel index (or how many steps 'right'
+                                    // to shift the reversed kernel before starting)
+            if constexpr (centre == centre_kernel::yes) { zki = kw / 2; }
             if constexpr (resize_out == resize_output::yes) { osz += (kw - 1); }
+            if constexpr (wrap == wrapdata::wrap) {
+                if (kw > sz) { throw std::runtime_error ("if wrapping, kernel width must be <= data size"); }
+            }
             vvec<S> rtn(osz);
             for (int i = 0; i < osz; ++i) {
                 // For each element, i, compute the convolution sum
                 S sum = S{0};
                 for (int j = 0; j < kw; ++j) {
                     // ii is the index into the data by which kernel[j] should be multiplied
-                    int ii = i - j + zki; // -j effectively 'flips' the kernel, as is required by the defintion of convolution
+                    int ii = i - j + zki; // -j effectively 'flips' the kernel, as is required by
+                                          // the definition of convolution
+                    //std::cout << "i=" << i << " j=" << j << " zki=" << zki << ", data index i-j+zki=" << ii << std::endl;
                     if constexpr (wrap == wrapdata::wrap) {
                         // Handle wrapping around the data
                         ii += ii < 0 ? sz : 0;
                         ii -= ii >= sz ? sz : 0;
+                        //std::cout << "wrap: ii becomes " << ii << std::endl;
                     } // else nothing to do
                     if (ii < 0 || ii >= sz) { continue; }
+                    //std::cout << "rtn[" << i << "] += " << (*this)[ii] << " * " << kernel[j] << " = " << (*this)[ii] * kernel[j] << std::endl;
                     sum += (*this)[ii] * kernel[j];
                 }
                 rtn[i] = sum;
@@ -1526,19 +1531,24 @@ namespace morph {
         void convolve_inplace (const vvec<S>& kernel)
         {
             int sz = this->size();
-            vvec<S> d(*this); // We make a copy of *this;
-            int osz = sz; // osz is size of output vvec
-            int kw = kernel.size(); // kernel width
+            vvec<S> d(*this);        // We make a copy of *this;
+            int osz = sz;            // osz is size of output vvec
+            int kw = kernel.size();  // kernel width
+            int zki = 0;             // zero of the kernel index
+            if constexpr (centre == centre_kernel::yes) { zki = kw / 2; }
             if constexpr (resize_out == resize_output::yes) {
                 osz += (kw - 1);
                 this->resize (osz); // resize self
+            }
+            if constexpr (wrap == wrapdata::wrap) {
+                if (kw > sz) { throw std::runtime_error ("if wrapping, kernel width must be <= data size"); }
             }
             for (int i = 0; i < osz; ++i) {
                 // For each element, i, compute the convolution sum
                 S sum = S{0};
                 for (int j = 0; j < kw; ++j) {
                     // ii is the index into the data by which kernel[j] should be multiplied
-                    int ii = i - j;
+                    int ii = i - j + zki;
                     if constexpr (wrap == wrapdata::wrap) {
                         // Handle wrapping around the data
                         ii += ii < 0 ? sz : 0;

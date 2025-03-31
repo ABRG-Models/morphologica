@@ -269,6 +269,9 @@ add_test(testvvec_operatoradd testvvec_operatoradd)
 add_executable(testvvec_convolutions testvvec_convolutions.cpp)
 add_test(testvvec_convolutions testvvec_convolutions)
 
+add_executable(testvvec_convolutions2 testvvec_convolutions2.cpp)
+add_test(testvvec_convolutions2 testvvec_convolutions2)
+
 add_executable(testvvec_differentiation testvvec_differentiation.cpp)
 add_test(testvvec_differentiation testvvec_differentiation)
 
