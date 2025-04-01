@@ -355,7 +355,10 @@ namespace morph {
         morph::flags<visual_options> options = options_defaults();
 
         //! Returns true when the program has been flagged to end
-        bool readyToFinish() { return this->state.test (visual_state::readyToFinish); }
+        bool readyToFinish() const { return this->state.test (visual_state::readyToFinish); }
+
+        //! Returns true if we are in the paused state
+        bool paused() const { return this->state.test (visual_state::paused); }
 
         /*
          * User-settable projection values for the near clipping distance, the far clipping distance
