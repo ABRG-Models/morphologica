@@ -327,21 +327,27 @@ namespace morph {
             this->coordArrows->setViewRotation (this->rotation);
         }
 
-        // State flags
-        morph::flags<visual_state> state;
-        void state_defaults()
+        constexpr morph::flags<visual_state> state_defaults()
         {
-            this->state.reset();
-            //this->state.set (visual_state::something, true);
+            morph::flags<visual_state> _state;
+            _state.reset();
+            // _state.set (visual_state::something, true);
+            return _state;
+        }
+
+        // State flags
+        morph::flags<visual_state> state = state_defaults();
+
+        constexpr morph::flags<visual_options> options_defaults()
+        {
+            morph::flags<visual_options> _options;
+            _options.reset();
+            // _options.set (visual_options::showCoordArrows, true);
+            return _options;
         }
 
         // Option flags
-        morph::flags<visual_options> options;
-        void options_defaults()
-        {
-            this->options.reset();
-            //this->options.set (visual_options::something, true);
-        }
+        morph::flags<visual_options> options = options_defaults();
 
         //! Set to true when the program should end
         bool readyToFinish = false;
