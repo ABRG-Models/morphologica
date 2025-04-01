@@ -327,22 +327,20 @@ namespace morph {
             this->coordArrows->setViewRotation (this->rotation);
         }
 
+        // state defaults. All state is false by default
         constexpr morph::flags<visual_state> state_defaults()
         {
             morph::flags<visual_state> _state;
-            _state.reset();
-            // _state.set (visual_state::something, true);
             return _state;
         }
 
         // State flags
         morph::flags<visual_state> state = state_defaults();
 
+        // Options defaults. All options are false by default
         constexpr morph::flags<visual_options> options_defaults()
         {
             morph::flags<visual_options> _options;
-            _options.reset();
-            // _options.set (visual_options::showCoordArrows, true);
             return _options;
         }
 
