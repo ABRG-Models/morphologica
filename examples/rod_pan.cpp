@@ -48,7 +48,7 @@ int main()
         v.addVisualModel (rvm);
 
         morph::vec<float> axis = {0,1,0}; // y
-        while (v.readyToFinish == false) {
+        while (v.readyToFinish() == false) {
             v.waitevents (0.001);
             v.rotate_scene (axis, morph::mathconst<float>::two_pi / (9*360));
             v.render();

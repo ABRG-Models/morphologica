@@ -50,7 +50,7 @@ int main()
     morph::mat44<float> tf;
     tf.rotate (axis, angle_per_frame);
 
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         v.render();
         v.wait (0.01);
 

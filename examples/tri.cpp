@@ -32,11 +32,7 @@ int main()
         tv->finalize();
         v.addVisualModel (tv);
 
-        v.render();
-        while (v.readyToFinish == false) {
-            v.waitevents (0.018);
-            v.render();
-        }
+        v.keepOpen();
 
     } catch (const std::exception& e) {
         std::cerr << "Caught exception: " << e.what() << std::endl;

@@ -22,7 +22,7 @@ int main()
 
     auto gvp = v.addVisualModel (gv);
 
-    while (v.readyToFinish == false) {
+    while (v.readyToFinish() == false) {
         dx += 0.01;
         v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
         gvp->update (x, (x+dx).sin(), 0);

@@ -52,7 +52,7 @@ int main()
 
     // Render the graph until user exits
     v.render();
-    while (v.readyToFinish == false) {
+    while (v.readyToFinish() == false) {
         v.waitevents (0.018);
         v.render();
     }

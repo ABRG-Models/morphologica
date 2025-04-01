@@ -84,7 +84,7 @@ int main()
         float addn = 0.0f;
         size_t rcount = 0;
         v.render();
-        while (v.readyToFinish == false) {
+        while (v.readyToFinish() == false) {
             v.waitevents (0.018);
             // Demonstrates how to test that the pointer gv is valid:
             if ((rcount++)%20 == 0 && v.validVisualModel (gv) != nullptr) {

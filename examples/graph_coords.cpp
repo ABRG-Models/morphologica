@@ -35,7 +35,7 @@ int main()
 
     auto gvp = v.addVisualModel (gv);
 
-    while (v.readyToFinish == false) {
+    while (v.readyToFinish() == false) {
         glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
 
         // Re-draw numbers for the coordinates

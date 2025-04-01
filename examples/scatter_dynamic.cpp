@@ -47,7 +47,7 @@ int main()
     svp->colourScale.compute_scaling (-0.45f, 0.45f);
 
     unsigned int q = 0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         size_t k = 0;
         for (int i = -10; i < 10; ++i) {
             for (int j = -10; j < 10; ++j) {

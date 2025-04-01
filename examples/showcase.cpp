@@ -350,7 +350,7 @@ int main()
      * v.render().
      */
     unsigned int q = 0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         size_t k = 0;
         for (int i = -10; i < 10; ++i) {
             for (int j = -10; j < 10; ++j) {

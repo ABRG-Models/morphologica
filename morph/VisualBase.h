@@ -354,8 +354,8 @@ namespace morph {
         // Option flags
         morph::flags<visual_options> options = options_defaults();
 
-        //! Set to true when the program should end
-        bool readyToFinish = false;
+        //! Returns true when the program has been flagged to end
+        bool readyToFinish() { return this->state.test (visual_state::readyToFinish); }
 
         /*
          * User-settable projection values for the near clipping distance, the far clipping distance
@@ -1166,7 +1166,7 @@ namespace morph {
         {
             if (this->options.test (visual_options::userInfoStdout)) { std::cout << "User requested exit.\n"; }
             // 1. Set our 'readyToFinish' flag to true
-            this->readyToFinish = true;
+            this->state.set (visual_state::readyToFinish);
             // 2. Call any external callback that's been set by client code
             if (this->external_quit_callback) { this->external_quit_callback(); }
         }

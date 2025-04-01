@@ -24,7 +24,7 @@ protected:
         // except for one to close the program and one for help output:
         if (key == morph::key::x && action == morph::keyaction::press) {
             std::cout << "User requested exit.\n";
-            this->readyToFinish = true;
+            this->state.set (morph::visual_state::readyToFinish);
         }
         if (key == morph::key::h && action == morph::keyaction::press) {
             std::cout << "Help:\n";
@@ -58,7 +58,7 @@ int main()
 {
     myvisual v(600, 400, "Custom Visual: myvisual");
     v.addLabel ("Hello World!", {0,0,0});
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         v.waitevents (0.018);
         if (v.moving == true) {
             std::cout << "Keep on moving...\n";

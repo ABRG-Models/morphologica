@@ -30,7 +30,7 @@ int main()
 
     // set style of the axis
     gv->axisstyle = morph::axisstyle::twinax;
-    
+
     // Enable auto-rescaling of the x axis
     gv->auto_rescale_x = true;
     // Enable auto-rescaling of the y axis
@@ -43,7 +43,7 @@ int main()
 
     auto gvp = v.addVisualModel (gv);
 
-    while (v.readyToFinish == false) {
+    while (v.readyToFinish() == false) {
         dx += 0.01;
         v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
         gvp->update (x+dx, (x+dx).sin() + dx, 0);

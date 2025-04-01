@@ -86,7 +86,7 @@ int main()
         v2.addVisualModel (gv);
 
         bool gotlock = false;
-        while (v.readyToFinish == false && v2.readyToFinish == false) {
+        while (v.readyToFinish() == false && v2.readyToFinish() == false) {
             v.waitevents (0.018);
             gotlock = v.tryLockContext();
             if (!gotlock) {

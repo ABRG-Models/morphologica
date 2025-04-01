@@ -47,11 +47,7 @@ int main()
     v.addVisualModel (gv);
 
     // Render the graph until user exits
-    v.render();
-    while (v.readyToFinish == false) {
-        v.waitevents (0.018);
-        v.render();
-    }
+    v.keepOpen();
 
     return 0;
 }

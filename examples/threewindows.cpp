@@ -67,7 +67,7 @@ int main()
             gv->finalize();
             v2.addVisualModel (gv);
 
-            while (v.readyToFinish == false && v2.readyToFinish == false) {
+            while (v.readyToFinish() == false && v2.readyToFinish() == false) {
                 v.waitevents (0.018);
                 v2.render();
                 v.render();
@@ -90,7 +90,7 @@ int main()
     v3.backgroundWhite();
     v3.lightingEffects();
 
-    while (v3.readyToFinish == false && v.readyToFinish == false) {
+    while (v3.readyToFinish() == false && v.readyToFinish() == false) {
         v3.waitevents (0.018);
         v.render();
         v3.render();

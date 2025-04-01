@@ -32,7 +32,7 @@ int main (int argc, char** argv)
 
         v.render();
         if (holdVis == true) {
-            while (v.readyToFinish == false) {
+            while (v.readyToFinish() == false) {
                 glfwWaitEventsTimeout (0.018);
                 v.render();
             }

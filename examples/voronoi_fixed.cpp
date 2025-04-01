@@ -75,7 +75,7 @@ int main()
     vvm->finalize();
     v.addVisualModel (vvm);
 
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         if (p_vorv->border_width != v.border_width || p_vorv->zoom != v.zoom) {
             p_vorv->border_width = v.border_width;
             p_vorv->zoom = v.zoom;

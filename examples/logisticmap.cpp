@@ -84,7 +84,7 @@ int main()
         v.render();
 
         // v.keepOpen() is equivalent to this:
-        while (v.readyToFinish == false) {
+        while (v.readyToFinish() == false) {
             v.waitevents (0.018);
             v.render();
         }

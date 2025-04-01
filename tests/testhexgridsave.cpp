@@ -93,7 +93,7 @@ int main()
         // Draw small hex at boundary centroid.
         // red hex at zero
 
-        while (v.readyToFinish == false) {
+        while (v.readyToFinish() == false) {
             glfwWaitEventsTimeout (0.018);
             v.render();
         }

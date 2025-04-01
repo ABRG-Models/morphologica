@@ -69,7 +69,7 @@ int main()
     v.render();
 
     unsigned long long loop = 0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
 
         v.poll();
 

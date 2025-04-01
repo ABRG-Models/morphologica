@@ -190,7 +190,7 @@ namespace morph {
          */
         void keepOpen()
         {
-            while (this->readyToFinish == false) {
+            while (this->state.test (visual_state::readyToFinish) == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
             }
@@ -203,7 +203,7 @@ namespace morph {
         void pauseOpen()
         {
             this->state.set (visual_state::paused);
-            while (this->state.test (visual_state::paused) == true && this->readyToFinish == false) {
+            while (this->state.test (visual_state::paused) == true && this->state.test (visual_state::readyToFinish) == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
             }

@@ -52,7 +52,7 @@ int main()
     auto vorvp = v.addVisualModel (vorv);
 
     int fcount = 0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
 
         if (k > 8.0f) { k = 1.0f; }
         for (unsigned int i = 0; i < n_points; ++i) {

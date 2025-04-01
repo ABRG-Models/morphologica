@@ -55,7 +55,7 @@ int main()
     bool shown_error = false; // A flag to avoid showing an error 60 times a second
 
     // Render the scene on the screen until user quits with 'Ctrl-q'
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         v.render();
         v.waitevents (0.018);
         // Update from config file with every render so that changes in the file are immediately reflected in the graph.

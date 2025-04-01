@@ -59,10 +59,7 @@ int main()
     hgv->finalize();
     v.addVisualModel (hgv);
 
-    while (v.readyToFinish == false) {
-        v.waitevents (0.018);
-        v.render();
-    }
+    v.keepOpen();
 
     v.savegltf("./visual.gltf");
 
