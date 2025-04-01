@@ -108,13 +108,14 @@ namespace morph {
             }
         }
 
-        // Unset from a bit (in enum form)
+        // Flip a bit (in enum form)
         constexpr flags<E>& operator^=(const E& rhs) noexcept
         {
             this->bits ^= (I{1} << static_cast<I>(rhs));
             return *this;
         }
-        // Unset from a big (std::bitset-like function name)
+
+        // Unset from a bit (std::bitset-like function name)
         constexpr void reset (const E& flag) noexcept
         {
             this->bits &= ~(I{1} << static_cast<I>(flag));

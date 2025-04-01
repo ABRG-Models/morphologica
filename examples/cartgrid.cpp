@@ -18,8 +18,6 @@ int main()
     morph::Visual v(1600, 1000, "morph::CartGridVisual");
     // You can set a field of view (in degrees)
     v.fov = 15;
-    // Should the scene be 'locked' so that movements and rotations are prevented?
-    v.sceneLocked = false;
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
     // The coord arrows can be displayed within the scene (rather than in, say, the corner). Set true to do so.

@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
         morph::Visual v (win_width, win_height, "model");
         v.backgroundWhite();
-        v.sceneLocked = conf.getBool ("sceneLocked", false);
+        v.sceneLocked (conf.getBool ("sceneLocked", false));
         v.scenetrans_stepsize = 0.1;
         v.fov = 50;
 

@@ -42,16 +42,23 @@
 
 namespace morph {
 
-    // Here are our boolean state flags
+    //! Here are our boolean state flags
     enum class visual_state : uint32_t
     {
         readyToFinish,
+        //! paused can be set true so that pauseOpen() can be used to display the window mid-simulation
         paused,
+        //! If you set this to true, then the mouse movements won't change scenetrans or rotation.
         sceneLocked,
+        //! When true, cursor movements induce rotation of scene
         rotateMode,
+        //! When true, rotations about the third axis are possible.
         rotateModMode,
+        //! When true, cursor movements induce translation of scene
         translateMode
     };
+
+    //! Boolean options - similar to state, but more likely to be modified by client code
     enum class visual_options : uint32_t
     {
         //! Set true to disable the 'X' button on the Window from exiting the program
@@ -350,9 +357,6 @@ namespace morph {
         //! Set to true when the program should end
         bool readyToFinish = false;
 
-        //! paused can be set true so that pauseOpen() can be used to display the window mid-simulation
-        bool paused = false;
-
         /*
          * User-settable projection values for the near clipping distance, the far clipping distance
          * and the field of view of the camera.
@@ -378,7 +382,7 @@ namespace morph {
         float scenetrans_stepsize = 0.1f;
 
         //! If you set this to true, then the mouse movements won't change scenetrans or rotation.
-        bool sceneLocked = false;
+        void sceneLocked (const bool val) { this->state.set (visual_state::sceneLocked, val); }
 
         //! Can change this to orthographic
         perspective_type ptype = perspective_type::perspective;
@@ -682,15 +686,6 @@ namespace morph {
         //! The world depth at which text objects should be rendered
         float text_z = -1.0f;
 
-        //! When true, cursor movements induce rotation of scene
-        bool rotateMode = false;
-
-        //! When true, rotations about the third axis are possible.
-        bool rotateModMode = false;
-
-        //! When true, cursor movements induce translation of scene
-        bool translateMode = false;
-
         //! Screen coordinates of the position of the last mouse press
         morph::vec<float,2> mousePressPosition = { 0.0f, 0.0f };
 
@@ -739,7 +734,8 @@ namespace morph {
                 }
             }
 
-            if (!this->sceneLocked && _key == key::c  && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::c  && (mods & keymod::control) && action == keyaction::press) {
                 this->options.flip (visual_options::showCoordArrows);
                 needs_render = true;
             }
@@ -775,13 +771,13 @@ namespace morph {
             }
 
             if (_key == key::l && (mods & keymod::control) && action == keyaction::press) {
-                this->sceneLocked = this->sceneLocked ? false : true;
-                std::cout << "Scene is now " << (this->sceneLocked ? "" : "un-") << "locked\n";
+                this->state.flip (visual_state::sceneLocked);
+                std::cout << "Scene is now " << (this->state.test (visual_state::sceneLocked) ? "" : "un-") << "locked\n";
             }
 
             if (_key == key::v && (mods & keymod::control) && action == keyaction::press) {
-                if (this->paused == true) {
-                    this->paused = false;
+                if (this->state.test (visual_state::paused)) {
+                    this->state.set (visual_state::paused, false);
                     std::cout << "Scene un-paused\n";
                 } // else no-op
             }
@@ -903,7 +899,8 @@ namespace morph {
             }
 
             // Reset view to default
-            if (!this->sceneLocked && _key == key::a && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::a && (mods & keymod::control) && action == keyaction::press) {
                 std::cout << "Reset to default view\n";
                 // Reset translation
                 this->scenetrans = this->scenetrans_default;
@@ -914,25 +911,29 @@ namespace morph {
                 needs_render = true;
             }
 
-            if (!this->sceneLocked && _key == key::o && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::o && (mods & keymod::control) && action == keyaction::press) {
                 this->fov -= 2;
                 if (this->fov < 1.0) {
                     this->fov = 2.0;
                 }
                 std::cout << "FOV reduced to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && _key == key::p && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::p && (mods & keymod::control) && action == keyaction::press) {
                 this->fov += 2;
                 if (this->fov > 179.0) {
                     this->fov = 178.0;
                 }
                 std::cout << "FOV increased to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && _key == key::u && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::u && (mods & keymod::control) && action == keyaction::press) {
                 this->zNear /= 2;
                 std::cout << "zNear reduced to " << this->zNear << std::endl;
             }
-            if (!this->sceneLocked && _key == key::i && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::i && (mods & keymod::control) && action == keyaction::press) {
                 this->zNear *= 2;
                 std::cout << "zNear increased to " << this->zNear << std::endl;
             }
@@ -971,7 +972,7 @@ namespace morph {
             bool needs_render = false;
 
             // This is "rotate the scene" model. Will need "rotate one visual" mode.
-            if (this->rotateMode) {
+            if (this->state.test (visual_state::rotateMode)) {
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
                 morph::vec<float, 2> p0_coord = this->mousePressPosition;
                 p0_coord -= this->window_w * 0.5f;
@@ -998,7 +999,7 @@ namespace morph {
 
                 // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
                 // space. Note the swap between x and y
-                if (this->rotateModMode) {
+                if (this->state.test (visual_state::rotateModMode)) {
                     // Sort of "rotate the page" mode.
                     mouseMoveWorld[2] = -((v1[1]/v1[3]) - (v0[1]/v0[3])) + ((v1[0]/v1[3]) - (v0[0]/v0[3]));
                 } else {
@@ -1024,7 +1025,7 @@ namespace morph {
                 this->rotation.postmultiply (rotnQuat); // combines rotations
                 needs_render = true;
 
-            } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
+            } else if (this->state.test (visual_state::translateMode)) { // allow only rotate OR translate for a single mouse movement
 
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
                 morph::vec<float, 2> p0_coord = this->mousePressPosition;
@@ -1070,7 +1071,7 @@ namespace morph {
         virtual void mouse_button_callback (int button, int action, int mods = 0)
         {
             // If the scene is locked, then ignore the mouse movements
-            if (this->sceneLocked) { return; }
+            if (this->state.test (visual_state::sceneLocked)) { return; }
 
             // Record the position at which the button was pressed
             if (action == keyaction::press) { // Button down
@@ -1084,12 +1085,12 @@ namespace morph {
             }
 
             if (button == morph::mousebutton::left) { // Primary button means rotate
-                this->rotateModMode = (mods & keymod::control) ? true : false;
-                this->rotateMode = (action == keyaction::press);
-                this->translateMode = false;
+                this->state.set (visual_state::rotateModMode, ((mods & keymod::control) ? true : false));
+                this->state.set (visual_state::rotateMode, (action == keyaction::press));
+                this->state.set (visual_state::translateMode, false);
             } else if (button == morph::mousebutton::right) { // Secondary button means translate
-                this->rotateMode = false;
-                this->translateMode = (action == keyaction::press);
+                this->state.set (visual_state::rotateMode, false);
+                this->state.set (visual_state::translateMode, (action == keyaction::press));
             }
 
             this->mouse_button_callback_extra (button, action, mods);
@@ -1118,7 +1119,7 @@ namespace morph {
             // yoffset non-zero indicates that the most common scroll wheel is changing. If there's
             // a second scroll wheel, xoffset will be passed non-zero. They'll be 0 or +/- 1.
 
-            if (this->sceneLocked) { return false; }
+            if (this->state.test (visual_state::sceneLocked)) { return false; }
 
             if (this->ptype == perspective_type::orthographic) {
                 // In orthographic, the wheel should scale ortho_lb and ortho_rt
@@ -1171,7 +1172,7 @@ namespace morph {
         }
 
         //! Unpause, allowing pauseOpen() to return
-        void unpause() { this->paused = false; }
+        void unpause() { this->state.reset (visual_state::paused); }
     };
 
 } // namespace morph

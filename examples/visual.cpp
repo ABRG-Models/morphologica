@@ -18,7 +18,7 @@ int main()
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
-    v.sceneLocked = false;
+    v.sceneLocked (false);
     // Various methods to set the 'scene translation'. Try pressing 'z' in the app window to see what the current sceneTrans is
     v.setSceneTransXY (0.0f, 0.0f);
     v.setSceneTransZ (-6.0f);

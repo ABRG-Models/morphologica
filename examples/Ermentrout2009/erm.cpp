@@ -135,7 +135,7 @@ int main (int argc, char **argv)
     v.fov = 45;
     v.showCoordArrows (true);
     // You can lock movement of the scene
-    v.sceneLocked = conf.getBool ("sceneLocked", false);
+    v.sceneLocked (conf.getBool ("sceneLocked", false));
     // You can set the default scene x/y/z offsets
     v.setSceneTrans (conf.getFloat ("x_default", 0.0f),
                      conf.getFloat ("y_default", 0.0f),

@@ -39,8 +39,6 @@ int main()
     MyVisual v(1600, 1000, "morph::HexGridVisual");
     // You can set a field of view (in degrees)
     v.fov = 15;
-    // Should the scene be 'locked' so that movements and rotations are prevented?
-    v.sceneLocked = false;
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
     // The coordinate arrows can be hidden
