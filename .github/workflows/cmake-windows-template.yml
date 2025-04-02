@@ -28,10 +28,10 @@ jobs:
     - name: Clone vcpkg repository
       uses: actions/checkout@v4
       with:
+        ref: "b02e341c927f16d991edbd915d8ea43eac52096c"
         repository: microsoft/vcpkg
         path: vcpkg_repo
         fetch-depth: 0
-
 
     - name: Make a cache directory
       run: mkdir cache
