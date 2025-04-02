@@ -26,6 +26,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Print CMake version
+      run: cmake --version
+
     - name: Clone vcpkg repository
       uses: actions/checkout@v4
       with:
