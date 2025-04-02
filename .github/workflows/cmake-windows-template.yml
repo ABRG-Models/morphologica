@@ -30,6 +30,8 @@ jobs:
       with:
         repository: microsoft/vcpkg
         path: vcpkg_repo
+        fetch-depth: 0
+
 
     - name: Make a cache directory
       run: mkdir cache
