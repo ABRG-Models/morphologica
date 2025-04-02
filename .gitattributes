@@ -12,3 +12,4 @@ morph/glad/* linguist-vendored
 morph/healpix/* linguist-vendored
 morph/jcvoronoi/* linguist-vendored
 morph/lodepng.h linguist-vendored
+buildtools/incbin.c linguist-vendored
