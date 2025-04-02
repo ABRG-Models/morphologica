@@ -1,7 +1,14 @@
 
 # Linguist tweaks. .h is C++ here
 *.h linguist-language=C++
+morph/fonts/incbin.h linguist-language=C
+morph/fonts/verafonts.h linguist-language=C
 # Ignore docs dir
 docs/** linguist-documentation
 # Ignore 3rd party code
 include/rapidxml-1.13/** linguist-vendored
+# 3rd party code in morph/ (even if modified by morph authors)
+morph/glad/* linguist-vendored
+morph/healpix/* linguist-vendored
+morph/jcvoronoi/* linguist-vendored
+morph/lodepng.h linguist-vendored
