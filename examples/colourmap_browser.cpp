@@ -98,7 +98,7 @@ int main()
     morph::ColourMapType display_map_type = v.curr_map_type;
     morph::VisualModel<>* gvp = addmap (v, v.curr_map_type, grid, data);
 
-    while (v.readyToFinish == false) {
+    while (v.readyToFinish() == false) {
         v.render();
         v.waitevents (0.017);
         if (v.curr_map_type != display_map_type) {

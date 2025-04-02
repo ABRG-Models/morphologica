@@ -20,8 +20,8 @@ int main()
     // scaling factor (0.5) for the coordinate arrows. Defines, and makes current a new
     // window and OpenGL context.
     morph::Visual v(1024, 768, "Close Window 1 and Window 3 briefly appears then program exits");
-    v.showCoordArrows = true;
-    v.showTitle = true;
+    v.showCoordArrows (true);
+    v.showTitle (true);
     v.backgroundWhite();
     v.lightingEffects();
 
@@ -30,8 +30,8 @@ int main()
 
         // v2 is a second window and OpenGL context
         morph::Visual v2(768, 768, "Close Window 2 and Window 3 appears");
-        v2.showCoordArrows = true;
-        v2.showTitle = true;
+        v2.showCoordArrows (true);
+        v2.showTitle (true);
         v2.backgroundWhite();
         v2.lightingEffects();
 
@@ -67,7 +67,7 @@ int main()
             gv->finalize();
             v2.addVisualModel (gv);
 
-            while (v.readyToFinish == false && v2.readyToFinish == false) {
+            while (v.readyToFinish() == false && v2.readyToFinish() == false) {
                 v.waitevents (0.018);
                 v2.render();
                 v.render();
@@ -85,12 +85,12 @@ int main()
     // Both old windows have now gone out of scope. Right at the end, I re-create a morph::Visual to
     // prove that it can be done (until March 11 2024, this would fail).
     morph::Visual v3(1024, 768, "This is the third (empty) window");
-    v3.showCoordArrows = true;
-    v3.showTitle = true;
+    v3.showCoordArrows (true);
+    v3.showTitle (true);
     v3.backgroundWhite();
     v3.lightingEffects();
 
-    while (v3.readyToFinish == false && v.readyToFinish == false) {
+    while (v3.readyToFinish() == false && v.readyToFinish() == false) {
         v3.waitevents (0.018);
         v.render();
         v3.render();

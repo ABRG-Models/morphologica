@@ -17,7 +17,7 @@ int main()
     int rtn = -1;
 
     morph::Visual v(1024, 768, "Geodesic Polyhedra (ordered vertices/faces)");
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
 
     try {
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };

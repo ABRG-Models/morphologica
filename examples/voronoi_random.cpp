@@ -51,7 +51,7 @@ int main()
     auto vorvp = v.addVisualModel (vorv);
 
     int fcount = 0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         if (fcount++% 600 == 0) {
             vorvp->cm.setType (++cmap_t);
             vorvp->reinitColours(); // Not quite working when I change the colourmap

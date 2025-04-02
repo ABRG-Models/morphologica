@@ -18,7 +18,7 @@ int main()
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
-    v.sceneLocked = false;
+    v.sceneLocked (false);
     // Various methods to set the 'scene translation'. Try pressing 'z' in the app window to see what the current sceneTrans is
     v.setSceneTransXY (0.0f, 0.0f);
     v.setSceneTransZ (-6.0f);
@@ -26,11 +26,11 @@ int main()
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
     // The coordinate arrows can be hidden
-    v.showCoordArrows = true;
-    // The title can be hidden
-    v.showTitle = true;
+    v.showCoordArrows (true);
+    // The title can be shown, or hidden (default)
+    v.showTitle (true);
     // The coord arrows can be displayed within the scene (rather than in, say, the corner)
-    v.coordArrowsInScene = false;
+    v.coordArrowsInScene (false);
     // You can set the background (white, black, or any other colour)
     v.backgroundWhite();
     // You can switch on the "lighting shader" which puts diffuse light into the scene
@@ -59,10 +59,7 @@ int main()
     hgv->finalize();
     v.addVisualModel (hgv);
 
-    while (v.readyToFinish == false) {
-        v.waitevents (0.018);
-        v.render();
-    }
+    v.keepOpen();
 
     v.savegltf("./visual.gltf");
 

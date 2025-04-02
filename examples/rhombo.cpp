@@ -6,7 +6,7 @@ int main()
 {
     // Create a scene
     morph::Visual v(1024, 768, "A rhombohedron");
-    v.showCoordArrows = true; // Please show the coord arrows by default
+    v.showCoordArrows (true); // Please show the coord arrows by default
     v.lightingEffects();
 
     // Parameters of the model

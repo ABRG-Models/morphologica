@@ -17,7 +17,7 @@ int main()
     int rtn = -1;
 
     morph::Visual v(1024, 768, "Icosahedron");
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     // Switch on a mix of diffuse/ambient lighting
     v.lightingEffects(true);
 

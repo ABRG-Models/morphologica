@@ -63,7 +63,7 @@ namespace morph {
             this->window_w = _width;
             this->window_h = _height;
             this->title = _title;
-            this->version_stdout = _version_stdout;
+            this->options.set (visual_options::versionStdout, _version_stdout);
 
             this->init_gl();
         }
@@ -239,12 +239,12 @@ namespace morph {
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             if ((this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective)
-                && this->showCoordArrows == true) {
+                &&  this->options.test(visual_options::showCoordArrows)) {
                 // Ensure coordarrows centre sphere will be visible on BG:
                 this->coordArrows->setColourForBackground (this->bgcolour); // releases context...
                 this->setContext(); // ...so re-acquire if we're managing it
 
-                if (this->coordArrowsInScene == true) {
+                if (this->options.test (visual_options::coordArrowsInScene) == true) {
                     this->coordArrows->setSceneMatrix (sceneview);
                 } else {
                     this->positionCoordArrows();
@@ -268,7 +268,7 @@ namespace morph {
             }
 
             morph::vec<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
-            if (this->showTitle == true) {
+            if (this->options.test (visual_options::showTitle) == true) {
                 // Render the title text
                 this->textModel->setSceneTranslation (v0);
                 this->textModel->setVisibleOn (this->bgcolour);
@@ -355,7 +355,7 @@ namespace morph {
         {
             this->setContext(); // if managing context
 
-            if (this->version_stdout == true) {
+            if (this->options.test (visual_options::versionStdout) == true) {
                 unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
                 std::cout << "This is version " << morph::version_string()
                           << " of morph::Visual<glver=" << morph::gl::version::vstring (glver)

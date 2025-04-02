@@ -17,6 +17,7 @@
 #include <morph/gl/shaders.h>
 #include <morph/keys.h>
 #include <morph/version.h>
+#include <morph/flags.h>
 
 #include <nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
@@ -40,6 +41,39 @@
 #include <morph/lodepng.h>
 
 namespace morph {
+
+    //! Here are our boolean state flags
+    enum class visual_state : uint32_t
+    {
+        readyToFinish,
+        //! paused can be set true so that pauseOpen() can be used to display the window mid-simulation
+        paused,
+        //! If you set this to true, then the mouse movements won't change scenetrans or rotation.
+        sceneLocked,
+        //! When true, cursor movements induce rotation of scene
+        rotateMode,
+        //! When true, rotations about the third axis are possible.
+        rotateModMode,
+        //! When true, cursor movements induce translation of scene
+        translateMode
+    };
+
+    //! Boolean options - similar to state, but more likely to be modified by client code
+    enum class visual_options : uint32_t
+    {
+        //! Set true to disable the 'X' button on the Window from exiting the program
+        preventWindowCloseWithButton,
+        //! Set to true to show the coordinate arrows
+        showCoordArrows,
+        //! If true, then place the coordinate arrows at the origin of the scene, rather than offset.
+        coordArrowsInScene,
+        //! Set to true to show the title text within the scene
+        showTitle,
+        //! Set true to output some user information to stdout (e.g. user requested quit)
+        userInfoStdout,
+        //! If true, output morph version to stdout
+        versionStdout
+    };
 
     //! Whether to render with perspective or orthographic (or even a cylindrical projection)
     enum class perspective_type
@@ -97,8 +131,8 @@ namespace morph {
             : window_w(_width)
             , window_h(_height)
             , title(_title)
-            , version_stdout(_version_stdout)
         {
+            this->options.set (visual_options::versionStdout, _version_stdout);
             this->init_gl(); // abstract
         }
 
@@ -300,14 +334,31 @@ namespace morph {
             this->coordArrows->setViewRotation (this->rotation);
         }
 
-        //! Set to true when the program should end
-        bool readyToFinish = false;
+        // state defaults. All state is false by default
+        constexpr morph::flags<visual_state> state_defaults()
+        {
+            morph::flags<visual_state> _state;
+            return _state;
+        }
 
-        //! paused can be set true so that pauseOpen() can be used to display the window mid-simulation
-        bool paused = false;
+        // State flags
+        morph::flags<visual_state> state = state_defaults();
 
-        //! Set true to disable the 'X' button on the Window from exiting the program
-        bool preventWindowCloseWithButton = false;
+        // Options defaults. All options are false by default
+        constexpr morph::flags<visual_options> options_defaults()
+        {
+            morph::flags<visual_options> _options;
+            return _options;
+        }
+
+        // Option flags
+        morph::flags<visual_options> options = options_defaults();
+
+        //! Returns true when the program has been flagged to end
+        bool readyToFinish() const { return this->state.test (visual_state::readyToFinish); }
+
+        //! Returns true if we are in the paused state
+        bool paused() const { return this->state.test (visual_state::paused); }
 
         /*
          * User-settable projection values for the near clipping distance, the far clipping distance
@@ -318,23 +369,23 @@ namespace morph {
         float zFar = 300.0f;
         float fov = 30.0f;
 
-        //! Set to true to show the coordinate arrows
-        bool showCoordArrows = false;
+        //! Setter for visual_options::showCoordArrows
+        void showCoordArrows (const bool val) { this->options.set (visual_options::showCoordArrows, val); }
 
         //! If true, then place the coordinate arrows at the origin of the scene, rather than offset.
-        bool coordArrowsInScene = false;
+        void coordArrowsInScene (const bool val) { this->options.set (visual_options::coordArrowsInScene, val); }
 
         //! Set to true to show the title text within the scene
-        bool showTitle = false;
+        void showTitle (const bool val) { this->options.set (visual_options::showTitle, val); }
 
-        //! If true, output some user information to stdout (e.g. user requested quit)
-        bool user_info_stdout = true;
+        //! Set true to output some user information to stdout (e.g. user requested quit)
+        void userInfoStdout (const bool val) { this->options.set (visual_options::userInfoStdout, val); }
 
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1f;
 
         //! If you set this to true, then the mouse movements won't change scenetrans or rotation.
-        bool sceneLocked = false;
+        void sceneLocked (const bool val) { this->state.set (visual_state::sceneLocked, val); }
 
         //! Can change this to orthographic
         perspective_type ptype = perspective_type::perspective;
@@ -603,10 +654,6 @@ namespace morph {
         //! The title for the Visual. Used in window title and if saving out 3D model or png image.
         std::string title = "morph::Visual";
 
-        //! If true, output some version information (morphologica version, OpenGL version) to
-        //! stdout. Protected as this has no effect after init()
-        bool version_stdout = true;
-
         //! The user's 'selected visual model'. For model specific changes to alpha and possibly colour
         unsigned int selectedVisualModel = 0u;
 
@@ -641,15 +688,6 @@ namespace morph {
 
         //! The world depth at which text objects should be rendered
         float text_z = -1.0f;
-
-        //! When true, cursor movements induce rotation of scene
-        bool rotateMode = false;
-
-        //! When true, rotations about the third axis are possible.
-        bool rotateModMode = false;
-
-        //! When true, cursor movements induce translation of scene
-        bool translateMode = false;
 
         //! Screen coordinates of the position of the last mouse press
         morph::vec<float,2> mousePressPosition = { 0.0f, 0.0f };
@@ -699,8 +737,9 @@ namespace morph {
                 }
             }
 
-            if (!this->sceneLocked && _key == key::c  && (mods & keymod::control) && action == keyaction::press) {
-                this->showCoordArrows = !this->showCoordArrows;
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::c  && (mods & keymod::control) && action == keyaction::press) {
+                this->options.flip (visual_options::showCoordArrows);
                 needs_render = true;
             }
 
@@ -735,13 +774,13 @@ namespace morph {
             }
 
             if (_key == key::l && (mods & keymod::control) && action == keyaction::press) {
-                this->sceneLocked = this->sceneLocked ? false : true;
-                std::cout << "Scene is now " << (this->sceneLocked ? "" : "un-") << "locked\n";
+                this->state.flip (visual_state::sceneLocked);
+                std::cout << "Scene is now " << (this->state.test (visual_state::sceneLocked) ? "" : "un-") << "locked\n";
             }
 
             if (_key == key::v && (mods & keymod::control) && action == keyaction::press) {
-                if (this->paused == true) {
-                    this->paused = false;
+                if (this->state.test (visual_state::paused)) {
+                    this->state.set (visual_state::paused, false);
                     std::cout << "Scene un-paused\n";
                 } // else no-op
             }
@@ -863,7 +902,8 @@ namespace morph {
             }
 
             // Reset view to default
-            if (!this->sceneLocked && _key == key::a && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::a && (mods & keymod::control) && action == keyaction::press) {
                 std::cout << "Reset to default view\n";
                 // Reset translation
                 this->scenetrans = this->scenetrans_default;
@@ -874,25 +914,29 @@ namespace morph {
                 needs_render = true;
             }
 
-            if (!this->sceneLocked && _key == key::o && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::o && (mods & keymod::control) && action == keyaction::press) {
                 this->fov -= 2;
                 if (this->fov < 1.0) {
                     this->fov = 2.0;
                 }
                 std::cout << "FOV reduced to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && _key == key::p && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::p && (mods & keymod::control) && action == keyaction::press) {
                 this->fov += 2;
                 if (this->fov > 179.0) {
                     this->fov = 178.0;
                 }
                 std::cout << "FOV increased to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && _key == key::u && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::u && (mods & keymod::control) && action == keyaction::press) {
                 this->zNear /= 2;
                 std::cout << "zNear reduced to " << this->zNear << std::endl;
             }
-            if (!this->sceneLocked && _key == key::i && (mods & keymod::control) && action == keyaction::press) {
+            if (this->state.test (visual_state::sceneLocked) == false
+                && _key == key::i && (mods & keymod::control) && action == keyaction::press) {
                 this->zNear *= 2;
                 std::cout << "zNear increased to " << this->zNear << std::endl;
             }
@@ -931,7 +975,7 @@ namespace morph {
             bool needs_render = false;
 
             // This is "rotate the scene" model. Will need "rotate one visual" mode.
-            if (this->rotateMode) {
+            if (this->state.test (visual_state::rotateMode)) {
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
                 morph::vec<float, 2> p0_coord = this->mousePressPosition;
                 p0_coord -= this->window_w * 0.5f;
@@ -958,7 +1002,7 @@ namespace morph {
 
                 // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
                 // space. Note the swap between x and y
-                if (this->rotateModMode) {
+                if (this->state.test (visual_state::rotateModMode)) {
                     // Sort of "rotate the page" mode.
                     mouseMoveWorld[2] = -((v1[1]/v1[3]) - (v0[1]/v0[3])) + ((v1[0]/v1[3]) - (v0[0]/v0[3]));
                 } else {
@@ -984,7 +1028,7 @@ namespace morph {
                 this->rotation.postmultiply (rotnQuat); // combines rotations
                 needs_render = true;
 
-            } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
+            } else if (this->state.test (visual_state::translateMode)) { // allow only rotate OR translate for a single mouse movement
 
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
                 morph::vec<float, 2> p0_coord = this->mousePressPosition;
@@ -1030,7 +1074,7 @@ namespace morph {
         virtual void mouse_button_callback (int button, int action, int mods = 0)
         {
             // If the scene is locked, then ignore the mouse movements
-            if (this->sceneLocked) { return; }
+            if (this->state.test (visual_state::sceneLocked)) { return; }
 
             // Record the position at which the button was pressed
             if (action == keyaction::press) { // Button down
@@ -1044,12 +1088,12 @@ namespace morph {
             }
 
             if (button == morph::mousebutton::left) { // Primary button means rotate
-                this->rotateModMode = (mods & keymod::control) ? true : false;
-                this->rotateMode = (action == keyaction::press);
-                this->translateMode = false;
+                this->state.set (visual_state::rotateModMode, ((mods & keymod::control) ? true : false));
+                this->state.set (visual_state::rotateMode, (action == keyaction::press));
+                this->state.set (visual_state::translateMode, false);
             } else if (button == morph::mousebutton::right) { // Secondary button means translate
-                this->rotateMode = false;
-                this->translateMode = (action == keyaction::press);
+                this->state.set (visual_state::rotateMode, false);
+                this->state.set (visual_state::translateMode, (action == keyaction::press));
             }
 
             this->mouse_button_callback_extra (button, action, mods);
@@ -1064,7 +1108,7 @@ namespace morph {
 
         virtual void window_close_callback()
         {
-            if (this->preventWindowCloseWithButton == false) {
+            if (this->options.test (visual_options::preventWindowCloseWithButton) == false) {
                 this->signal_to_quit();
             } else {
                 std::cerr << "Ignoring user request to exit (Visual::preventWindowCloseWithButton)\n";
@@ -1078,7 +1122,7 @@ namespace morph {
             // yoffset non-zero indicates that the most common scroll wheel is changing. If there's
             // a second scroll wheel, xoffset will be passed non-zero. They'll be 0 or +/- 1.
 
-            if (this->sceneLocked) { return false; }
+            if (this->state.test (visual_state::sceneLocked)) { return false; }
 
             if (this->ptype == perspective_type::orthographic) {
                 // In orthographic, the wheel should scale ortho_lb and ortho_rt
@@ -1123,15 +1167,15 @@ namespace morph {
         //! and calls an external callback function that you may have set up.
         void signal_to_quit()
         {
-            if (this->user_info_stdout == true) { std::cout << "User requested exit.\n"; }
+            if (this->options.test (visual_options::userInfoStdout)) { std::cout << "User requested exit.\n"; }
             // 1. Set our 'readyToFinish' flag to true
-            this->readyToFinish = true;
+            this->state.set (visual_state::readyToFinish);
             // 2. Call any external callback that's been set by client code
             if (this->external_quit_callback) { this->external_quit_callback(); }
         }
 
         //! Unpause, allowing pauseOpen() to return
-        void unpause() { this->paused = false; }
+        void unpause() { this->state.reset (visual_state::paused); }
     };
 
 } // namespace morph

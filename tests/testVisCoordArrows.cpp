@@ -15,8 +15,8 @@ int main (int argc, char** argv)
 
     morph::Visual v(1024, 768, "Title");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
-    v.showTitle = true;
+    v.showCoordArrows (true);
+    v.showTitle (true);
     // For a white background:
     v.backgroundWhite();
     v.lightingEffects();
@@ -32,7 +32,7 @@ int main (int argc, char** argv)
 
         v.render();
         if (holdVis == true) {
-            while (v.readyToFinish == false) {
+            while (v.readyToFinish() == false) {
                 glfwWaitEventsTimeout (0.018);
                 v.render();
             }

@@ -156,7 +156,7 @@ int main()
         pvp2->finalize();
         v.addVisualModel (pvp2);
 
-        while (v.readyToFinish == false) {
+        while (v.readyToFinish() == false) {
             v.waitevents (0.018);
             v.render();
         }

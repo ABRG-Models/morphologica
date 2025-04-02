@@ -31,7 +31,7 @@ int main()
     double dx_step = 0.01;
     int64_t count = 0;
     double f = 1.0;
-    while (v.readyToFinish == false) {
+    while (v.readyToFinish() == false) {
         v.waitevents (0.016); // 16.67 ms ~ 60 Hz
         if (count++ % 60 == 0) {
             x *= 2.0;

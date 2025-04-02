@@ -18,18 +18,12 @@ int main()
     morph::Visual<morph::gl::version_4_1> v(1600, 1000, "morph::HexGridVisual");
     // You can set a field of view (in degrees)
     v.fov = 15;
-    // Should the scene be 'locked' so that movements and rotations are prevented?
-    v.sceneLocked = false;
     // set the x/y offset. Try pressing 'z' in the app window to see what the current sceneTrans is
     v.setSceneTransXY (0.0f, 0.0f);
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
     // The coordinate arrows can be hidden
-    v.showCoordArrows = true;
-    // The title can be hidden
-    v.showTitle = false;
-    // The coord arrows can be displayed within the scene (rather than in, say, the corner)
-    v.coordArrowsInScene = false;
+    v.showCoordArrows (true);
     // You can set the background (white, black, or any other colour)
     v.backgroundWhite();
     // You can switch on the "lighting shader" which puts diffuse light into the scene

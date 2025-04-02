@@ -19,15 +19,9 @@ int main()
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
-    v.sceneLocked = false;
+    v.sceneLocked (false);
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
-    // The coordinate arrows can be hidden
-    v.showCoordArrows = false;
-    // The title can be hidden
-    v.showTitle = false;
-    // The coord arrows can be displayed within the scene (rather than in, say, the corner)
-    v.coordArrowsInScene = false;
     // You can set the background (white, black, or any other colour)
     v.backgroundWhite();
     // You can switch on the "lighting shader" which puts diffuse light into the scene
@@ -75,7 +69,7 @@ int main()
     v.render();
 
     unsigned long long loop = 0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
 
         v.poll();
 

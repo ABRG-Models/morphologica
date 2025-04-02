@@ -20,7 +20,7 @@ int main (int argc, char** argv)
 
     morph::Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     // For a white background:
     v.backgroundWhite();
 
@@ -103,7 +103,7 @@ int main (int argc, char** argv)
 
         v.render();
         if (holdVis == true) {
-            while (v.readyToFinish == false) {
+            while (v.readyToFinish() == false) {
                 glfwWaitEventsTimeout (0.018);
                 v.render();
             }

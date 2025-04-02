@@ -17,7 +17,7 @@ int main()
     int rtn = -1;
     morph::Visual v(848, 480, "Moving ScatterVisual");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     // Set a blueish background:
     v.bgcolour = {0.6f, 0.6f, 0.8f, 0.5f};
     v.lightingEffects();
@@ -47,7 +47,7 @@ int main()
     svp->colourScale.compute_scaling (-0.45f, 0.45f);
 
     unsigned int q = 0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         size_t k = 0;
         for (int i = -10; i < 10; ++i) {
             for (int j = -10; j < 10; ++j) {

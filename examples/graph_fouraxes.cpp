@@ -18,7 +18,7 @@ int main()
 
     morph::Visual v(1024, 768, "Graph");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.backgroundWhite();
     v.lightingEffects();
 
@@ -103,11 +103,7 @@ int main()
         gv->twodimensional = false;
         v.addVisualModel (gv);
 
-        v.render();
-        while (v.readyToFinish == false) {
-            v.waitevents (0.018);
-            v.render();
-        }
+        v.keepOpen();
 
     } catch (const std::exception& e) {
         std::cerr << "Caught exception: " << e.what() << std::endl;

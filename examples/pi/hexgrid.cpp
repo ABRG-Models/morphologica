@@ -19,17 +19,13 @@ int main()
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
-    v.sceneLocked = false;
+    v.sceneLocked (false);
     // Set the 'scene translation'. Try pressing 'z' in the app window to see what the current sceneTrans is
     v.setSceneTrans (0.0f, 0.0f, -5.0f);
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
     // The coordinate arrows can be hidden
-    v.showCoordArrows = true;
-    // The title can be hidden
-    v.showTitle = false;
-    // The coord arrows can be displayed within the scene (rather than in, say, the corner)
-    v.coordArrowsInScene = false;
+    v.showCoordArrows (true);
     // You can set the background (white, black, or any other colour)
     v.backgroundWhite();
     // You can switch on the "lighting shader" which puts diffuse light into the scene

@@ -64,7 +64,7 @@ int main()
     bool reinitJustColours = true;
     double jc_fps = 0.0;
     double full_fps = 0.0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
 
         v.poll();
 

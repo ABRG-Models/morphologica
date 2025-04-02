@@ -65,7 +65,7 @@ namespace morph {
             this->window_w = _width;
             this->window_h = _height;
             this->title = _title;
-            this->version_stdout = _version_stdout;
+            this->options.set (visual_options::versionStdout, _version_stdout);
 
             this->init_resources();
             this->init_gl();
@@ -190,7 +190,7 @@ namespace morph {
          */
         void keepOpen()
         {
-            while (this->readyToFinish == false) {
+            while (this->state.test (visual_state::readyToFinish) == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
             }
@@ -202,8 +202,8 @@ namespace morph {
          */
         void pauseOpen()
         {
-            this->paused = true;
-            while (this->paused == true && this->readyToFinish == false) {
+            this->state.set (visual_state::paused);
+            while (this->state.test (visual_state::paused) == true && this->state.test (visual_state::readyToFinish) == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
             }

@@ -15,7 +15,6 @@ int main (int argc, char** argv)
 
     morph::Visual v(1024, 768, "Ellipse");
     v.zNear = 0.001;
-    v.showCoordArrows = false;
 
     bool holdVis = false;
     if (argc > 1) {

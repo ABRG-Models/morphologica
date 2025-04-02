@@ -111,7 +111,7 @@ int main()
     // Use the un-owned pointer rgvp:
     rgvp->updateZScale (zscale);
 
-    while (v.readyToFinish == false) {
+    while (v.readyToFinish() == false) {
         v.waitevents (0.018);
         v.render();
     }

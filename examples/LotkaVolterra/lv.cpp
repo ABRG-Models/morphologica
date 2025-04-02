@@ -163,7 +163,7 @@ int main (int argc, char **argv)
     // And the field of view of the visual scene.
     v1.fov = 45;
     // You can lock movement of the scene
-    v1.sceneLocked = conf.getBool ("sceneLocked", false);
+    v1.sceneLocked (conf.getBool ("sceneLocked", false));
     // You can set the default scene x/y/z offsets
     v1.setSceneTrans (conf.getFloat ("x_default", 0.0f),
                       conf.getFloat ("y_default", 0.0f),

@@ -69,7 +69,7 @@ int main()
     double all_fps = 0.0;
     unsigned int fcount = 0u;
 
-    while (v.readyToFinish == false) {
+    while (v.readyToFinish() == false) {
         all_dur += sc::now() - t00;
         t00 = sc::now();
 

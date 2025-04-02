@@ -18,7 +18,7 @@ int main()
 
     morph::Visual v(1024, 768, "Graph");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.backgroundWhite();
     v.lightingEffects();
 
@@ -58,7 +58,7 @@ int main()
         size_t rcount = 0;
         size_t idx = 0;
         v.render();
-        while (v.readyToFinish == false) {
+        while (v.readyToFinish() == false) {
             v.waitevents (0.018);
             // Slowly update the content of the graph
             if (rcount++ % 20 == 0 && idx < absc.size()) {

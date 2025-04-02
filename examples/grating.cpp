@@ -87,7 +87,7 @@ int main (int ac, char** av)
         auto rvmp = v.addVisualModel (rvm);
 
         if constexpr (interactive) {
-            while (!v.readyToFinish) {
+            while (!v.readyToFinish()) {
                 v.waitevents (0.018);
                 v.render();
                 if (v.needs_reinit == true) {

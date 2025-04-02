@@ -18,9 +18,8 @@ int main()
 
     morph::Visual v(1024, 768, "morph::ScatterVisual");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
-    v.coordArrowsInScene = true;
-    v.showTitle = true;
+    v.showCoordArrows (true);
+    v.coordArrowsInScene (true);
     // Blueish background:
     v.bgcolour = {0.6f, 0.6f, 0.8f, 0.5f};
     v.lightingEffects();
@@ -60,11 +59,7 @@ int main()
         sv->finalize();
         v.addVisualModel (sv);
 
-        v.render();
-        while (v.readyToFinish == false) {
-            v.waitevents (0.018);
-            v.render();
-        }
+        v.keepOpen();
 
     } catch (const std::exception& e) {
         std::cerr << "Caught exception: " << e.what() << std::endl;

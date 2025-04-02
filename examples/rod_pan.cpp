@@ -18,8 +18,8 @@ int main()
 
     morph::Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
-    v.coordArrowsInScene = true;
+    v.showCoordArrows (true);
+    v.coordArrowsInScene (true);
     // For a white background:
     v.backgroundWhite();
     // Switch on a mix of diffuse/ambient lighting
@@ -48,7 +48,7 @@ int main()
         v.addVisualModel (rvm);
 
         morph::vec<float> axis = {0,1,0}; // y
-        while (v.readyToFinish == false) {
+        while (v.readyToFinish() == false) {
             v.waitevents (0.001);
             v.rotate_scene (axis, morph::mathconst<float>::two_pi / (9*360));
             v.render();

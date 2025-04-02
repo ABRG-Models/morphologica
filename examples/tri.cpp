@@ -12,8 +12,7 @@ int main()
 
     morph::Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
-    v.showCoordArrows = false;
-    v.coordArrowsInScene = true;
+    v.coordArrowsInScene (true);
     // For a white background:
     v.backgroundWhite();
     // Switch on a mix of diffuse/ambient lighting
@@ -33,11 +32,7 @@ int main()
         tv->finalize();
         v.addVisualModel (tv);
 
-        v.render();
-        while (v.readyToFinish == false) {
-            v.waitevents (0.018);
-            v.render();
-        }
+        v.keepOpen();
 
     } catch (const std::exception& e) {
         std::cerr << "Caught exception: " << e.what() << std::endl;

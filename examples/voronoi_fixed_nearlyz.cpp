@@ -31,7 +31,7 @@ int main()
     int rtn = -1;
 
     myvisual v(1024, 768, "VoronoiVisual");
-    v.coordArrowsInScene = true;
+    v.coordArrowsInScene (true);
 
     std::vector<morph::vec<float>> points = {
         {0,0,1},
@@ -67,7 +67,7 @@ int main()
     vvm->finalize();
     v.addVisualModel (vvm);
 
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         if (p_vorv->border_width != v.border_width) {
             p_vorv->border_width = v.border_width;
             p_vorv->reinit();

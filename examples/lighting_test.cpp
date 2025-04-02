@@ -56,7 +56,7 @@ int main()
     constexpr float light_r = 10.0f;
     float theta = 0.0f;
     float light_angle = 0.0f;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
         v.waitevents (0.018);
         light_angle += angle_inc;
         if (light_angle >= morph::mathconst<float>::two_pi) {

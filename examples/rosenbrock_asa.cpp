@@ -41,7 +41,7 @@ int main()
     v.zNear = 0.001;
     v.zFar = 100000;
     v.fov=60;
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.lightingEffects (true);
 
     morph::vec<float> offset = {0,0,0};

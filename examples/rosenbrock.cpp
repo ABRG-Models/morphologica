@@ -30,7 +30,7 @@ int main()
     v.zNear = 0.001;
     v.zFar = 100000;
     v.fov=60;
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.lightingEffects (true);
 
     // Initialise the vertices
@@ -95,7 +95,7 @@ int main()
     // This is the same as the NM_Simplex::run function, but it is reproduced here to *visualize*
     // the Simplex as it descends the surface. For a more compact way to write your NM_Simplex, see
     // tests/testNMSimplex.cpp
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish()) {
 
         simp.reset (i_vertices);
         // if using plotting, then set up the render clock
@@ -104,7 +104,7 @@ int main()
 
         // Now do the business
         unsigned int lcount = 0;
-        while (simp.state != morph::NM_Simplex_State::ReadyToStop && !v.readyToFinish) {
+        while (simp.state != morph::NM_Simplex_State::ReadyToStop && !v.readyToFinish()) {
 
             // Perform optimisation steps slowly
             std::chrono::steady_clock::duration sinceoptstep = std::chrono::steady_clock::now() - lastoptstep;

@@ -102,10 +102,7 @@ int main(int argc, char** argv)
         hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot
         hgv->finalize();
         v.addVisualModel (hgv);
-        while (v.readyToFinish == false) {
-            v.waitevents (0.018);
-            v.render();
-        }
+        v.keepOpen();
 
     } catch (const exception& e) {
         cerr << "Caught exception reading " << argv[1] << ": " << e.what() << endl;

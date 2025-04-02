@@ -18,7 +18,7 @@ int main()
 
     morph::Visual v(1024, 768, "Graph");
     v.zNear = 0.001;
-    v.showCoordArrows = true;
+    v.showCoordArrows (true);
     v.backgroundWhite();
     v.lightingEffects();
 
@@ -84,7 +84,7 @@ int main()
         float addn = 0.0f;
         size_t rcount = 0;
         v.render();
-        while (v.readyToFinish == false) {
+        while (v.readyToFinish() == false) {
             v.waitevents (0.018);
             // Demonstrates how to test that the pointer gv is valid:
             if ((rcount++)%20 == 0 && v.validVisualModel (gv) != nullptr) {

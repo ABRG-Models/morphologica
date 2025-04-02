@@ -584,7 +584,6 @@ namespace recurrentnet {
             v.zNear = 0.001;
             v.zFar = 20;
             v.fov = 45;
-            v.sceneLocked = false;
             v.setSceneTrans (0.0f, 0.0f, -3.7f);
             morph::vec<float, 3> offset  = { 0., 0., 0.0 };
             morph::scale<float> scale;
@@ -611,7 +610,6 @@ namespace recurrentnet {
             v.zNear = 0.001;
             v.zFar = 20;
             v.fov = 45;
-            v.sceneLocked = false;
             v.setSceneTrans (0.0f, 0.0f, -2.7f);
             morph::vec<float, 3> offset  = { 0., 0., 0.0 };
             morph::scale<float> scale;
@@ -647,7 +645,6 @@ namespace recurrentnet {
             v.zNear = 0.001;
             v.zFar = 20;
             v.fov = 45;
-            v.sceneLocked = false;
             v.setSceneTrans (0.0f, 0.0f, -2.7f);
             morph::vec<float, 3> offset  = { 0., 0., 0.0 };
             morph::scale<float> scale;
