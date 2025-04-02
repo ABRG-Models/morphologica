@@ -14,7 +14,7 @@ on:
 
 env:
   VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg_repo\cache
-  VCPKG_FORCE_SYSTEM_BINARIES: 1
+  VCPKG_FORCE_DOWNLOADED_BINARIES: 1
 
 jobs:
   build:
@@ -26,14 +26,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Print CMake version
-      run: cmake --version
-
     - name: Clone vcpkg repository
       uses: actions/checkout@v4
       with:
         repository: microsoft/vcpkg
         path: vcpkg_repo
+        ref: 2025.03.19
 
     - name: Make a cache directory
       run: mkdir cache
