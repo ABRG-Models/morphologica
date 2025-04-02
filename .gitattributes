@@ -1,0 +1,7 @@
+
+# Linguist tweaks. .h is C++ here
+*.h linguist-language=C++
+# Ignore docs dir
+docs/** linguist-documentation
+# Ignore 3rd party code
+include/rapidxml-1.13/** linguist-vendored
