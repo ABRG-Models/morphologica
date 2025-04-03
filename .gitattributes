@@ -3,6 +3,10 @@
 *.h linguist-language=C++
 morph/fonts/incbin.h linguist-language=C
 morph/fonts/verafonts.h linguist-language=C
+morph/glad/gl.h linguist-language=C
+morph/glad/gl_mx.h linguist-language=C
+morph/jcvoronoi/jc_voronoi.h linguist-language=C++
+morph/jcvoronoi/jc_voronoi_clip.h linguist-language=C++
 # Ignore docs dir
 docs/** linguist-documentation
 # Ignore 3rd party code
