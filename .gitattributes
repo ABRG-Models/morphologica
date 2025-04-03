@@ -1,19 +1,23 @@
 
-# Linguist tweaks. .h is C++ here
-*.h linguist-language=C++
-morph/fonts/incbin.h linguist-language=C
-morph/fonts/verafonts.h linguist-language=C
-morph/glad/gl.h linguist-language=C
-morph/glad/gl_mx.h linguist-language=C
-morph/jcvoronoi/jc_voronoi.h linguist-language=C++
-morph/jcvoronoi/jc_voronoi_clip.h linguist-language=C++
+# Linguist language identification tweaks. .h is C++ here
+*.h                               linguist-language=C++
+morph/fonts/incbin.h              linguist-language=C
+morph/glad/gl.h                   linguist-language=C
+morph/glad/gl_mx.h                linguist-language=C
+#morph/jcvoronoi/jc_voronoi.h      linguist-language=C++
+#morph/jcvoronoi/jc_voronoi_clip.h linguist-language=C++
+
 # Ignore docs dir
 docs/** linguist-documentation
+
 # Ignore 3rd party code
 include/rapidxml-1.13/** linguist-vendored
 # 3rd party code in morph/ (even if modified by morph authors)
-morph/glad/* linguist-vendored
-morph/healpix/* linguist-vendored
-morph/jcvoronoi/* linguist-vendored
-morph/lodepng.h linguist-vendored
-buildtools/incbin.c linguist-vendored
+morph/glad/*         linguist-vendored
+morph/healpix/*      linguist-vendored
+morph/jcvoronoi/*    linguist-vendored
+morph/lodepng.h      linguist-vendored
+buildtools/incbin.c  linguist-vendored
+
+# verafonts is generated code
+morph/fonts/verafonts.h  linguist-generated
