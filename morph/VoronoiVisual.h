@@ -29,7 +29,7 @@ namespace morph {
 
     //! The template argument F is the type of the data which this VoronoiVisual
     //! will visualize.
-    template <typename F, int glver = morph::gl::version_4_1>
+    template <typename F, int n_epsilons = 0, int glver = morph::gl::version_4_1>
     class VoronoiVisual : public VisualDataModel<F, glver>
     {
         // Need a vec comparison function for a std::set of morph::vec or a std::map with a morph::vec key. See:
@@ -38,7 +38,7 @@ namespace morph {
         {
             bool operator()(morph::vec<float> a, morph::vec<float> b) const
             {
-                return a.lexical_lessthan_beyond_epsilon(b, 100);
+                return a.lexical_lessthan_beyond_epsilon(b, n_epsilons);
             }
         };
 
@@ -121,7 +121,7 @@ namespace morph {
             // For each site, we have a set of edges around that site. We examine each
             // edge in turn, considering the sites that cluster around each end of the
             // edge. We assign the mean z of the sites in the cluster to the edge's
-            // postion at that end of the edge.
+            // position at that end of the edge.
             //
             // This is complicated by the fact that there may be multiple (2?) edges between pairs
             // of sites. So, need a map of edge location to z_sums
@@ -157,15 +157,19 @@ namespace morph {
                     // both ends of all edges with additional logic.
                     for (unsigned int j = 0; j < 2; ++j) {
                         if (edge_1->edge->sites[j]) {
+                            //std::cout << "insert edge_1 " << edge_1->edge->sites[j]->p << " into edge_pos_centres[" << edge_1->pos[1] << "]\n";
                             edge_pos_centres[edge_1->pos[1]].insert (edge_1->edge->sites[j]->p);
+                            //std::cout << "insert edge_1 " << edge_1->edge->sites[j]->p << " into edge_pos_centres[" << edge_1->pos[0] << "]\n";
                             edge_pos_centres[edge_1->pos[0]].insert (edge_1->edge->sites[j]->p);
                         }
                         // By definition, cellcentres_1 also gets edge_2 sites...
                         if (edge_2->edge->sites[j]) {
+                            //std::cout << "insert edge_2 " << edge_2->edge->sites[j]->p << " into edge_pos_centres[" << edge_1->pos[1] << "]\n";
                             edge_pos_centres[edge_1->pos[1]].insert (edge_2->edge->sites[j]->p);
                         }
                         // and cellcentres_0 gets edge_0 sites
                         if (edge_0->edge->sites[j]) {
+                            //std::cout << "insert edge_0 " << edge_0->edge->sites[j]->p << " into edge_pos_centres[" << edge_1->pos[0] << "]\n";
                             edge_pos_centres[edge_1->pos[0]].insert (edge_0->edge->sites[j]->p);
                         }
                     }
@@ -183,7 +187,9 @@ namespace morph {
                 for (auto cce : epc.second) {
                     zsum += cce[2];
                 }
-                edge_end_zsums[epc.first] = zsum / epc.second.size();
+                if (epc.second.size() != 0) {
+                    edge_end_zsums[epc.first] = zsum / epc.second.size();
+                } // else do nothing
             }
 
             // Now go through edge_end_zsums and edges and update z values
@@ -192,8 +198,20 @@ namespace morph {
                 jcv_graphedge* edge_1 = site->edges; // The very first edge
                 while (edge_1) {
                     // For each edge, set z from the map
-                    float zsum0 = edge_end_zsums[edge_1->pos[0]];
-                    float zsum1 = edge_end_zsums[edge_1->pos[1]];
+                    float zsum0 = 0.0f;
+                    float zsum1 = 0.0f;
+                    try {
+                        zsum0 = edge_end_zsums.at(edge_1->pos[0]);
+                    } catch (const std::out_of_range& e) {
+                        std::cout << "For edge_1: " << edge_1->pos[0] << " --- " <<  edge_1->pos[1] << std::endl;
+                        std::cout << "(zsum0) no edge_end_zsums.at (" << edge_1->pos[0] << ")\n";
+                    }
+                    try {
+                        zsum1 = edge_end_zsums.at(edge_1->pos[1]);
+                    } catch (const std::out_of_range& e) {
+                        std::cout << "For edge_1: " << edge_1->pos[0] << " --- " <<  edge_1->pos[1] << std::endl;                   std::cout << "(zsum1) no edge_end_zsums.at (" << edge_1->pos[1] << ")\n";
+                    }
+                    //std::cout << "zsum0 = " << zsum0 << " and zsum1 = " << zsum1 << std::endl;
                     edge_1->pos[0][2] = zsum0;
                     edge_1->pos[1][2] = zsum1;
                     edge_1 = edge_1->next;
@@ -264,7 +282,7 @@ namespace morph {
                         while (e) {
                             t0 = rqinv * (e->pos[0] * this->zoom);
                             t1 = rqinv * (e->pos[1] * this->zoom);
-                            this->computeTube (t0, t1, morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
+                            this->computeTube (t0, t1, morph::colour::royalblue, morph::colour::goldenrod2, this->voronoi_grid_thickness, 12);
                             e = e->next;
                         }
                     }
@@ -275,7 +293,8 @@ namespace morph {
                         const jcv_site* site = &sites[i];
                         const jcv_graphedge* e = site->edges;
                         while (e) {
-                            this->computeTube (e->pos[0] * this->zoom, e->pos[1] * this->zoom, morph::colour::royalblue, morph::colour::goldenrod2, 0.002f, 12);
+                            this->computeTube (e->pos[0] * this->zoom, e->pos[1] * this->zoom,
+                                               morph::colour::royalblue, morph::colour::goldenrod2, this->voronoi_grid_thickness, 12);
                             e = e->next;
                         }
                     }
