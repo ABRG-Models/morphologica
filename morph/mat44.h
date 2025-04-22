@@ -165,8 +165,17 @@ namespace morph {
         template<typename T> requires std::is_arithmetic_v<T>
         constexpr void scale (const T& scl_x, const T& scl_y, const T& scl_z) noexcept
         {
+            // This is the rotation matrix multiplied by a diagonalized matrix made from scl_x/y/z
             this->mat[0] *= scl_x;
+            this->mat[1] *= scl_x;
+            this->mat[2] *= scl_x;
+
+            this->mat[4] *= scl_y;
             this->mat[5] *= scl_y;
+            this->mat[6] *= scl_y;
+
+            this->mat[8] *= scl_z;
+            this->mat[9] *= scl_z;
             this->mat[10] *= scl_z;
         }
 
@@ -175,7 +184,15 @@ namespace morph {
         constexpr void scale (const vec<T, 3>& scl) noexcept
         {
             this->mat[0] *= scl[0];
+            this->mat[1] *= scl[0];
+            this->mat[2] *= scl[0];
+
+            this->mat[4] *= scl[1];
             this->mat[5] *= scl[1];
+            this->mat[6] *= scl[1];
+
+            this->mat[8] *= scl[2];
+            this->mat[9] *= scl[2];
             this->mat[10] *= scl[2];
         }
 
@@ -183,7 +200,15 @@ namespace morph {
         constexpr void scale (const std::array<T, 3>& scl) noexcept
         {
             this->mat[0] *= scl[0];
+            this->mat[1] *= scl[0];
+            this->mat[2] *= scl[0];
+
+            this->mat[4] *= scl[1];
             this->mat[5] *= scl[1];
+            this->mat[6] *= scl[1];
+
+            this->mat[8] *= scl[2];
+            this->mat[9] *= scl[2];
             this->mat[10] *= scl[2];
         }
 
@@ -191,7 +216,15 @@ namespace morph {
         constexpr void scale (const T& scl) noexcept
         {
             this->mat[0] *= scl;
+            this->mat[1] *= scl;
+            this->mat[2] *= scl;
+
+            this->mat[4] *= scl;
             this->mat[5] *= scl;
+            this->mat[6] *= scl;
+
+            this->mat[8] *= scl;
+            this->mat[9] *= scl;
             this->mat[10] *= scl;
         }
 
