@@ -172,16 +172,8 @@ namespace morph {
         }
 
         //! Fast algorithm for performing the rotation of a 3 element vector using the quaternion. Returns the resulting 3 element rotated vector
-        constexpr morph::vec<F, 3> rotate_3d (const morph::vec<F, 3>& v_r) const noexcept
-        {
-            morph::vec<F, 3> q_im = { this->x, this->y, this->z };
-            morph::vec<F, 3> t = F{2} * q_im.cross (v_r);
-            return v_r + this->w * t + q_im.cross (t);
-        }
-
-        //! More general version of fast algo, where input vector can be different type
-        template <typename Fy>
-        constexpr morph::vec<F, 3> rotate_3d (const morph::vec<Fy, 3>& v_r) const noexcept
+        template <typename Fy=F>
+        constexpr morph::vec<F, 3> rotate_vec (const morph::vec<Fy, 3>& v_r) const noexcept
         {
             morph::vec<F, 3> vr = v_r.template as<F>(); // Make copy of v_r using type F
             morph::vec<F, 3> q_im = { this->x, this->y, this->z };
@@ -192,7 +184,7 @@ namespace morph {
 
         //! Rotate a 3D vector that has been padded at the end with a single zero to create a 4 element vector. Returns the 3 element rotated vector padded with a single trailing zero
         template <typename Fy=F>
-        constexpr morph::vec<F, 4> rotate_4d (const morph::vec<Fy, 4>& v_r) const noexcept
+        constexpr morph::vec<F, 4> rotate_vec (const morph::vec<Fy, 4>& v_r) const noexcept
         {
             morph::quaternion<F> v_quat ( F{0}, static_cast<F>(v_r[0]), static_cast<F>(v_r[1]), static_cast<F>(v_r[2]) );
             morph::quaternion<F> v_rotated = (*this * v_quat) * this->conjugate();
@@ -203,16 +195,12 @@ namespace morph {
         template <typename Fy=F, std::size_t N = 3, std::enable_if_t<(N==3||N==4), int> = 0>
         constexpr morph::vec<F, N> operator* (const morph::vec<Fy, N>& v_r) const noexcept
         {
-            if constexpr (N==3) {
-                return this->rotate_3d (v_r);
-            } else {
-                return this->rotate_4d (v_r);
-            }
+            return this->rotate_vec (v_r);
         }
 
         //! Rotate a vector v_r by this quaternion by first forming a rotation matrix and then multiplying.  Returns the resulting rotated vector
         template <typename Fy=F, std::size_t N = 3, std::enable_if_t<(N==3||N==4), int> = 0>
-        constexpr morph::vec<F, N> rotate_using_matrix (const morph::vec<Fy, N>& v_r) const noexcept
+        constexpr morph::vec<F, N> rotate_vec_matrix (const morph::vec<Fy, N>& v_r) const noexcept
         {
             // Do the rotation by extracting the rotation matrix and then rotating.
             std::array<F, 16> rotn_mat = { F{0} };
