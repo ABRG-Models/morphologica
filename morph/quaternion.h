@@ -183,10 +183,11 @@ namespace morph {
         template <typename Fy>
         constexpr morph::vec<F, 3> rotate_3d (const morph::vec<Fy, 3>& v_r) const noexcept
         {
-            morph::vec<F, 3> v_r_c = v_r.template as<F>();
+            morph::vec<F, 3> vr = v_r.template as<F>(); // Make copy of v_r using type F
             morph::vec<F, 3> q_im = { this->x, this->y, this->z };
-            morph::vec<F, 3> t = F{2} * q_im.cross (v_r_c);
-            return v_r_c + this->w * t + q_im.cross (t);
+            morph::vec<F, 3> t = F{2} * q_im.cross (vr);
+            vr += (this->w * t + q_im.cross (t));
+            return vr;
         }
 
         //! Rotate a 3D vector that has been padded at the end with a single zero to create a 4 element vector. Returns the 3 element rotated vector padded with a single trailing zero
