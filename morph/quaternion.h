@@ -171,39 +171,25 @@ namespace morph {
             return q;
         }
 
+        /*!
+         * Rotate a 3D vector. The vector may be passed as a 4D object (vec<Fy, 4>), in
+         * which case, the last element is ignored.
+         *
+         * Note that compilers will optimize this code very well.
+         */
+        template <typename Fy=F, std::size_t N = 3> requires (N == 3 || N == 4)
+        constexpr morph::vec<F, N> rotate_vec (const morph::vec<Fy, N>& v_r) const noexcept
+        {
+            morph::quaternion<F> v_quat ( F{0}, static_cast<F>(v_r[0]), static_cast<F>(v_r[1]), static_cast<F>(v_r[2]) );
+            morph::quaternion<F> v_rotated = (*this * v_quat) * this->conjugate();
+            return { v_rotated.x, v_rotated.y, v_rotated.z };
+        }
+
         //! Rotate a vector v_r by this quaternion, returning the resulting rotated vector
-        template <typename Fy=F, std::size_t N = 3, std::enable_if_t<(N==3||N==4), int> = 0>
+        template <typename Fy=F, std::size_t N = 3> requires (N == 3 || N == 4)
         constexpr morph::vec<F, N> operator* (const morph::vec<Fy, N>& v_r) const noexcept
         {
-            // Do the rotation by extracting the rotation matrix and then rotating.
-            std::array<F, 16> rotn_mat = { F{0} };
-
-            this->rotationMatrix (rotn_mat);
-
-            // Do matrix * vector
-            morph::vec<F, 4> v = { F{0} };
-            v[0] = rotn_mat[0] * v_r.x()
-                + rotn_mat[4] * v_r.y()
-                + rotn_mat[8] * v_r.z()
-                + rotn_mat[12]; // * 1
-            v[1] = rotn_mat[1] * v_r.x()
-                + rotn_mat[5] * v_r.y()
-                + rotn_mat[9] * v_r.z()
-                + rotn_mat[13];
-            v[2] = rotn_mat[2] * v_r.x()
-                + rotn_mat[6] * v_r.y()
-                + rotn_mat[10] * v_r.z()
-                + rotn_mat[14];
-            v[3] = rotn_mat[3] * v_r.x()
-                + rotn_mat[7] * v_r.y()
-                + rotn_mat[11] * v_r.z()
-                + rotn_mat[15];
-
-            if constexpr (N==3) {
-                return v.less_one_dim();
-            } else {
-                return v;
-            }
+            return this->rotate_vec<Fy, N> (v_r);
         }
 
         //! Overload / operator. q1 is 'this->', so this is q = q1 / q2
