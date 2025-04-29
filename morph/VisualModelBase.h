@@ -1700,6 +1700,73 @@ namespace morph {
         }
 
         /*!
+         * A tetrahedron. Doing this in the minimal way (one OpenGL vertex at each 'real' vertex)
+         * rather than then way that would give nice faces (requiring 3 OpenGL vertices at each real
+         * vertex)
+         */
+        void computeTetrahedron (const vec<float> centre, const float sl, const std::array<float, 3>& col)
+        {
+            // base
+            // ( -sl/2 , -sl * one_over_2_root_3, 0 )
+            // ( +sl/2 , -sl * one_over_2_root_3, 0 )
+            // (     0 , sl / root_3           , 0 )
+            // top
+            // ( 0, 0, sl * root_3_over_2 )
+
+            constexpr morph::vec<float> t1 = { -0.5f, -morph::mathconst<float>::one_over_2_root_3, 0.0f };
+            constexpr morph::vec<float> t2 = {  0.5f, -morph::mathconst<float>::one_over_2_root_3, 0.0f };
+            constexpr morph::vec<float> t3 = {  0.0f, morph::mathconst<float>::one_over_root_3,    0.0f };
+            constexpr morph::vec<float> t4 = {  0.0f, 0.0f, morph::mathconst<float>::root_3_over_2 };
+
+            // Position
+            size_t vpsz = this->vertexPositions.size();
+            this->vertexPositions.resize (vpsz + (4*3));
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexPositions[vpsz++] = sl * t1[i] + centre[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexPositions[vpsz++] = sl * t2[i] + centre[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexPositions[vpsz++] = sl * t3[i] + centre[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexPositions[vpsz++] = sl * t4[i] + centre[i]; }
+
+            // Colour
+            size_t vcsz = this->vertexColors.size();
+            this->vertexColors.resize (vcsz + (4*3));
+            for (unsigned int i = 0; i < 4u; ++i) {
+                for (unsigned int j = 0; j < 3u; ++j) {
+                    this->vertexColors[vcsz++] = col[j];
+                }
+            }
+
+            // Normal
+            size_t vnsz = this->vertexNormals.size();
+            this->vertexNormals.resize (vnsz + (4*3));
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexNormals[vnsz++] = t1[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexNormals[vnsz++] = t2[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexNormals[vnsz++] = t3[i]; }
+            for (unsigned int i = 0; i < 3u; ++i) { this->vertexNormals[vnsz++] = t4[i]; }
+
+            // Indices
+            size_t i0 = this->indices.size();
+            this->indices.resize (i0 + 12, 0);
+
+            this->indices[i0++] = this->idx;
+            this->indices[i0++] = this->idx + 3;
+            this->indices[i0++] = this->idx + 1;
+
+            this->indices[i0++] = this->idx;
+            this->indices[i0++] = this->idx + 2;
+            this->indices[i0++] = this->idx + 3;
+
+            this->indices[i0++] = this->idx + 1;
+            this->indices[i0++] = this->idx + 3;
+            this->indices[i0++] = this->idx + 2;
+
+            this->indices[i0++] = this->idx;
+            this->indices[i0++] = this->idx + 1;
+            this->indices[i0++] = this->idx + 2;
+
+            this->idx += 4;
+        }
+
+        /*!
          * Create a cone.
          *
          * \param centre The centre of the cone - would be the end of the line
@@ -2526,7 +2593,9 @@ namespace morph {
 
         } // end computeFlatCircle
 
-        // Compute triangles to form a true cuboid from 8 corners.
+        // Compute triangles to form a true cuboid from 8 corners. With z up, x to the right and y
+        // into the page/screen, the first face has vertices 0,1,2,3 clockwise starting from lower
+        // left (-x,-y,-z) and then back face also clock wise with 4 at the lower left (-x,+y,-z).
         void computeCuboid (const std::array<vec<float>, 8>& v, const std::array<float, 3>& clr)
         {
             this->computeFlatQuad (v[0], v[1], v[2], v[3], clr);
@@ -2605,7 +2674,7 @@ namespace morph {
                 this->indices.push_back (this->idx++);
                 this->indices.push_back (this->idx++);
             }
-        } // computeCuboid
+        } // computeRhombus
 
         // Compute a rectangular cuboid of width (in x), height (in y) and depth (in z).
         void computeRectCuboid (const vec<float>& o, const float wx, const float hy, const float dz,

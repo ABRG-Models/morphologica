@@ -8,6 +8,7 @@
 
 #include <morph/tools.h>
 #include <morph/VisualDataModel.h>
+#include <morph/graphstyles.h>
 #include <morph/scale.h>
 #include <morph/vec.h>
 #include <iostream>
@@ -30,18 +31,59 @@ namespace morph {
             this->colourScale.do_autoscale = true;
         }
 
+        // Helper to make the 8 vertices for a cube object
+        morph::vec<morph::vec<float>, 8> make_vcube (const float sz)
+        {
+            return morph::vec<morph::vec<float, 3>, 8>{
+                morph::vec<float, 3>{-sz, -sz, -sz},
+                morph::vec<float, 3>{-sz, -sz,  sz},
+                morph::vec<float, 3>{ sz, -sz,  sz},
+                morph::vec<float, 3>{ sz, -sz, -sz},
+                morph::vec<float, 3>{-sz,  sz, -sz},
+                morph::vec<float, 3>{-sz,  sz,  sz},
+                morph::vec<float, 3>{ sz,  sz,  sz},
+                morph::vec<float, 3>{ sz,  sz, -sz}
+            };
+        }
+
+        void marker (const morph::vec<float> coord, const std::array<float, 3>& clr, const Flt size)
+        {
+            if (this->markers == morph::markerstyle::rod) {
+                // Draw a rod. markerdirn gives length and dirn. Radius from size
+                morph::vec<float> hr = this->markerdirn * 0.5f; // half rod
+                morph::vec<float> rs = coord + hr;
+                morph::vec<float> re = coord - hr;
+                this->computeTube (rs, re, clr, clr, size, 12);
+            } else if (this->markers == morph::markerstyle::sphere) {
+                if constexpr (draw_spheres_as_geodesics) {
+                    // Slower than regular computeSphere(). 2 iterations gives 320 faces
+                    this->template computeSphereGeoFast<float, 2> (coord, clr, size);
+                } else {
+                    // (16+2) * 20 gives 360 faces
+                    this->computeSphere (coord, clr, size, 16, 20);
+                }
+            } else if (this->markers == morph::markerstyle::cube) {
+                this->computeCuboid (this->make_vcube(size) + coord, clr);
+            } else if (this->markers == morph::markerstyle::tetrahedron) {
+                this->computeTetrahedron (coord, size, clr);
+            } else {
+                throw std::runtime_error ("ScatterVisual: Unhandled marker type");
+            }
+        }
+
         //! Quick hack to add an additional point
         void add (morph::vec<float> coord, Flt value)
         {
             std::array<float, 3> clr = this->cm.convert (this->colourScale.transform_one (value));
-            this->computeSphere (coord, clr, this->radiusFixed, 16, 20);
+            this->marker (coord, clr, this->radiusFixed);
             this->reinit_buffers();
         }
+
         //! Additional point with variable size
         void add (morph::vec<float> coord, Flt value, Flt size)
         {
             std::array<float, 3> clr = this->cm.convert (this->colourScale.transform_one (value));
-            this->computeSphere (coord, clr, size, 16, 20);
+            this->marker (coord, clr, size);
             this->reinit_buffers();
         }
 
@@ -111,20 +153,11 @@ namespace morph {
                     //std::cout << "Convert colour from vdcopy1[i]: " << vdcopy1[i] << ", vdcopy2[i]: " << vdcopy2[i] << std::endl;
                     clr = this->cm.convert (vdcopy1[i], vdcopy2[i]);
                 }
+
                 if (this->sizeFactor == Flt{0}) {
-                    if constexpr (draw_spheres_as_geodesics) {
-                        // Slower than regular computeSphere(). 2 iterations gives 320 faces
-                        this->template computeSphereGeoFast<float, 2> ((*this->dataCoords)[i], clr, this->radiusFixed);
-                    } else {
-                        // (16+2) * 20 gives 360 faces
-                        this->computeSphere ((*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
-                    }
+                    this->marker ((*this->dataCoords)[i], clr, this->radiusFixed);
                 } else {
-                    if constexpr (draw_spheres_as_geodesics) {
-                        this->template computeSphereGeoFast<float, 2> ((*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor);
-                    } else {
-                        this->computeSphere ((*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
-                    }
+                    this->marker ((*this->dataCoords)[i], clr, dcopy[i] * this->sizeFactor);
                 }
 
                 if (this->labelIndices == true) {
@@ -145,6 +178,12 @@ namespace morph {
             this->radiusFixed = fr;
             this->reinit();
         }
+
+        // How to show the scatter points?
+        markerstyle markers = morph::markerstyle::sphere;
+
+        // Marker direction, if relevant. Used for length of rod markers
+        morph::vec<float, 3> markerdirn = this->uz;
 
         //! Change this to get larger or smaller spheres.
         Flt radiusFixed = Flt{0.05};

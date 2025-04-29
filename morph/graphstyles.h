@@ -28,6 +28,10 @@ namespace morph {
         quiver, // Special. For a quiver plot. Drawn ON coord.
         quiver_fromcoord,
         quiver_tocoord,
+        sphere, // 3D styles (ScatterVisual)
+        rod,
+        cube,
+        tetrahedron, // because you could...
         numstyles
     };
 
