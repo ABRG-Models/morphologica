@@ -31,6 +31,21 @@ namespace morph {
             this->colourScale.do_autoscale = true;
         }
 
+        // Helper to make the 8 vertices for a cube object
+        morph::vec<morph::vec<float>, 8> make_vcube (const float sz)
+        {
+            return morph::vec<morph::vec<float, 3>, 8>{
+                morph::vec<float, 3>{-sz, -sz, -sz},
+                morph::vec<float, 3>{-sz, -sz,  sz},
+                morph::vec<float, 3>{ sz, -sz,  sz},
+                morph::vec<float, 3>{ sz, -sz, -sz},
+                morph::vec<float, 3>{-sz,  sz, -sz},
+                morph::vec<float, 3>{-sz,  sz,  sz},
+                morph::vec<float, 3>{ sz,  sz,  sz},
+                morph::vec<float, 3>{ sz,  sz, -sz}
+            };
+        }
+
         void marker (const morph::vec<float> coord, const std::array<float, 3>& clr, const Flt size)
         {
             if (this->markers == morph::markerstyle::rod) {
@@ -39,7 +54,7 @@ namespace morph {
                 morph::vec<float> rs = coord + hr;
                 morph::vec<float> re = coord - hr;
                 this->computeTube (rs, re, clr, clr, size, 12);
-            } else {
+            } else if (this->markers == morph::markerstyle::sphere) {
                 if constexpr (draw_spheres_as_geodesics) {
                     // Slower than regular computeSphere(). 2 iterations gives 320 faces
                     this->template computeSphereGeoFast<float, 2> (coord, clr, size);
@@ -47,6 +62,12 @@ namespace morph {
                     // (16+2) * 20 gives 360 faces
                     this->computeSphere (coord, clr, size, 16, 20);
                 }
+            } else if (this->markers == morph::markerstyle::cube) {
+                this->computeCuboid (this->make_vcube(size) + coord, clr);
+            } else if (this->markers == morph::markerstyle::tetrahedron) {
+                this->computeTetrahedron (coord, size, clr);
+            } else {
+                throw std::runtime_error ("ScatterVisual: Unhandled marker type");
             }
         }
 

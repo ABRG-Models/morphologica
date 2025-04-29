@@ -52,7 +52,20 @@ int main()
         v.bindmodel (sv);
         sv->setDataCoords (&points);
         sv->setScalarData (&data);
-        sv->radiusFixed = 0.03f;
+
+        sv->radiusFixed = 0.03f; // used in most markers as size
+
+        // You can select which kind of object to show at the scatter locations. Default is a sphere
+        sv->markers = morph::markerstyle::sphere;
+        //sv->markers = morph::markerstyle::cube;
+        //sv->markers = morph::markerstyle::tetrahedron;
+
+        //sv->markers = morph::markerstyle::rod;
+        // For a rod you may want to change the length with markerdirn:
+        // sv->markerdirn *= 0.1f;
+        // and reduce the radius:
+        // sv->radiusFixed = 0.01f;
+
         sv->colourScale = scale1;
         sv->cm.setType (morph::ColourMapType::Plasma);
         sv->labelIndices = true;
