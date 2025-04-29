@@ -2526,7 +2526,9 @@ namespace morph {
 
         } // end computeFlatCircle
 
-        // Compute triangles to form a true cuboid from 8 corners.
+        // Compute triangles to form a true cuboid from 8 corners. With z up, x to the right and y
+        // into the page/screen, the first face has vertices 0,1,2,3 clockwise starting from lower
+        // left (-x,-y,-z) and then back face also clock wise with 4 at the lower left (-x,+y,-z).
         void computeCuboid (const std::array<vec<float>, 8>& v, const std::array<float, 3>& clr)
         {
             this->computeFlatQuad (v[0], v[1], v[2], v[3], clr);
@@ -2605,7 +2607,7 @@ namespace morph {
                 this->indices.push_back (this->idx++);
                 this->indices.push_back (this->idx++);
             }
-        } // computeCuboid
+        } // computeRhombus
 
         // Compute a rectangular cuboid of width (in x), height (in y) and depth (in z).
         void computeRectCuboid (const vec<float>& o, const float wx, const float hy, const float dz,
