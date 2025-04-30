@@ -134,6 +134,7 @@ int main()
     uz_about_z_truth += translation;
 
     std::cout << "===================== Rotation then translation using a mat44 transform matrix =============================\n" << std::endl;
+    std::cout << "Transform matrix with translate AFTER rotate : \n" << tmz <<  std::endl;
     std::cout << std::endl
               << "ux: " << ux << " rotated about the z axis and translated by TM is " << ux_about_tmz << "\nTRUTH : " << ux_about_z_truth << std::endl << std::endl;
     std::cout << "uy: " << uy << " rotated about the z axis and translated by TM is " << uy_about_tmz << "\nTRUTH : " << uy_about_z_truth << std::endl << std::endl;
@@ -146,9 +147,9 @@ int main()
 
     // ================================== PRE-TRANSLATE =======================================================================
 
-    morph::vec<F> ux_about_z_truth_pretrans = {0.0, 2.0, 0.0};
-    morph::vec<F> uy_about_z_truth_pretrans = {-1.0, 1.0, 0.0};
-    morph::vec<F> uz_about_z_truth_pretrans = {0.0, 1.0, 1.0};
+    morph::vec<F> ux_about_z_truth_pretrans = { 0.0, 2.0, 0.0 };
+    morph::vec<F> uy_about_z_truth_pretrans = {-1.0, 1.0, 0.0 };
+    morph::vec<F> uz_about_z_truth_pretrans = { 0.0, 1.0, 1.0 };
 
     morph::mat44<F> tmz_pt;
     tmz_pt.rotate (qz);
@@ -159,10 +160,17 @@ int main()
     morph::vec<F, 4> uz_about_tmz_pt = tmz_pt * uz;
 
     std::cout << "===================== Rotation and PRE-translation using a mat44 transform matrix =============================\n" << std::endl;
+    std::cout << "Transform matrix with translate BEFORE rotate : \n" << tmz_pt <<  std::endl;
+
     std::cout << std::endl
               << "ux: " << ux << " rotated about the z axis and pre-translated by TM is " << ux_about_tmz_pt << "\nTRUTH : " << ux_about_z_truth_pretrans << std::endl << std::endl;
     std::cout << "uy: " << uy << " rotated about the z axis and pre-translated by TM is " << uy_about_tmz_pt << "\nTRUTH : " << uy_about_z_truth_pretrans << std::endl << std::endl;
     std::cout << "uz: " << uz << " rotated about the z axis and pre-translated by TM is " << uz_about_tmz_pt << "\nTRUTH : " << uz_about_z_truth_pretrans << std::endl << std::endl;
+
+    std::cout << "X error : " << (ux_about_tmz_pt.less_one_dim() - ux_about_z_truth_pretrans).abs().max() << std::endl << std::endl;
+    std::cout << "Y error : " << (uy_about_tmz_pt.less_one_dim() - uy_about_z_truth_pretrans).abs().max() << std::endl << std::endl;
+    std::cout << "Z error : " << (uz_about_tmz_pt.less_one_dim() - uz_about_z_truth_pretrans).abs().max() << std::endl << std::endl;
+
 
     if ((ux_about_tmz_pt.less_one_dim() - ux_about_z_truth_pretrans).abs().max() > std::numeric_limits<F>::epsilon()
         || (uy_about_tmz_pt.less_one_dim() - uy_about_z_truth_pretrans).abs().max() > std::numeric_limits<F>::epsilon()

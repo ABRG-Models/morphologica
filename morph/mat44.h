@@ -139,48 +139,39 @@ namespace morph {
         template<typename T> requires std::is_arithmetic_v<T>
         constexpr void translate (const vec<T, 3>& dv) noexcept
         {
-            mat44<T> trans_mat;
-            trans_mat [12] = dv[0];
-            trans_mat [13] = dv[1];
-            trans_mat [14] = dv[2];
-
-            *this *= trans_mat;
+            this->mat[12] += dv[0];
+            this->mat[13] += dv[1];
+            this->mat[14] += dv[2];
         }
 
         //! Apply translation specified by vector @dv provided as array of three coordinates
         template<typename T> requires std::is_arithmetic_v<T>
         constexpr void translate (const std::array<T, 3>& dv) noexcept
         {
-            mat44<T> trans_mat;
-            trans_mat [12] = dv[0];
-            trans_mat [13] = dv[1];
-            trans_mat [14] = dv[2];
-
-            *this *= trans_mat;
+            this->mat[12] += dv[0];
+            this->mat[13] += dv[1];
+            this->mat[14] += dv[2];
         }
 
         //! Apply translation specified by coordinates @dx, @dy and @dz.
         template<typename T> requires std::is_arithmetic_v<T>
         constexpr void translate (const T& dx, const T& dy, const T& dz) noexcept
         {
-            mat44<T> trans_mat;
-            trans_mat [12] = dx;
-            trans_mat [13] = dy;
-            trans_mat [14] = dz;
-
-            *this *= trans_mat;
+            this->mat[12] += dx;
+            this->mat[13] += dy;
+            this->mat[14] += dz;
         }
 
         //! Apply pretranslation specified by vector @dv
         template<typename T> requires std::is_arithmetic_v<T>
-        constexpr void pretranslate (const vec<T, 3>& dv) noexcept
+        void pretranslate (const vec<T, 3>& dv) noexcept
         {
             mat44<T> trans_mat;
             trans_mat [12] = dv[0];
             trans_mat [13] = dv[1];
             trans_mat [14] = dv[2];
 
-            *this = trans_mat * *this;
+            *this = *this * trans_mat;
         }
 
         //! Apply pretranslation specified by vector @dv provided as array of three coordinates
@@ -192,19 +183,19 @@ namespace morph {
             trans_mat [13] = dv[1];
             trans_mat [14] = dv[2];
 
-            *this = trans_mat * *this;
+            *this = *this * trans_mat;
         }
 
         //! Apply pretranslation specified by coordinates @dx, @dy and @dz.
         template<typename T> requires std::is_arithmetic_v<T>
-        constexpr void pretranslate (const T& dx, const T& dy, const T& dz) noexcept
+        void pretranslate (const T& dx, const T& dy, const T& dz) noexcept
         {
             mat44<T> trans_mat;
             trans_mat [12] = dx;
             trans_mat [13] = dy;
             trans_mat [14] = dz;
 
-            *this = trans_mat * *this;
+            *this = *this * trans_mat;
         }
 
         //! Scaling transformation by individual dims
@@ -682,7 +673,7 @@ namespace morph {
             m[14] = T{0};
             m[15] = T{1};
 
-            *this = m * *this;
+            *this = *this * m;
         }
 
         //! Rotate an angle theta radians about axis
