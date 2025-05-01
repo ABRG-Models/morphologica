@@ -571,50 +571,63 @@ namespace morph {
         }
 
         /*!
+         * Place a pure rotation q (with no translation) into a mat44<F> and return it.
+         *
          * This algorithm was obtained from:
          * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54 (but was it transposed?
          * seems so. See also https://www.songho.ca/opengl/gl_quaternion.html#overview
          * and https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html)
          */
         template <typename T = float> requires std::is_arithmetic_v<T>
-        constexpr void rotate (const quaternion<T>& q) noexcept
+        constexpr mat44<F> pure_rotation (const quaternion<T>& q) noexcept
         {
-            std::array<F, 16> m;
+            const F qx = static_cast<F>(q.x);
+            const F qy = static_cast<F>(q.y);
+            const F qz = static_cast<F>(q.z);
+            const F qw = static_cast<F>(q.w);
+            const F f2x = qx * F{2};
+            const F f2y = qy * F{2};
+            const F f2z = qz * F{2};
+            const F f2xw = f2x * qw;
+            const F f2yw = f2y * qw;
+            const F f2zw = f2z * qw;
+            const F f2xx = f2x * qx;
+            const F f2xy = f2x * qy;
+            const F f2xz = f2x * qz;
+            const F f2yy = f2y * qy;
+            const F f2yz = f2y * qz;
+            const F f2zz = f2z * qz;
 
-            const T f2x = q.x + q.x;
-            const T f2y = q.y + q.y;
-            const T f2z = q.z + q.z;
-            const T f2xw = f2x * q.w;
-            const T f2yw = f2y * q.w;
-            const T f2zw = f2z * q.w;
-            const T f2xx = f2x * q.x;
-            const T f2xy = f2x * q.y;
-            const T f2xz = f2x * q.z;
-            const T f2yy = f2y * q.y;
-            const T f2yz = f2y * q.z;
-            const T f2zz = f2z * q.z;
-
-            m[0]  = T{1} - (f2yy + f2zz);
+            mat44<F> m;
+            m[0]  = F{1} - (f2yy + f2zz);
             m[1]  =         f2xy + f2zw;
             m[2]  =         f2xz - f2yw;
-            m[3]  = T{0};
+            m[3]  = F{0};
             m[4]  =         f2xy - f2zw;
-            m[5]  = T{1} - (f2xx + f2zz);
+            m[5]  = F{1} - (f2xx + f2zz);
             m[6]  =         f2yz + f2xw;
-            m[7]  = T{0};
+            m[7]  = F{0};
             m[8]  =         f2xz + f2yw;
             m[9]  =         f2yz - f2xw;
-            m[10] = T{1} - (f2xx + f2yy);
-            m[11] = T{0};
-            m[12] = T{0};
-            m[13] = T{0};
-            m[14] = T{0};
-            m[15] = T{1};
+            m[10] = F{1} - (f2xx + f2yy);
+            m[11] = F{0};
+            m[12] = F{0};
+            m[13] = F{0};
+            m[14] = F{0};
+            m[15] = F{1};
 
+            return m;
+        }
+
+        //! Apply the rotation q to this as: rotn_matrix * this
+        template <typename T = float> requires std::is_arithmetic_v<T>
+        constexpr void rotate (const quaternion<T>& q) noexcept
+        {
+            mat44<F> m = this->pure_rotation (q);
             *this =  m * *this;
         }
 
-        //! Rotate an angle theta radians about axis
+        //! Rotate an angle theta radians about axis (specified as std::array)
         template <typename T> requires std::is_arithmetic_v<T>
         constexpr void rotate (const std::array<T, 3>& axis, const T& theta) noexcept
         {
@@ -623,6 +636,7 @@ namespace morph {
             this->rotate<T> (q);
         }
 
+        //! Rotate an angle theta radians about axis (specified as morph::vec)
         template <typename T> requires std::is_arithmetic_v<T>
         constexpr void rotate (const morph::vec<T, 3>& axis, const T& theta) noexcept
         {
@@ -631,51 +645,15 @@ namespace morph {
             this->rotate<T> (q);
         }
 
-        /*!
-         * This algorithm was obtained from:
-         * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54 (but was it transposed?
-         * seems so. See also https://www.songho.ca/opengl/gl_quaternion.html#overview
-         * and https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html)
-         */
+        //! Pre-rotation by pure rotation matrix m: this * m
         template <typename T = float> requires std::is_arithmetic_v<T>
         constexpr void prerotate (const quaternion<T>& q) noexcept
         {
-            mat44<T> m;
-
-            const T f2x = q.x + q.x;
-            const T f2y = q.y + q.y;
-            const T f2z = q.z + q.z;
-            const T f2xw = f2x * q.w;
-            const T f2yw = f2y * q.w;
-            const T f2zw = f2z * q.w;
-            const T f2xx = f2x * q.x;
-            const T f2xy = f2x * q.y;
-            const T f2xz = f2x * q.z;
-            const T f2yy = f2y * q.y;
-            const T f2yz = f2y * q.z;
-            const T f2zz = f2z * q.z;
-
-            m[0]  = T{1} - (f2yy + f2zz);
-            m[1]  =         f2xy + f2zw;
-            m[2]  =         f2xz - f2yw;
-            m[3]  = T{0};
-            m[4]  =         f2xy - f2zw;
-            m[5]  = T{1} - (f2xx + f2zz);
-            m[6]  =         f2yz + f2xw;
-            m[7]  = T{0};
-            m[8]  =         f2xz + f2yw;
-            m[9]  =         f2yz - f2xw;
-            m[10] = T{1} - (f2xx + f2yy);
-            m[11] = T{0};
-            m[12] = T{0};
-            m[13] = T{0};
-            m[14] = T{0};
-            m[15] = T{1};
-
+            mat44<F> m = this->pure_rotation (q);
             *this *= m;
         }
 
-        //! Rotate an angle theta radians about axis
+        //! Prerotate an angle theta radians about axis (specified as std::array)
         template <typename T> requires std::is_arithmetic_v<T>
         constexpr void prerotate (const std::array<T, 3>& axis, const T& theta) noexcept
         {
@@ -684,6 +662,7 @@ namespace morph {
             this->prerotate<T> (q);
         }
 
+        //! Prerotate an angle theta radians about axis (specified as morph::vec)
         template <typename T> requires std::is_arithmetic_v<T>
         constexpr void prerotate (const morph::vec<T, 3>& axis, const T& theta) noexcept
         {
