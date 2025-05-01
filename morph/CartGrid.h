@@ -1535,7 +1535,7 @@ namespace morph {
                 throw std::runtime_error ("Pass in separate memory for the result.");
             }
             // For each rect in this CartGrid, compute the convolution kernel
-            for (std::list<Rect>::iterator ri = this->rects.begin(); ri != this->rects.end(); ++ri) {
+            for (std::list<Rect>::const_iterator ri = this->rects.cbegin(); ri != this->rects.cend(); ++ri) {
                 result[ri->vi] = data[ri->vi]; // The 'on' part of the filter
                 T count = T{0};
                 T offpart = T{0};
