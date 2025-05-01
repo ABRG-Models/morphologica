@@ -19,11 +19,6 @@ int main()
     constexpr morph::vec<F> ux = { 1, 0, 0 };
     constexpr morph::vec<F> uy = { 0, 1, 0 };
     constexpr morph::vec<F> uz = { 0, 0, 1 };
-    constexpr morph::vec<F> minus_ux = { -1, 0, 0 };
-
-    morph::vec<F> ux_about_z_truth = uy;
-    morph::vec<F> uy_about_z_truth = minus_ux;
-    morph::vec<F> uz_about_z_truth = uz;
 
     using mc = morph::mathconst<F>;
 
@@ -33,9 +28,11 @@ int main()
     morph::vec<F> uy_about_z_truth_pretrans = {-1.0, 1.0, 0.0 };
     morph::vec<F> uz_about_z_truth_pretrans = { 0.0, 1.0, 1.0 };
 
+    morph::quaternion<F> qz (uz, mc::pi_over_2);
+
     morph::mat44<F> tmz_pt;
     tmz_pt.rotate (qz);
-    tmz_pt.pretranslate (translation);
+    tmz_pt.pretranslate (ux);
 
     morph::vec<F, 4> ux_about_tmz_pt = tmz_pt * ux;
     morph::vec<F, 4> uy_about_tmz_pt = tmz_pt * uy;
@@ -59,11 +56,10 @@ int main()
     morph::vec<F> uz_about_y_truth_pretrans = { 1.0, 1.0, 0.0 };
 
     morph::quaternion<F> qy (uy, mc::pi_over_2);
-    morph::vec<F,3> ty = {0.0, 1.0, 0.0};
 
     morph::mat44<F> tmy_pt;
     tmy_pt.rotate (qy);
-    tmy_pt.pretranslate (ty);
+    tmy_pt.pretranslate (uy);
 
     morph::vec<F, 4> ux_about_tmy_pt = tmy_pt * ux;
     morph::vec<F, 4> uy_about_tmy_pt = tmy_pt * uy;
