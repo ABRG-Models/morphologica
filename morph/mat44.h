@@ -134,7 +134,6 @@ namespace morph {
             //   => T = efgh * inv(abcd)
         }
 #endif
-
         //! Apply translation specified by vector @dv
         template<typename T> requires std::is_arithmetic_v<T>
         constexpr void translate (const vec<T, 3>& dv) noexcept
@@ -164,7 +163,7 @@ namespace morph {
 
         //! Apply pretranslation specified by vector @dv
         template<typename T> requires std::is_arithmetic_v<T>
-        void pretranslate (const vec<T, 3>& dv) noexcept
+        constexpr void pretranslate (const vec<T, 3>& dv) noexcept
         {
             mat44<T> trans_mat;
             trans_mat [12] = dv[0];
@@ -188,7 +187,7 @@ namespace morph {
 
         //! Apply pretranslation specified by coordinates @dx, @dy and @dz.
         template<typename T> requires std::is_arithmetic_v<T>
-        void pretranslate (const T& dx, const T& dy, const T& dz) noexcept
+        constexpr void pretranslate (const T& dx, const T& dy, const T& dz) noexcept
         {
             mat44<T> trans_mat;
             trans_mat [12] = dx;
@@ -1238,4 +1237,3 @@ namespace morph {
     }
 
 } // namespace morph
-
