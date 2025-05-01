@@ -680,7 +680,7 @@ namespace morph {
         constexpr void prerotate (const std::array<T, 3>& axis, const T& theta) noexcept
         {
             quaternion<T> q;
-            q.prerotate (axis, theta);
+            q.rotate (axis, theta);
             this->prerotate<T> (q);
         }
 
@@ -688,7 +688,7 @@ namespace morph {
         constexpr void prerotate (const morph::vec<T, 3>& axis, const T& theta) noexcept
         {
             quaternion<T> q;
-            q.prerotate (axis, theta);
+            q.rotate (axis, theta);
             this->prerotate<T> (q);
         }
 
