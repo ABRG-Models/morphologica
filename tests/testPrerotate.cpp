@@ -51,9 +51,9 @@ int main()
         || (uz_about_tm_pr.less_one_dim() - uz_truth_prerotate).abs().max() > 2.0 * std::numeric_limits<F>::epsilon()) { --rtn; }
 
     if (rtn == 0) {
-        std::cout << "Rotations tests PASSED\n";
+        std::cout << "Prerotations tests PASSED\n";
     } else {
-        std::cout << "Rotations tests FAILED\n";
+        std::cout << "Prerotations tests FAILED\n";
     }
 
     return rtn;

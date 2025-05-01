@@ -77,9 +77,9 @@ int main()
 
 
     if (rtn == 0) {
-        std::cout << "Rotations tests PASSED\n";
+        std::cout << "Pretranslation tests PASSED\n";
     } else {
-        std::cout << "Rotations tests FAILED\n";
+        std::cout << "Pretranslation tests FAILED\n";
     }
 
     return rtn;
