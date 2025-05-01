@@ -170,7 +170,7 @@ namespace morph {
             trans_mat [13] = dv[1];
             trans_mat [14] = dv[2];
 
-            *this = *this * trans_mat;
+            *this *= trans_mat;
         }
 
         //! Apply pretranslation specified by vector @dv provided as array of three coordinates
@@ -182,7 +182,7 @@ namespace morph {
             trans_mat [13] = dv[1];
             trans_mat [14] = dv[2];
 
-            *this = *this * trans_mat;
+            *this *= trans_mat;
         }
 
         //! Apply pretranslation specified by coordinates @dx, @dy and @dz.
@@ -194,7 +194,7 @@ namespace morph {
             trans_mat [13] = dy;
             trans_mat [14] = dz;
 
-            *this = *this * trans_mat;
+            *this *= trans_mat;
         }
 
         //! Scaling transformation by individual dims
@@ -611,7 +611,7 @@ namespace morph {
             m[14] = T{0};
             m[15] = T{1};
 
-            *this *= m;
+            *this =  m * *this;
         }
 
         //! Rotate an angle theta radians about axis
@@ -672,7 +672,7 @@ namespace morph {
             m[14] = T{0};
             m[15] = T{1};
 
-            *this = *this * m;
+            *this *= m;
         }
 
         //! Rotate an angle theta radians about axis
