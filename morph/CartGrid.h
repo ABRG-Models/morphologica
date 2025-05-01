@@ -81,7 +81,7 @@ namespace morph {
          * This is a simplified version of "findRectNearest".  findRectNearest can be used for non-recatngular grids.
          * This function is for rectangular grids only.
          */
-        int indexFromCoord (morph::vec<float, 2>& coord)
+        int indexFromCoord (const morph::vec<float, 2>& coord) const
         {
             int x_ind = std::round((coord.at(0) - x_minmax.min)/this->d);   // Index of nearest column
             int y_ind = std::round((coord.at(1) - y_minmax.min)/this->v);   // Index of nearest row
@@ -97,7 +97,8 @@ namespace morph {
          * If any of the original coordinates get shifted off the edge of the CartGrid, then they
          * are simply omitted from the return vvec.
          */
-        morph::vvec<morph::vec<float, 2>> shiftCoords (morph::vvec<morph::vec<float, 2>>& cds, float x_shift, float y_shift)
+        morph::vvec<morph::vec<float, 2>> shiftCoords (const morph::vvec<morph::vec<float, 2>>& cds,
+                                                       const float x_shift, const float y_shift) const
         {
             float x_step = this->d * std::round(x_shift/this->d); // find nearest x value in this->coords to x_shift
             float y_step = this->v * std::round(y_shift/this->v); // find nearest y value in this->coords to y_shift
@@ -122,7 +123,8 @@ namespace morph {
          * If any of the original indices get shifted off the edge of the CartGrid, then they
          * are simply omitted from the return vvec.
          */
-        morph::vvec<int> shiftIndiciesByMetric (morph::vvec<int>& inds, float x_shift, float y_shift)
+        morph::vvec<int> shiftIndiciesByMetric (const morph::vvec<int>& inds,
+                                                const float x_shift, const float y_shift) const
         {
             static constexpr bool debug_shift_indicies = false;
             int w = 1 + this->x_span/this->d;
@@ -168,7 +170,7 @@ namespace morph {
         }
 
         //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
-        std::vector<morph::vec<float, 3>> getCoordinates3()
+        std::vector<morph::vec<float, 3>> getCoordinates3() const
         {
             std::vector<morph::vec<float, 3>> coords (this->num());
             for (unsigned int i = 0; i < this->num(); ++i) {
@@ -178,7 +180,7 @@ namespace morph {
         }
 
         //! Get all the (x,y) coordinates from the grid and return as vector of vecs
-        std::vector<morph::vec<float, 2>> getCoordinates2()
+        std::vector<morph::vec<float, 2>> getCoordinates2() const
         {
             std::vector<morph::vec<float, 2>> coords (this->num());
             for (unsigned int i = 0; i < this->num(); ++i) {
@@ -188,7 +190,7 @@ namespace morph {
         }
 
         // A get-the-coordinates function that returns a vvec of vec<float, 3>s
-        morph::vvec<morph::vec<float, 3>> getCoords()
+        morph::vvec<morph::vec<float, 3>> getCoords() const
         {
             morph::vvec<morph::vec<float, 3>> rtn (d_x.size(), {0,0,0});
             for (unsigned int i = 0; i < d_x.size(); ++i) {
@@ -199,7 +201,7 @@ namespace morph {
         }
 
         // A get-the-coordinates function that returns a vvec of vec<float, 2>s
-        morph::vvec<morph::vec<float, 2>> getCoords2D()
+        morph::vvec<morph::vec<float, 2>> getCoords2D() const
         {
             morph::vvec<morph::vec<float, 2>> rtn (d_x.size(), {0,0});
             for (unsigned int i = 0; i < d_x.size(); ++i) {
@@ -1067,7 +1069,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated ellipse
          */
         std::vector<BezCoord<float>> ellipseCompute (const float a, const float b,
-                                                     const morph::vec<float, 2> c = {0.0f, 0.0f})
+                                                     const morph::vec<float, 2> c = {0.0f, 0.0f}) const
         {
             // Compute the points on the boundary using the parametric elliptical formula and
             // half of the rect to rect spacing as the angular step size. Return as bpoints.
@@ -1094,7 +1096,7 @@ namespace morph {
         }
 
         //! calculate perimeter of ellipse with radii \a a and \a b
-        float ellipsePerimeter (const float a, const float b)
+        float ellipsePerimeter (const float a, const float b) const
         {
             double apb = (double)a+b;
             double amb = (double)a-b;
@@ -1120,7 +1122,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setEllipticalBoundary (const float a, const float b,
-                                    const morph::vec<float, 2> c = {0.0f, 0.0f}, bool offset=true)
+                                    const morph::vec<float, 2> c = {0.0f, 0.0f}, const bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, b, c);
             this->setBoundary (bpoints, offset);
@@ -1133,7 +1135,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setCircularBoundary (const float a,
-                                  const morph::vec<float, 2> c = {0.0f, 0.0f}, bool offset=true)
+                                  const morph::vec<float, 2> c = {0.0f, 0.0f}, const bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, a, c);
             this->setBoundary (bpoints, offset);
@@ -1262,10 +1264,10 @@ namespace morph {
         float getv() const { return this->v; }
 
         //! Get the x_span/y_span
-        morph::vec<float, 2> getSpan() { return morph::vec<float, 2>({this->x_span, this->y_span}); }
+        morph::vec<float, 2> getSpan() const { return morph::vec<float, 2>({this->x_span, this->y_span}); }
 
         //! Get the x/y span in elements/pixels
-        morph::vec<unsigned int, 2> getSpanPix()
+        morph::vec<unsigned int, 2> getSpanPix() const
         {
             unsigned int _x_pixdist = static_cast<unsigned int>(std::round(this->x_span/this->d));
             unsigned int _y_pixdist = static_cast<unsigned int>(std::round(this->y_span/this->v));
@@ -1521,7 +1523,7 @@ namespace morph {
          * the CartGrid.
          */
         template<typename T>
-        void oncentre_offsurround (const std::vector<T>& data, std::vector<T>& result)
+        void oncentre_offsurround (const std::vector<T>& data, std::vector<T>& result) const
         {
             if (result.size() != this->rects.size()) {
                 throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
@@ -1533,7 +1535,7 @@ namespace morph {
                 throw std::runtime_error ("Pass in separate memory for the result.");
             }
             // For each rect in this CartGrid, compute the convolution kernel
-            for (std::list<Rect>::iterator ri = this->rects.begin(); ri != this->rects.end(); ++ri) {
+            for (std::list<Rect>::const_iterator ri = this->rects.cbegin(); ri != this->rects.cend(); ++ri) {
                 result[ri->vi] = data[ri->vi]; // The 'on' part of the filter
                 T count = T{0};
                 T offpart = T{0};
@@ -1552,7 +1554,7 @@ namespace morph {
 
         //! Apply a box filter. SLOOOOOW algorithm.
         template<typename T, bool onlysum=false>
-        void boxfilter (const std::vector<T>& data, std::vector<T>& result, unsigned int boxside)
+        void boxfilter (const std::vector<T>& data, std::vector<T>& result, const unsigned int boxside)
         {
             if (result.size() != this->rects.size()) {
                 throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
@@ -1632,7 +1634,7 @@ namespace morph {
 
         // Apply a box filter. Be fast. Rectangular CartGrids only. Test to see if boxside is odd and disallow even (not tested)
         template<typename T, int boxside, bool onlysum = false>
-        void boxfilter_f (const morph::vvec<T>& data, morph::vvec<T>& result)
+        void boxfilter_f (const morph::vvec<T>& data, morph::vvec<T>& result) const
         {
             if (result.size() != this->rects.size()) {
                 throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
@@ -1657,7 +1659,8 @@ namespace morph {
          * kernelgrid. Return the result in \a result.
          */
         template<typename T>
-        void convolve (const CartGrid& kernelgrid, const std::vector<T>& kerneldata, const std::vector<T>& data, std::vector<T>& result)
+        void convolve (const CartGrid& kernelgrid, const std::vector<T>& kerneldata,
+                       const std::vector<T>& data, std::vector<T>& result)
         {
             if (result.size() != this->rects.size()) {
                 throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
