@@ -51,6 +51,23 @@ int main()
         || (uy_about_tmz_pt.less_one_dim() - uy_about_z_truth_pretrans).abs().max() > 2.0 * std::numeric_limits<F>::epsilon()
         || (uz_about_tmz_pt.less_one_dim() - uz_about_z_truth_pretrans).abs().max() > 2.0 * std::numeric_limits<F>::epsilon()) { --rtn; }
 
+    // Alternative ordering. pretranslate first, then rotate should give the same result
+    morph::mat44<F> tmz_pt2;
+    tmz_pt2.pretranslate (ux);
+    tmz_pt2.rotate (qz);
+
+    // Translate first then rotate should also give the same result
+    morph::mat44<F> tmz_pt3;
+    tmz_pt3.translate (ux);
+    tmz_pt3.rotate (qz);
+
+    morph::vec<F, 4> ux_about_tmz_pt2 = tmz_pt2 * ux;
+    std::cout << "tmz_pt2 * ux = " << ux_about_tmz_pt2<< " cf. tmz_pt * ux = " << ux_about_tmz_pt << std::endl;
+    std::cout << "tmz_pt3 * ux = " << (tmz_pt3 * ux) << " cf. tmz_pt * ux = " << ux_about_tmz_pt << std::endl;
+
+    if ((tmz_pt3 * ux) != (tmz_pt2 * ux) || (tmz_pt2 * ux) != (tmz_pt * ux)) {
+        --rtn;
+    }
 
     // Translation of [0,1,0], then the rotation -90 deg around y axis
 
