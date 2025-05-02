@@ -137,7 +137,7 @@ namespace morph {
 #endif
         //! Apply translation specified by vector @dv
         template<typename T> requires std::is_arithmetic_v<T>
-        constexpr void translate (const vec<T, 3>& dv) noexcept
+        constexpr void translate (const morph::vec<T, 3>& dv) noexcept
         {
             this->mat[12] += dv[0];
             this->mat[13] += dv[1];
@@ -164,7 +164,7 @@ namespace morph {
 
         //! Apply pretranslation specified by vector @dv
         template<typename T> requires std::is_arithmetic_v<T>
-        constexpr void pretranslate (const vec<T, 3>& dv) noexcept
+        constexpr void pretranslate (const morph::vec<T, 3>& dv) noexcept
         {
             mat44<T> trans_mat;
             trans_mat [12] = dv[0];
@@ -218,7 +218,7 @@ namespace morph {
 
         //! Scaling transformation by vector
         template<typename T> requires std::is_arithmetic_v<T>
-        constexpr void scale (const vec<T, 3>& scl) noexcept
+        constexpr void scale (const morph::vec<T, 3>& scl) noexcept
         {
             this->mat[0] *= scl[0];
             this->mat[1] *= scl[0];
@@ -580,7 +580,7 @@ namespace morph {
          * and https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html)
          */
         template <typename T = float> requires std::is_arithmetic_v<T>
-        constexpr mat44<F> pure_rotation (const quaternion<T>& q) noexcept
+        constexpr mat44<F> pure_rotation (const morph::quaternion<T>& q) noexcept
         {
             const F qx = static_cast<F>(q.x);
             const F qy = static_cast<F>(q.y);
@@ -622,7 +622,7 @@ namespace morph {
 
         //! Apply the rotation q to this as: rotn_matrix * this
         template <typename T = float> requires std::is_arithmetic_v<T>
-        constexpr void rotate (const quaternion<T>& q) noexcept
+        constexpr void rotate (const morph::quaternion<T>& q) noexcept
         {
             mat44<F> m = this->pure_rotation (q);
             *this =  m * *this;
@@ -632,7 +632,7 @@ namespace morph {
         template <typename T> requires std::is_arithmetic_v<T>
         constexpr void rotate (const std::array<T, 3>& axis, const T& theta) noexcept
         {
-            quaternion<T> q;
+            morph::quaternion<T> q;
             q.rotate (axis, theta);
             this->rotate<T> (q);
         }
@@ -641,14 +641,14 @@ namespace morph {
         template <typename T> requires std::is_arithmetic_v<T>
         constexpr void rotate (const morph::vec<T, 3>& axis, const T& theta) noexcept
         {
-            quaternion<T> q;
+            morph::quaternion<T> q;
             q.rotate (axis, theta);
             this->rotate<T> (q);
         }
 
         //! Pre-rotation by pure rotation matrix m: this * m
         template <typename T = float> requires std::is_arithmetic_v<T>
-        constexpr void prerotate (const quaternion<T>& q) noexcept
+        constexpr void prerotate (const morph::quaternion<T>& q) noexcept
         {
             mat44<F> m = this->pure_rotation (q);
             *this *= m;
@@ -658,7 +658,7 @@ namespace morph {
         template <typename T> requires std::is_arithmetic_v<T>
         constexpr void prerotate (const std::array<T, 3>& axis, const T& theta) noexcept
         {
-            quaternion<T> q;
+            morph::quaternion<T> q;
             q.rotate (axis, theta);
             this->prerotate<T> (q);
         }
@@ -667,15 +667,15 @@ namespace morph {
         template <typename T> requires std::is_arithmetic_v<T>
         constexpr void prerotate (const morph::vec<T, 3>& axis, const T& theta) noexcept
         {
-            quaternion<T> q;
+            morph::quaternion<T> q;
             q.rotate (axis, theta);
             this->prerotate<T> (q);
         }
 
         //! Returns the linear part of the 4x4 matrix (the top left 3x3 matrix)
-        constexpr mat33<F> linear() noexcept
+        constexpr morph::mat33<F> linear() noexcept
         {
-            mat33<F> x;
+            morph::mat33<F> x;
 
             x[0]  = this->mat[0];
             x[1]  = this->mat[1];
@@ -691,9 +691,9 @@ namespace morph {
         }
 
         //! Returns the translation part of the 4x4 matrix (top three rows of last column)
-        constexpr vec<F,3> translation() noexcept
+        constexpr morph::vec<F, 3> translation() noexcept
         {
-            return {this->mat[12], this->mat[13], this->mat[14]};
+            return { this->mat[12], this->mat[13], this->mat[14] };
         }
 
         //! Right-multiply this->mat with m2.
@@ -1035,9 +1035,9 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        constexpr vec<F, 4> operator* (const vec<F, 4>& v1) const noexcept
+        constexpr morph::vec<F, 4> operator* (const morph::vec<F, 4>& v1) const noexcept
         {
-            vec<F, 4> v;
+            morph::vec<F, 4> v;
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
@@ -1058,9 +1058,9 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1.
-        constexpr vec<F, 4> operator* (const vec<F, 3>& v1) const noexcept
+        constexpr morph::vec<F, 4> operator* (const morph::vec<F, 3>& v1) const noexcept
         {
-            vec<F, 4> v;
+            morph::vec<F, 4> v;
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
@@ -1210,7 +1210,7 @@ namespace morph {
          *
          * \param zNear The 'near' z coordinate of the canonical viewing volume
          */
-        constexpr void orthographic (const vec<F, 2>& lb, const vec<F, 2>& rt,
+        constexpr void orthographic (const morph::vec<F, 2>& lb, const morph::vec<F, 2>& rt,
                                      const F zNear, const F zFar) noexcept
         {
             if (zNear == zFar) { return; }
