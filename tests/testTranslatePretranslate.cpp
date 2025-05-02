@@ -34,6 +34,9 @@ int main()
     tmz_pt.rotate (qz);
     tmz_pt.pretranslate (ux);
 
+    std::cout << "Linear part returned : " << tmz_pt.linear() << std::endl << std::endl;
+    std::cout << "Translation part returned : " << tmz_pt.translation() << std::endl << std::endl;
+
     morph::vec<F, 4> ux_about_tmz_pt = tmz_pt * ux;
     morph::vec<F, 4> uy_about_tmz_pt = tmz_pt * uy;
     morph::vec<F, 4> uz_about_tmz_pt = tmz_pt * uz;

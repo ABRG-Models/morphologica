@@ -12,6 +12,7 @@
 #include <morph/quaternion.h>
 #include <morph/vec.h>
 #include <morph/constexpr_math.h>
+#include <morph/mat33.h>
 #include <array>
 #include <string>
 #include <sstream>
@@ -669,6 +670,30 @@ namespace morph {
             quaternion<T> q;
             q.rotate (axis, theta);
             this->prerotate<T> (q);
+        }
+
+        //! Returns the linear part of the 4x4 matrix (the top left 3x3 matrix)
+        constexpr mat33<F> linear() noexcept
+        {
+            mat33<F> x;
+
+            x[0]  = this->mat[0];
+            x[1]  = this->mat[1];
+            x[2]  = this->mat[2];
+            x[3]  = this->mat[4];
+            x[4]  = this->mat[5];
+            x[5]  = this->mat[6];
+            x[6]  = this->mat[8];
+            x[7]  = this->mat[9];
+            x[8]  = this->mat[10];
+
+            return x;
+        }
+
+        //! Returns the translation part of the 4x4 matrix (top three rows of last column)
+        constexpr vec<F,3> translation() noexcept
+        {
+            return {this->mat[12], this->mat[13], this->mat[14]};
         }
 
         //! Right-multiply this->mat with m2.
