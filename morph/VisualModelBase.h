@@ -200,7 +200,7 @@ namespace morph {
             this->scenematrix.setToIdentity();
             this->sv_offset = v0;
             this->scenematrix.translate (this->sv_offset);
-            this->scenematrix.rotate (this->sv_rotation);
+            this->scenematrix.prerotate (this->sv_rotation);
             this->setSceneTranslationTexts (v0);
         }
 
@@ -217,14 +217,14 @@ namespace morph {
             this->scenematrix.setToIdentity();
             this->sv_rotation = r;
             this->scenematrix.translate (this->sv_offset);
-            this->scenematrix.rotate (this->sv_rotation);
+            this->scenematrix.prerotate (this->sv_rotation);
         }
 
         //! Add a rotation to the scene view matrix
         void addSceneRotation (const quaternion<float>& r)
         {
             this->sv_rotation.premultiply (r);
-            this->scenematrix.rotate (r);
+            this->scenematrix.prerotate (r);
         }
 
         //! Set a translation to the model view matrix
@@ -233,7 +233,7 @@ namespace morph {
             this->viewmatrix.setToIdentity();
             this->mv_offset = v0;
             this->viewmatrix.translate (this->mv_offset);
-            this->viewmatrix.rotate (this->mv_rotation);
+            this->viewmatrix.prerotate (this->mv_rotation);
         }
 
         //! Add a translation to the model view matrix
@@ -248,7 +248,7 @@ namespace morph {
             this->viewmatrix.setToIdentity();
             this->mv_rotation = r;
             this->viewmatrix.translate (this->mv_offset);
-            this->viewmatrix.rotate (this->mv_rotation);
+            this->viewmatrix.prerotate (this->mv_rotation);
         }
 
         virtual void setViewRotationTexts (const quaternion<float>& r) = 0;
@@ -259,7 +259,7 @@ namespace morph {
             this->viewmatrix.setToIdentity();
             this->mv_rotation = r;
             this->viewmatrix.translate (this->mv_offset);
-            this->viewmatrix.rotate (this->mv_rotation);
+            this->viewmatrix.prerotate (this->mv_rotation);
             this->setViewRotationTexts (r);
         }
 
@@ -269,7 +269,7 @@ namespace morph {
         void addViewRotation (const quaternion<float>& r)
         {
             this->mv_rotation.premultiply (r);
-            this->viewmatrix.rotate (r);
+            this->viewmatrix.prerotate (r);
             this->addViewRotationTexts (r);
         }
 
