@@ -69,7 +69,7 @@ namespace morph {
             this->sv_offset = v0;
             this->scenematrix.setToIdentity();
             this->scenematrix.translate (this->sv_offset);
-            this->scenematrix.rotate (this->sv_rotation);
+            this->scenematrix.prerotate (this->sv_rotation);
         }
 
         //! Set a translation (only) into the scene view matrix
@@ -87,14 +87,14 @@ namespace morph {
             //std::cout << "Translate by sv_offset: "  << sv_offset << std::endl;
             this->scenematrix.translate (this->sv_offset);
             //std::cout << "Rotate by sv_rotn: "  << sv_rotation << std::endl;
-            this->scenematrix.rotate (this->sv_rotation);
+            this->scenematrix.prerotate (this->sv_rotation);
         }
 
         //! Add a rotation to the scene view matrix
         void addSceneRotation (const quaternion<float>& r)
         {
             this->sv_rotation.premultiply (r);
-            this->scenematrix.rotate (r);
+            this->scenematrix.prerotate (r);
         }
 
         //! Set a translation to the model view matrix
@@ -103,7 +103,7 @@ namespace morph {
             this->mv_offset = v0;
             this->viewmatrix.setToIdentity();
             this->viewmatrix.translate (this->mv_offset);
-            this->viewmatrix.rotate (this->mv_rotation);
+            this->viewmatrix.prerotate (this->mv_rotation);
         }
 
         //! Add a translation to the model view matrix
@@ -122,14 +122,14 @@ namespace morph {
             //std::cout << "VTM::setViewRotation: setting mv_offset " << mv_offset << std::endl;
             this->viewmatrix.translate (this->mv_offset);
             //std::cout << "VTM::setViewRotation: rotating mv_rotation " << mv_rotation << std::endl;
-            this->viewmatrix.rotate (this->mv_rotation);
+            this->viewmatrix.prerotate (this->mv_rotation);
         }
 
         //! Apply a further rotation to the model view matrix
         void addViewRotation (const quaternion<float>& r)
         {
             this->mv_rotation.premultiply (r);
-            this->viewmatrix.rotate (r);
+            this->viewmatrix.prerotate (r);
         }
 
         //! Compute the geometry for a sample text.

@@ -215,5 +215,32 @@ int main()
 
     scaler.scale (0.025, 0.025, 0.025);
     std::cout << v4d << " scaled by " << scale_vec << " and then in all dims by " << second_scale << " and then by 0.025f, 0.025f, 0.025f = " << (scaler * v4d) << std::endl;
+
+    // Test translate then rotate
+    morph::mat44<float> trmat;
+    morph::vec<float> trans = { 1, 0, 0 };
+    morph::quaternion<float> rotn (morph::vec<float>{0, 0, 1}, morph::mathconst<float>::pi_over_4);
+
+    // these two, applied to the same trmat used to do rotate-then-translate
+    // NOW they do translate then rotate
+    trmat.translate (trans);
+    trmat.rotate (rotn);
+
+    morph::vec<float> uy = { 0, 1, 0 };
+    morph::vec<float, 4> tr_res = trmat * uy;
+    std::cout << "translate-then-rotate vector = " << tr_res << std::endl;
+
+    // Recapitulate old behaviour
+    morph::mat44<float> rot_then_trans;
+
+    // these two, applied to the same trmat used to do rotate-then-translate
+    // NOW they do translate then rotate
+    rot_then_trans.translate (trans);
+    rot_then_trans.prerotate (rotn);
+
+    tr_res = rot_then_trans * uy;
+    std::cout << "rotate-then-translate vector = " << tr_res << std::endl;
+
+
     return rtn;
 }

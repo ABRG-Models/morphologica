@@ -216,6 +216,15 @@ add_executable(testRotationsQuat_double testRotationsQuat.cpp)
 target_compile_definitions(testRotationsQuat_double PUBLIC FLT=double)
 add_test(testRotationsQuat_double testRotationsQuat_double)
 
+# mat44 translate and pretranslate
+add_executable(testTranslatePretranslate testTranslatePretranslate.cpp)
+target_compile_definitions(testTranslatePretranslate PUBLIC FLT=float)
+add_test(testTranslatePretranslate testTranslatePretranslate)
+
+add_executable(testPrerotate testPrerotate.cpp)
+target_compile_definitions(testPrerotate PUBLIC FLT=float)
+add_test(testPrerotate testPrerotate)
+
 if(NOT APPLE)
   add_executable(testQuat_constexpr testQuat_constexpr.cpp)
   add_test(testQuat_constexpr testQuat_constexpr)

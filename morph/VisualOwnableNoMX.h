@@ -203,7 +203,7 @@ namespace morph {
                 sceneview.translate (this->scenetrans); // send backwards into distance
             }
             // And this rotation completes the transition from model to world
-            sceneview.rotate (this->rotation);
+            sceneview.prerotate (this->rotation);
 
             // Clear color buffer and **also depth buffer**
             glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
