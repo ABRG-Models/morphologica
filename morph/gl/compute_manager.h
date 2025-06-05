@@ -27,6 +27,7 @@
 
 #include <chrono>
 #include <morph/VisualDefaultShaders.h>
+#include <morph/VisualGlfw.h>
 
 namespace morph {
     namespace gl {
@@ -52,7 +53,6 @@ namespace morph {
             ~compute_manager()
             {
                 glfwDestroyWindow (this->window);
-                glfwTerminate();
             }
 
             //! Init GLFW and then the GLFW window. What if you want to set window width
@@ -100,21 +100,11 @@ namespace morph {
 
             void init_glfw()
             {
-                if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
-                // Set up error callback
-                glfwSetErrorCallback (morph::gl::compute_manager<glver>::errorCallback);
+                morph::VisualGlfw<glver>::i().init();
                 // See https://www.glfw.org/docs/latest/monitor_guide.html
                 GLFWmonitor* primary = glfwGetPrimaryMonitor();
                 glfwGetMonitorContentScale (primary, &this->monitor_xscale, &this->monitor_yscale);
                 glfwGetMonitorWorkarea (primary, &this->workarea_xpos, &this->workarea_ypos, &this->workarea_width, &this->workarea_height);
-                // 4.3+ or 3.1ES+ are required for shader compute
-                if constexpr (morph::gl::version::gles (glver) == true) {
-                    glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-                    glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
-                }
-                glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, morph::gl::version::major (glver));
-                glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, morph::gl::version::minor (glver));
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
 
             void init_window()
@@ -131,7 +121,6 @@ namespace morph {
                 // Lastly make the context current
                 glfwMakeContextCurrent (this->window);
                 glfwSwapInterval (0);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
 
             // Initialize OpenGL shaders, set any GL flags required
