@@ -27,9 +27,13 @@ namespace morph {
         VisualGlfw() { }
         ~VisualGlfw() { glfwTerminate(); }
 
+        bool initialized = false;
+
     public:
         void init()
         {
+            if (this->initialized) { return; } // as already initialized
+
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
             // Set up error callback
@@ -48,6 +52,8 @@ namespace morph {
 #endif
             // Tell glfw that we'd like to do anti-aliasing.
             glfwWindowHint (GLFW_SAMPLES, 4);
+
+            this->initialized = true;
         }
 
         //! An error callback function for the GLFW windowing library
