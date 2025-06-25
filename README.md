@@ -1,3 +1,7 @@
+## morphologica has moved
+
+New development is now at https://github.com/sebsjames/mathplot and the maths code from morphologica has been split out into https://github.com/sebsjames/maths.
+
 # morphologica: plotting for c++
 
 ![A banner image morphologica VisualModels](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner2.png?raw=true)

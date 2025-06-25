@@ -12,6 +12,8 @@ morphologica, a library of header-only C++ code for data visualization  ([source
 
 You'll find tutorial content and class reference material for the library on these pages.
 
+**Important** morphologica has been moved and renamed! New development is now occurring over at [mathplot](https://github.com/sebsjames/mathplot).
+
 ## Quick links to Reference sections
 
 * [Core maths reference](/morphologica/ref/coremaths)
