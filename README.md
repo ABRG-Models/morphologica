@@ -2,7 +2,9 @@
 
 New development is now at https://github.com/sebsjames/mathplot and the maths code from morphologica has been split out into https://github.com/sebsjames/maths.
 
-I wanted the name to describe the library's intended use more clearly.
+I wanted the name to describe the library's intended use more clearly and **mathplot** gives you a strong hint!
+
+Seb James, June 2025
 
 # morphologica: plotting for c++
 
