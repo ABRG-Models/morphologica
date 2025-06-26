@@ -1,4 +1,4 @@
-# morphologica has moved!
+# morphologica is now [mathplot](https://github.com/sebsjames/mathplot)!
 
 New development is now at https://github.com/sebsjames/mathplot and the maths code from morphologica has been split out into https://github.com/sebsjames/maths.
 
